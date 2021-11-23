@@ -6,12 +6,20 @@ such as [Pyserini](https://github.com/castorini/pyserini).
 
 ## Usage
 
+### Backends
+
 ## Development
 
-### Dependencies
+### Installation
 
+Install dependencies for developing the `ir_axioms` package:
 ```shell
-python setup.py install
+pip install -e .
+```
+
+If you want to develop the Pyserini backend, install dependencies like this:
+```shell
+pip install -e .[pyserini]
 ```
 
 ### Build wheel
