@@ -1,3 +1,6 @@
+ [![CI/CD status](https://git.webis.de/code-research/web-search/ir_axioms/badges/main/pipeline.svg?style=flat-square)](https://git.webis.de/code-research/web-search/ir_axioms/-/pipelines?ref=main)
+[![Test coverage](https://git.webis.de/code-research/web-search/ir_axioms/badges/main/coverage.svg?style=flat-square)](https://git.webis.de/code-research/web-search/ir_axioms/-/pipelines?ref=main)
+
 # ↕️ ir_axioms
 
 `ir_axioms` is a python package that provides a common, intuitive interface to many IR axioms.
