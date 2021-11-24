@@ -10,6 +10,12 @@ such as [Pyserini](https://github.com/castorini/pyserini).
 
 ## Development
 
+To build and develop this package you need to install the `build`, and `setuptools` and `wheel` packages:
+```shell
+pip install build setuptools wheel
+```
+(On most systems, these packages are already installed.)
+
 ### Installation
 
 Install dependencies for developing the `ir_axioms` package:
