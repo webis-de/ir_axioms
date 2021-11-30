@@ -4,29 +4,16 @@ from math import log
 from pathlib import Path
 from typing import List, Set
 
-
+from ir_axioms.backend import require_pyserini_backend
 from ir_axioms.model import Query, Document
 from ir_axioms.model.context import RerankingContext
 
-try:
-    import pyserini
-except ImportError as error:
-    raise ImportError(
-        "The Pyserini backend requires that 'pyserini' is installed."
-    ) from error
-
-from jnius import autoclass
-from pyserini.index import IndexReader
-
-similarities = "org.apache.lucene.search.similarities"
-JSimilarity = autoclass(f"{similarities}.Similarity")
-JClassicSimilarity = autoclass(f"{similarities}.ClassicSimilarity")
-JBM25Similarity = autoclass(f"{similarities}.BM25Similarity")
-JDFRSimilarity = autoclass(f"{similarities}.DFRSimilarity")
-JBasicModelIn = autoclass(f"{similarities}.BasicModelIn")
-JAfterEffectL = autoclass(f"{similarities}.AfterEffectL")
-JNormalizationH2 = autoclass(f"{similarities}.NormalizationH2")
-JLMDirichletSimilarity = autoclass(f"{similarities}.LMDirichletSimilarity")
+with require_pyserini_backend():
+    from pyserini.index import IndexReader
+    from ir_axioms.backend.pyserini.util import (
+        JSimilarity, JClassicSimilarity, JBM25Similarity, JDFRSimilarity,
+        JBasicModelIn, JAfterEffectL, JNormalizationH2, JLMDirichletSimilarity
+    )
 
 
 @dataclass(unsafe_hash=True)
