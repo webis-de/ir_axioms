@@ -26,9 +26,14 @@ Install dependencies for developing the `ir_axioms` package:
 pip install -e .
 ```
 
-If you want to develop the Pyserini backend, install dependencies like this:
+If you want to develop the [Pyserini](https://github.com/castorini/pyserini) backend, install dependencies like this:
 ```shell
 pip install -e .[pyserini]
+```
+
+If you want to develop the [PyTerrier](https://github.com/terrier-org/pyterrier) backend, install dependencies like this:
+```shell
+pip install -e .[pyterrier]
 ```
 
 ### Build wheel
