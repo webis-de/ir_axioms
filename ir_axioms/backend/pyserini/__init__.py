@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from functools import cached_property, cache, lru_cache
 from math import log
 from pathlib import Path
-from typing import List, Set
+from typing import List, Set, Optional
 
 from ir_axioms.backend import require_pyserini_backend
 from ir_axioms.model import Query, Document
@@ -19,6 +19,7 @@ with require_pyserini_backend():
 @dataclass(unsafe_hash=True)
 class IndexRerankingContext(RerankingContext):
     index_dir: Path
+    cache_dir: Optional[Path] = None
 
     @cached_property
     def _index_reader(self) -> IndexReader:

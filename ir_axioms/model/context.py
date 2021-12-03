@@ -1,10 +1,12 @@
 from abc import abstractmethod, ABC
-from typing import Set, List
+from pathlib import Path
+from typing import Set, List, Optional
 
 from ir_axioms.model import Query, Document
 
 
 class RerankingContext(ABC):
+    cache_dir: Optional[Path] = None
 
     @property
     @abstractmethod
