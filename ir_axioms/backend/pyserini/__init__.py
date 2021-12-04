@@ -1,14 +1,14 @@
 from dataclasses import dataclass
-from functools import cached_property, cache, lru_cache
+from functools import cached_property, lru_cache
 from math import log
 from pathlib import Path
 from typing import List, Set, Optional
 
-from ir_axioms.backend import require_pyserini_backend
+from ir_axioms.backend import PyseriniBackend
 from ir_axioms.model import Query, Document
 from ir_axioms.model.context import RerankingContext
 
-with require_pyserini_backend():
+with PyseriniBackend():
     from pyserini.index import IndexReader
     from ir_axioms.backend.pyserini.util import (
         JSimilarity, JClassicSimilarity, JBM25Similarity, JDFRSimilarity,
@@ -54,7 +54,7 @@ class IndexRerankingContext(RerankingContext):
         return term_count / len(terms)
 
     @staticmethod
-    @cache
+    @lru_cache
     def _tf_idf_similarity() -> JSimilarity:
         return JClassicSimilarity()
 
@@ -70,7 +70,7 @@ class IndexRerankingContext(RerankingContext):
         )
 
     @staticmethod
-    @cache
+    @lru_cache
     def _bm25_similarity(k1: float = 1.2, b: float = 0.75) -> JSimilarity:
         return JBM25Similarity(k1, b)
 
@@ -88,7 +88,7 @@ class IndexRerankingContext(RerankingContext):
         )
 
     @staticmethod
-    @cache
+    @lru_cache
     def _pl2_similarity(c: float = 0.1) -> JSimilarity:
         return JDFRSimilarity(
             JBasicModelIn(),
@@ -109,6 +109,7 @@ class IndexRerankingContext(RerankingContext):
         )
 
     @staticmethod
+    @lru_cache
     def _ql_similarity(mu: float = 1000) -> JSimilarity:
         return JLMDirichletSimilarity(mu)
 

@@ -1,6 +1,6 @@
-from ir_axioms.backend import require_pyserini_backend
+from ir_axioms.backend import PyseriniBackend
 
-with require_pyserini_backend():
+with PyseriniBackend():
     from pyserini.pyclass import autoclass
 
 _similarities = "org.apache.lucene.search.similarities"
