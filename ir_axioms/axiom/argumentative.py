@@ -184,7 +184,7 @@ class ArgumentativeUnitsCountAxiom(Axiom, _TargerAxiomMixin):
 class QueryTermOccurrenceInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
     normalize: bool = True
     """
-    Normalize query terms and tokens from argumentative units 
+    Normalize query terms and tokens from argumentative units
     using the WordNet lemmatizer.
     """
 
@@ -222,12 +222,12 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
 class QueryTermPositionInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
     normalize: bool = True
     """
-    Normalize query terms and tokens from argumentative units 
+    Normalize query terms and tokens from argumentative units
     using the WordNet lemmatizer.
     """
     penalty: Optional[int] = 10000000
     """
-    Penalty for the average query term position, 
+    Penalty for the average query term position,
     if a query term is not found in any argumentative unit for a document.
     Set to None to use the maximum length of the two compared documents.
     """

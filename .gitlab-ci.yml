@@ -1,4 +1,4 @@
-image: "python:3.7"
+image: "python:3.8"
 
 before_script:
   - python --version
@@ -8,17 +8,17 @@ stages:
   - "Static Analysis"
   - "Test"
 
-"🧪 Check Python code format":
+"🧪 Code format":
   stage: "Static Analysis"
   script:
     - flake8
 
-"🧪 Lint Python code":
+"🧪 Lint":
   stage: "Static Analysis"
   script:
     - pylint -E ir_axioms
 
-"🧪 Test Python code":
+"🧪 Test":
   stage: "Test"
   script:
     - pytest --cov --cov-report=term --cov-report=xml
