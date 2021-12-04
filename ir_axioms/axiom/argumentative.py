@@ -3,12 +3,13 @@ from statistics import mean
 from typing import List, Set, Dict, Optional
 
 from nltk import WordNetLemmatizer
+from targer.api import fetch_arguments
+from targer.constants import DEFAULT_TARGER_API_URL, DEFAULT_TARGER_MODELS
+from targer.model import (
+    TargerArgumentSentences, TargerArgumentLabel, TargerArgumentTag
+)
 
 from ir_axioms.axiom import Axiom
-from ir_axioms.axiom.api.targer import (
-    TargerArgumentSentences, TargerArgumentLabel, TargerArgumentTag,
-    fetch_arguments, DEFAULT_TARGER_MODELS, DEFAULT_TARGER_API_URL
-)
 from ir_axioms.axiom.utils import approximately_same_length
 from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
