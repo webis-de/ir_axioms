@@ -1,0 +1,24 @@
+image: "python:3.7"
+
+before_script:
+  - python --version
+  - pip install .[test]
+
+stages:
+  - "Static Analysis"
+  - "Test"
+
+"🧪 Check Python code format":
+  stage: "Static Analysis"
+  script:
+    - flake8
+
+"🧪 Lint Python code":
+  stage: "Static Analysis"
+  script:
+    - pylint -E ir_axioms
+
+"🧪 Test Python code":
+  stage: "Test"
+  script:
+    - pytest --cov --cov-report=term --cov-report=xml
