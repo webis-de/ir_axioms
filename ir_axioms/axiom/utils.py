@@ -39,10 +39,11 @@ def approximately_equal(*args, margin_fraction: float = 0.1):
         # All values must be 0.
         return True
 
-    b = [abs_max * (1 + margin_fraction), abs_max * (1 - margin_fraction)]
-    b_min = min(b)
-    b_max = max(b)
-    return all(b_min < item < b_max for item in args)
+    boundary = [abs_max * (1 + margin_fraction), abs_max * (1 - margin_fraction)]
+    boundary_min = min(boundary)
+    boundary_max = max(boundary)
+
+    return all(boundary_min < item < boundary_max for item in args)
 
 
 def all_query_terms_in_documents(
@@ -97,7 +98,7 @@ def approximately_same_length(
     return approximately_equal(
         len(context.terms(document1)),
         len(context.terms(document2)),
-        margin_fraction
+        margin_fraction=margin_fraction
     )
 
 

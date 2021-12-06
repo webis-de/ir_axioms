@@ -21,17 +21,17 @@ class TFC1(Axiom):
         if not approximately_same_length(context, document1, document2):
             return 0
 
-        tf1 = 0
-        tf2 = 0
+        term_frequency1: float = 0
+        term_frequency2: float = 0
         for qt in context.terms(query):
-            tf1 += context.term_frequency(document1, qt)
-            tf2 += context.term_frequency(document2, qt)
+            term_frequency1 += context.term_frequency(document1, qt)
+            term_frequency2 += context.term_frequency(document2, qt)
 
-        if approximately_equal(tf1, tf2):
+        if approximately_equal(term_frequency1, term_frequency2):
             # Less than 10% difference.
             return 0
 
-        return strictly_greater(tf1, tf2)
+        return strictly_greater(term_frequency1, term_frequency2)
 
 
 class TFC3(Axiom):
