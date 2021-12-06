@@ -4,11 +4,11 @@ from math import log
 from pathlib import Path
 from typing import List, Set, Optional
 
-from ir_axioms.backend import PyseriniBackend
+from ir_axioms.backend import PyseriniBackendContext
 from ir_axioms.model import Query, Document
 from ir_axioms.model.context import RerankingContext
 
-with PyseriniBackend():
+with PyseriniBackendContext():
     from pyserini.index import IndexReader
     from ir_axioms.backend.pyserini.util import (
         JSimilarity, JClassicSimilarity, JBM25Similarity, JDFRSimilarity,
