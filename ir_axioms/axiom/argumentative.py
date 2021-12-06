@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from statistics import mean
 from typing import List, Set, Dict, Optional
 
-from nltk import WordNetLemmatizer
+from nltk import WordNetLemmatizer, sent_tokenize, word_tokenize
 from targer.api import fetch_arguments
 from targer.constants import DEFAULT_TARGER_API_URL, DEFAULT_TARGER_MODELS
 from targer.model import (
@@ -129,6 +129,15 @@ def _query_term_position_in_argument(
         if not found:
             term_arg_pos.append(penalty)
     return mean(term_arg_pos)
+
+
+def _sentence_length(document: RankedDocument) -> float:
+    download_nltk_dependencies("punkt")
+    sentences = sent_tokenize(document.content)
+    return mean(
+        len(word_tokenize(sentence))
+        for sentence in sentences
+    )
 
 
 @dataclass
@@ -302,7 +311,61 @@ class QueryTermPositionInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
             return 0
 
 
+@dataclass
+class AverageSentenceLengthAxiom(Axiom):
+    """
+    Favor documents with an average sentence length between
+    a minimum (default: 12) and a maximum (default: 20) number of words.
+
+    This axiom is based on the general observation
+    for text readability / good writing style [8, 10].
+
+    References:
+        Markel, M.: Technical Communication. 9th ed. Bedford/St Martin’s (2010)
+        Newell, C.: Editing Tip: Sentence Length (2014)
+    """
+
+    min_sentence_length: int = 12
+    max_sentence_length: int = 20
+
+    def preference(
+            self,
+            context: RerankingContext,
+            query: Query,
+            document1: RankedDocument,
+            document2: RankedDocument
+    ):
+        if not approximately_same_length(context, document1, document2):
+            return 0
+
+        sentence_length1 = _sentence_length(document1)
+        sentence_length2 = _sentence_length(document2)
+
+        min_length = self.min_sentence_length
+        max_length = self.max_sentence_length
+
+        if (
+                min_length <= sentence_length1 <= max_length and
+                (
+                        sentence_length2 < min_length or
+                        sentence_length2 > max_length
+                )
+        ):
+            return 1
+        elif (
+                min_length <= sentence_length2 <= max_length and
+                (
+                        sentence_length1 < min_length or
+                        sentence_length1 > max_length
+                )
+        ):
+            return -1
+        else:
+            return 0
+
+
 # Aliases for shorter names:
 ArgUC = ArgumentativeUnitsCountAxiom
 QTArg = QueryTermOccurrenceInArgumentativeUnitsAxiom
 QTPArg = QueryTermPositionInArgumentativeUnitsAxiom
+aSL = AverageSentenceLengthAxiom
