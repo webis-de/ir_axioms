@@ -12,3 +12,17 @@ class PyseriniBackendContext(ContextManager):
 
     def __exit__(self, *args):
         return None
+
+
+class PyTerrierBackendContext(ContextManager):
+    def __init__(self):
+        try:
+            import pyterrier  # noqa: F401
+        except ImportError as error:
+            raise ImportError(
+                "The PyTerrier backend requires that 'python-terrier' "
+                "is installed."
+            ) from error
+
+    def __exit__(self, *args):
+        return None
