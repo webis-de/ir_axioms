@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
+from collections import OrderedDict
 from dataclasses import dataclass, field
-from typing import Iterable, Dict, Tuple
+from typing import Iterable, Tuple
 
 from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
@@ -33,8 +34,8 @@ class Axiom(ABC):
     def normalized(self) -> "Axiom":
         return NormalizedAxiom(self)
 
-    def cached(self) -> "Axiom":
-        return CachedAxiom(self)
+    def cached(self, capacity: int = 4096) -> "Axiom":
+        return CachedAxiom(self, capacity)
 
 
 @dataclass
@@ -100,13 +101,92 @@ class NormalizedAxiom(Axiom):
 
 
 @dataclass
-class CachedAxiom(Axiom):
-    axiom: Axiom
-    _cache: Dict[Tuple[int, str, str], float] = field(
-        default_factory=lambda: {},
+class _AxiomLRUCache:
+    capacity: int = 4096
+
+    # In the cache, the document pairs are stored
+    # in ascending hash value order in order to benefit
+    # from axioms' symmetric.
+    _cache: OrderedDict[
+        Tuple[RerankingContext, Query, RankedDocument, RankedDocument],
+        float
+    ] = field(
+        default_factory=lambda: OrderedDict(),
         init=False,
         repr=False
     )
+
+    @staticmethod
+    def _key(
+            context: RerankingContext,
+            query: Query,
+            document1: RankedDocument,
+            document2: RankedDocument
+    ) -> Tuple[RerankingContext, Query, RankedDocument, RankedDocument]:
+        if hash(document1) <= hash(document2):
+            return context, query, document1, document2
+        else:
+            return context, query, document2, document1
+
+    @staticmethod
+    def _sign(
+            document1: RankedDocument,
+            document2: RankedDocument
+    ) -> int:
+        if hash(document1) <= hash(document2):
+            return 1
+        else:
+            return -1
+
+    def __contains__(
+            self,
+            context: RerankingContext,
+            query: Query,
+            document1: RankedDocument,
+            document2: RankedDocument
+    ):
+        key = self._key(context, query, document1, document2)
+        return key in self._cache
+
+    def __getitem__(
+            self,
+            context: RerankingContext,
+            query: Query,
+            document1: RankedDocument,
+            document2: RankedDocument
+    ):
+        key = self._key(context, query, document1, document2)
+        sign = self._sign(document1, document2)
+
+        value = self._cache[key] * sign
+        self._cache.move_to_end(key)
+        return value
+
+    def __setitem__(
+            self,
+            context: RerankingContext,
+            query: Query,
+            document1: RankedDocument,
+            document2: RankedDocument,
+            preference: float
+    ):
+        key = self._key(context, query, document1, document2)
+        sign = self._sign(document1, document2)
+
+        value = preference * sign
+        self._cache[key] = value
+        self._cache.move_to_end(key)
+
+        if len(self._cache) > self.capacity:
+            self._cache.popitem(last=False)
+
+
+@dataclass
+class CachedAxiom(Axiom):
+    axiom: Axiom
+    capacity: int = 4096
+
+    _cache = _AxiomLRUCache(capacity)
 
     def preference(
             self,
@@ -115,10 +195,8 @@ class CachedAxiom(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ) -> float:
-        if (query.id, document1.id, document2.id) in self._cache:
-            return self._cache[query.id, document1.id, document2.id]
-        elif (query.id, document2.id, document1.id) in self._cache:
-            return -self._cache[query.id, document2.id, document1.id]
+        if (context, query, document1, document2) in self._cache:
+            return self._cache[context, query, document1, document2]
         else:
             preference = self.axiom.preference(
                 context,
@@ -126,5 +204,5 @@ class CachedAxiom(Axiom):
                 document1,
                 document2
             )
-            self._cache[query.id, document1.id, document2.id] = preference
+            self._cache[context, query, document1, document2] = preference
             return preference
