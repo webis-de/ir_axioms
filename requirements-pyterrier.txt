@@ -1,2 +1,3 @@
 python-terrier~=0.7.1
 pyjnius
+pandas
