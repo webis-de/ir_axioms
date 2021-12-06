@@ -52,8 +52,10 @@ with PyseriniBackendContext():
                 )
 
         @lru_cache
-        def terms(self, query_or_document: Union[Query, Document]) -> List[
-            str]:
+        def terms(
+                self,
+                query_or_document: Union[Query, Document]
+        ) -> List[str]:
             text = self._text(query_or_document)
             return self._index_reader.analyze(text)
 
