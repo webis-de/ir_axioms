@@ -1,0 +1,4 @@
+nltk~=3.6.5
+pymagnitude~=0.1.143
+requests~=2.26.0
+targer-api@git+https://github.com/heinrichreimer/targer-api.git@18af90110ad7c940cb2802dd2a09340f1a6afeb5
