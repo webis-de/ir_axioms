@@ -10,6 +10,7 @@ from ir_axioms.model.context import RerankingContext
 from ir_axioms.model.retrieval_model import (
     RetrievalModel, Tf, TfIdf, BM25, PL2, DirichletLM
 )
+from ir_axioms.utils import text_content
 
 with PyTerrierBackendContext():
     from pandas import DataFrame
@@ -68,24 +69,12 @@ with PyTerrierBackendContext():
         def document_frequency(self, term: str) -> int:
             return self._lexicon.getLexiconEntry(term).getDocumentFrequency()
 
-        @staticmethod
-        def _text(query_or_document: Union[Query, Document]) -> str:
-            if isinstance(query_or_document, Query):
-                return query_or_document.title
-            elif isinstance(query_or_document, Document):
-                return query_or_document.content
-            else:
-                raise ValueError(
-                    f"Expected Query or Document "
-                    f"but got {type(query_or_document)}."
-                )
-
         @lru_cache
         def terms(
                 self,
                 query_or_document: Union[Query, Document]
         ) -> List[str]:
-            text = self._text(query_or_document)
+            text = text_content(query_or_document)
             reader = StringReader(text)
             return list(self.tokeniser.tokenise(reader))
 

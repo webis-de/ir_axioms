@@ -10,6 +10,7 @@ from ir_axioms.model.context import RerankingContext
 from ir_axioms.model.retrieval_model import (
     RetrievalModel, TfIdf, BM25, DirichletLM, PL2, Tf
 )
+from ir_axioms.utils import text_content
 
 with PyseriniBackendContext():
     from pyserini.index import IndexReader
@@ -39,24 +40,12 @@ with PyseriniBackendContext():
                 term
             )
 
-        @staticmethod
-        def _text(query_or_document: Union[Query, Document]) -> str:
-            if isinstance(query_or_document, Query):
-                return query_or_document.title
-            elif isinstance(query_or_document, Document):
-                return query_or_document.content
-            else:
-                raise ValueError(
-                    f"Expected Query or Document "
-                    f"but got {type(query_or_document)}."
-                )
-
         @lru_cache
         def terms(
                 self,
                 query_or_document: Union[Query, Document]
         ) -> List[str]:
-            text = self._text(query_or_document)
+            text = text_content(query_or_document)
             return self._index_reader.analyze(text)
 
         @staticmethod
