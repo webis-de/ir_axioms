@@ -1,19 +1,18 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True)
 class Query:
-    id: int
     title: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class Document:
     id: str
     content: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class RankedDocument(Document):
     score: float
     rank: int
