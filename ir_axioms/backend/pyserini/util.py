@@ -4,13 +4,13 @@ with PyseriniBackendContext():
     from pyserini.pyclass import autoclass
 
 _similarities = "org.apache.lucene.search.similarities"
-JSimilarity = autoclass(f"{_similarities}.Similarity")
-JClassicSimilarity = autoclass(f"{_similarities}.ClassicSimilarity")
-JBM25Similarity = autoclass(f"{_similarities}.BM25Similarity")
-JDFRSimilarity = autoclass(f"{_similarities}.DFRSimilarity")
-JBasicModelIn = autoclass(f"{_similarities}.BasicModelIn")
-JAfterEffectL = autoclass(f"{_similarities}.AfterEffectL")
-JNormalizationH2 = autoclass(f"{_similarities}.NormalizationH2")
-JLMDirichletSimilarity = autoclass(
+Similarity = autoclass(f"{_similarities}.Similarity")
+ClassicSimilarity = autoclass(f"{_similarities}.ClassicSimilarity")
+BM25Similarity = autoclass(f"{_similarities}.BM25Similarity")
+DFRSimilarity = autoclass(f"{_similarities}.DFRSimilarity")
+BasicModelIn = autoclass(f"{_similarities}.BasicModelIn")
+AfterEffectL = autoclass(f"{_similarities}.AfterEffectL")
+NormalizationH2 = autoclass(f"{_similarities}.NormalizationH2")
+LMDirichletSimilarity = autoclass(
     f"{_similarities}.LMDirichletSimilarity"
 )

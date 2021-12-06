@@ -11,8 +11,8 @@ from ir_axioms.model.context import RerankingContext
 with PyseriniBackendContext():
     from pyserini.index import IndexReader
     from ir_axioms.backend.pyserini.util import (
-        JSimilarity, JClassicSimilarity, JBM25Similarity, JDFRSimilarity,
-        JBasicModelIn, JAfterEffectL, JNormalizationH2, JLMDirichletSimilarity
+        Similarity, ClassicSimilarity, BM25Similarity, DFRSimilarity,
+        BasicModelIn, AfterEffectL, NormalizationH2, LMDirichletSimilarity
     )
 
 
@@ -55,8 +55,8 @@ class IndexRerankingContext(RerankingContext):
 
     @staticmethod
     @lru_cache
-    def _tf_idf_similarity() -> JSimilarity:
-        return JClassicSimilarity()
+    def _tf_idf_similarity() -> Similarity:
+        return ClassicSimilarity()
 
     def tf_idf_score(
             self,
@@ -71,8 +71,8 @@ class IndexRerankingContext(RerankingContext):
 
     @staticmethod
     @lru_cache
-    def _bm25_similarity(k1: float = 1.2, b: float = 0.75) -> JSimilarity:
-        return JBM25Similarity(k1, b)
+    def _bm25_similarity(k1: float = 1.2, b: float = 0.75) -> Similarity:
+        return BM25Similarity(k1, b)
 
     def bm25_score(
             self,
@@ -89,11 +89,11 @@ class IndexRerankingContext(RerankingContext):
 
     @staticmethod
     @lru_cache
-    def _pl2_similarity(c: float = 0.1) -> JSimilarity:
-        return JDFRSimilarity(
-            JBasicModelIn(),
-            JAfterEffectL(),
-            JNormalizationH2(c)
+    def _pl2_similarity(c: float = 0.1) -> Similarity:
+        return DFRSimilarity(
+            BasicModelIn(),
+            AfterEffectL(),
+            NormalizationH2(c)
         )
 
     def pl2_score(
@@ -110,8 +110,8 @@ class IndexRerankingContext(RerankingContext):
 
     @staticmethod
     @lru_cache
-    def _ql_similarity(mu: float = 1000) -> JSimilarity:
-        return JLMDirichletSimilarity(mu)
+    def _ql_similarity(mu: float = 1000) -> Similarity:
+        return LMDirichletSimilarity(mu)
 
     def ql_score(
             self,
