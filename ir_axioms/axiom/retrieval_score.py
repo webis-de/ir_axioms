@@ -1,20 +1,16 @@
-from abc import abstractmethod, ABC
 from dataclasses import dataclass
 
 from ir_axioms.axiom import Axiom
+from ir_axioms.axiom.utils import strictly_greater
 from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
+from ir_axioms.model.retrieval_model import RetrievalModel, Tf, TfIdf, BM25, \
+    DirichletLM, PL2
 
 
-class _RetrievalScoreAxiom(Axiom, ABC):
-    @abstractmethod
-    def retrieval_score(
-            self,
-            context: RerankingContext,
-            query: Query,
-            document: RankedDocument
-    ) -> float:
-        pass
+@dataclass(frozen=True)
+class RetrievalScoreAxiom(Axiom):
+    retrieval_model: RetrievalModel
 
     def preference(
             self,
@@ -23,70 +19,31 @@ class _RetrievalScoreAxiom(Axiom, ABC):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        sd1 = self.retrieval_score(context, query, document1)
-        sd2 = self.retrieval_score(context, query, document2)
-        return 1 if sd1 > sd2 else (-1 if sd1 < sd2 else 0)
+        sd1 = context.retrieval_score(query, document1, self.retrieval_model)
+        sd2 = context.retrieval_score(query, document2, self.retrieval_model)
+        return strictly_greater(sd1, sd2)
 
 
-class RS_TF(_RetrievalScoreAxiom):
-    def retrieval_score(
-            self,
-            context: RerankingContext,
-            query: Query,
-            document: RankedDocument
-    ) -> float:
-        length = len(context.terms(document))
-        return sum(
-            context.term_frequency(document, term)
-            for term in context.terms(query)
-        ) / length
+class RS_TF(RetrievalScoreAxiom):
+    def __init__(self):
+        super(RS_TF, self).__init__(Tf)
 
 
-class RS_TF_IDF(_RetrievalScoreAxiom):
-    def retrieval_score(
-            self,
-            context: RerankingContext,
-            query: Query,
-            document: RankedDocument
-    ) -> float:
-        return context.tf_idf_score(query, document)
+class RS_TF_IDF(RetrievalScoreAxiom):
+    def __init__(self):
+        super(RS_TF_IDF, self).__init__(TfIdf)
 
 
-@dataclass(frozen=True)
-class RS_BM25(_RetrievalScoreAxiom):
-    k1: float = 1.2
-    b: float = 0.75
-
-    def retrieval_score(
-            self,
-            context: RerankingContext,
-            query: Query,
-            document: RankedDocument
-    ) -> float:
-        return context.bm25_score(query, document, self.k1, self.b)
+class RS_BM25(RetrievalScoreAxiom):
+    def __init__(self, k_1: float = 1.2, k_3: float = 8, b: float = 0.75):
+        super(RS_BM25, self).__init__(BM25(k_1, k_3, b))
 
 
-@dataclass(frozen=True)
-class RS_PL2(_RetrievalScoreAxiom):
-    c: float = 0.1
-
-    def retrieval_score(
-            self,
-            context: RerankingContext,
-            query: Query,
-            document: RankedDocument
-    ) -> float:
-        return context.pl2_score(query, document, self.c)
+class RS_PL2(RetrievalScoreAxiom):
+    def __init__(self, c: float = 0.1):
+        super(RS_PL2, self).__init__(PL2(c))
 
 
-@dataclass(frozen=True)
-class RS_QL(_RetrievalScoreAxiom):
-    mu: float = 1000
-
-    def retrieval_score(
-            self,
-            context: RerankingContext,
-            query: Query,
-            document: RankedDocument
-    ) -> float:
-        return context.ql_score(query, document, self.mu)
+class RS_QL(RetrievalScoreAxiom):
+    def __init__(self, mu: float = 1000):
+        super(RS_QL, self).__init__(DirichletLM(mu))

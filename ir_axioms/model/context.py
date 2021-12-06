@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Set, List, Optional, Union
 
 from ir_axioms.model import Query, Document
+from ir_axioms.model.retrieval_model import RetrievalModel
 
 
 class RerankingContext(ABC):
@@ -43,37 +44,10 @@ class RerankingContext(ABC):
         return term_count / len(terms)
 
     @abstractmethod
-    def tf_idf_score(
-            self,
-            query: Query,
-            document: Document
-    ) -> float:
-        pass
-
-    @abstractmethod
-    def bm25_score(
+    def retrieval_score(
             self,
             query: Query,
             document: Document,
-            k1: float = 1.2,
-            b: float = 0.75
-    ) -> float:
-        pass
-
-    @abstractmethod
-    def pl2_score(
-            self,
-            query: Query,
-            document: Document,
-            c: float = 0.1
-    ) -> float:
-        pass
-
-    @abstractmethod
-    def ql_score(
-            self,
-            query: Query,
-            document: Document,
-            mu: float = 1000
+            model: RetrievalModel
     ) -> float:
         pass
