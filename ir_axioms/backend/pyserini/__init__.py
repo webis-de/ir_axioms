@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from functools import cached_property, lru_cache
-from math import log
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -34,12 +33,6 @@ class IndexRerankingContext(RerankingContext):
             self._index_reader.reader,
             term
         )
-
-    def inverse_document_frequency(self, term: str) -> float:
-        document_frequency = self.document_frequency(term)
-        if document_frequency == 0:
-            return 0
-        return log(self.document_count / document_frequency)
 
     @staticmethod
     def _text(query_or_document: Union[Query, Document]) -> str:

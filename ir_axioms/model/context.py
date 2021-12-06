@@ -1,5 +1,6 @@
 from abc import abstractmethod, ABC
 from functools import lru_cache
+from math import log
 from pathlib import Path
 from typing import Set, List, Optional, Union
 
@@ -18,9 +19,11 @@ class RerankingContext(ABC):
     def document_frequency(self, term: str) -> int:
         pass
 
-    @abstractmethod
     def inverse_document_frequency(self, term: str) -> float:
-        pass
+        document_frequency = self.document_frequency(term)
+        if document_frequency == 0:
+            return 0
+        return log(self.document_count / document_frequency)
 
     @abstractmethod
     def terms(self, query_or_document: Union[Query, Document]) -> List[str]:
