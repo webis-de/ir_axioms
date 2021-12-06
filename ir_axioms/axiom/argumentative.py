@@ -87,7 +87,7 @@ def _count_query_terms(
         normalize: bool = True,
 ) -> int:
     term_count = 0
-    for term in context.terms(query.title):
+    for term in context.terms(query):
         normalized_term = _normalize(term) if normalize else term
         for sentence in sentences:
             for tag in sentence:
@@ -111,7 +111,7 @@ def _query_term_position_in_argument(
 ) -> float:
     term_arg_pos: List[int] = []
     tags = [tag for sentence in sentences for tag in sentence]
-    for term in context.terms(query.title):
+    for term in context.terms(query):
         normalized_term = _normalize(term) if normalize else term
         found: bool = False
         for i, tag in enumerate(tags):
@@ -280,8 +280,8 @@ class QueryTermPositionInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
         penalty = self.penalty
         if penalty is None:
             penalty = max(
-                len(context.terms(document1.content)),
-                len(context.terms(document2.content)),
+                len(context.terms(document1)),
+                len(context.terms(document2)),
             ) + 1
 
         position1 = mean(list(

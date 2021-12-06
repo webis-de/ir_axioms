@@ -35,10 +35,10 @@ class RS_TF(_RetrievalScoreAxiom):
             query: Query,
             document: RankedDocument
     ) -> float:
-        length = len(context.terms(document.content))
+        length = len(context.terms(document))
         return sum(
-            context.term_frequency(document.content, term)
-            for term in context.terms(query.title)
+            context.term_frequency(document, term)
+            for term in context.terms(query)
         ) / length
 
 

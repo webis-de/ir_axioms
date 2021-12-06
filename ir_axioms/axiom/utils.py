@@ -51,9 +51,9 @@ def all_query_terms_in_documents(
         document1: RankedDocument,
         document2: RankedDocument
 ):
-    query_terms = context.term_set(query.title)
-    document1_terms = context.term_set(document1.content)
-    document2_terms = context.term_set(document2.content)
+    query_terms = context.term_set(query)
+    document1_terms = context.term_set(document1)
+    document2_terms = context.term_set(document2)
 
     if len(query_terms) <= 1:
         return False
@@ -74,9 +74,9 @@ def same_query_term_subset(
     Both documents contain the same set of query terms.
     """
 
-    query_terms = context.term_set(query.title)
-    document1_terms = context.term_set(document1.content)
-    document2_terms = context.term_set(document2.content)
+    query_terms = context.term_set(query)
+    document1_terms = context.term_set(document1)
+    document2_terms = context.term_set(document2)
 
     if len(query_terms) <= 1:
         return False
@@ -95,8 +95,8 @@ def approximately_same_length(
         margin_fraction: float = 0.1
 ) -> bool:
     return approximately_equal(
-        len(context.terms(document1.content)),
-        len(context.terms(document2.content)),
+        len(context.terms(document1)),
+        len(context.terms(document2)),
         margin_fraction
     )
 

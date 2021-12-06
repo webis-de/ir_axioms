@@ -16,17 +16,17 @@ class LNC1(Axiom):
     ):
         if not all(
                 approximately_equal(
-                    context.term_frequency(document1.content, term),
-                    context.term_frequency(document2.content, term)
+                    context.term_frequency(document1, term),
+                    context.term_frequency(document2, term)
                 )
-                for term in context.term_set(query.title)
+                for term in context.term_set(query)
         ):
             return 0
 
         # Prefer the shorter document.
         return strictly_less(
-            len(context.terms(document1.content)),
-            len(context.terms(document2.content)),
+            len(context.terms(document1)),
+            len(context.terms(document2)),
         )
 
 
@@ -55,11 +55,11 @@ class TF_LNC(Axiom):
         sd1 = 0
         sd2 = 0
 
-        for t in context.term_set(query.title):
-            tf_d1 = context.term_frequency(document1.content, t)
-            tf_d2 = context.term_frequency(document2.content, t)
-            len_d1 = len(context.terms(document1.content))
-            len_d2 = len(context.terms(document2.content))
+        for term in context.term_set(query):
+            tf_d1 = context.term_frequency(document1, term)
+            tf_d2 = context.term_frequency(document2, term)
+            len_d1 = len(context.terms(document1))
+            len_d2 = len(context.terms(document2))
             tf_len_d1 = len_d1 + tf_d2 - tf_d1
             tf_len_d2 = len_d2 + tf_d1 - tf_d2
             if tf_d1 > tf_d2 and len_d1 == tf_len_d2:

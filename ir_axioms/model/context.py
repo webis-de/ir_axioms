@@ -1,6 +1,7 @@
 from abc import abstractmethod, ABC
+from functools import lru_cache
 from pathlib import Path
-from typing import Set, List, Optional
+from typing import Set, List, Optional, Union
 
 from ir_axioms.model import Query, Document
 
@@ -22,16 +23,21 @@ class RerankingContext(ABC):
         pass
 
     @abstractmethod
-    def terms(self, text: str) -> List[str]:
+    def terms(self, query_or_document: Union[Query, Document]) -> List[str]:
         pass
 
-    @abstractmethod
-    def term_set(self, text: str) -> Set[str]:
-        pass
+    def term_set(self, query_or_document: Union[Query, Document]) -> Set[str]:
+        return set(self.terms(query_or_document))
 
-    @abstractmethod
-    def term_frequency(self, text: str, term: str) -> float:
-        pass
+    @lru_cache
+    def term_frequency(
+            self,
+            query_or_document: Union[Query, Document],
+            term: str
+    ) -> float:
+        terms = self.terms(query_or_document)
+        term_count = sum(1 for other in terms if other == term)
+        return term_count / len(terms)
 
     @abstractmethod
     def tf_idf_score(

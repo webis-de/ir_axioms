@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from functools import cached_property, lru_cache
 from math import log
 from pathlib import Path
-from typing import List, Set, Optional
+from typing import List, Optional, Union
 
 from ir_axioms.backend import PyseriniBackendContext
 from ir_axioms.model import Query, Document
@@ -30,8 +30,10 @@ class IndexRerankingContext(RerankingContext):
         return self._index_reader.stats()["documents"]
 
     def document_frequency(self, term: str) -> int:
-        return self._index_reader.object.getDF(self._index_reader.reader,
-                                               term)
+        return self._index_reader.object.getDF(
+            self._index_reader.reader,
+            term
+        )
 
     def inverse_document_frequency(self, term: str) -> float:
         document_frequency = self.document_frequency(term)
@@ -39,19 +41,22 @@ class IndexRerankingContext(RerankingContext):
             return 0
         return log(self.document_count / document_frequency)
 
+    @staticmethod
+    def _text(query_or_document: Union[Query, Document]) -> str:
+        if isinstance(query_or_document, Query):
+            return query_or_document.title
+        elif isinstance(query_or_document, Document):
+            return query_or_document.content
+        else:
+            raise ValueError(
+                f"Expected Query or Document "
+                f"but got {type(query_or_document)}."
+            )
+
     @lru_cache
-    def terms(self, text: str) -> List[str]:
+    def terms(self, query_or_document: Union[Query, Document]) -> List[str]:
+        text = self._text(query_or_document)
         return self._index_reader.analyze(text)
-
-    def term_set(self, text: str) -> Set[str]:
-        return set(self.terms(text))
-
-    @lru_cache
-    def term_frequency(self, text: str, term: str) -> float:
-        # TODO: Is this correctly implemented?
-        terms = self.terms(text)
-        term_count = sum(1 for other in terms if other == term)
-        return term_count / len(terms)
 
     @staticmethod
     @lru_cache

@@ -24,7 +24,7 @@ class REG(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        query_terms: list[str] = list(context.term_set(query.title))
+        query_terms: list[str] = list(context.term_set(query))
         similarity_sum: list[float] = list(repeat(0, len(query_terms)))
         min_similarity_index: int = 0
 
@@ -41,8 +41,8 @@ class REG(Axiom):
 
         term_min = query_terms[min_similarity_index]
         return strictly_greater(
-            context.term_frequency(document1.content, term_min),
-            context.term_frequency(document2.content, term_min),
+            context.term_frequency(document1, term_min),
+            context.term_frequency(document2, term_min),
         )
 
 
@@ -62,7 +62,7 @@ class ANTI_REG(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        query_terms: list[str] = list(context.term_set(query.title))
+        query_terms: list[str] = list(context.term_set(query))
         similarity_sum: list[float] = list(repeat(0, len(query_terms)))
         max_similarity_index: int = 0
 
@@ -79,8 +79,8 @@ class ANTI_REG(Axiom):
 
         term_max = query_terms[max_similarity_index]
         return strictly_greater(
-            context.term_frequency(document1.content, term_max),
-            context.term_frequency(document2.content, term_max),
+            context.term_frequency(document1, term_max),
+            context.term_frequency(document2, term_max),
         )
 
 
@@ -93,9 +93,9 @@ class AND(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        query_terms = context.term_set(query.title)
-        document1_terms = context.term_set(document1.content)
-        document2_terms = context.term_set(document2.content)
+        query_terms = context.term_set(query)
+        document1_terms = context.term_set(document1)
+        document2_terms = context.term_set(document2)
         s1 = query_terms & document1_terms == query_terms
         s2 = query_terms & document2_terms == query_terms
         return strictly_greater(s1, s2)
@@ -147,9 +147,9 @@ class M_AND(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        query_terms = context.term_set(query.title)
-        document1_terms = context.term_set(document1.content)
-        document2_terms = context.term_set(document2.content)
+        query_terms = context.term_set(query)
+        document1_terms = context.term_set(document1)
+        document2_terms = context.term_set(document2)
         s1 = query_terms & document1_terms
         s2 = query_terms & document2_terms
         return strictly_greater(len(s1), len(s2))
@@ -195,14 +195,14 @@ class DIV(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        query_terms = context.term_set(query.title)
+        query_terms = context.term_set(query)
         overlap1 = vocabulary_overlap(
             query_terms,
-            context.term_set(document1.content)
+            context.term_set(document1)
         )
         overlap2 = vocabulary_overlap(
             query_terms,
-            context.term_set(document2.content)
+            context.term_set(document2)
         )
 
         return strictly_greater(overlap2, overlap1)

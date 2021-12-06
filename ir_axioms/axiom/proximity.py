@@ -22,9 +22,9 @@ class PROX1(Axiom):
         if not same_query_term_subset(context, query, document1, document2):
             return 0
 
-        query_terms = context.term_set(query.title)
-        document1_terms = context.terms(document1.content)
-        document2_terms = context.terms(document2.content)
+        query_terms = context.term_set(query)
+        document1_terms = context.terms(document1)
+        document2_terms = context.terms(document2)
 
         overlapping_terms = (
                 query_terms &
@@ -55,9 +55,9 @@ class PROX2(Axiom):
         if not same_query_term_subset(context, query, document1, document2):
             return 0
 
-        query_terms = context.term_set(query.title)
-        document1_terms = context.terms(document1.content)
-        document2_terms = context.terms(document2.content)
+        query_terms = context.term_set(query)
+        document1_terms = context.terms(document1)
+        document2_terms = context.terms(document2)
         terms = set(document1_terms) & set(document2_terms)
 
         first_position_sum1 = 0
@@ -95,9 +95,9 @@ class PROX3(Axiom):
     ):
         if not same_query_term_subset(context, query, document1, document2):
             return 0
-        query_terms = context.terms(query.title)
-        document1_terms = context.terms(document1.content)
-        document2_terms = context.terms(document2.content)
+        query_terms = context.terms(query)
+        document1_terms = context.terms(document1)
+        document2_terms = context.terms(document2)
         return strictly_less(
             self.find_index(query_terms, document1_terms),
             self.find_index(query_terms, document2_terms)
@@ -120,9 +120,9 @@ class PROX4(Axiom):
         ):
             return 0
 
-        query_terms = context.term_set(query.title)
-        document1_terms = context.terms(document1.content)
-        document2_terms = context.terms(document2.content)
+        query_terms = context.term_set(query)
+        document1_terms = context.terms(document1)
+        document2_terms = context.terms(document2)
 
         occurrences1, count1 = closest_grouping_size_and_count(
             query_terms,
@@ -155,9 +155,9 @@ class PROX5(Axiom):
         ):
             return 0
 
-        query_terms = context.term_set(query.title)
-        document1_terms = context.terms(document1.content)
-        document2_terms = context.terms(document2.content)
+        query_terms = context.term_set(query)
+        document1_terms = context.terms(document1)
+        document2_terms = context.terms(document2)
 
         smallest_span1 = average_smallest_span(query_terms, document1_terms)
         smallest_span2 = average_smallest_span(query_terms, document2_terms)

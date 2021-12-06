@@ -65,9 +65,9 @@ class _STMC1Base(Axiom, _TermSimilarity, ABC):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        document1_terms = context.term_set(document1.content)
-        document2_terms = context.term_set(document2.content)
-        query_terms = context.term_set(query.title)
+        document1_terms = context.term_set(document1)
+        document2_terms = context.term_set(document2)
+        query_terms = context.term_set(query)
 
         return strictly_greater(
             self._average_similarity(document1_terms, query_terms),
@@ -110,10 +110,10 @@ class _STMC2Base(Axiom, _TermSimilarity, ABC):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        document1_terms = context.term_set(document1.content)
-        document2_terms = context.term_set(document2.content)
+        document1_terms = context.term_set(document1)
+        document2_terms = context.term_set(document2)
         document_terms = document1_terms & document2_terms
-        query_terms = context.term_set(query.title)
+        query_terms = context.term_set(query)
         non_query_terms = document_terms - query_terms
 
         most_similar_query_term, most_similar_non_query_term = \
@@ -124,11 +124,11 @@ class _STMC2Base(Axiom, _TermSimilarity, ABC):
                 document_b: RankedDocument
         ):
             tf_most_similar_query_term = context.term_frequency(
-                document_b.content,
+                document_b,
                 most_similar_query_term
             )
             tf_most_similar_non_query_term = context.term_frequency(
-                document_a.content,
+                document_a,
                 most_similar_non_query_term
             )
             if tf_most_similar_query_term <= 0:

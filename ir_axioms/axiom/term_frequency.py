@@ -23,9 +23,9 @@ class TFC1(Axiom):
 
         tf1 = 0
         tf2 = 0
-        for qt in context.terms(query.title):
-            tf1 += context.term_frequency(document1.content, qt)
-            tf2 += context.term_frequency(document2.content, qt)
+        for qt in context.terms(query):
+            tf1 += context.term_frequency(document1, qt)
+            tf2 += context.term_frequency(document2, qt)
 
         if approximately_equal(tf1, tf2):
             # Less than 10% difference.
@@ -49,16 +49,16 @@ class TFC3(Axiom):
         sd1 = 0
         sd2 = 0
 
-        query_terms = set(context.terms(query.title))
+        query_terms = set(context.terms(query))
         for qt1, qt2 in combinations(query_terms, 2):
             td1 = floor(100 * context.inverse_document_frequency(qt1))
             td2 = floor(100 * context.inverse_document_frequency(qt2))
 
             if approximately_equal(td1, td2):
-                d1q1 = context.term_frequency(document1.content, qt1)
-                d2q1 = context.term_frequency(document2.content, qt1)
-                d1q2 = context.term_frequency(document1.content, qt2)
-                d2q2 = context.term_frequency(document2.content, qt2)
+                d1q1 = context.term_frequency(document1, qt1)
+                d2q1 = context.term_frequency(document2, qt1)
+                d1q2 = context.term_frequency(document1, qt2)
+                d2q2 = context.term_frequency(document2, qt2)
 
                 sd1 += (
                         (d2q1 == d1q1 + d1q2) and
@@ -91,13 +91,13 @@ class M_TDC(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        query_terms = context.term_set(query.title)
+        query_terms = context.term_set(query)
         sum_term_frequency1 = 0
         sum_term_frequency2 = 0
         one_count_different = False
-        for t in query_terms:
-            count1 = context.term_frequency(document1.content, t)
-            count2 = context.term_frequency(document2.content, t)
+        for term in query_terms:
+            count1 = context.term_frequency(document1, term)
+            count2 = context.term_frequency(document2, term)
             if count1 != count2:
                 one_count_different = True
             sum_term_frequency1 += count1
@@ -118,7 +118,7 @@ class M_TDC(Axiom):
         if not self.precondition(context, query, document1, document2):
             return 0
 
-        query_terms = context.term_set(query.title)
+        query_terms = context.term_set(query)
 
         score = 0
 
@@ -131,12 +131,12 @@ class M_TDC(Axiom):
                 # Query term 1 is rarer. Swap query terms.
                 qt1, qt2 = qt2, qt1
 
-            tf_d1_qt1 = context.term_frequency(document1.content, qt1)
-            tf_d1_qt2 = context.term_frequency(document1.content, qt2)
-            tf_d2_qt1 = context.term_frequency(document2.content, qt1)
-            tf_d2_qt2 = context.term_frequency(document2.content, qt2)
-            tf_q_qt1 = context.term_frequency(query.title, qt1)
-            tf_q_qt2 = context.term_frequency(query.title, qt2)
+            tf_d1_qt1 = context.term_frequency(document1, qt1)
+            tf_d1_qt2 = context.term_frequency(document1, qt2)
+            tf_d2_qt1 = context.term_frequency(document2, qt1)
+            tf_d2_qt2 = context.term_frequency(document2, qt2)
+            tf_q_qt1 = context.term_frequency(query, qt1)
+            tf_q_qt2 = context.term_frequency(query, qt2)
             if not (
                     (
                             tf_d1_qt1 == tf_d2_qt2 and
@@ -178,8 +178,8 @@ class LEN_M_TDC(M_TDC):
             document2: RankedDocument
     ):
         if not approximately_equal(
-                len(context.terms(document1.content)),
-                len(context.terms(document2.content)),
+                len(context.terms(document1)),
+                len(context.terms(document2)),
                 margin_fraction=self.margin_fraction
         ):
             return False

@@ -16,9 +16,9 @@ class LB1(Axiom):
             return 0
 
         # TODO: Do we really want to use the term set here, not the list?
-        for term in context.term_set(query.title):
-            tf1 = context.term_frequency(document1.content, term)
-            tf2 = context.term_frequency(document2.content, term)
+        for term in context.term_set(query):
+            tf1 = context.term_frequency(document1, term)
+            tf2 = context.term_frequency(document2, term)
             if tf1 == 0 and tf2 > 0:
                 return -1
             if tf2 == 0 and tf1 > 0:
