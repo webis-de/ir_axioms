@@ -140,7 +140,7 @@ def _sentence_length(document: RankedDocument) -> float:
     )
 
 
-@dataclass
+@dataclass(frozen=True)
 class _TargerAxiomMixin:
     models: Set[str] = DEFAULT_TARGER_MODELS
     api_url: str = DEFAULT_TARGER_API_URL
@@ -193,7 +193,7 @@ class ArgumentativeUnitsCountAxiom(Axiom, _TargerAxiomMixin):
             return 0
 
 
-@dataclass
+@dataclass(frozen=True)
 class QueryTermOccurrenceInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
     """
     Favor documents with more query terms in argumentative units.
@@ -235,7 +235,7 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
             return 0
 
 
-@dataclass
+@dataclass(frozen=True)
 class QueryTermPositionInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
     """
     Favor documents where the first occurrence of a query term
@@ -311,7 +311,7 @@ class QueryTermPositionInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
             return 0
 
 
-@dataclass
+@dataclass(frozen=True)
 class AverageSentenceLengthAxiom(Axiom):
     """
     Favor documents with an average sentence length between

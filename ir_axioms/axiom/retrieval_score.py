@@ -52,7 +52,7 @@ class RS_TF_IDF(_RetrievalScoreAxiom):
         return context.tf_idf_score(query, document)
 
 
-@dataclass
+@dataclass(frozen=True)
 class RS_BM25(_RetrievalScoreAxiom):
     k1: float = 1.2
     b: float = 0.75
@@ -66,7 +66,7 @@ class RS_BM25(_RetrievalScoreAxiom):
         return context.bm25_score(query, document, self.k1, self.b)
 
 
-@dataclass
+@dataclass(frozen=True)
 class RS_PL2(_RetrievalScoreAxiom):
     c: float = 0.1
 
@@ -79,7 +79,7 @@ class RS_PL2(_RetrievalScoreAxiom):
         return context.pl2_score(query, document, self.c)
 
 
-@dataclass
+@dataclass(frozen=True)
 class RS_QL(_RetrievalScoreAxiom):
     mu: float = 1000
 

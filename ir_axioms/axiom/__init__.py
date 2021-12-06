@@ -38,7 +38,7 @@ class Axiom(ABC):
         return CachedAxiom(self, capacity)
 
 
-@dataclass
+@dataclass(frozen=True)
 class WeightedAxiom(Axiom):
     axiom: Axiom
     weight: float
@@ -58,7 +58,7 @@ class WeightedAxiom(Axiom):
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class AggregatedAxiom(Axiom):
     axioms: Iterable[Axiom]
 
@@ -75,7 +75,7 @@ class AggregatedAxiom(Axiom):
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class NormalizedAxiom(Axiom):
     axiom: Axiom
 
@@ -100,7 +100,7 @@ class NormalizedAxiom(Axiom):
             return 0
 
 
-@dataclass
+@dataclass(frozen=True)
 class _AxiomLRUCache:
     capacity: int = 4096
 
@@ -181,7 +181,7 @@ class _AxiomLRUCache:
             self._cache.popitem(last=False)
 
 
-@dataclass
+@dataclass(frozen=True)
 class CachedAxiom(Axiom):
     axiom: Axiom
     capacity: int = 4096

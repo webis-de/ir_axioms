@@ -160,7 +160,7 @@ class M_TDC(Axiom):
         return strictly_greater(score, 0)
 
 
-@dataclass
+@dataclass(frozen=True)
 class LEN_M_TDC(M_TDC):
     """
     Modified M_TDC

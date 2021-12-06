@@ -16,7 +16,7 @@ with PyseriniBackend():
     )
 
 
-@dataclass(unsafe_hash=True)
+@dataclass(unsafe_hash=True, frozen=True)
 class IndexRerankingContext(RerankingContext):
     index_dir: Path
     cache_dir: Optional[Path] = None

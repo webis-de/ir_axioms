@@ -101,7 +101,7 @@ class AND(Axiom):
         return strictly_greater(s1, s2)
 
 
-@dataclass
+@dataclass(frozen=True)
 class LEN_AND(AND):
     """
     Modified AND:
