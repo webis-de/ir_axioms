@@ -85,7 +85,7 @@ def _count_query_terms(
         sentences: TargerArgumentSentences,
         query: Query,
         normalize: bool = True,
-):
+) -> int:
     term_count = 0
     for term in context.terms(query.title):
         normalized_term = _normalize(term) if normalize else term
@@ -108,7 +108,7 @@ def _query_term_position_in_argument(
         query: Query,
         penalty: int,
         normalize: bool = True,
-):
+) -> float:
     term_arg_pos: List[int] = []
     tags = [tag for sentence in sentences for tag in sentence]
     for term in context.terms(query.title):
@@ -150,6 +150,10 @@ class _TargerAxiomMixin:
 
 
 class ArgumentativeUnitsCountAxiom(Axiom, _TargerAxiomMixin):
+    """
+    Favor documents with more argumentative units.
+    """
+
     def preference(
             self,
             context: RerankingContext,
@@ -157,11 +161,11 @@ class ArgumentativeUnitsCountAxiom(Axiom, _TargerAxiomMixin):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        arguments1 = self.fetch_arguments(context, document1)
-        arguments2 = self.fetch_arguments(context, document2)
-
         if not approximately_same_length(context, document1, document2):
             return 0
+
+        arguments1 = self.fetch_arguments(context, document1)
+        arguments2 = self.fetch_arguments(context, document2)
 
         count1 = sum(
             _count_argumentative_units(sentences)
@@ -182,6 +186,10 @@ class ArgumentativeUnitsCountAxiom(Axiom, _TargerAxiomMixin):
 
 @dataclass
 class QueryTermOccurrenceInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
+    """
+    Favor documents with more query terms in argumentative units.
+    """
+
     normalize: bool = True
     """
     Normalize query terms and tokens from argumentative units
@@ -195,11 +203,11 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        arguments1 = self.fetch_arguments(context, document1)
-        arguments2 = self.fetch_arguments(context, document2)
-
         if not approximately_same_length(context, document1, document2):
             return 0
+
+        arguments1 = self.fetch_arguments(context, document1)
+        arguments2 = self.fetch_arguments(context, document2)
 
         count1 = sum(
             _count_query_terms(context, sentences, query)
@@ -220,6 +228,21 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
 
 @dataclass
 class QueryTermPositionInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
+    """
+    Favor documents where the first occurrence of a query term
+    in an argumentative unit is closer to the beginning of the document.
+
+    This axiom is based on the general observation that
+    query terms occur “earlier” in relevant documents.
+    
+    References:
+        Troy, A.D., Zhang, G.: Enhancing Relevance Scoring with Chronological
+            Term Rank. In: Proceedings of SIGIR 2007. pp. 599–606. ACM.
+        Mitra, B., Diaz, F., Craswell, N.: Learning to Match Using Local and
+            Distributed Representations of Text for Web Search. In: Proceedings
+            of WWW 2017. pp. 1291–1299. ACM.
+    """
+
     normalize: bool = True
     """
     Normalize query terms and tokens from argumentative units
@@ -239,11 +262,11 @@ class QueryTermPositionInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        arguments1 = self.fetch_arguments(context, document1)
-        arguments2 = self.fetch_arguments(context, document2)
-
         if not approximately_same_length(context, document1, document2):
             return 0
+
+        arguments1 = self.fetch_arguments(context, document1)
+        arguments2 = self.fetch_arguments(context, document2)
 
         penalty = self.penalty
         if penalty is None:
