@@ -33,4 +33,4 @@ class DirichletLM:
 QL = DirichletLM
 
 # Type union
-RetrievalModel = Union[TfIdf, BM25, PL2, DirichletLM]
+RetrievalModel = Union[Tf, TfIdf, BM25, PL2, DirichletLM]
