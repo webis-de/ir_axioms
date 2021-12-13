@@ -25,16 +25,13 @@ with PyTerrierBackendContext():
 
     @fixture
     def index_dir(tmp_path: Path, dataset: Dataset) -> Path:
-        index_dir = Path("tmp/pyterrier/index")
-        if index_dir.exists():
-            return index_dir
-        index_dir.mkdir(parents=True)
+        index_dir = tmp_path
         indexer = IterDictIndexer(str(index_dir.absolute()))
-        index_file_path = indexer.index(
+        indexer.index(
             {"docno": doc.doc_id, "text": doc.text}
             for doc in dataset.docs_iter()
         )
-        return Path(index_file_path)
+        return index_dir
 
 
     @fixture
