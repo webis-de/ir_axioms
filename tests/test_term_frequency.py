@@ -1,6 +1,6 @@
 from ir_axioms.axiom.term_frequency import TFC1
 from ir_axioms.model import Query, RankedDocument
-from tests.util import SimpleRerankingContext
+from tests.util import MemoryRerankingContext
 
 
 def test_tfc1():
@@ -16,7 +16,7 @@ def test_tfc1():
         "d2", "w1 w2 w1 w1",
         score=0.25, rank=3
     )
-    context = SimpleRerankingContext([document1, document2, document3])
+    context = MemoryRerankingContext([document1, document2, document3])
 
     axiom = TFC1()
 
