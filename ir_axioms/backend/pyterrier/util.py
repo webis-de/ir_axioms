@@ -1,10 +1,17 @@
+from typing import Union
+
 from ir_axioms.backend import PyTerrierBackendContext
 
 with PyTerrierBackendContext():
-    from jnius import autoclass
+    from jnius import autoclass, cast, JavaException
 
+    String = autoclass("java.lang.String")
+    ApplicationSetup = autoclass("org.terrier.utility.ApplicationSetup")
     StringReader = autoclass("java.io.StringReader")
     Index = autoclass("org.terrier.structures.Index")
+    PropertiesIndex = autoclass("org.terrier.structures.PropertiesIndex")
+    DiskIndexLoader = autoclass(
+        "org.terrier.structures.IndexOnDisk$DiskIndexLoader")
     PostingIndex = autoclass("org.terrier.structures.PostingIndex")
     DocumentIndex = autoclass("org.terrier.structures.DocumentIndex")
     MetaIndex = autoclass("org.terrier.structures.MetaIndex")
@@ -22,3 +29,15 @@ with PyTerrierBackendContext():
     BM25Model = autoclass("org.terrier.matching.models.BM25")
     PL2Model = autoclass("org.terrier.matching.models.PL2")
     DirichletLMModel = autoclass("org.terrier.matching.models.DirichletLM")
+    TermPipelineAccessor = autoclass("org.terrier.terms.TermPipelineAccessor")
+    BaseTermPipelineAccessor = autoclass(
+        "org.terrier.terms.BaseTermPipelineAccessor"
+    )
+
+
+    def with_properties(index: Index) -> Union[PropertiesIndex, Index]:
+        try:
+            return cast("org.terrier.structures.PropertiesIndex", index)
+        except JavaException:
+            return index
+

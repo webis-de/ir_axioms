@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from functools import cached_property, lru_cache
 from logging import warning
 from pathlib import Path
+from re import split
 from typing import List, Optional, Union
 
 from ir_axioms.backend import PyTerrierBackendContext
@@ -17,9 +18,10 @@ with PyTerrierBackendContext():
     from pyterrier import IndexRef, IndexFactory
     from pyterrier.batchretrieve import TextScorer
     from ir_axioms.backend.pyterrier.util import (
-        StringReader, Index, Lexicon, PostingIndex, CollectionStatistics,
-        DocumentIndex, MetaIndex, Tokeniser, EnglishTokeniser, WeightingModel,
-        TfModel, TfIdfModel, BM25Model, PL2Model, DirichletLMModel,
+        StringReader, Tokeniser, EnglishTokeniser, PropertiesIndex, Lexicon,
+        CollectionStatistics, ApplicationSetup, BaseTermPipelineAccessor,
+        WeightingModel, TfModel, TfIdfModel, BM25Model, PL2Model,
+        DirichletLMModel, with_properties, Index, TermPipelineAccessor,
     )
 
 
@@ -34,24 +36,9 @@ with PyTerrierBackendContext():
             return IndexRef.of(str(self.index_location.absolute()))
 
         @cached_property
-        def _index(self) -> Index:
-            return IndexFactory.of(self._index_ref)
-
-        @cached_property
-        def _direct_index(self) -> PostingIndex:
-            return self._index.getDirectIndex()
-
-        @cached_property
-        def _inverted_index(self) -> PostingIndex:
-            return self._index.getInvertedIndex()
-
-        @cached_property
-        def _document_index(self) -> DocumentIndex:
-            return self._index.getDocumentIndex()
-
-        @cached_property
-        def _meta_index(self) -> MetaIndex:
-            return self._index.getMetaIndex()
+        def _index(self) -> Union[PropertiesIndex, Index]:
+            index = (IndexFactory.of(self._index_ref))
+            return with_properties(index)
 
         @cached_property
         def _lexicon(self) -> Lexicon:
@@ -66,7 +53,31 @@ with PyTerrierBackendContext():
             return self._collection_statistics.numberOfDocuments
 
         def document_frequency(self, term: str) -> int:
-            return self._lexicon.getLexiconEntry(term).getDocumentFrequency()
+            print(self._lexicon.numberOfEntries())
+            print(term)
+            entry = self._lexicon.getLexiconEntry(term)
+            print(entry)
+            if entry is None:
+                return 0
+            return entry.getDocumentFrequency()
+
+        @cached_property
+        def _term_pipelines(self) -> List[TermPipelineAccessor]:
+            print(self._index)
+            if isinstance(self._index, PropertiesIndex):
+                term_pipelines: str = self._index.getIndexProperty(
+                    "termpipelines",
+                    None
+                )
+            else:
+                term_pipelines = ApplicationSetup.getProperty(
+                    "termpipelines",
+                    "Stopwords,PorterStemmer"
+                )
+            return [
+                BaseTermPipelineAccessor(pipeline)
+                for pipeline in split(r"\s*,\s*", term_pipelines.strip())
+            ]
 
         @lru_cache
         def terms(
@@ -75,7 +86,15 @@ with PyTerrierBackendContext():
         ) -> List[str]:
             text = text_content(query_or_document)
             reader = StringReader(text)
-            return list(self.tokeniser.tokenise(reader))
+            terms = list(self.tokeniser.tokenise(reader))
+            terms = [term for term in terms if term is not None]
+            for pipeline in self._term_pipelines:
+                terms = [
+                    pipeline.pipelineTerm(term)
+                    for term in terms
+                ]
+            terms = [term for term in terms if term is not None]
+            return terms
 
         @staticmethod
         @lru_cache
