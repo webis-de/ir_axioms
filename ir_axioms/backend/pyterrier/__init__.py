@@ -16,11 +16,10 @@ with PyTerrierBackendContext():
     from pandas import DataFrame
     from pyterrier import IndexRef, IndexFactory
     from pyterrier.batchretrieve import TextScorer
-    from pyterrier.index import Tokeniser, StringReader
     from ir_axioms.backend.pyterrier.util import (
-        Index, Lexicon, PostingIndex, CollectionStatistics, DocumentIndex,
-        MetaIndex, EnglishTokeniser, WeightingModel, TfModel, TfIdfModel,
-        BM25Model, PL2Model, DirichletLMModel
+        StringReader, Index, Lexicon, PostingIndex, CollectionStatistics,
+        DocumentIndex, MetaIndex, Tokeniser, EnglishTokeniser, WeightingModel,
+        TfModel, TfIdfModel, BM25Model, PL2Model, DirichletLMModel,
     )
 
 
@@ -32,7 +31,7 @@ with PyTerrierBackendContext():
 
         @cached_property
         def _index_ref(self) -> IndexRef:
-            return IndexRef(str(self.index_location.absolute()))
+            return IndexRef.of(str(self.index_location.absolute()))
 
         @cached_property
         def _index(self) -> Index:

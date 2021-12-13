@@ -3,6 +3,7 @@ from ir_axioms.backend import PyTerrierBackendContext
 with PyTerrierBackendContext():
     from jnius import autoclass
 
+    StringReader = autoclass("java.io.StringReader")
     Index = autoclass("org.terrier.structures.Index")
     PostingIndex = autoclass("org.terrier.structures.PostingIndex")
     DocumentIndex = autoclass("org.terrier.structures.DocumentIndex")
@@ -11,6 +12,7 @@ with PyTerrierBackendContext():
     CollectionStatistics = autoclass(
         "org.terrier.structures.CollectionStatistics"
     )
+    Tokeniser = autoclass("org.terrier.indexing.tokenisation.Tokeniser")
     EnglishTokeniser = autoclass(
         "org.terrier.indexing.tokenisation.EnglishTokeniser"
     )
