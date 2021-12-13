@@ -11,6 +11,9 @@ with PyTerrierBackendContext():
     CollectionStatistics = autoclass(
         "org.terrier.structures.CollectionStatistics"
     )
+    EnglishTokeniser = autoclass(
+        "org.terrier.indexing.tokenisation.EnglishTokeniser"
+    )
     WeightingModel = autoclass("org.terrier.matching.models.WeightingModel")
     TfModel = autoclass("org.terrier.matching.models.Tf")
     TfIdfModel = autoclass("org.terrier.matching.models.TF_IDF")

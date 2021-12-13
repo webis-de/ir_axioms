@@ -19,15 +19,15 @@ with PyTerrierBackendContext():
     from pyterrier.index import Tokeniser, StringReader
     from ir_axioms.backend.pyterrier.util import (
         Index, Lexicon, PostingIndex, CollectionStatistics, DocumentIndex,
-        MetaIndex, WeightingModel, TfModel, TfIdfModel, BM25Model, PL2Model,
-        DirichletLMModel
+        MetaIndex, EnglishTokeniser, WeightingModel, TfModel, TfIdfModel,
+        BM25Model, PL2Model, DirichletLMModel
     )
 
 
     @dataclass(unsafe_hash=True, frozen=True)
     class IndexRerankingContext(RerankingContext):
         index_location: Path
-        tokeniser: Tokeniser = Tokeniser.getTokeniser()
+        tokeniser: Tokeniser = EnglishTokeniser()
         cache_dir: Optional[Path] = None
 
         @cached_property
