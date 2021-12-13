@@ -5,16 +5,13 @@ from ir_axioms.backend import PyTerrierBackendContext
 with PyTerrierBackendContext():
     from jnius import autoclass, cast, JavaException
 
-    String = autoclass("java.lang.String")
+    RequestContextMatching = autoclass(
+        "org.terrier.python.RequestContextMatching"
+    )
     ApplicationSetup = autoclass("org.terrier.utility.ApplicationSetup")
     StringReader = autoclass("java.io.StringReader")
     Index = autoclass("org.terrier.structures.Index")
     PropertiesIndex = autoclass("org.terrier.structures.PropertiesIndex")
-    DiskIndexLoader = autoclass(
-        "org.terrier.structures.IndexOnDisk$DiskIndexLoader")
-    PostingIndex = autoclass("org.terrier.structures.PostingIndex")
-    DocumentIndex = autoclass("org.terrier.structures.DocumentIndex")
-    MetaIndex = autoclass("org.terrier.structures.MetaIndex")
     Lexicon = autoclass("org.terrier.structures.Lexicon")
     CollectionStatistics = autoclass(
         "org.terrier.structures.CollectionStatistics"
@@ -33,6 +30,11 @@ with PyTerrierBackendContext():
     BaseTermPipelineAccessor = autoclass(
         "org.terrier.terms.BaseTermPipelineAccessor"
     )
+    SearchRequest = autoclass('org.terrier.querying.SearchRequest')
+    ScoredDoc = autoclass('org.terrier.querying.ScoredDoc')
+    ScoredDocList = autoclass('org.terrier.querying.ScoredDocList')
+    Manager = autoclass('org.terrier.querying.Manager')
+    ManagerFactory = autoclass('org.terrier.querying.ManagerFactory')
 
 
     def with_properties(index: Index) -> Union[PropertiesIndex, Index]:

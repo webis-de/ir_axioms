@@ -14,15 +14,37 @@ from ir_axioms.model.retrieval_model import (
 from ir_axioms.utils import text_content
 
 with PyTerrierBackendContext():
-    from pandas import DataFrame
     from pyterrier import IndexRef, IndexFactory
-    from pyterrier.batchretrieve import TextScorer
     from ir_axioms.backend.pyterrier.util import (
         StringReader, Tokeniser, EnglishTokeniser, PropertiesIndex, Lexicon,
         CollectionStatistics, ApplicationSetup, BaseTermPipelineAccessor,
         WeightingModel, TfModel, TfIdfModel, BM25Model, PL2Model,
         DirichletLMModel, with_properties, Index, TermPipelineAccessor,
+        Manager, ManagerFactory, SearchRequest, ScoredDocList, ScoredDoc,
+        RequestContextMatching
     )
+
+    _retrieval_score_application_properties = {
+        "querying.processes": ",".join([
+            "terrierql:TerrierQLParser",
+            "parsecontrols:TerrierQLToControls",
+            "parseql:TerrierQLToMatchingQueryTerms",
+            "applypipeline:ApplyTermPipeline",
+            "context_wmodel:org.terrier.python.WmodelFromContextProcess",
+            "localmatching:LocalManager$ApplyLocalMatching",
+            "filters:LocalManager$PostFilterProcess"
+        ]),
+        "querying.postfilters": "decorate:SimpleDecorate",
+        "querying.default.controls": ",".join([
+            "parsecontrols:on",
+            "parseql:on",
+            "applypipeline:on",
+            "terrierql:on",
+            "localmatching:on",
+            "filters:on",
+            "decorate:on"
+        ]),
+    }
 
 
     @dataclass(unsafe_hash=True, frozen=True)
@@ -131,24 +153,64 @@ with PyTerrierBackendContext():
                     f"the {type(model)} retrieval model."
                 )
 
+        @cached_property
+        def _manager(self) -> Manager:
+            # noinspection PyProtectedMember
+            return ManagerFactory._from_(self._index_ref)
+
         def retrieval_score(
                 self,
                 query: Query,
                 document: Document,
                 model: RetrievalModel
         ) -> float:
-            weighting_model = self._weighting_model(model)
-            scorer = TextScorer(
-                wmodel=weighting_model,
-                background_index=self._index
+            print(document)
+
+            if len(query.title) == 0:
+                return 0
+
+            # Setup retrieval as per BatchRetrieve.
+            for key, value in _retrieval_score_application_properties.items():
+                ApplicationSetup.setProperty(key, value)
+
+            # Build search request.
+            request: SearchRequest = self._manager.newSearchRequestFromQuery(
+                query.title
             )
 
-            documents = DataFrame(
-                data=[["q1", query.title, "d1", document.content]],
-                columns=["qid", "query", "docno", "body"]
+            # Set weighting model.
+            request.setControl("context_wmodel", "on")
+            request.setContextObject(
+                "context_wmodel",
+                self._weighting_model(model)
             )
 
-            retrieved: DataFrame = scorer.transform(documents)
-            score: float = retrieved.head(1)["score"]
+            # Filter documents matching the original ID.
+            matching = RequestContextMatching.of(request)
+            matching.fromDocnos([document.id])
+            matching.build()
 
+            # Return search score from weighting model.
+            request.setControl(
+                "matching",
+                ",".join([
+                    "org.terrier.matching.ScoringMatching",
+                    request.getControl("matching")
+                ])
+            )
+
+            # Limit to 1 result.
+            request.setControl("end", str(1 - 1))
+
+            # Execute search request.
+            self._manager.runSearchRequest(request)
+
+            # Parse result document.
+            result_docs: ScoredDocList = request.getResults()
+            assert len(result_docs) == 1
+            first_result_doc: ScoredDoc = result_docs[0]
+            assert first_result_doc.getMetadata("docno") == document.id
+
+            # Get retrieval score.
+            score = first_result_doc.getScore()
             return score
