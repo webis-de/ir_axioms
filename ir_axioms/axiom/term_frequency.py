@@ -177,9 +177,10 @@ class LEN_M_TDC(M_TDC):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        if not approximately_equal(
-                len(context.terms(document1)),
-                len(context.terms(document2)),
+        if not approximately_same_length(
+                context,
+                document1,
+                document2,
                 margin_fraction=self.margin_fraction
         ):
             return False
