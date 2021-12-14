@@ -46,34 +46,39 @@ class TFC3(Axiom):
         if not approximately_same_length(context, document1, document2):
             return 0
 
-        sd1 = 0
-        sd2 = 0
+        sum_document1 = 0
+        sum_document2 = 0
 
         query_terms = set(context.terms(query))
-        for qt1, qt2 in combinations(query_terms, 2):
-            td1 = floor(100 * context.inverse_document_frequency(qt1))
-            td2 = floor(100 * context.inverse_document_frequency(qt2))
+        query_term_pairs = combinations(query_terms, 2)
+        for query_term1, query_term2 in query_term_pairs:
+            print(query_term1, query_term2)
+            idf1 = context.inverse_document_frequency(query_term1)
+            idf2 = context.inverse_document_frequency(query_term2)
 
-            if approximately_equal(td1, td2):
-                d1q1 = context.term_frequency(document1, qt1)
-                d2q1 = context.term_frequency(document2, qt1)
-                d1q2 = context.term_frequency(document1, qt2)
-                d2q2 = context.term_frequency(document2, qt2)
+            term_discrimination1 = floor(100 * idf1)
+            term_discrimination2 = floor(100 * idf2)
 
-                sd1 += (
+            if approximately_equal(term_discrimination1, term_discrimination2):
+                d1q1 = context.term_frequency(document1, query_term1)
+                d2q1 = context.term_frequency(document2, query_term1)
+                d1q2 = context.term_frequency(document1, query_term2)
+                d2q2 = context.term_frequency(document2, query_term2)
+
+                sum_document1 += (
                         (d2q1 == d1q1 + d1q2) and
                         (d2q2 == 0) and
                         (d1q1 != 0) and
                         (d1q2 != 0)
                 )
-                sd2 += (
+                sum_document2 += (
                         (d1q1 == d2q1 + d2q2) and
                         (d1q2 == 0) and
                         (d2q1 != 0) and
                         (d2q2 != 0)
                 )
 
-        return strictly_greater(sd1, sd2)
+        return strictly_greater(sum_document1, sum_document2)
 
 
 class M_TDC(Axiom):
