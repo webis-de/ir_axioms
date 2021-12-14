@@ -1,16 +1,18 @@
+from json import dumps
+from json import dumps
 from pathlib import Path
+from subprocess import run
 
 from ir_datasets import load, Dataset
 from pytest import fixture, approx
 
-from ir_axioms.backend import PyTerrierBackendContext
+from ir_axioms.backend import PyseriniBackendContext
 from ir_axioms.model import Query, Document
 from ir_axioms.model.context import RerankingContext
-from ir_axioms.model.retrieval_model import Tf, TfIdf, BM25, PL2, QL
+from ir_axioms.model.retrieval_model import TfIdf, BM25, PL2, QL
 
-with PyTerrierBackendContext():
-    from pyterrier.index import IterDictIndexer
-    from ir_axioms.backend.pyterrier import IndexRerankingContext
+with PyseriniBackendContext():
+    from ir_axioms.backend.pyserini import IndexRerankingContext
 
 
     @fixture
@@ -24,13 +26,36 @@ with PyTerrierBackendContext():
 
 
     @fixture
-    def index_dir(tmp_path: Path, dataset: Dataset) -> Path:
+    def dataset_dir(tmp_path: Path, dataset: Dataset) -> Path:
+        dataset_dir = tmp_path
+
+        dataset_file = dataset_dir / "docs.jsonl"
+        with dataset_file.open("w") as file:
+            for doc in dataset.docs_iter():
+                doc_dict = {"id": doc.doc_id, "contents": doc.text}
+                doc_line = dumps(doc_dict)
+                file.write(f"{doc_line}\n")
+
+        return dataset_dir
+
+
+    @fixture
+    def index_dir(tmp_path: Path, dataset_dir: Path) -> Path:
         index_dir = tmp_path
-        indexer = IterDictIndexer(str(index_dir.absolute()))
-        indexer.index(
-            {"docno": doc.doc_id, "text": doc.text}
-            for doc in dataset.docs_iter()
-        )
+
+        index_command = [
+            "python", "-m", "pyserini.index",
+            "-collection", "JsonCollection",
+            "-generator", "DefaultLuceneDocumentGenerator",
+            "-input", str(dataset_dir.absolute()),
+            "-index", str(index_dir.absolute()),
+            "-threads", str(1),
+            "-storePositions",
+            "-storeDocvectors",
+            "-storeRaw",
+        ]
+        run(index_command)
+
         return index_dir
 
 
@@ -114,8 +139,9 @@ with PyTerrierBackendContext():
 
     def test_terms_document1(context: RerankingContext, document1: Document):
         assert context.terms(document1) == [
-            "compact", "memori", "flexibl", "capac", "digit", "data", "storag",
-            "system", "capac", "bit", "random", "sequenti", "access"
+            "compact", "memori", "have", "flexibl", "capac", "digit", "data",
+            "storag", "system", "capac", "up", "bit", "random", "sequenti",
+            "access", "describ"
         ]
 
 
@@ -136,8 +162,9 @@ with PyTerrierBackendContext():
             document1: Document
     ):
         assert context.term_set(document1) == {
-            "compact", "memori", "flexibl", "capac", "digit", "data", "storag",
-            "system", "bit", "random", "sequenti", "access"
+            "compact", "memori", "have", "flexibl", "capac", "digit", "data",
+            "storag", "system", "up", "bit", "random", "sequenti", "access",
+            "describ"
         }
 
 
@@ -162,9 +189,9 @@ with PyTerrierBackendContext():
             context: RerankingContext,
             document1: Document
     ):
-        assert context.term_frequency(document1, "compact") == approx(1 / 13)
-        assert context.term_frequency(document1, "capac") == approx(2 / 13)
-        assert context.term_frequency(document1, "tree") == approx(0 / 13)
+        assert context.term_frequency(document1, "compact") == approx(1 / 16)
+        assert context.term_frequency(document1, "capac") == approx(2 / 16)
+        assert context.term_frequency(document1, "tree") == approx(0 / 16)
 
 
     def test_term_frequency_document2(
@@ -182,11 +209,11 @@ with PyTerrierBackendContext():
             document1: Document
     ):
         d1 = document1
-        assert context.retrieval_score(query, d1, Tf()) == 0
         assert context.retrieval_score(query, d1, TfIdf()) == 0
         assert context.retrieval_score(query, d1, BM25()) == 0
         assert context.retrieval_score(query, d1, PL2()) == 0
         assert context.retrieval_score(query, d1, QL()) == 0
+
 
     def test_document2_retrieval_score(
             context: RerankingContext,
@@ -195,8 +222,7 @@ with PyTerrierBackendContext():
     ):
         d2 = document2
         # FIXME: How can we verify these numbers?
-        assert context.retrieval_score(query, d2, Tf()) == 3
-        assert context.retrieval_score(query, d2, TfIdf()) == approx(9.823447)
-        assert context.retrieval_score(query, d2, BM25()) == approx(17.657991)
-        assert context.retrieval_score(query, d2, PL2()) == approx(1.133970)
-        assert context.retrieval_score(query, d2, QL()) == approx(1.278038)
+        assert context.retrieval_score(query, d2, TfIdf()) == approx(3.425787)
+        assert context.retrieval_score(query, d2, BM25()) == approx(5.829735)
+        assert context.retrieval_score(query, d2, PL2()) == approx(2.822848)
+        assert context.retrieval_score(query, d2, QL()) == approx(1.921952)
