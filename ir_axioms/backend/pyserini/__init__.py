@@ -16,8 +16,7 @@ with PyseriniBackendContext():
     from pyserini.index import IndexReader
     from ir_axioms.backend.pyserini.util import (
         Similarity, ClassicSimilarity, BM25Similarity, DFRSimilarity,
-        BasicModelIn, AfterEffectL, NormalizationH2, LMDirichletSimilarity,
-        TfSimilarity
+        BasicModelIn, AfterEffectL, NormalizationH2, LMDirichletSimilarity
     )
 
 
@@ -51,8 +50,6 @@ with PyseriniBackendContext():
         @staticmethod
         @lru_cache
         def _similarity(model: RetrievalModel) -> Similarity:
-            if isinstance(model, Tf):
-                return TfSimilarity()
             if isinstance(model, TfIdf):
                 return ClassicSimilarity()
             elif isinstance(model, BM25):
