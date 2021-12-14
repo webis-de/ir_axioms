@@ -114,16 +114,16 @@ with PyTerrierBackendContext():
 
     def test_terms_document1(context: RerankingContext, document1: Document):
         assert context.terms(document1) == [
-            'compact', 'memori', 'flexibl', 'capac', 'digit', 'data', 'storag',
-            'system', 'capac', 'bit', 'random', 'sequenti', 'access'
+            "compact", "memori", "flexibl", "capac", "digit", "data", "storag",
+            "system", "capac", "bit", "random", "sequenti", "access"
         ]
 
 
     def test_terms_document2(context: RerankingContext, document2: Document):
         assert context.terms(document2) == [
-            'electron', 'analogu', 'comput', 'solv', 'system', 'linear',
-            'equat', 'mathemat', 'deriv', 'oper', 'principl', 'stabil',
-            'condit', 'comput', 'consist', 'amplifi'
+            "electron", "analogu", "comput", "solv", "system", "linear",
+            "equat", "mathemat", "deriv", "oper", "principl", "stabil",
+            "condit", "comput", "consist", "amplifi"
         ]
 
 
@@ -136,8 +136,8 @@ with PyTerrierBackendContext():
             document1: Document
     ):
         assert context.term_set(document1) == {
-            'compact', 'memori', 'flexibl', 'capac', 'digit', 'data', 'storag',
-            'system', 'bit', 'random', 'sequenti', 'access'
+            "compact", "memori", "flexibl", "capac", "digit", "data", "storag",
+            "system", "bit", "random", "sequenti", "access"
         }
 
 
@@ -146,9 +146,9 @@ with PyTerrierBackendContext():
             document2: Document
     ):
         assert context.term_set(document2) == {
-            'electron', 'analogu', 'comput', 'solv', 'system', 'linear',
-            'equat', 'mathemat', 'deriv', 'oper', 'principl', 'stabil',
-            'condit', 'comput', 'consist', 'amplifi'
+            "electron", "analogu", "comput", "solv", "system", "linear",
+            "equat", "mathemat", "deriv", "oper", "principl", "stabil",
+            "condit", "comput", "consist", "amplifi"
         }
 
 
