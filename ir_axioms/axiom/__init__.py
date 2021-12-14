@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from collections import OrderedDict
+from collections import OrderedDict as ordereddict
 from dataclasses import dataclass, field
-from typing import Iterable, Tuple
+from typing import Iterable, Tuple, OrderedDict
 
 from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
@@ -111,7 +111,7 @@ class _AxiomLRUCache:
         Tuple[RerankingContext, Query, RankedDocument, RankedDocument],
         float
     ] = field(
-        default_factory=lambda: OrderedDict(),
+        default_factory=lambda: ordereddict(),
         init=False,
         repr=False
     )
