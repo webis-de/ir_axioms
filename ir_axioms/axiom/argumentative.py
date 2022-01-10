@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from statistics import mean
 from typing import List, Set, Dict, Optional
 
@@ -142,7 +142,7 @@ def _sentence_length(document: RankedDocument) -> float:
 
 @dataclass(frozen=True)
 class _TargerAxiomMixin:
-    models: Set[str] = DEFAULT_TARGER_MODELS
+    models: Set[str] = field(default_factory=lambda: DEFAULT_TARGER_MODELS)
     api_url: str = DEFAULT_TARGER_API_URL
 
     def fetch_arguments(
