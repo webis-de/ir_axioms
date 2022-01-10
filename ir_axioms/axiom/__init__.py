@@ -5,9 +5,15 @@ from typing import Iterable, Tuple, OrderedDict
 
 from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
+from ir_axioms import registry
 
 
 class Axiom(ABC):
+    name: str = None
+
+    def __init_subclass__(cls, **kwargs):
+        if not isabstract(cls) and cls.name is not None:
+            registry[cls.name] = cls
 
     @abstractmethod
     def preference(
