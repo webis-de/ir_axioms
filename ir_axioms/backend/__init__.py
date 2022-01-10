@@ -1,6 +1,22 @@
 from typing import ContextManager
 
 
+def is_pyserini_installed() -> bool:
+    try:
+        import pyserini  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
+def is_pyterrier_installed() -> bool:
+    try:
+        import pyterrier  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
 class PyseriniBackendContext(ContextManager):
     def __init__(self):
         try:
