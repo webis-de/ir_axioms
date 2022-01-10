@@ -4,6 +4,7 @@ from pathlib import Path
 from random import randint
 from typing import List, Union, Dict, Optional, Tuple, Iterable
 
+from ir_datasets import load, Dataset
 from pandas import DataFrame, Series
 from trectools import TrecRun, TrecTopics
 
@@ -107,6 +108,23 @@ def _load_context(
     return context
 
 
+def _load_ir_datasets_context(
+        dataset: str,
+        cache_dir: Optional[PathLike] = None,
+) -> RerankingContext:
+    if cache_dir is not None:
+        cache_dir = Path(cache_dir)
+
+    if is_pyterrier_installed():
+        from ir_axioms.backend.pyterrier import IrDatasetsRerankingContext
+        return IrDatasetsRerankingContext(
+            dataset_name=dataset,
+            cache_dir=cache_dir,
+        )
+    else:
+        raise NotImplementedError("No backend found.")
+
+
 def _load_axiom(axiom: Union[Axiom, Iterable[Axiom]]) -> Axiom:
     if isinstance(axiom, Iterable):
         return AggregatedAxiom(axiom)
@@ -114,8 +132,9 @@ def _load_axiom(axiom: Union[Axiom, Iterable[Axiom]]) -> Axiom:
     return axiom
 
 
-def _load_ranking(ranking: Union[List[RankedDocument]]) -> List[
-    RankedDocument]:
+def _load_ranking(
+        ranking: Union[List[RankedDocument]]
+) -> List[RankedDocument]:
     assert isinstance(ranking, List)
     return ranking
 
@@ -136,6 +155,15 @@ def _load_topics(topics: Union[TrecTopics, PathLike, Dict]) -> TrecTopics:
         return TrecTopics(topics=topics)
     assert isinstance(topics, TrecTopics)
     return topics
+
+
+def _load_ir_datasets_topics(dataset: str) -> TrecTopics:
+    dataset: Dataset = load(dataset)
+    topics = {
+        query.query_id: query.title
+        for query in dataset.queries_iter()
+    }
+    return TrecTopics(topics=topics)
 
 
 def _load_query(query: Union[Query, str]) -> Query:
@@ -170,18 +198,15 @@ def rerank_ranking(
     return ranking
 
 
-def rerank_run(
-        axiom: Union[Axiom, Iterable[Axiom]],
-        run: Union[TrecRun, PathLike],
-        topics: Union[TrecTopics, PathLike, Dict],
-        context: Union[RerankingContext, PathLike],
+def _rerank_run(
+        axiom: Axiom,
+        run: TrecRun,
+        topics: TrecTopics,
+        context: RerankingContext,
         tag: str = "ir_axioms",
         cache_dir: Optional[PathLike] = None,
 ) -> TrecRun:
-    run: TrecRun = _load_run(run)
     run_data: DataFrame = run.run_data
-    topics: TrecTopics = _load_topics(topics)
-    context: RerankingContext = _load_context(context, cache_dir)
 
     # Read rows and query IDs from data frame.
     query_rows: List[Tuple[int, Series]] = [
@@ -244,6 +269,21 @@ def rerank_run(
     )
     return TrecRun(reranked_df)
 
+
+def rerank_run(
+        axiom: Union[Axiom, Iterable[Axiom]],
+        run: Union[TrecRun, PathLike],
+        topics: Union[TrecTopics, PathLike, Dict],
+        context: Union[RerankingContext, PathLike],
+        tag: str = "ir_axioms",
+        cache_dir: Optional[PathLike] = None,
+) -> TrecRun:
+    run: TrecRun = _load_run(run)
+    topics: TrecTopics = _load_topics(topics)
+    context: RerankingContext = _load_context(context, cache_dir)
+    return _rerank_run(axiom, run, topics, context, tag, cache_dir)
+
+
 def rerank_ir_datasets_run(
         axiom: Union[Axiom, Iterable[Axiom]],
         run: Union[TrecRun, PathLike],
@@ -251,7 +291,11 @@ def rerank_ir_datasets_run(
         tag: str = "ir_axioms",
         cache_dir: Optional[PathLike] = None,
 ) -> TrecRun:
-    pass
+    run: TrecRun = _load_run(run)
+    topics: TrecTopics = _load_ir_datasets_topics(dataset)
+    context: RerankingContext = _load_ir_datasets_context(dataset, cache_dir)
+    return _rerank_run(axiom, run, topics, context, tag, cache_dir)
+
 
 def save_rerank_run(
         axiom: Union[Axiom, Iterable[Axiom]],
@@ -267,6 +311,29 @@ def save_rerank_run(
         run,
         topics,
         context,
+        tag,
+        cache_dir,
+    )
+    run_data: DataFrame = reranked_run.run_data
+    run_data.to_csv(
+        reranked_run_path,
+        sep=" ",
+        header=False,
+    )
+
+
+def save_rerank_ir_datasets_run(
+        axiom: Union[Axiom, Iterable[Axiom]],
+        run: Union[TrecRun, PathLike],
+        reranked_run_path: PathLike,
+        dataset: str,
+        tag: str = "ir_axioms",
+        cache_dir: Optional[PathLike] = None,
+) -> None:
+    reranked_run = rerank_ir_datasets_run(
+        axiom,
+        run,
+        dataset,
         tag,
         cache_dir,
     )
