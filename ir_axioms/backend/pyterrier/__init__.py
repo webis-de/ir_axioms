@@ -21,8 +21,8 @@ with PyTerrierBackendContext():
         WeightingModel, TfModel, TfIdfModel, BM25Model, PL2Model,
         DirichletLMModel, with_properties, Index, TermPipelineAccessor,
         Manager, ManagerFactory, SearchRequest, ScoredDocList, ScoredDoc,
-        RequestContextMatching
-    )
+        RequestContextMatching, MetaIndex
+)
 
     _retrieval_score_application_properties = {
         "querying.processes": ",".join([
@@ -59,8 +59,12 @@ with PyTerrierBackendContext():
 
         @cached_property
         def _index(self) -> Union[PropertiesIndex, Index]:
-            index = (IndexFactory.of(self._index_ref))
+            index = IndexFactory.of(self._index_ref)
             return with_properties(index)
+
+        @cached_property
+        def _meta_index(self) -> MetaIndex:
+            return self._index.getMetaIndex()
 
         @cached_property
         def _lexicon(self) -> Lexicon:
@@ -82,6 +86,10 @@ with PyTerrierBackendContext():
             if entry is None:
                 return 0
             return entry.getDocumentFrequency()
+
+        def document_content(self, document_id: str) -> str:
+            doc_id = self._meta_index.getDocument("docno", document_id)
+            return self._meta_index.getItem("text", doc_id)
 
         @cached_property
         def _term_pipelines(self) -> List[TermPipelineAccessor]:

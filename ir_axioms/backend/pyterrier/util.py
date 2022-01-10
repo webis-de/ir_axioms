@@ -12,6 +12,7 @@ with PyTerrierBackendContext():
     StringReader = autoclass("java.io.StringReader")
     Index = autoclass("org.terrier.structures.Index")
     PropertiesIndex = autoclass("org.terrier.structures.PropertiesIndex")
+    MetaIndex = autoclass("org.terrier.structures.MetaIndex")
     Lexicon = autoclass("org.terrier.structures.Lexicon")
     CollectionStatistics = autoclass(
         "org.terrier.structures.CollectionStatistics"

@@ -4,6 +4,8 @@ from logging import warning
 from pathlib import Path
 from typing import List, Optional, Union
 
+from pyserini.search import SimpleSearcher
+
 from ir_axioms.backend import PyseriniBackendContext
 from ir_axioms.model import Query, Document
 from ir_axioms.model.context import RerankingContext
@@ -38,6 +40,14 @@ with PyseriniBackendContext():
                 self._index_reader.reader,
                 term
             )
+
+        @cached_property
+        def _searcher(self) -> SimpleSearcher:
+            return SimpleSearcher(str(self.index_dir.absolute()))
+
+        def document_content(self, document_id: str) -> str:
+            document = self._searcher.doc(document_id)
+            return document.contents()
 
         @lru_cache
         def terms(

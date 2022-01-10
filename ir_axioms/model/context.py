@@ -27,6 +27,10 @@ class RerankingContext(ABC):
         return log(self.document_count / document_frequency)
 
     @abstractmethod
+    def document_content(self, document_id: str) -> str:
+        pass
+
+    @abstractmethod
     def terms(self, query_or_document: Union[Query, Document]) -> List[str]:
         pass
 
