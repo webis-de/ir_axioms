@@ -7,6 +7,8 @@ from ir_axioms.model.context import RerankingContext
 
 
 class LNC1(Axiom):
+    name = "LNC1"
+
     def preference(
             self,
             context: RerankingContext,
@@ -31,6 +33,8 @@ class LNC1(Axiom):
 
 
 class LNC2(Axiom):
+    name = "LNC2"
+
     def preference(
             self,
             context: RerankingContext,
@@ -44,6 +48,8 @@ class LNC2(Axiom):
 
 
 class TF_LNC(Axiom):
+    name = "TF_LNC"
+
     def preference(
             self,
             context: RerankingContext,

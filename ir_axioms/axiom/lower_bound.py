@@ -5,6 +5,8 @@ from ir_axioms.model.context import RerankingContext
 
 
 class LB1(Axiom):
+    name = "LB1"
+
     def preference(
             self,
             context: RerankingContext,

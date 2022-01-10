@@ -16,6 +16,7 @@ class REG(Axiom):
     Zheng, W., Fang, H.: Query aspect based term weighting regularization
     in information retrieval. In: Gurrin, C., et al. (eds.) ECIR 2010.
     """
+    name = "REG"
 
     def preference(
             self,
@@ -54,6 +55,7 @@ class ANTI_REG(Axiom):
 
     Modified to use maximum similarity instead of minimum similarity.
     """
+    name = "ANTI_REG"
 
     def preference(
             self,
@@ -85,6 +87,7 @@ class ANTI_REG(Axiom):
 
 
 class AND(Axiom):
+    name = "AND"
 
     def preference(
             self,
@@ -109,6 +112,8 @@ class LEN_AND(AND):
 
     Default margin fraction: 0.1
     """
+    name = "LEN_AND"
+
     margin_fraction: float = 0.1
 
     def preference(
@@ -139,6 +144,7 @@ class M_AND(Axiom):
     Modified AND:
     One document contains a larger subset of query terms.
     """
+    name = "M_AND"
 
     def preference(
             self,
@@ -162,6 +168,8 @@ class LEN_M_AND(M_AND):
 
     Default margin fraction: 0.1
     """
+    name = "LEN_M_AND"
+
     margin_fraction: float = 0.1
 
     def preference(
@@ -188,6 +196,8 @@ class LEN_M_AND(M_AND):
 
 
 class DIV(Axiom):
+    name = "DIV"
+
     def preference(
             self,
             context: RerankingContext,
@@ -215,6 +225,8 @@ class LEN_DIV(DIV):
 
     Default margin fraction: 0.1
     """
+    name = "LEN_DIV"
+
     margin_fraction = 0.1
 
     def preference(

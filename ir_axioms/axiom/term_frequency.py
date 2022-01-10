@@ -11,6 +11,8 @@ from ir_axioms.model.context import RerankingContext
 
 
 class TFC1(Axiom):
+    name = "TFC1"
+
     def preference(
             self,
             context: RerankingContext,
@@ -35,6 +37,7 @@ class TFC1(Axiom):
 
 
 class TFC3(Axiom):
+    name = "TFC3"
 
     def preference(
             self,
@@ -88,6 +91,7 @@ class M_TDC(Axiom):
     Shi, S., Wen, J.R., Yu, Q., Song, R., Ma, W.Y.: Gravitation-based model
     for information retrieval. In: SIGIR ’05.
     """
+    name = "M_TDC"
 
     @staticmethod
     def precondition(
@@ -173,6 +177,8 @@ class LEN_M_TDC(M_TDC):
     The precondition for the documents' lengths can be varied.
     Default margin fraction: 0.1
     """
+    name = "LEN_M_TDC"
+
     margin_fraction: float = 0.1
 
     def precondition(

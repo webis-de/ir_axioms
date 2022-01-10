@@ -76,11 +76,11 @@ class _STMC1Base(Axiom, _TermSimilarity, ABC):
 
 
 class STMC1(_STMC1Base, _WordNetTermSimilarity):
-    pass
+    name = "STMC1"
 
 
 class STMC1_f(_STMC1Base, _FastTextWikiNewsTermSimilarity):
-    pass
+    name = "STMC1_f"
 
 
 class _STMC2Base(Axiom, _TermSimilarity, ABC):
@@ -152,8 +152,8 @@ class _STMC2Base(Axiom, _TermSimilarity, ABC):
 
 
 class STMC2(_STMC2Base, _WordNetTermSimilarity):
-    pass
+    name = "STMC2"
 
 
 class STMC2_f(_STMC2Base, _FastTextWikiNewsTermSimilarity):
-    pass
+    name = "STMC2_f"

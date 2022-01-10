@@ -162,6 +162,7 @@ class ArgumentativeUnitsCountAxiom(Axiom, _TargerAxiomMixin):
     """
     Favor documents with more argumentative units.
     """
+    name = "ArgUC"
 
     def preference(
             self,
@@ -198,6 +199,7 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
     """
     Favor documents with more query terms in argumentative units.
     """
+    name = "QTArg"
 
     normalize: bool = True
     """
@@ -251,6 +253,7 @@ class QueryTermPositionInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
             Distributed Representations of Text for Web Search. In: Proceedings
             of WWW 2017. pp. 1291–1299. ACM.
     """
+    name = "QTPArg"
 
     normalize: bool = True
     """
@@ -324,6 +327,7 @@ class AverageSentenceLengthAxiom(Axiom):
         Markel, M.: Technical Communication. 9th ed. Bedford/St Martin’s (2010)
         Newell, C.: Editing Tip: Sentence Length (2014)
     """
+    name = "aSL"
 
     min_sentence_length: int = 12
     max_sentence_length: int = 20

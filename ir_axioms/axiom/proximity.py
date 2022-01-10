@@ -12,6 +12,8 @@ from ir_axioms.model.context import RerankingContext
 
 
 class PROX1(Axiom):
+    name = "PROX1"
+
     def preference(
             self,
             context: RerankingContext,
@@ -45,6 +47,8 @@ class PROX1(Axiom):
 
 
 class PROX2(Axiom):
+    name = "PROX2"
+
     def preference(
             self,
             context: RerankingContext,
@@ -72,6 +76,8 @@ class PROX2(Axiom):
 
 
 class PROX3(Axiom):
+    name = "PROX3"
+
     @staticmethod
     def find_index(query_terms: List[str], document_terms: List[str]):
         query_terms_length = len(query_terms)
@@ -105,6 +111,8 @@ class PROX3(Axiom):
 
 
 class PROX4(Axiom):
+    name = "PROX4"
+
     def preference(
             self,
             context: RerankingContext,
@@ -140,6 +148,8 @@ class PROX4(Axiom):
 
 
 class PROX5(Axiom):
+    name = "PROX5"
+
     def preference(
             self,
             context: RerankingContext,
