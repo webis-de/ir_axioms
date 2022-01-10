@@ -5,6 +5,8 @@ from pathlib import Path
 from re import split
 from typing import List, Optional, Union
 
+from ir_datasets import load, Dataset
+
 from ir_axioms.backend import PyTerrierBackendContext
 from ir_axioms.model import Query, Document
 from ir_axioms.model.context import RerankingContext
@@ -15,6 +17,7 @@ from ir_axioms.utils import text_content
 
 with PyTerrierBackendContext():
     from pyterrier import IndexRef, IndexFactory
+    from pyterrier.index import IterDictIndexer
     from ir_axioms.backend.pyterrier.util import (
         StringReader, Tokeniser, EnglishTokeniser, PropertiesIndex, Lexicon,
         CollectionStatistics, ApplicationSetup, BaseTermPipelineAccessor,
@@ -22,7 +25,7 @@ with PyTerrierBackendContext():
         DirichletLMModel, with_properties, Index, TermPipelineAccessor,
         Manager, ManagerFactory, SearchRequest, ScoredDocList, ScoredDoc,
         RequestContextMatching, MetaIndex
-)
+    )
 
     _retrieval_score_application_properties = {
         "querying.processes": ",".join([
@@ -222,3 +225,33 @@ with PyTerrierBackendContext():
             # Get retrieval score.
             score = first_result_doc.getScore()
             return score
+
+
+    class IrDatasetsRerankingContext(IndexRerankingContext):
+        def __init__(
+                self,
+                dataset_name: str,
+                tokeniser: Tokeniser = EnglishTokeniser(),
+                cache_dir: Optional[Path] = None,
+        ):
+            if cache_dir is None or not cache_dir.is_dir():
+                raise RuntimeError("Needs cache directory to index documents.")
+            index_location = cache_dir / "index" / dataset_name
+            index_location.mkdir(parents=True, exist_ok=True)
+
+            dataset: Dataset = load(dataset_name)
+            iterator = (
+                {
+                    "docno": doc.doc_id,
+                    "text": doc.conclusion + " " + doc.premises_texts,
+                }
+                for doc in dataset.docs_iter()
+            )
+            indexer = IterDictIndexer(str(index_location.absolute()))
+            indexer.index(iterator, fields=["premises_texts"])
+
+            super(IrDatasetsRerankingContext, self).__init__(
+                index_location,
+                tokeniser,
+                cache_dir
+            )
