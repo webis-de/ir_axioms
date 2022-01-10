@@ -112,7 +112,7 @@ class _STMC2Base(Axiom, _TermSimilarity, ABC):
     ):
         document1_terms = context.term_set(document1)
         document2_terms = context.term_set(document2)
-        document_terms = document1_terms & document2_terms
+        document_terms = document1_terms | document2_terms
         query_terms = context.term_set(query)
         non_query_terms = document_terms - query_terms
 
