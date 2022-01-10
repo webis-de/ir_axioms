@@ -11,6 +11,8 @@
       <excludeFolder url="file://$MODULE_DIR$/ir_axioms.egg-info" />
       <excludeFolder url="file://$MODULE_DIR$/venv-base" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/venv-pyserini" />
+      <excludeFolder url="file://$MODULE_DIR$/venv-pyterrier" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
