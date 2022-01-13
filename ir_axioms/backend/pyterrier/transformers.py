@@ -88,7 +88,7 @@ with PyTerrierBackendContext():
                 raise ValueError(
                     "Can only rerank when a 'text' field is given.")
             tqdm.pandas(
-                desc="Reranking axiomatically",
+                desc="Reranking with axiom preferences",
                 unit=" topics",
             )  # Show progress during reranking queries.
             query_rankings: DataFrameGroupBy = ranking.groupby(

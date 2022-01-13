@@ -107,7 +107,7 @@ def synonym_set(
         term: str,
         smoothing: int = 0
 ) -> List[str]:
-    download_nltk_dependencies("wordnet")
+    download_nltk_dependencies("wordnet", "omw-1.4")
     cutoff = smoothing + 1
     return wordnet.synsets(term)[:cutoff]
 

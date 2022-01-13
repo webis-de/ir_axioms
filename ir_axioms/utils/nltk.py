@@ -3,7 +3,7 @@ from logging import info
 from nltk.downloader import Downloader
 
 
-def download_nltk_dependencies(*dependencies: str):
+def download_nltk_dependencies(*dependencies: str) -> None:
     downloader = Downloader()
     for dependency in dependencies:
         if not downloader.is_installed(dependency):
