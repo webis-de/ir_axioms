@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from inspect import isabstract
-from typing import Iterable
+from typing import Iterable, Union
 
 from ir_axioms.axiom.cache import _AxiomLRUCache
 from ir_axioms.model import Query, RankedDocument
@@ -132,3 +132,16 @@ class CachedAxiom(Axiom):
             )
             self._cache[context, query, document1, document2] = preference
             return preference
+
+
+AxiomLike = Union[str, Axiom, Iterable[Axiom]]
+
+
+def to_axiom(axiom_like: AxiomLike) -> Axiom:
+    if isinstance(axiom_like, str):
+        return registry[axiom_like]
+    elif isinstance(axiom_like, Iterable):
+        return AggregatedAxiom(axiom_like)
+    else:
+        assert isinstance(axiom_like, Axiom)
+        return axiom_like
