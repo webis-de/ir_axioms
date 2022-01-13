@@ -5,8 +5,8 @@ from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
 from tqdm import tqdm
 
-from ir_axioms.app import rerank_ranking
-from ir_axioms.axiom import Axiom
+from ir_axioms.app import rerank
+from ir_axioms.axiom import Axiom, AxiomLike, to_axiom
 from ir_axioms.backend import PyTerrierBackendContext
 from ir_axioms.backend.pyterrier import (
     IndexRerankingContext, EnglishTokeniser, Index
@@ -26,12 +26,12 @@ with PyTerrierBackendContext():
 
         def __init__(
                 self,
-                axiom: Axiom,
+                axiom: AxiomLike,
                 index_location: Union[Path, IndexRef, Index],
                 tokeniser: Tokeniser = EnglishTokeniser(),
                 cache_dir: Optional[Path] = None,
         ):
-            self.axiom = axiom
+            self.axiom = to_axiom(axiom)
             self.reranking_context = IndexRerankingContext(
                 index_location,
                 tokeniser,
@@ -60,11 +60,11 @@ with PyTerrierBackendContext():
             ]
 
             # Rerank documents.
-            reranked_documents = rerank_ranking(
+            reranked_documents = rerank(
                 self.axiom,
-                documents,
+                self.reranking_context,
                 query,
-                self.reranking_context
+                documents,
             )
 
             # Convert reranked documents back to data frame.
