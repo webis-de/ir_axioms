@@ -26,6 +26,8 @@ class _WordNetTermSimilarity(_TermSimilarity):
 
 
 class _WordEmbeddingTermSimilarity(_TermSimilarity):
+    embeddings_path: str
+
     @property
     @abstractmethod
     def embeddings_path(self) -> str:
@@ -41,12 +43,7 @@ class _WordEmbeddingTermSimilarity(_TermSimilarity):
 
 
 class _FastTextWikiNewsTermSimilarity(_WordEmbeddingTermSimilarity):
-    @property
-    def embeddings_path(self) -> str:
-        return (
-            "https://magnitude.plasticity.ai/"
-            "fasttext/medium/wiki-news-300d-1M-subword.magnitude"
-        )
+    embeddings_path = "fasttext/medium/wiki-news-300d-1M.magnitude"
 
 
 class _STMC1Base(Axiom, _TermSimilarity, ABC):
