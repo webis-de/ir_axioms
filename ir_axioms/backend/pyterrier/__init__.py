@@ -82,10 +82,7 @@ with PyTerrierBackendContext():
             return self._collection_statistics.numberOfDocuments
 
         def document_frequency(self, term: str) -> int:
-            print(self._lexicon.numberOfEntries())
-            print(term)
             entry = self._lexicon.getLexiconEntry(term)
-            print(entry)
             if entry is None:
                 return 0
             return entry.getDocumentFrequency()
@@ -96,7 +93,6 @@ with PyTerrierBackendContext():
 
         @cached_property
         def _term_pipelines(self) -> List[TermPipelineAccessor]:
-            print(self._index)
             if isinstance(self._index, PropertiesIndex):
                 term_pipelines: str = self._index.getIndexProperty(
                     "termpipelines",
@@ -175,8 +171,6 @@ with PyTerrierBackendContext():
                 document: Document,
                 model: RetrievalModel
         ) -> float:
-            print(document)
-
             if len(query.title) == 0:
                 return 0
 
