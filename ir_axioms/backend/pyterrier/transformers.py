@@ -8,7 +8,9 @@ from tqdm import tqdm
 from ir_axioms.app import rerank_ranking
 from ir_axioms.axiom import Axiom
 from ir_axioms.backend import PyTerrierBackendContext
-from ir_axioms.backend.pyterrier import IndexRerankingContext, EnglishTokeniser
+from ir_axioms.backend.pyterrier import (
+    IndexRerankingContext, EnglishTokeniser, Index
+)
 from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
 
@@ -25,7 +27,7 @@ with PyTerrierBackendContext():
         def __init__(
                 self,
                 axiom: Axiom,
-                index_location: Union[Path, IndexRef],
+                index_location: Union[Path, IndexRef, Index],
                 tokeniser: Tokeniser = EnglishTokeniser(),
                 cache_dir: Optional[Path] = None,
         ):

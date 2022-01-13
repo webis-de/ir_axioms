@@ -4,13 +4,13 @@ from ir_datasets import load, Dataset
 from pytest import fixture, approx
 
 from ir_axioms.backend import PyTerrierBackendContext
+from ir_axioms.backend.pyterrier import IndexRerankingContext
 from ir_axioms.model import Query, Document
 from ir_axioms.model.context import RerankingContext
 from ir_axioms.model.retrieval_model import Tf, TfIdf, BM25, PL2, QL
 
 with PyTerrierBackendContext():
     from pyterrier.index import IterDictIndexer
-    from ir_axioms.backend.pyterrier import IndexRerankingContext
 
 
     @fixture

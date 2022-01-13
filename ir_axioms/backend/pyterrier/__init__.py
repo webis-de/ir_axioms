@@ -8,6 +8,14 @@ from typing import List, Optional, Union
 from ir_datasets import load, Dataset
 
 from ir_axioms.backend import PyTerrierBackendContext
+from ir_axioms.backend.pyterrier.util import (
+    StringReader, Tokeniser, EnglishTokeniser, PropertiesIndex, Lexicon,
+    CollectionStatistics, ApplicationSetup, BaseTermPipelineAccessor,
+    WeightingModel, TfModel, TfIdfModel, BM25Model, PL2Model,
+    DirichletLMModel, with_properties, Index, TermPipelineAccessor,
+    Manager, ManagerFactory, SearchRequest, ScoredDocList, ScoredDoc,
+    RequestContextMatching, MetaIndex
+)
 from ir_axioms.model import Query, Document
 from ir_axioms.model.context import RerankingContext
 from ir_axioms.model.retrieval_model import (
@@ -18,14 +26,6 @@ from ir_axioms.utils import text_content
 with PyTerrierBackendContext():
     from pyterrier import IndexRef, IndexFactory
     from pyterrier.index import IterDictIndexer
-    from ir_axioms.backend.pyterrier.util import (
-        StringReader, Tokeniser, EnglishTokeniser, PropertiesIndex, Lexicon,
-        CollectionStatistics, ApplicationSetup, BaseTermPipelineAccessor,
-        WeightingModel, TfModel, TfIdfModel, BM25Model, PL2Model,
-        DirichletLMModel, with_properties, Index, TermPipelineAccessor,
-        Manager, ManagerFactory, SearchRequest, ScoredDocList, ScoredDoc,
-        RequestContextMatching, MetaIndex
-    )
 
     _retrieval_score_application_properties = {
         "querying.processes": ",".join([
@@ -52,26 +52,31 @@ with PyTerrierBackendContext():
 
     @dataclass(unsafe_hash=True, frozen=True)
     class IndexRerankingContext(RerankingContext):
-        index_location: Union[Path, IndexRef]
+        index_location: Union[Path, IndexRef, Index]
         tokeniser: Tokeniser = EnglishTokeniser()
         cache_dir: Optional[Path] = None
 
         @cached_property
         def _index_ref(self) -> IndexRef:
-            if self.index_location is Path:
-                return IndexRef.of(str(self.index_location.absolute()))
-            else:
+            if isinstance(self.index_location, IndexRef):
                 return self.index_location
+            elif isinstance(self.index_location, Index):
+                return self.index_location.getIndexRef()
+            else:
+                return IndexRef.of(str(self.index_location.absolute()))
 
         @cached_property
         def _index(self) -> Union[PropertiesIndex, Index]:
-            location: Union[str, IndexRef]
-            if isinstance(self.index_location, Path):
-                location = str(self.index_location.absolute())
+            if isinstance(self.index_location, Index):
+                return with_properties(self.index_location)
             else:
-                location = self.index_location
-            index = IndexFactory.of(location)
-            return with_properties(index)
+                location: Union[str, IndexRef]
+                if isinstance(self.index_location, Path):
+                    location = str(self.index_location.absolute())
+                else:
+                    location = self.index_location
+                index = IndexFactory.of(location)
+                return with_properties(index)
 
         @cached_property
         def _meta_index(self) -> MetaIndex:
