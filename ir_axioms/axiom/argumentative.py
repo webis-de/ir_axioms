@@ -154,7 +154,11 @@ class _TargerAxiomMixin:
             document.content,
             models=self.models,
             api_url=self.api_url,
-            cache_dir=context.cache_dir / "targer"
+            cache_dir=(
+                context.cache_dir / "targer"
+                if context.cache_dir is not None
+                else None
+            )
         )
 
 
