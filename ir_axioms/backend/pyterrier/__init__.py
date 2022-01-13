@@ -52,17 +52,25 @@ with PyTerrierBackendContext():
 
     @dataclass(unsafe_hash=True, frozen=True)
     class IndexRerankingContext(RerankingContext):
-        index_location: Path
+        index_location: Union[Path, IndexRef]
         tokeniser: Tokeniser = EnglishTokeniser()
         cache_dir: Optional[Path] = None
 
         @cached_property
         def _index_ref(self) -> IndexRef:
-            return IndexRef.of(str(self.index_location.absolute()))
+            if self.index_location is Path:
+                return IndexRef.of(str(self.index_location.absolute()))
+            else:
+                return self.index_location
 
         @cached_property
         def _index(self) -> Union[PropertiesIndex, Index]:
-            index = IndexFactory.of(self._index_ref)
+            location: Union[str, IndexRef]
+            if isinstance(self.index_location, Path):
+                location = str(self.index_location.absolute())
+            else:
+                location = self.index_location
+            index = IndexFactory.of(location)
             return with_properties(index)
 
         @cached_property
