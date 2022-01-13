@@ -5,5 +5,5 @@ targer-api@git+https://github.com/heinrichreimer/targer-api.git@18af90110ad7c940
 trectools~=0.0.44
 class-registry~=2.1
 pandas~=1.0
-tqdm~=3.3
+tqdm~=4.8
 ir-datasets~=0.4
