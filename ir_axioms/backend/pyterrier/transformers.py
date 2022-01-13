@@ -92,6 +92,9 @@ with PyTerrierBackendContext():
                 unit=" topics",
             )  # Show progress during reranking queries.
             query_rankings: DataFrameGroupBy = ranking.groupby(
-                ["qid", "query"])
+                by=["qid", "query"],
+                as_index=False,
+                sort=False,
+            )
             query_rankings = query_rankings.progress_apply(self._rerank)
             return query_rankings.reset_index(drop=True)
