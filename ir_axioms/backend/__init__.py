@@ -43,7 +43,6 @@ class PyTerrierBackendContext(ContextManager):
         from pyterrier import started, init
         if not started():
             init()
-            # print("Not started")
 
     def __exit__(self, *args):
         return None

@@ -1,5 +1,5 @@
-flake8
-pylint
-pytest
-pytest-cov
-ir_datasets
+flake8~=4.0
+pylint~=2.12
+pytest~=6.2
+pytest-cov~=3.0
+jupyter~=1.0
