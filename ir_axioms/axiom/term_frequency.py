@@ -55,7 +55,6 @@ class TFC3(Axiom):
         query_terms = set(context.terms(query))
         query_term_pairs = combinations(query_terms, 2)
         for query_term1, query_term2 in query_term_pairs:
-            print(query_term1, query_term2)
             idf1 = context.inverse_document_frequency(query_term1)
             idf2 = context.inverse_document_frequency(query_term2)
 
