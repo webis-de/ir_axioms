@@ -134,14 +134,18 @@ class CachedAxiom(Axiom):
             return preference
 
 
-AxiomLike = Union[str, Axiom, Iterable[Axiom]]
+AxiomLike = Union[str, Axiom, Iterable["AxiomLike"]]
+
+
+def parse_axiom(axiom_name: str) -> Axiom:
+    return registry[axiom_name]
 
 
 def to_axiom(axiom_like: AxiomLike) -> Axiom:
     if isinstance(axiom_like, str):
-        return registry[axiom_like]
+        return parse_axiom(axiom_like)
     elif isinstance(axiom_like, Iterable):
-        return AggregatedAxiom(axiom_like)
+        return AggregatedAxiom([to_axiom(item) for item in axiom_like])
     else:
         assert isinstance(axiom_like, Axiom)
         return axiom_like
