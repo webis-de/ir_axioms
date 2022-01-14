@@ -148,3 +148,57 @@ with PyTerrierBackendContext():
                 self._rerank,
                 desc="Reranking with axiom preferences",
             )
+
+
+    class AxiomaticPermutationsCount(TransformerBase):
+        name = "AxiomaticPermutationsCount"
+
+        axiom: Axiom
+        reranking_context: RerankingContext
+
+        def __init__(
+                self,
+                axiom: AxiomLike,
+                index_location: Union[Path, IndexRef, Index],
+                tokeniser: Tokeniser = EnglishTokeniser(),
+                cache_dir: Optional[Path] = None,
+        ):
+            self.axiom = to_axiom(axiom)
+            self.reranking_context = IndexRerankingContext(
+                index_location,
+                tokeniser,
+                cache_dir
+            )
+
+        def _count_permutations(self, ranking: DataFrame):
+            if len(ranking.index) == 0:
+                # Empty ranking, skip feature scoring.
+                return ranking
+
+            # Convert to typed data classes.
+            query = _query(ranking)
+            documents = _documents(ranking)
+
+            # Count permutations.
+            permutations = permutation_frequency(
+                self.axiom,
+                self.reranking_context,
+                query,
+                documents,
+            )
+
+            # Convert reranked documents back to data frame.
+            ranking["permutations_count"] = permutations
+
+            return ranking
+
+        def transform(self, ranking: DataFrame):
+            _require_columns(
+                self, ranking,
+                "qid", "query", "docid", "docno", "rank", "score", "text"
+            )
+            return _apply_per_query(
+                ranking,
+                self._count_permutations,
+                desc="Counting permutations compared to axiom preferences",
+            )

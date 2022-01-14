@@ -81,3 +81,63 @@ def rerank(
     ranking = _kwiksort(axiom, query, context, ranking)
     ranking = _reset_score(ranking)
     return ranking
+
+
+def _is_permutated(
+        axiom: AxiomLike,
+        context: RerankingContext,
+        query: Query,
+        document_1: RankedDocument,
+        document_2: RankedDocument
+):
+    if document_1 is document_2:
+        return False
+    preference = axiom.preference(context, query, document_1, document_2)
+    if preference == 0 and document_1.rank == document_2.rank:
+        return False
+    elif preference > 0 and document_1.rank < document_2.rank:
+        return False
+    elif preference < 0 and document_1.rank > document_2.rank:
+        return False
+    else:
+        return True
+
+
+def permutations(
+        axiom: AxiomLike,
+        context: RerankingContext,
+        query: Query,
+        ranking: List[RankedDocument],
+) -> List[List[bool]]:
+    return [
+        [
+            _is_permutated(axiom, context, query, document1, document2)
+            if index1 != index2 else False
+            for index2, document2 in enumerate(ranking)
+        ]
+        for index1, document1 in enumerate(ranking)
+    ]
+
+
+def permutation_count(
+        axiom: AxiomLike,
+        context: RerankingContext,
+        query: Query,
+        ranking: List[RankedDocument],
+) -> List[int]:
+    return [
+        sum(1 for is_pair_permutated in pairs if is_pair_permutated)
+        for pairs in permutations(axiom, context, query, ranking)
+    ]
+
+
+def permutation_frequency(
+        axiom: AxiomLike,
+        context: RerankingContext,
+        query: Query,
+        ranking: List[RankedDocument],
+) -> List[float]:
+    return [
+        (count - 1) / len(ranking) if len(ranking) > 0 else 0
+        for count in permutation_count(axiom, context, query, ranking)
+    ]
