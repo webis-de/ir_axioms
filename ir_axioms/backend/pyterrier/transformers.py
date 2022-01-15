@@ -42,17 +42,22 @@ with PyTerrierBackendContext():
             ranking: DataFrame,
             function: Callable[[DataFrame], DataFrame],
             desc: Optional[str] = None,
+            verbose: bool = False,
     ) -> DataFrame:
-        tqdm.pandas(
-            desc=desc,
-            unit=" topics",
-        )  # Show progress during reranking queries.
         query_rankings: DataFrameGroupBy = ranking.groupby(
             by=["qid", "query"],
             as_index=False,
             sort=False,
         )
-        query_rankings = query_rankings.progress_apply(function)
+        if verbose:
+            # Show progress during reranking queries.
+            tqdm.pandas(
+                desc=desc,
+                unit="query",
+            )
+            query_rankings = query_rankings.progress_apply(function)
+        else:
+            query_rankings = query_rankings.apply(function)
         return query_rankings.reset_index(drop=True)
 
 
@@ -101,6 +106,7 @@ with PyTerrierBackendContext():
     class AxiomaticTransformerBase(TransformerBase):
         axiom: Axiom
         reranking_context: RerankingContext
+        verbose: bool
 
         def __init__(
                 self,
@@ -108,6 +114,7 @@ with PyTerrierBackendContext():
                 index_location: Union[Path, IndexRef, Index],
                 tokeniser: Tokeniser = EnglishTokeniser(),
                 cache_dir: Optional[Path] = None,
+                verbose: bool = False,
         ):
             self.axiom = to_axiom(axiom)
             self.reranking_context = IndexRerankingContext(
@@ -115,6 +122,7 @@ with PyTerrierBackendContext():
                 tokeniser,
                 cache_dir
             )
+            self.verbose = verbose
 
 
     class AxiomaticRankingTransformerBase(AxiomaticTransformerBase, ABC):
@@ -133,6 +141,7 @@ with PyTerrierBackendContext():
                 ranking,
                 self.transform_ranking,
                 desc=self.description,
+                verbose=self.verbose
             )
 
 
