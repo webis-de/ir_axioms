@@ -1,12 +1,12 @@
 from abc import abstractmethod, ABC
+from itertools import chain
 from pathlib import Path
-from typing import Union, Optional, List, Set, Callable
+from typing import Union, Optional, List, Set, Callable, Iterable
 
 from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
 from tqdm import tqdm
 
-from ir_axioms.app import rerank, permutation_frequency
 from ir_axioms.axiom import Axiom, AxiomLike, to_axiom
 from ir_axioms.backend import PyTerrierBackendContext
 from ir_axioms.backend.pyterrier import (
@@ -150,8 +150,7 @@ with PyTerrierBackendContext():
             documents = _documents(ranking)
 
             # Rerank documents.
-            reranked_documents = rerank(
-                self.axiom,
+            reranked_documents = self.axiom.rerank(
                 self.reranking_context,
                 query,
                 documents,
@@ -183,16 +182,13 @@ with PyTerrierBackendContext():
             )
 
             # Compute axiom preferences.
-            preferences = [
-                self.axiom.preference(
+            preferences: Iterable[float] = chain(
+                *self.axiom.preferences(
                     self.reranking_context,
                     query,
-                    document1,
-                    document2,
+                    documents,
                 )
-                for document1 in documents
-                for document2 in documents
-            ]
+            )
             pairs["preference"] = preferences
 
             return pairs
@@ -212,8 +208,7 @@ with PyTerrierBackendContext():
             documents = _documents(ranking)
 
             # Count permutations.
-            permutations = permutation_frequency(
-                self.axiom,
+            permutations = self.axiom.permutation_frequency(
                 self.reranking_context,
                 query,
                 documents,
