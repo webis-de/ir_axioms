@@ -191,13 +191,13 @@ with PyTerrierBackendContext():
             )
 
             # Compute axiom preferences.
-            preferences: Iterable[float] = chain(
+            preferences = list(chain(
                 *self.axiom.preferences(
                     self.reranking_context,
                     query,
                     documents,
                 )
-            )
+            ))
             pairs["preference"] = preferences
 
             return pairs

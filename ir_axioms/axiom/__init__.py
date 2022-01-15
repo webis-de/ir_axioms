@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from inspect import isabstract
 from typing import Iterable, Union, final, List
 
-from ir_axioms.axiom.utils_actions import _kwiksort, _reset_score
 from ir_axioms.axiom.cache import _AxiomLRUCache
 from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
@@ -58,6 +57,8 @@ class Axiom(ABC):
             query: Query,
             ranking: List[RankedDocument],
     ) -> List[RankedDocument]:
+        from ir_axioms.axiom.utils_actions import _kwiksort, _reset_score
+
         ranking = _kwiksort(self, query, context, ranking)
         ranking = _reset_score(ranking)
         return ranking
