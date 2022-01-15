@@ -1,11 +1,12 @@
+from abc import abstractmethod, ABC
 from pathlib import Path
 from typing import Union, Optional, List, Set, Callable
 
-from pandas import DataFrame, Series
+from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
 from tqdm import tqdm
 
-from ir_axioms.app import rerank, permutation_count, permutation_frequency
+from ir_axioms.app import rerank, permutation_frequency
 from ir_axioms.axiom import Axiom, AxiomLike, to_axiom
 from ir_axioms.backend import PyTerrierBackendContext
 from ir_axioms.backend.pyterrier import (
@@ -40,7 +41,7 @@ with PyTerrierBackendContext():
     def _apply_per_query(
             ranking: DataFrame,
             function: Callable[[DataFrame], DataFrame],
-            desc: str = None,
+            desc: Optional[str] = None,
     ) -> DataFrame:
         tqdm.pandas(
             desc=desc,
@@ -97,9 +98,7 @@ with PyTerrierBackendContext():
         return reranked_ranking
 
 
-    class AxiomaticReranker(TransformerBase):
-        name = "AxiomaticReranker"
-
+    class AxiomaticTransformerBase(TransformerBase):
         axiom: Axiom
         reranking_context: RerankingContext
 
@@ -117,7 +116,31 @@ with PyTerrierBackendContext():
                 cache_dir
             )
 
-        def _rerank(self, ranking: DataFrame):
+
+    class AxiomaticRankingTransformerBase(AxiomaticTransformerBase, ABC):
+        description: Optional[str] = None
+
+        @abstractmethod
+        def transform_ranking(self, ranking: DataFrame) -> DataFrame:
+            pass
+
+        def transform(self, ranking: DataFrame) -> DataFrame:
+            _require_columns(
+                self, ranking,
+                "qid", "query", "docid", "docno", "rank", "score", "text"
+            )
+            return _apply_per_query(
+                ranking,
+                self.transform_ranking,
+                desc=self.description,
+            )
+
+
+    class AxiomaticReranker(AxiomaticRankingTransformerBase):
+        name = "AxiomaticReranker"
+        description = "Reranking with axiom preferences"
+
+        def transform_ranking(self, ranking: DataFrame) -> DataFrame:
             if len(ranking.index) == 0:
                 # Empty ranking, skip reranking.
                 return ranking
@@ -138,39 +161,48 @@ with PyTerrierBackendContext():
             reranked = _merge_scores(ranking, reranked_documents)
             return reranked
 
-        def transform(self, ranking: DataFrame):
-            _require_columns(
-                self, ranking,
-                "qid", "query", "docid", "docno", "rank", "score", "text"
-            )
-            return _apply_per_query(
+
+    class AxiomaticPreferences(AxiomaticRankingTransformerBase):
+        name = "AxiomaticPreferences"
+        description = "Compute axiomatic preferences"
+
+        def transform_ranking(self, ranking: DataFrame):
+            if len(ranking.index) == 0:
+                # Empty ranking, skip feature scoring.
+                return ranking
+
+            # Convert to typed data classes.
+            query = _query(ranking)
+            documents = _documents(ranking)
+
+            # Cross product.
+            pairs = ranking.merge(
                 ranking,
-                self._rerank,
-                desc="Reranking with axiom preferences",
+                on=["qid", "query"],
+                suffixes=("_a", "_b"),
             )
 
+            # Compute axiom preferences.
+            preferences = [
+                self.axiom.preference(
+                    self.reranking_context,
+                    query,
+                    document1,
+                    document2,
+                )
+                for document1 in documents
+                for document2 in documents
+            ]
+            pairs["preference"] = preferences
 
-    class AxiomaticPermutationsCount(TransformerBase):
+            return pairs
+
+
+    class AxiomaticPermutationsCount(AxiomaticRankingTransformerBase):
         name = "AxiomaticPermutationsCount"
+        description = "Counting permutations compared to axiom preferences"
 
-        axiom: Axiom
-        reranking_context: RerankingContext
-
-        def __init__(
-                self,
-                axiom: AxiomLike,
-                index_location: Union[Path, IndexRef, Index],
-                tokeniser: Tokeniser = EnglishTokeniser(),
-                cache_dir: Optional[Path] = None,
-        ):
-            self.axiom = to_axiom(axiom)
-            self.reranking_context = IndexRerankingContext(
-                index_location,
-                tokeniser,
-                cache_dir
-            )
-
-        def _count_permutations(self, ranking: DataFrame):
+        def transform_ranking(self, ranking: DataFrame):
             if len(ranking.index) == 0:
                 # Empty ranking, skip feature scoring.
                 return ranking
@@ -191,14 +223,3 @@ with PyTerrierBackendContext():
             ranking["permutations_count"] = permutations
 
             return ranking
-
-        def transform(self, ranking: DataFrame):
-            _require_columns(
-                self, ranking,
-                "qid", "query", "docid", "docno", "rank", "score", "text"
-            )
-            return _apply_per_query(
-                ranking,
-                self._count_permutations,
-                desc="Counting permutations compared to axiom preferences",
-            )
