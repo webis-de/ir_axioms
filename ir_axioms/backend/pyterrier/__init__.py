@@ -107,12 +107,14 @@ with PyTerrierBackendContext():
         def document_count(self) -> int:
             return self._collection_statistics.numberOfDocuments
 
+        @lru_cache
         def document_frequency(self, term: str) -> int:
             entry = self._lexicon.getLexiconEntry(term)
             if entry is None:
                 return 0
             return entry.getDocumentFrequency()
 
+        @lru_cache
         def document_contents(self, document: Document) -> str:
             # Shortcut when text is given in the document.
             if isinstance(document, TextDocument):
@@ -217,6 +219,7 @@ with PyTerrierBackendContext():
             # noinspection PyProtectedMember
             return ManagerFactory._from_(self._index_ref)
 
+        @lru_cache
         def retrieval_score(
                 self,
                 query: Query,

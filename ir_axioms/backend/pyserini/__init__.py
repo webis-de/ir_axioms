@@ -51,6 +51,7 @@ with PyseriniBackendContext():
         def document_count(self) -> int:
             return self._index_reader.stats()["documents"]
 
+        @lru_cache
         def document_frequency(self, term: str) -> int:
             return self._index_reader.object.getDF(
                 self._index_reader.reader,
@@ -61,6 +62,7 @@ with PyseriniBackendContext():
         def _searcher(self) -> SimpleSearcher:
             return SimpleSearcher(str(self.index_dir.absolute()))
 
+        @lru_cache
         def document_contents(self, document: Document) -> str:
             # Shortcut when text is given in the document.
             if isinstance(document, TextDocument):
@@ -116,6 +118,7 @@ with PyseriniBackendContext():
                     f"the {type(model)} retrieval model."
                 )
 
+        @lru_cache
         def retrieval_score(
                 self,
                 query: Query,
