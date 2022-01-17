@@ -2,6 +2,7 @@ image: "python:3.8"
 
 before_script:
   - python --version
+  - python -m pip install --upgrade pip
   - pip install .[test]
   - pip install .[pyserini]
   - pip install .[pyterrier]
@@ -12,15 +13,35 @@ stages:
 
 "🧪 Code format":
   stage: "Static Analysis"
+  before_script:
+    - pip install .[test]
   script:
     - flake8
 
 "🧪 Lint":
   stage: "Static Analysis"
+  before_script:
+    - pip install .[test]
   script:
     - pylint -E ir_axioms
 
-"🧪 Test":
+"🧪 Unit tests":
   stage: "Test"
+  before_script:
+    - pip install .[test]
   script:
-    - pytest --cov --cov-report=term --cov-report=xml || true
+    - pytest --cov --cov-report=term --cov-report=xml --cov-context unit
+
+"🧪 Pyserini integration tests":
+  stage: "Test"
+  before_script:
+    - pip install .[pyserini]
+  script:
+    - pytest --cov --cov-report=term --cov-report=xml --cov-context integration-pyserini
+
+"🧪 PyTerrier integration tests":
+  stage: "Test"
+  before_script:
+    - pip install .[pyterrier]
+  script:
+    - pytest --cov --cov-report=term --cov-report=xml --cov-context integration-pyterrier
