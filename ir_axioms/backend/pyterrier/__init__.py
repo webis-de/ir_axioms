@@ -52,6 +52,7 @@ with PyTerrierBackendContext():
     @dataclass(unsafe_hash=True, frozen=True)
     class IndexRerankingContext(RerankingContext):
         index_location: Union[Path, IndexRef, Index]
+        contents_metaindex_key: str = "text"
         tokeniser: Tokeniser = EnglishTokeniser()
         cache_dir: Optional[Path] = None
 
@@ -69,12 +70,7 @@ with PyTerrierBackendContext():
             if isinstance(self.index_location, Index):
                 return with_properties(self.index_location)
             else:
-                location: Union[str, IndexRef]
-                if isinstance(self.index_location, Path):
-                    location = str(self.index_location.absolute())
-                else:
-                    location = self.index_location
-                index = IndexFactory.of(location)
+                index = IndexFactory.of(self._index_ref)
                 return with_properties(index)
 
         @cached_property
@@ -105,8 +101,19 @@ with PyTerrierBackendContext():
             return entry.getDocumentFrequency()
 
         def document_contents(self, document: Document) -> str:
+            metaindex_keys: List[str] = self._meta_index.getKeys()
+            if self.contents_metaindex_key not in metaindex_keys:
+                raise ValueError(
+                    f"Index {self.index_location} did not have "
+                    f"requested metaindex key {self.contents_metaindex_key}. "
+                    f"Keys present in metaindex "
+                    f"are {metaindex_keys}."
+                )
             doc_id = self._meta_index.getDocument("docno", document.id)
-            return self._meta_index.getItem("text", doc_id)
+            return self._meta_index.getItem(
+                self.contents_metaindex_key,
+                doc_id
+            )
 
         @cached_property
         def _term_pipelines(self) -> List[TermPipelineAccessor]:

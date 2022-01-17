@@ -111,15 +111,17 @@ with PyTerrierBackendContext():
                 self,
                 axiom: AxiomLike,
                 index_location: Union[Path, IndexRef, Index],
+                contents_metaindex_key: str = "text",
                 tokeniser: Tokeniser = EnglishTokeniser(),
                 cache_dir: Optional[Path] = None,
                 verbose: bool = False,
         ):
             self.axiom = to_axiom(axiom)
             self.reranking_context = IndexRerankingContext(
-                index_location,
-                tokeniser,
-                cache_dir
+                index_location=index_location,
+                contents_metaindex_key=contents_metaindex_key,
+                tokeniser=tokeniser,
+                cache_dir=cache_dir,
             )
             self.verbose = verbose
 
@@ -134,7 +136,7 @@ with PyTerrierBackendContext():
         def transform(self, ranking: DataFrame) -> DataFrame:
             _require_columns(
                 self, ranking,
-                "qid", "query", "docid", "docno", "rank", "score", "text"
+                "qid", "query", "docid", "docno", "rank", "score"
             )
             return _apply_per_query(
                 ranking,
