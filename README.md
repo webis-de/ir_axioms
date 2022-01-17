@@ -36,8 +36,20 @@ If you want to develop the [PyTerrier](https://github.com/terrier-org/pyterrier)
 pip install -e .[pyterrier]
 ```
 
+### Testing
+
+Verify your changes against our test suite to verify.
+```shell
+flake8
+pylint -E ir_axioms
+pytest
+```
+
+Please also add tests for the axioms or integrations you've added.
+
 ### Build wheel
 
+A wheel for this package can be built by:
 ```shell
 python -m build
 ```
