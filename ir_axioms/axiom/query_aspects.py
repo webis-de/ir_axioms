@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from itertools import combinations, repeat
+from typing import List
 
 from ir_axioms.axiom import Axiom
 from ir_axioms.axiom.utils import (
@@ -25,8 +26,8 @@ class REG(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        query_terms: list[str] = list(context.term_set(query))
-        similarity_sum: list[float] = list(repeat(0, len(query_terms)))
+        query_terms: List[str] = list(context.term_set(query))
+        similarity_sum: List[float] = list(repeat(0, len(query_terms)))
         min_similarity_index: int = 0
 
         for i1, i2 in combinations(range(len(query_terms)), 2):
@@ -64,8 +65,8 @@ class ANTI_REG(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        query_terms: list[str] = list(context.term_set(query))
-        similarity_sum: list[float] = list(repeat(0, len(query_terms)))
+        query_terms: List[str] = list(context.term_set(query))
+        similarity_sum: List[float] = list(repeat(0, len(query_terms)))
         max_similarity_index: int = 0
 
         for i1, i2 in combinations(range(len(query_terms)), 2):

@@ -11,7 +11,7 @@ from ir_axioms.backend import PyseriniBackendContext
 from ir_axioms.model import Query, Document
 from ir_axioms.model.context import RerankingContext
 from ir_axioms.model.retrieval_model import (
-    RetrievalModel, TfIdf, BM25, DirichletLM, PL2, Tf
+    RetrievalModel, TfIdf, BM25, DirichletLM, PL2
 )
 
 with PyseriniBackendContext():

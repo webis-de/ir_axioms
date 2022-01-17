@@ -39,9 +39,12 @@ def approximately_equal(*args, margin_fraction: float = 0.1):
         # All values must be 0.
         return True
 
-    boundary = [abs_max * (1 + margin_fraction), abs_max * (1 - margin_fraction)]
-    boundary_min = min(boundary)
-    boundary_max = max(boundary)
+    boundaries = (
+        abs_max * (1 + margin_fraction),
+        abs_max * (1 - margin_fraction),
+    )
+    boundary_min = min(boundaries)
+    boundary_max = max(boundaries)
 
     return all(boundary_min < item < boundary_max for item in args)
 

@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from itertools import chain
 from pathlib import Path
-from typing import Union, Optional, List, Set, Callable, Iterable
+from typing import Union, Optional, List, Set, Callable
 
 from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
@@ -74,7 +74,6 @@ with PyTerrierBackendContext():
         return [
             RankedDocument(
                 id=row["docno"],
-                content=row["text"],
                 score=row["score"],
                 rank=row["rank"],
             )
