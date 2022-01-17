@@ -131,9 +131,12 @@ def _query_term_position_in_argument(
     return mean(term_arg_pos)
 
 
-def _sentence_length(document: RankedDocument) -> float:
+def _sentence_length(
+        context: RerankingContext,
+        document: RankedDocument,
+) -> float:
     download_nltk_dependencies("punkt")
-    sentences = sent_tokenize(document.content)
+    sentences = sent_tokenize(context.contents(document))
     return mean(
         len(word_tokenize(sentence))
         for sentence in sentences
@@ -151,7 +154,7 @@ class _TargerAxiomMixin:
             document: RankedDocument,
     ) -> Dict[str, TargerArgumentSentences]:
         return fetch_arguments(
-            document.content,
+            context.contents(document),
             models=self.models,
             api_url=self.api_url,
             cache_dir=(
@@ -346,8 +349,8 @@ class AverageSentenceLengthAxiom(Axiom):
         if not approximately_same_length(context, document1, document2):
             return 0
 
-        sentence_length1 = _sentence_length(document1)
-        sentence_length2 = _sentence_length(document2)
+        sentence_length1 = _sentence_length(context, document1)
+        sentence_length2 = _sentence_length(context, document2)
 
         min_length = self.min_sentence_length
         max_length = self.max_sentence_length

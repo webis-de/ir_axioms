@@ -1,5 +1,4 @@
 from json import dumps
-from json import dumps
 from pathlib import Path
 from subprocess import run
 
@@ -81,32 +80,21 @@ with PyseriniBackendContext():
     @fixture
     def document1(dataset: Dataset) -> Document:
         doc = dataset.docs_iter()[0]
-        return Document(doc.doc_id, doc.text)
+        return Document(doc.doc_id)
 
 
     def test_document1(document1: Document):
         assert document1.id == "1"
-        assert document1.content == (
-            "compact memories have flexible capacities  a digital data "
-            "storage\nsystem with capacity up to bits and random and or "
-            "sequential access\nis described\n"
-        )
 
 
     @fixture
     def document2(dataset: Dataset) -> Document:
         doc = dataset.docs_iter()[1]
-        return Document(doc.doc_id, doc.text)
+        return Document(doc.doc_id)
 
 
     def test_document2(document2: Document):
         assert document2.id == "2"
-        assert document2.content == (
-            "an electronic analogue computer for solving systems of linear "
-            "equations\nmathematical derivation of the operating principle "
-            "and stability\nconditions for a computer consisting of "
-            "amplifiers\n"
-        )
 
 
     def test_cache_dir(context: RerankingContext):
@@ -131,6 +119,36 @@ with PyseriniBackendContext():
         assert context.inverse_document_frequency("linear") == approx(3.357457)
         assert context.inverse_document_frequency("digital") == 0
         assert context.inverse_document_frequency("digit") == approx(3.859112)
+
+
+    def test_contents_query(
+            context: RerankingContext,
+            query: Query
+    ):
+        assert context.contents(query) == "solving linear equations"
+
+
+    def test_contents_document1(
+            context: RerankingContext,
+            document1: Document
+    ):
+        assert context.contents(document1) == (
+            "compact memories have flexible capacities  a digital data "
+            "storage\nsystem with capacity up to bits and random and or "
+            "sequential access\nis described\n"
+        )
+
+
+    def test_contents_document2(
+            context: RerankingContext,
+            document2: Document
+    ):
+        assert context.contents(document2) == (
+            "an electronic analogue computer for solving systems of linear "
+            "equations\nmathematical derivation of the operating principle "
+            "and stability\nconditions for a computer consisting of "
+            "amplifiers\n"
+        )
 
 
     def test_terms_query(context: RerankingContext, query: Query):

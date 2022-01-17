@@ -1,22 +1,14 @@
 from ir_axioms.axiom.term_frequency import TFC1
-from ir_axioms.model import Query, RankedDocument
-from tests.util import MemoryRerankingContext
+from ir_axioms.model import Query
+from tests.util import MemoryRerankingContext, RankedTextDocument
 
 
 def test_tfc1():
     query = Query("w1 w2")
-    document1 = RankedDocument(
-        "d1", "w1 w1 w2 w3",
-        score=0.75, rank=1)
-    document2 = RankedDocument(
-        "d2", "w1 w2 w1 w1",
-        score=0.5, rank=2
-    )
-    document3 = RankedDocument(
-        "d2", "w1 w2 w1 w1",
-        score=0.25, rank=3
-    )
-    context = MemoryRerankingContext([document1, document2, document3])
+    document1 = RankedTextDocument("d1", 3, 1, "w1 w1 w2 w3")
+    document2 = RankedTextDocument("d2", 2, 2, "w1 w2 w1 w1")
+    document3 = RankedTextDocument("d2", 1, 3, "w1 w2 w1 w1")
+    context = MemoryRerankingContext({document1, document2, document3})
 
     axiom = TFC1()
 

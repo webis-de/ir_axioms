@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from functools import cached_property, lru_cache
+from json import loads
 from logging import warning
 from pathlib import Path
 from typing import List, Optional, Union
@@ -12,7 +13,6 @@ from ir_axioms.model.context import RerankingContext
 from ir_axioms.model.retrieval_model import (
     RetrievalModel, TfIdf, BM25, DirichletLM, PL2, Tf
 )
-from ir_axioms.utils import text_content
 
 with PyseriniBackendContext():
     from pyserini.index import IndexReader
@@ -45,16 +45,17 @@ with PyseriniBackendContext():
         def _searcher(self) -> SimpleSearcher:
             return SimpleSearcher(str(self.index_dir.absolute()))
 
-        def document_content(self, document_id: str) -> str:
-            document = self._searcher.doc(document_id)
-            return document.contents()
+        def document_contents(self, document: Document) -> str:
+            document = self._searcher.doc(document.id)
+            json_document = loads(document.raw())
+            return json_document["contents"]
 
         @lru_cache
         def terms(
                 self,
                 query_or_document: Union[Query, Document]
         ) -> List[str]:
-            text = text_content(query_or_document)
+            text = self.contents(query_or_document)
             return self._index_reader.analyze(text)
 
         @staticmethod

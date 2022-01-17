@@ -27,8 +27,19 @@ class RerankingContext(ABC):
         return log(self.document_count / document_frequency)
 
     @abstractmethod
-    def document_content(self, document_id: str) -> str:
+    def document_contents(self, document: Document) -> str:
         pass
+
+    def contents(self, query_or_document: Union[Query, Document]) -> str:
+        if isinstance(query_or_document, Query):
+            return query_or_document.title
+        elif isinstance(query_or_document, Document):
+            return self.document_contents(query_or_document)
+        else:
+            raise ValueError(
+                f"Expected Query or Document "
+                f"but got {type(query_or_document)}."
+            )
 
     @abstractmethod
     def terms(self, query_or_document: Union[Query, Document]) -> List[str]:

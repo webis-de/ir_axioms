@@ -1,39 +1,46 @@
-from dataclasses import dataclass, field
-from typing import Union, List, Collection
+from dataclasses import dataclass
+from typing import Union, List, Set
 
 from nltk import word_tokenize
 
-from ir_axioms.model import Query, Document
+from ir_axioms.model import Query, Document, RankedDocument
 from ir_axioms.model.context import RerankingContext
 from ir_axioms.model.retrieval_model import RetrievalModel
-from ir_axioms.utils import text_content
+
+
+@dataclass(frozen=True)
+class RankedTextDocument(RankedDocument):
+    contents: str
 
 
 @dataclass(frozen=True)
 class MemoryRerankingContext(RerankingContext):
-    documents: Collection[Document]
+    documents: Set[RankedTextDocument]
 
     def __hash__(self):
-        return sum(hash(document) for document in self.documents)
+        return hash(self.documents)
 
     @property
     def document_count(self) -> int:
         return len(self.documents)
 
     def document_frequency(self, term: str) -> int:
-        print(
-            f"{term}: "
-            f"{[(d.id, term in self.terms(d)) for d in self.documents]} = "
-            f"{sum(1 for d in self.documents if term in self.terms(d))}"
-        )
         return sum(
             1
             for document in self.documents
             if term in self.terms(document)
         )
 
+    def document_contents(self, document: Document) -> str:
+        text_document = next(
+            text_document
+            for text_document in self.documents
+            if text_document.id == document.id
+        )
+        return text_document.contents
+
     def terms(self, query_or_document: Union[Query, Document]) -> List[str]:
-        text = text_content(query_or_document)
+        text = self.contents(query_or_document)
         return word_tokenize(text)
 
     def retrieval_score(

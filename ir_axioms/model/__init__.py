@@ -9,7 +9,6 @@ class Query:
 @dataclass(frozen=True)
 class Document:
     id: str
-    content: str
 
 
 @dataclass(frozen=True)

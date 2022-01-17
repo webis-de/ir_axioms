@@ -64,7 +64,6 @@ def _reset_score(ranking: List[RankedDocument]) -> List[RankedDocument]:
     return [
         RankedDocument(
             id=document.id,
-            content=document.content,
             score=length - i,
             rank=i + 1,
         )

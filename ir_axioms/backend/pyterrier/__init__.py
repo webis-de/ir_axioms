@@ -21,7 +21,6 @@ from ir_axioms.model.context import RerankingContext
 from ir_axioms.model.retrieval_model import (
     RetrievalModel, Tf, TfIdf, BM25, PL2, DirichletLM
 )
-from ir_axioms.utils import text_content
 
 with PyTerrierBackendContext():
     from pyterrier import IndexRef, IndexFactory
@@ -80,7 +79,12 @@ with PyTerrierBackendContext():
 
         @cached_property
         def _meta_index(self) -> MetaIndex:
-            return self._index.getMetaIndex()
+            meta_index = self._index.getMetaIndex()
+            if meta_index is None:
+                raise ValueError(
+                    f"Index {self.index_location} does not have a metaindex."
+                )
+            return meta_index
 
         @cached_property
         def _lexicon(self) -> Lexicon:
@@ -100,8 +104,8 @@ with PyTerrierBackendContext():
                 return 0
             return entry.getDocumentFrequency()
 
-        def document_content(self, document_id: str) -> str:
-            doc_id = self._meta_index.getDocument("docno", document_id)
+        def document_contents(self, document: Document) -> str:
+            doc_id = self._meta_index.getDocument("docno", document.id)
             return self._meta_index.getItem("text", doc_id)
 
         @cached_property
@@ -126,7 +130,7 @@ with PyTerrierBackendContext():
                 self,
                 query_or_document: Union[Query, Document]
         ) -> List[str]:
-            text = text_content(query_or_document)
+            text = self.contents(query_or_document)
             reader = StringReader(text)
             terms = list(self.tokeniser.tokenise(reader))
             terms = [term for term in terms if term is not None]
