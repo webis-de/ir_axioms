@@ -1,11 +1,13 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cached_property, lru_cache
 from logging import warning
 from pathlib import Path
 from re import split
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Callable, Generic, TypeVar, \
+    NamedTuple
 
 from ir_datasets import load, Dataset
+from ir_datasets.indices import Docstore
 
 from ir_axioms.backend import PyTerrierBackendContext
 from ir_axioms.backend.pyterrier.util import (
@@ -245,31 +247,73 @@ with PyTerrierBackendContext():
             return score
 
 
-    class IrDatasetsRerankingContext(IndexRerankingContext):
+    DocumentType = TypeVar("DocumentType", bound=NamedTuple)
+
+
+    def _text(document):
+        return document.text
+
+
+    class IrDatasetsRerankingContext(RerankingContext, Generic[DocumentType]):
+
+        _dataset: Dataset = field(init=False, repr=False)
+        _index_context: RerankingContext
+        _contents_accessor: Callable[[DocumentType], str]
+
         def __init__(
                 self,
                 dataset_name: str,
+                contents_accessor: Callable[[DocumentType], str] = _text,
                 tokeniser: Tokeniser = EnglishTokeniser(),
                 cache_dir: Optional[Path] = None,
         ):
             if cache_dir is None or not cache_dir.is_dir():
                 raise RuntimeError("Needs cache directory to index documents.")
+            self._contents_accessor = contents_accessor
+
             index_location = cache_dir / "index" / dataset_name
             index_location.mkdir(parents=True, exist_ok=True)
 
-            dataset: Dataset = load(dataset_name)
+            self._dataset = load(dataset_name)
             iterator = (
                 {
-                    "docno": doc.doc_id,
-                    "text": doc.conclusion + " " + doc.premises_texts,
+                    "docno": document.doc_id,
+                    "text": self._contents_accessor(document),
                 }
-                for doc in dataset.docs_iter()
+                for document in self._dataset.docs_iter()
             )
             indexer = IterDictIndexer(str(index_location.absolute()))
-            indexer.index(iterator, fields=["premises_texts"])
+            indexer.index(iterator, fields=["text"])
 
-            super(IrDatasetsRerankingContext, self).__init__(
-                index_location,
-                tokeniser,
-                cache_dir
+            self._index_context = IndexRerankingContext(
+                index_location=index_location,
+                contents_metaindex_key="text",
+                tokeniser=tokeniser,
+                cache_dir=cache_dir
             )
+
+        def document_contents(self, document: Document) -> str:
+            documents_store: Docstore = self._dataset.docs_store()
+            document: DocumentType = documents_store.get(document.id)
+            return self._contents_accessor(document)
+
+        @property
+        def document_count(self) -> int:
+            return self._index_context.document_count
+
+        def document_frequency(self, term: str) -> int:
+            return self._index_context.document_frequency(term)
+
+        def terms(
+                self,
+                query_or_document: Union[Query, Document]
+        ) -> List[str]:
+            return self._index_context.terms(query_or_document)
+
+        def retrieval_score(
+                self,
+                query: Query,
+                document: Document,
+                model: RetrievalModel
+        ) -> float:
+            return self._index_context.retrieval_score(query, document, model)
