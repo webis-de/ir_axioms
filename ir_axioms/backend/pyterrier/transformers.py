@@ -1,8 +1,9 @@
 from abc import abstractmethod, ABC
 from itertools import chain
 from pathlib import Path
-from typing import Union, Optional, List, Set, Callable
+from typing import Union, Optional, List, Set, Callable, NamedTuple
 
+from ir_datasets import Dataset
 from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
 from tqdm import tqdm
@@ -12,7 +13,7 @@ from ir_axioms.backend import PyTerrierBackendContext
 from ir_axioms.backend.pyterrier import (
     IndexRerankingContext, EnglishTokeniser, Index
 )
-from ir_axioms.model import Query, RankedDocument
+from ir_axioms.model import Query, RankedDocument, RankedTextDocument
 from ir_axioms.model.context import RerankingContext
 
 with PyTerrierBackendContext():
@@ -70,15 +71,36 @@ with PyTerrierBackendContext():
         return Query(ranking.iloc[0]["query"])
 
 
-    def _documents(ranking: DataFrame) -> List[RankedDocument]:
-        return [
-            RankedDocument(
-                id=row["docno"],
-                score=row["score"],
-                rank=row["rank"],
-            )
-            for index, row in ranking.iterrows()
-        ]
+    def _documents(
+            ranking: DataFrame,
+            contents_accessor: Optional[Union[
+                str,
+                Callable[[NamedTuple], str]
+            ]]
+    ) -> List[RankedDocument]:
+        if (
+                contents_accessor is not None and
+                isinstance(contents_accessor, str) and
+                contents_accessor in ranking.columns
+        ):
+            return [
+                RankedTextDocument(
+                    id=row["docno"],
+                    contents=row[contents_accessor],
+                    score=row["score"],
+                    rank=row["rank"],
+                )
+                for index, row in ranking.iterrows()
+            ]
+        else:
+            return [
+                RankedDocument(
+                    id=row["docno"],
+                    score=row["score"],
+                    rank=row["rank"],
+                )
+                for index, row in ranking.iterrows()
+            ]
 
 
     def _merge_scores(
@@ -105,24 +127,34 @@ with PyTerrierBackendContext():
     class AxiomaticTransformerBase(TransformerBase):
         axiom: Axiom
         reranking_context: RerankingContext
+        contents_accessor: Optional[Union[str, Callable[[NamedTuple], str]]]
         verbose: bool
 
         def __init__(
                 self,
                 axiom: AxiomLike,
-                index_location: Union[Path, IndexRef, Index],
-                contents_metaindex_key: str = "text",
+                index: Union[Path, IndexRef, Index],
+                dataset: Optional[Union[Dataset, str]] = None,
+                contents_accessor: Optional[Union[
+                    str,
+                    Callable[[NamedTuple], str]
+                ]] = "text",
                 tokeniser: Tokeniser = EnglishTokeniser(),
                 cache_dir: Optional[Path] = None,
                 verbose: bool = False,
         ):
             self.axiom = to_axiom(axiom)
+
+            # If specified, fetch document contents from ir_datasets.
             self.reranking_context = IndexRerankingContext(
-                index_location=index_location,
-                contents_metaindex_key=contents_metaindex_key,
+                index_location=index,
+                dataset=dataset,
+                contents_accessor=contents_accessor,
                 tokeniser=tokeniser,
                 cache_dir=cache_dir,
             )
+
+            self.contents_accessor = contents_accessor
             self.verbose = verbose
 
 
@@ -157,7 +189,7 @@ with PyTerrierBackendContext():
 
             # Convert to typed data classes.
             query = _query(ranking)
-            documents = _documents(ranking)
+            documents = _documents(ranking, self.contents_accessor)
 
             # Rerank documents.
             reranked_documents = self.axiom.rerank(
@@ -182,7 +214,7 @@ with PyTerrierBackendContext():
 
             # Convert to typed data classes.
             query = _query(ranking)
-            documents = _documents(ranking)
+            documents = _documents(ranking, self.contents_accessor)
 
             # Cross product.
             pairs = ranking.merge(
@@ -215,7 +247,7 @@ with PyTerrierBackendContext():
 
             # Convert to typed data classes.
             query = _query(ranking)
-            documents = _documents(ranking)
+            documents = _documents(ranking, self.contents_accessor)
 
             # Count permutations.
             permutations = self.axiom.permutation_frequency(

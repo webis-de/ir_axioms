@@ -1,12 +1,11 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import cached_property, lru_cache
 from logging import warning
 from pathlib import Path
 from re import split
-from typing import List, Optional, Union, Callable, Generic, TypeVar, \
-    NamedTuple
+from typing import List, Optional, Union, Callable, NamedTuple
 
-from ir_datasets import load, Dataset
+from ir_datasets import Dataset, load
 from ir_datasets.indices import Docstore
 
 from ir_axioms.backend import PyTerrierBackendContext
@@ -18,7 +17,7 @@ from ir_axioms.backend.pyterrier.util import (
     Manager, ManagerFactory, SearchRequest, ScoredDocList, ScoredDoc,
     RequestContextMatching, MetaIndex
 )
-from ir_axioms.model import Query, Document
+from ir_axioms.model import Query, Document, TextDocument
 from ir_axioms.model.context import RerankingContext
 from ir_axioms.model.retrieval_model import (
     RetrievalModel, Tf, TfIdf, BM25, PL2, DirichletLM
@@ -26,7 +25,6 @@ from ir_axioms.model.retrieval_model import (
 
 with PyTerrierBackendContext():
     from pyterrier import IndexRef, IndexFactory
-    from pyterrier.index import IterDictIndexer
 
     _retrieval_score_application_properties = {
         "querying.processes": ",".join([
@@ -54,7 +52,11 @@ with PyTerrierBackendContext():
     @dataclass(unsafe_hash=True, frozen=True)
     class IndexRerankingContext(RerankingContext):
         index_location: Union[Path, IndexRef, Index]
-        contents_metaindex_key: str = "text"
+        dataset: Optional[Union[Dataset, str]] = None
+        contents_accessor: Optional[Union[
+            str,
+            Callable[[NamedTuple], str]
+        ]] = "text"
         tokeniser: Tokeniser = EnglishTokeniser()
         cache_dir: Optional[Path] = None
 
@@ -93,6 +95,15 @@ with PyTerrierBackendContext():
             return self._index.getCollectionStatistics()
 
         @cached_property
+        def _dataset(self) -> Optional[Dataset]:
+            if self.dataset is None:
+                return None
+            elif isinstance(self.dataset, Dataset):
+                return self.dataset
+            else:
+                return load(self.dataset)
+
+        @cached_property
         def document_count(self) -> int:
             return self._collection_statistics.numberOfDocuments
 
@@ -103,17 +114,32 @@ with PyTerrierBackendContext():
             return entry.getDocumentFrequency()
 
         def document_contents(self, document: Document) -> str:
+            # Shortcut when text is given in the document.
+            if isinstance(document, TextDocument):
+                return document.contents
+
+            # Shortcut when ir_dataset is specified.
+            if self._dataset is not None:
+                documents_store: Docstore = self._dataset.docs_store()
+                document = documents_store.get(document.id)
+                if self.contents_accessor is None:
+                    return document.text
+                elif isinstance(self.contents_accessor, str):
+                    return getattr(document, self.contents_accessor)
+                else:
+                    return self.contents_accessor(document)
+
             metaindex_keys: List[str] = self._meta_index.getKeys()
-            if self.contents_metaindex_key not in metaindex_keys:
+            if self.contents_accessor not in metaindex_keys:
                 raise ValueError(
                     f"Index {self.index_location} did not have "
-                    f"requested metaindex key {self.contents_metaindex_key}. "
+                    f"requested metaindex key {self.contents_accessor}. "
                     f"Keys present in metaindex "
                     f"are {metaindex_keys}."
                 )
             doc_id = self._meta_index.getDocument("docno", document.id)
             return self._meta_index.getItem(
-                self.contents_metaindex_key,
+                self.contents_accessor,
                 doc_id
             )
 
@@ -245,75 +271,3 @@ with PyTerrierBackendContext():
             # Get retrieval score.
             score = first_result_doc.getScore()
             return score
-
-
-    DocumentType = TypeVar("DocumentType", bound=NamedTuple)
-
-
-    def _text(document):
-        return document.text
-
-
-    class IrDatasetsRerankingContext(RerankingContext, Generic[DocumentType]):
-
-        _dataset: Dataset = field(init=False, repr=False)
-        _index_context: RerankingContext
-        _contents_accessor: Callable[[DocumentType], str]
-
-        def __init__(
-                self,
-                dataset_name: str,
-                contents_accessor: Callable[[DocumentType], str] = _text,
-                tokeniser: Tokeniser = EnglishTokeniser(),
-                cache_dir: Optional[Path] = None,
-        ):
-            if cache_dir is None or not cache_dir.is_dir():
-                raise RuntimeError("Needs cache directory to index documents.")
-            self._contents_accessor = contents_accessor
-
-            index_location = cache_dir / "index" / dataset_name
-            index_location.mkdir(parents=True, exist_ok=True)
-
-            self._dataset = load(dataset_name)
-            iterator = (
-                {
-                    "docno": document.doc_id,
-                    "text": self._contents_accessor(document),
-                }
-                for document in self._dataset.docs_iter()
-            )
-            indexer = IterDictIndexer(str(index_location.absolute()))
-            indexer.index(iterator, fields=["text"])
-
-            self._index_context = IndexRerankingContext(
-                index_location=index_location,
-                contents_metaindex_key="text",
-                tokeniser=tokeniser,
-                cache_dir=cache_dir
-            )
-
-        def document_contents(self, document: Document) -> str:
-            documents_store: Docstore = self._dataset.docs_store()
-            document: DocumentType = documents_store.get(document.id)
-            return self._contents_accessor(document)
-
-        @property
-        def document_count(self) -> int:
-            return self._index_context.document_count
-
-        def document_frequency(self, term: str) -> int:
-            return self._index_context.document_frequency(term)
-
-        def terms(
-                self,
-                query_or_document: Union[Query, Document]
-        ) -> List[str]:
-            return self._index_context.terms(query_or_document)
-
-        def retrieval_score(
-                self,
-                query: Query,
-                document: Document,
-                model: RetrievalModel
-        ) -> float:
-            return self._index_context.retrieval_score(query, document, model)

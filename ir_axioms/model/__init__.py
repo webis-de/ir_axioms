@@ -12,6 +12,16 @@ class Document:
 
 
 @dataclass(frozen=True)
+class TextDocument(Document):
+    contents: str
+
+
+@dataclass(frozen=True)
 class RankedDocument(Document):
     score: float
     rank: int
+
+
+@dataclass(frozen=True)
+class RankedTextDocument(RankedDocument, TextDocument):
+    pass
