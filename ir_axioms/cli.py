@@ -15,7 +15,10 @@ def _prepare_parser(parser: ArgumentParser) -> ArgumentParser:
 
 
 def main():
-    parser: ArgumentParser = ArgumentParser()
+    parser: ArgumentParser = ArgumentParser(
+        "ir_axioms",
+        description="Intuitive interface to many IR axioms.",
+    )
     _prepare_parser(parser)
     args: Namespace = parser.parse_args()
     print_version: bool = args.print_version
