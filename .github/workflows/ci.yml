@@ -33,7 +33,7 @@ jobs:
           path: talk/short-talk.pdf
           name: Wheel (${{ matrix.python }}, ${{ matrix.os }})
   code-format:
-    name: "🧪 Python code format"
+    name: "🔍 Python code format"
     needs:
       - build-wheel
     strategy:
@@ -57,10 +57,10 @@ jobs:
         run: |
           pip install .
           pip install .[test]
-      - name: "🧪 Check Python code format"
+      - name: "🔍 Check Python code format"
         run: flake8
   lint:
-    name: "🧪 Python LINT"
+    name: "🔍 Python Lint"
     needs:
       - build-wheel
     strategy:
@@ -84,7 +84,7 @@ jobs:
         run: |
           pip install .
           pip install .[test]
-      - name: "🧪 Lint Python code"
+      - name: "🔍 Lint Python code"
         run: pylint -E ir_axioms
   unit-tests:
     name: "🧪 Python unit tests"

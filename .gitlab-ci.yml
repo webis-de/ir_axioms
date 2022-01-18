@@ -8,7 +8,7 @@ image: "python:3.9"
   script:
     - python -m build
 
-"🧪 Python code format":
+"🔍 Python code format":
   stage: test
   before_script:
     - python -m pip install --upgrade pip
@@ -17,7 +17,7 @@ image: "python:3.9"
   script:
     - flake8
 
-"🧪 Python LINT":
+"🔍 Python Lint":
   stage: test
   before_script:
     - python -m pip install --upgrade pip
