@@ -26,7 +26,7 @@ jobs:
           cache: pip
       - name: "🧰 Install dependencies"
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip build
           pip install -e .
       - name: "🏗️ Build Python wheel"
         run: python -m build
@@ -59,7 +59,7 @@ jobs:
           cache: pip
       - name: "🧰 Install dependencies"
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip build
           pip install -e .
           pip install -e .[test]
       - name: "🔍 Check Python code format"
@@ -88,7 +88,7 @@ jobs:
           cache: pip
       - name: "🧰 Install dependencies"
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip build
           pip install -e .
           pip install -e .[test]
       - name: "🔍 Lint Python code"
@@ -117,7 +117,7 @@ jobs:
           cache: pip
       - name: "🧰 Install dependencies"
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip build
           pip install -e .
           pip install -e .[test]
       - name: "🧪 Test Python code"
@@ -149,7 +149,7 @@ jobs:
           cache: pip
       - name: "🧰 Install dependencies"
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip build
           pip install -e .
           pip install -e .[test]
           pip install ${{ matrix.backend }}
