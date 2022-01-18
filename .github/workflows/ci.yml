@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: "🧰 Install dependencies"
-        run: pip install .
+        run: pip install -e .
       - name: "🏗️ Build Python wheel"
         run: python -m build
       - name: "📤 Upload Python wheel"
@@ -55,8 +55,8 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: "🧰 Install dependencies"
         run: |
-          pip install .
-          pip install .[test]
+          pip install -e .
+          pip install -e .[test]
       - name: "🔍 Check Python code format"
         run: flake8
   lint:
@@ -82,8 +82,8 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: "🧰 Install dependencies"
         run: |
-          pip install .
-          pip install .[test]
+          pip install -e .
+          pip install -e .[test]
       - name: "🔍 Lint Python code"
         run: pylint -E ir_axioms
   unit-tests:
@@ -109,8 +109,8 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: "🧰 Install dependencies"
         run: |
-          pip install .
-          pip install .[test]
+          pip install -e .
+          pip install -e .[test]
       - name: "🧪 Test Python code"
         run: pytest --ignore=tests/integration/
   integration-tests:
@@ -139,8 +139,8 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: "🧰 Install dependencies"
         run: |
-          pip install .
-          pip install .[test]
+          pip install -e .
+          pip install -e .[test]
           pip install ${{ matrix.backend }}
       - name: "🧪 Test Python code"
         run: pytest tests/integration/test_${{ matrix.backend }}.py

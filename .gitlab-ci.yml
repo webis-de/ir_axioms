@@ -4,7 +4,7 @@ image: "python:3.9"
   stage: build
   before_script:
     - python -m pip install --upgrade pip
-    - pip install .
+    - pip install -e .
   script:
     - python -m build
 
@@ -12,8 +12,8 @@ image: "python:3.9"
   stage: test
   before_script:
     - python -m pip install --upgrade pip
-    - pip install .
-    - pip install .[test]
+    - pip install -e .
+    - pip install -e .[test]
   script:
     - flake8
 
@@ -21,8 +21,8 @@ image: "python:3.9"
   stage: test
   before_script:
     - python -m pip install --upgrade pip
-    - pip install .
-    - pip install .[test]
+    - pip install -e .
+    - pip install -e .[test]
   script:
     - pylint -E ir_axioms
 
@@ -31,8 +31,8 @@ image: "python:3.9"
   before_script:
     - python --version
     - python -m pip install --upgrade pip
-    - pip install .
-    - pip install .[test]
+    - pip install -e .
+    - pip install -e .[test]
   script:
     - pytest --ignore=tests/integration/
 
@@ -46,8 +46,8 @@ image: "python:3.9"
   before_script:
     - python --version
     - python -m pip install --upgrade pip
-    - pip install .
-    - pip install .[test]
+    - pip install -e .
+    - pip install -e .[test]
     - pip install ${backend}
   script:
     - pytest tests/integration/test_${backend}.py
