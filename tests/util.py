@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import reduce
 from typing import Union, List, Set
 
 from nltk import word_tokenize
@@ -19,7 +20,11 @@ class MemoryRerankingContext(RerankingContext):
     documents: Set[RankedTextDocument]
 
     def __hash__(self):
-        return hash(self.documents)
+        return reduce(
+            lambda acc, document: acc * hash(document),
+            self.documents,
+            1,
+        )
 
     @property
     def document_count(self) -> int:
