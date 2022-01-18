@@ -39,15 +39,15 @@ def test_stmc2_equal():
     q = Query("dog breed")
     document1 = RankedTextDocument(
         "d1", 3, 1,
-                                   "dog fire orange"
+        "dog fire orange"
     )
     document2 = RankedTextDocument(
         "d2", 2, 2,
-                                   "dog animal animal animal time key"
+        "dog animal animal animal time key"
     )
     document3 = RankedTextDocument(
         "d3", 1, 3,
-                                   "dog animal time key"
+        "dog animal time key"
     )
     context = MemoryRerankingContext({document1, document2, document3})
 
