@@ -6,6 +6,7 @@ from nltk import word_tokenize
 from ir_axioms.model import Query, Document, RankedDocument
 from ir_axioms.model.context import RerankingContext
 from ir_axioms.model.retrieval_model import RetrievalModel
+from ir_axioms.utils.nltk import download_nltk_dependencies
 
 
 @dataclass(frozen=True)
@@ -40,6 +41,7 @@ class MemoryRerankingContext(RerankingContext):
         return text_document.contents
 
     def terms(self, query_or_document: Union[Query, Document]) -> List[str]:
+        download_nltk_dependencies("punkt")
         text = self.contents(query_or_document)
         return word_tokenize(text)
 
