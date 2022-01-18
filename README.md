@@ -11,6 +11,10 @@ such as [Pyserini](https://github.com/castorini/pyserini).
 
 ### Backends
 
+### Example Notebooks
+We include several example notebooks which demonstrate reranking and evaluating preferences in [PyTerrier](https://github.com/terrier-org/pyterrier).
+You can find the examples in the [`examples/` directory](examples/).
+
 ## Development
 
 To build and develop this package you need to install the `build`, and `setuptools` and `wheel` packages:
