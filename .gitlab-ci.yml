@@ -25,7 +25,7 @@ image: "python:3.9"
     - pip install -e .
     - pip install -e .[test]
   script:
-    - pylint -E ir_axioms tests examples
+    - pylint -E ir_axioms tests examples --ignore-paths=^ir_axioms.backend,^tests.integration
 
 "🔍 Python Lint backend":
   stage: test
