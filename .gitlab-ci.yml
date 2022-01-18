@@ -15,7 +15,7 @@ image: "python:3.9"
     - pip install -e .
     - pip install -e .[test]
   script:
-    - flake8
+    - flake8 ir_axioms tests examples
 
 "🔍 Python Lint":
   stage: test
@@ -24,7 +24,7 @@ image: "python:3.9"
     - pip install -e .
     - pip install -e .[test]
   script:
-    - pylint -E ir_axioms
+    - pylint -E ir_axioms tests examples
 
 "🧪 Python unit tests":
   stage: test

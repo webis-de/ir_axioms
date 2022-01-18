@@ -63,7 +63,7 @@ jobs:
           pip install -e .
           pip install -e .[test]
       - name: "🔍 Check Python code format"
-        run: flake8
+        run: flake8 ir_axioms tests examples
   lint:
     name: "🔍 Python Lint"
     needs:
@@ -92,7 +92,7 @@ jobs:
           pip install -e .
           pip install -e .[test]
       - name: "🔍 Lint Python code"
-        run: pylint -E ir_axioms
+        run: pylint -E ir_axioms tests examples
   unit-tests:
     name: "🧪 Python unit tests"
     needs:
