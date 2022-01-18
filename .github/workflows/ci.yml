@@ -24,7 +24,9 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: "🧰 Install dependencies"
-        run: pip install -e .
+        run: |
+          pip install build setuptools wheel
+          pip install -e .
       - name: "🏗️ Build Python wheel"
         run: python -m build
       - name: "📤 Upload Python wheel"
@@ -55,6 +57,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: "🧰 Install dependencies"
         run: |
+          pip install build setuptools wheel
           pip install -e .
           pip install -e .[test]
       - name: "🔍 Check Python code format"
@@ -82,6 +85,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: "🧰 Install dependencies"
         run: |
+          pip install build setuptools wheel
           pip install -e .
           pip install -e .[test]
       - name: "🔍 Lint Python code"
@@ -109,6 +113,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: "🧰 Install dependencies"
         run: |
+          pip install build setuptools wheel
           pip install -e .
           pip install -e .[test]
       - name: "🧪 Test Python code"
@@ -139,6 +144,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: "🧰 Install dependencies"
         run: |
+          pip install build setuptools wheel
           pip install -e .
           pip install -e .[test]
           pip install ${{ matrix.backend }}

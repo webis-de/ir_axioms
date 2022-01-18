@@ -4,6 +4,7 @@ image: "python:3.9"
   stage: build
   before_script:
     - python -m pip install --upgrade pip
+    - pip install build setuptools wheel
     - pip install -e .
   script:
     - python -m build
@@ -12,6 +13,7 @@ image: "python:3.9"
   stage: test
   before_script:
     - python -m pip install --upgrade pip
+    - pip install build setuptools wheel
     - pip install -e .
     - pip install -e .[test]
   script:
@@ -21,6 +23,7 @@ image: "python:3.9"
   stage: test
   before_script:
     - python -m pip install --upgrade pip
+    - pip install build setuptools wheel
     - pip install -e .
     - pip install -e .[test]
   script:
@@ -31,6 +34,7 @@ image: "python:3.9"
   before_script:
     - python --version
     - python -m pip install --upgrade pip
+    - pip install build setuptools wheel
     - pip install -e .
     - pip install -e .[test]
   script:
@@ -47,6 +51,7 @@ image: "python:3.9"
   before_script:
     - python --version
     - python -m pip install --upgrade pip
+    - pip install build setuptools wheel
     - pip install -e .
     - pip install -e .[test]
     - pip install ${package}
