@@ -1,50 +1,53 @@
-image: "python:3.8"
+image: "python:3.9"
 
-stages:
-  - "Static Analysis"
-  - "Test"
-
-"🧪 Code format":
-  stage: "Static Analysis"
+"🏗️ Python wheel":
+  stage: build
   before_script:
-    - python --version
     - python -m pip install --upgrade pip
-    - pip install . .[test]
+    - pip install .
+  script:
+    - python -m build
+
+"🧪 Python code format":
+  stage: test
+  before_script:
+    - python -m pip install --upgrade pip
+    - pip install .
+    - pip install .[test]
   script:
     - flake8
 
-"🧪 Lint":
-  stage: "Static Analysis"
+"🧪 Python LINT":
+  stage: test
   before_script:
-    - python --version
     - python -m pip install --upgrade pip
-    - pip install . .[test]
+    - pip install .
+    - pip install .[test]
   script:
     - pylint -E ir_axioms
 
-"🧪 Unit tests":
-  stage: "Test"
+"🧪 Python unit tests":
+  stage: test
   before_script:
     - python --version
     - python -m pip install --upgrade pip
-    - pip install . .[test]
+    - pip install .
+    - pip install .[test]
   script:
-    - pytest --cov --cov-report=term --cov-report=xml --cov-context unit
+    - pytest --ignore=tests/integration/
 
-"🧪 Pyserini integration tests":
-  stage: "Test"
+"🧪 Python integration tests":
+  parallel:
+    matrix:
+      - backend:
+        - pyserini
+        - pyterrier
+  stage: test
   before_script:
     - python --version
     - python -m pip install --upgrade pip
-    - pip install . .[pyserini]
+    - pip install .
+    - pip install .[test]
+    - pip install ${backend}
   script:
-    - pytest --cov --cov-report=term --cov-report=xml --cov-context integration-pyserini
-
-"🧪 PyTerrier integration tests":
-  stage: "Test"
-  before_script:
-    - python --version
-    - python -m pip install --upgrade pip
-    - pip install . .[pyterrier]
-  script:
-    - pytest --cov --cov-report=term --cov-report=xml --cov-context integration-pyterrier
+    - pytest tests/integration/test_${backend}.py

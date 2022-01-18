@@ -4,8 +4,8 @@ on:
   push:
 
 jobs:
-  test-python:
-    name: "🧪 Test Python code"
+  build-wheel:
+    name: "🏗️ Python wheel"
     strategy:
       matrix:
         os:
@@ -24,17 +24,123 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: "🧰 Install dependencies"
-        run: pip install .[test]
-      - name: "🧪 Check Python code format"
-        run: flake8
-      - name: "🧪 Lint Python code"
-        run: pylint -E ir_axioms
-      - name: "🧪 Test Python code"
-        run: pytest --cov --cov-report=term --cov-report=xml || true
-      - name: "📤 Upload test coverage"
+        run: pip install .
+      - name: "🏗️ Build Python wheel"
+        run: python -m build
+      - name: "📤 Upload Python wheel"
         uses: actions/upload-artifact@v2
         with:
-          path: coverage.xml
-          name: Python test coverage
-      - name: "📤 Publish test coverage"
-        uses: codecov/codecov-action@v1
+          path: talk/short-talk.pdf
+          name: Wheel (${{ matrix.python }}, ${{ matrix.os }})
+  code-format:
+    name: "🧪 Python code format"
+    needs:
+      - build-wheel
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+        python:
+          - 3.8
+          - 3.9
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: "📥 Check-out"
+        uses: actions/checkout@v2
+      - name: "🧰 Install Python"
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python }}
+      - name: "🧰 Install dependencies"
+        run: |
+          pip install .
+          pip install .[test]
+      - name: "🧪 Check Python code format"
+        run: flake8
+  lint:
+    name: "🧪 Python LINT"
+    needs:
+      - build-wheel
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+        python:
+          - 3.8
+          - 3.9
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: "📥 Check-out"
+        uses: actions/checkout@v2
+      - name: "🧰 Install Python"
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python }}
+      - name: "🧰 Install dependencies"
+        run: |
+          pip install .
+          pip install .[test]
+      - name: "🧪 Lint Python code"
+        run: pylint -E ir_axioms
+  unit-tests:
+    name: "🧪 Python unit tests"
+    needs:
+      - build-wheel
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+        python:
+          - 3.8
+          - 3.9
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: "📥 Check-out"
+        uses: actions/checkout@v2
+      - name: "🧰 Install Python"
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python }}
+      - name: "🧰 Install dependencies"
+        run: |
+          pip install .
+          pip install .[test]
+      - name: "🧪 Test Python code"
+        run: pytest --ignore=tests/integration/
+  integration-tests:
+    name: "🧪 Python integration tests"
+    needs:
+      - build-wheel
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+        python:
+          - 3.8
+          - 3.9
+        backend:
+          - pyserini
+          - pyterrier
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: "📥 Check-out"
+        uses: actions/checkout@v2
+      - name: "🧰 Install Python"
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python }}
+      - name: "🧰 Install dependencies"
+        run: |
+          pip install .
+          pip install .[test]
+          pip install ${{ matrix.backend }}
+      - name: "🧪 Test Python code"
+        run: pytest tests/integration/test_${{ matrix.backend }}.py
