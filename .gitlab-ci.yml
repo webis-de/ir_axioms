@@ -26,6 +26,22 @@ image: "python:3.9"
   script:
     - pylint -E ir_axioms tests examples
 
+"🔍 Python Lint backend":
+  stage: test
+  parallel:
+    matrix:
+      - backend: pyserini
+        package: pyserini
+      - backend: pyterrier
+        package: python-terrier
+  before_script:
+    - python -m pip install --upgrade pip build
+    - pip install -e .
+    - pip install -e .[test]
+    - pip install ${package}
+  script:
+    - pylint -E ir_axioms/backend/${backend}/ tests/integration/${backend}/
+
 "🧪 Python unit tests":
   stage: test
   before_script:
@@ -33,20 +49,20 @@ image: "python:3.9"
     - pip install -e .
     - pip install -e .[test]
   script:
-    - pytest --ignore=tests/integration/
+    - pytest ir_axioms --ignore=ir_axioms/backend/ tests --ignore=tests/integration/ examples
 
 "🧪 Python integration tests":
+  stage: test
   parallel:
     matrix:
       - backend: pyserini
         package: pyserini
       - backend: pyterrier
         package: python-terrier
-  stage: test
   before_script:
     - python -m pip install --upgrade pip build
     - pip install -e .
     - pip install -e .[test]
     - pip install ${package}
   script:
-    - pytest tests/integration/test_${backend}.py
+    - pytest tests/integration/${backend}/
