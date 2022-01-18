@@ -1,2 +1,3 @@
 pyserini>=0.14.0,==0.14.*
-pyjnius
+pyjnius>=1.4,==1.*
+faiss-cpu>=1.7,==1.*
