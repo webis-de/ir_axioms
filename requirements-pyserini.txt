@@ -1,2 +1,2 @@
-pyserini~=0.14.0
+pyserini>=0.14.0,==0.14.*
 pyjnius

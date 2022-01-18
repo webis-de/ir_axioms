@@ -1,9 +1,9 @@
-nltk~=3.6
-pymagnitude~=0.1.143
-requests~=2.26
+nltk>=3.6,==3.*
+pymagnitude>=0.1.143,==0.1.*
+requests>=2.26,==2.*
 targer-api@git+https://github.com/heinrichreimer/targer-api.git@18af90110ad7c940cb2802dd2a09340f1a6afeb5
-trectools~=0.0.44
-class-registry~=2.1
-pandas~=1.0
-tqdm~=4.8
-ir-datasets~=0.4
+trectools>=0.0.44,==0.0.*
+class-registry>=2.1,==2.*
+pandas>=1.0,==1.*
+tqdm>=4.8,==4.*
+ir-datasets>=0.4,==0.*

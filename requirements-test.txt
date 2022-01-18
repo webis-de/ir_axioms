@@ -1,5 +1,5 @@
-flake8~=4.0
-pylint~=2.12
-pytest~=6.2
-pytest-cov~=3.0
-jupyter~=1.0
+flake8>=4.0,==4.*
+pylint>=2.12,==2.*
+pytest>=6.2,==6.*
+pytest-cov>=3.0,==3.*
+jupyter>=1.0,==1.*

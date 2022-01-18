@@ -1,2 +1,2 @@
-python-terrier~=0.7.1
+python-terrier>=0.7.1,==0.7.*
 pyjnius
