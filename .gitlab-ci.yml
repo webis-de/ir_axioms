@@ -3,15 +3,16 @@ image: "python:3.9"
 "🏗️ Python wheel":
   stage: build
   before_script:
-    - python -m pip install --upgrade pip build
+    - python -m pip install --upgrade pip build twine
     - pip install -e .
   script:
     - python -m build
+    - twine check dist/*
 
 "🔍 Python code format":
   stage: test
   before_script:
-    - python -m pip install --upgrade pip build
+    - python -m pip install --upgrade pip
     - pip install -e .
     - pip install -e .[test]
   script:
@@ -20,7 +21,7 @@ image: "python:3.9"
 "🔍 Python Lint":
   stage: test
   before_script:
-    - python -m pip install --upgrade pip build
+    - python -m pip install --upgrade pip
     - pip install -e .
     - pip install -e .[test]
   script:
@@ -35,7 +36,7 @@ image: "python:3.9"
       - backend: pyterrier
         package: python-terrier
   before_script:
-    - python -m pip install --upgrade pip build
+    - python -m pip install --upgrade pip
     - pip install -e .
     - pip install -e .[test]
     - pip install ${package}
@@ -45,7 +46,7 @@ image: "python:3.9"
 "🧪 Python unit tests":
   stage: test
   before_script:
-    - python -m pip install --upgrade pip build
+    - python -m pip install --upgrade pip
     - pip install -e .
     - pip install -e .[test]
   script:
@@ -60,7 +61,7 @@ image: "python:3.9"
       - backend: pyterrier
         package: python-terrier
   before_script:
-    - python -m pip install --upgrade pip build
+    - python -m pip install --upgrade pip
     - pip install -e .
     - pip install -e .[test]
     - pip install ${package}
