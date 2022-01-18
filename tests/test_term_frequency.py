@@ -21,6 +21,3 @@ def test_tfc1():
     assert axiom.preference(context, query, document2, document3) == 0
     assert axiom.preference(context, query, document3, document2) == 0
 
-
-if __name__ == '__main__':
-    test_tfc1()
