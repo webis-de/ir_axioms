@@ -39,15 +39,16 @@ image: "python:3.9"
 "🧪 Python integration tests":
   parallel:
     matrix:
-      - backend:
-        - pyserini
-        - pyterrier
+      - backend: pyserini
+        package: pyserini
+      - backend: pyterrier
+        package: python-terrier
   stage: test
   before_script:
     - python --version
     - python -m pip install --upgrade pip
     - pip install -e .
     - pip install -e .[test]
-    - pip install ${backend}
+    - pip install ${package}
   script:
     - pytest tests/integration/test_${backend}.py

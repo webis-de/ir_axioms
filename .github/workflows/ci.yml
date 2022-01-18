@@ -142,5 +142,11 @@ jobs:
           pip install -e .
           pip install -e .[test]
           pip install ${{ matrix.backend }}
+      - name: "🧰 Install Pyserini"
+        run: pip install pyserini
+        if: ${{ matrix.backend == 'pyserini' }}
+      - name: "🧰 Install PyTerrier"
+        run: pip install python-terrier
+        if: ${{ matrix.backend == 'pyterrier' }}
       - name: "🧪 Test Python code"
         run: pytest tests/integration/test_${{ matrix.backend }}.py
