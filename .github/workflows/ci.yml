@@ -25,7 +25,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: "🧰 Install dependencies"
         run: |
-          pip install build setuptools wheel
+          python -m pip install --upgrade pip build setuptools wheel
           pip install -e .
       - name: "🏗️ Build Python wheel"
         run: python -m build
@@ -57,7 +57,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: "🧰 Install dependencies"
         run: |
-          pip install build setuptools wheel
+          python -m pip install --upgrade pip build setuptools wheel
           pip install -e .
           pip install -e .[test]
       - name: "🔍 Check Python code format"
@@ -85,7 +85,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: "🧰 Install dependencies"
         run: |
-          pip install build setuptools wheel
+          python -m pip install --upgrade pip build setuptools wheel
           pip install -e .
           pip install -e .[test]
       - name: "🔍 Lint Python code"
@@ -113,7 +113,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: "🧰 Install dependencies"
         run: |
-          pip install build setuptools wheel
+          python -m pip install --upgrade pip build setuptools wheel
           pip install -e .
           pip install -e .[test]
       - name: "🧪 Test Python code"
@@ -142,9 +142,13 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python }}
+      - name: "🧰 Install Python"
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python }}
       - name: "🧰 Install dependencies"
         run: |
-          pip install build setuptools wheel
+          python -m pip install --upgrade pip build setuptools wheel
           pip install -e .
           pip install -e .[test]
           pip install ${{ matrix.backend }}
