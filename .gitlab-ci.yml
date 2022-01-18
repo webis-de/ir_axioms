@@ -31,15 +31,14 @@ image: "python:3.9"
   stage: test
   parallel:
     matrix:
-      - backend: pyserini
-        package: pyserini
-      - backend: pyterrier
-        package: python-terrier
+      - backend:
+          - pyserini
+          - pyterrier
   before_script:
     - python -m pip install --upgrade pip
     - pip install -e .
     - pip install -e .[test]
-    - pip install ${package}
+    - pip install -e .[${backend}]
   script:
     - pylint -E ir_axioms/backend/${backend}/ tests/integration/${backend}/
 
@@ -56,14 +55,13 @@ image: "python:3.9"
   stage: test
   parallel:
     matrix:
-      - backend: pyserini
-        package: pyserini
-      - backend: pyterrier
-        package: python-terrier
+      - backend:
+          - pyserini
+          - pyterrier
   before_script:
     - python -m pip install --upgrade pip
     - pip install -e .
     - pip install -e .[test]
-    - pip install ${package}
+    - pip install -e .[${backend}]
   script:
     - pytest tests/integration/${backend}/

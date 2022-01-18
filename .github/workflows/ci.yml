@@ -115,6 +115,9 @@ jobs:
         python:
           - 3.8
           - 3.9
+        backend:
+          - pyserini
+          - pyterrier
     runs-on: ${{ matrix.os }}
     steps:
       - name: "📥 Check-out"
@@ -132,12 +135,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .
           pip install -e .[test]
-      - name: "🧰 Install Pyserini"
-        run: pip install pyserini
-        if: ${{ matrix.backend == 'pyserini' }}
-      - name: "🧰 Install PyTerrier"
-        run: pip install python-terrier
-        if: ${{ matrix.backend == 'pyterrier' }}
+          pip install -e .[${{ matrix.backend }}]
       - name: "🔍 Lint Python code"
         run: pylint -E ir_axioms/backend/${{ matrix.backend }}/ tests/integration/${{ matrix.backend }}/
   unit-tests:
@@ -205,12 +203,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .
           pip install -e .[test]
-          pip install ${{ matrix.backend }}
-      - name: "🧰 Install Pyserini"
-        run: pip install pyserini
-        if: ${{ matrix.backend == 'pyserini' }}
-      - name: "🧰 Install PyTerrier"
-        run: pip install python-terrier
-        if: ${{ matrix.backend == 'pyterrier' }}
+          pip install -e .[${{ matrix.backend }}]
       - name: "🧪 Test Python code"
         run: pytest tests/integration/${{ matrix.backend }}/
