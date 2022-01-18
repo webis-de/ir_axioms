@@ -216,7 +216,7 @@ class CachedAxiom(Axiom):
             document2: RankedDocument
     ) -> float:
         if (context, query, document1, document2) in self._cache:
-            return self._cache[context, query, document1, document2]
+            return self._cache[(context, query, document1, document2)]
         else:
             preference = self.axiom.preference(
                 context,
@@ -224,7 +224,7 @@ class CachedAxiom(Axiom):
                 document1,
                 document2
             )
-            self._cache[context, query, document1, document2] = preference
+            self._cache[(context, query, document1, document2)] = preference
             return preference
 
 

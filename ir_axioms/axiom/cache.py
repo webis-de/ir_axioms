@@ -23,18 +23,6 @@ class _AxiomLRUCache:
     )
 
     @staticmethod
-    def _key(
-            context: RerankingContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ) -> Tuple[RerankingContext, Query, RankedDocument, RankedDocument]:
-        if hash(document1) <= hash(document2):
-            return context, query, document1, document2
-        else:
-            return context, query, document2, document1
-
-    @staticmethod
     def _sign(
             document1: RankedDocument,
             document2: RankedDocument
@@ -46,22 +34,25 @@ class _AxiomLRUCache:
 
     def __contains__(
             self,
-            context: RerankingContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
+            key: Tuple[
+                RerankingContext,
+                Query,
+                RankedDocument,
+                RankedDocument
+            ],
     ):
-        key = self._key(context, query, document1, document2)
         return key in self._cache
 
     def __getitem__(
             self,
-            context: RerankingContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
+            key: Tuple[
+                RerankingContext,
+                Query,
+                RankedDocument,
+                RankedDocument
+            ],
     ):
-        key = self._key(context, query, document1, document2)
+        (_, _, document1, document2) = key
         sign = self._sign(document1, document2)
 
         value = self._cache[key] * sign
@@ -70,13 +61,15 @@ class _AxiomLRUCache:
 
     def __setitem__(
             self,
-            context: RerankingContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument,
-            preference: float
+            key: Tuple[
+                RerankingContext,
+                Query,
+                RankedDocument,
+                RankedDocument
+            ],
+            preference: float,
     ):
-        key = self._key(context, query, document1, document2)
+        (_, _, document1, document2) = key
         sign = self._sign(document1, document2)
 
         value = preference * sign
