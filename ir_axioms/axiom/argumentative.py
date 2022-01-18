@@ -252,7 +252,7 @@ class QueryTermPositionInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
 
     This axiom is based on the general observation that
     query terms occur “earlier” in relevant documents.
-    
+
     References:
         Troy, A.D., Zhang, G.: Enhancing Relevance Scoring with Chronological
             Term Rank. In: Proceedings of SIGIR 2007. pp. 599–606. ACM.
