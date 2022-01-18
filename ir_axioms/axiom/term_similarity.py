@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from functools import lru_cache, cached_property
+from itertools import product
 from math import nan
 from statistics import mean
 from typing import Set, Tuple
@@ -92,11 +93,7 @@ class _STMC2Base(Axiom, _TermSimilarity, ABC):
             terms2: Set[str]
     ) -> Tuple[str, str]:
         return max(
-            (
-                (term1, term2)
-                for term1 in terms1
-                for term2 in terms2
-            ),
+            product(terms1, terms2),
             key=self._tuple_similarity
         )
 
@@ -107,14 +104,27 @@ class _STMC2Base(Axiom, _TermSimilarity, ABC):
             document1: RankedDocument,
             document2: RankedDocument
     ):
+        """
+        Given the most similar query term and non-query term,
+        prefer the first document if
+        the second document's non-query term frequency
+        compared to the first document's query term frequency
+        is similar to the second document's length
+        compared to the first document's length.
+
+        Note that the selection of the most similar query non-query term pair
+        is non-deterministic if there are multiple equally most similar pairs.
+        """
+
         document1_terms = context.term_set(document1)
         document2_terms = context.term_set(document2)
         document_terms = document1_terms | document2_terms
         query_terms = context.term_set(query)
         non_query_terms = document_terms - query_terms
 
-        most_similar_query_term, most_similar_non_query_term = \
+        most_similar_query_term, most_similar_non_query_term = (
             self._most_similar_terms(query_terms, non_query_terms)
+        )
 
         def term_frequency_ratio(
                 document_a: RankedDocument,
