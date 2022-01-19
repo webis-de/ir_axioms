@@ -16,4 +16,4 @@ if not started():
 from pyterrier import IndexRef, IndexFactory  # noqa: F401
 from pyterrier.index import Tokeniser, IterDictIndexer  # noqa: F401
 from pyterrier.transformer import TransformerBase  # noqa: F401
-from jnius import autoclass, cast, JavaException  # noqa: F401
+from jnius import autoclass  # noqa: F401

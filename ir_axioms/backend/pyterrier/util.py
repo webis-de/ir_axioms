@@ -1,8 +1,4 @@
-from typing import Union
-
-from ir_axioms.backend.pyterrier.safe import (
-    autoclass, cast, JavaException
-)
+from ir_axioms.backend.pyterrier.safe import autoclass
 
 RequestContextMatching = autoclass("org.terrier.python.RequestContextMatching")
 ApplicationSetup = autoclass("org.terrier.utility.ApplicationSetup")
@@ -31,10 +27,3 @@ ScoredDoc = autoclass('org.terrier.querying.ScoredDoc')
 ScoredDocList = autoclass('org.terrier.querying.ScoredDocList')
 Manager = autoclass('org.terrier.querying.Manager')
 ManagerFactory = autoclass('org.terrier.querying.ManagerFactory')
-
-
-def with_properties(index: Index) -> Union[PropertiesIndex, Index]:
-    try:
-        return cast("org.terrier.structures.PropertiesIndex", index)
-    except JavaException:
-        return index

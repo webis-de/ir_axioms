@@ -10,12 +10,11 @@ from ir_datasets.indices import Docstore
 
 from ir_axioms.backend.pyterrier.safe import IndexRef, IndexFactory
 from ir_axioms.backend.pyterrier.util import (
-    StringReader, Tokeniser, EnglishTokeniser, PropertiesIndex, Lexicon,
-    CollectionStatistics, ApplicationSetup, BaseTermPipelineAccessor,
-    WeightingModel, TfModel, TfIdfModel, BM25Model, PL2Model,
-    DirichletLMModel, with_properties, Index, TermPipelineAccessor,
-    Manager, ManagerFactory, SearchRequest, ScoredDocList, ScoredDoc,
-    RequestContextMatching, MetaIndex
+    StringReader, Tokeniser, EnglishTokeniser, Lexicon, CollectionStatistics,
+    ApplicationSetup, BaseTermPipelineAccessor, WeightingModel, TfModel,
+    TfIdfModel, BM25Model, PL2Model, DirichletLMModel, Index,
+    TermPipelineAccessor, Manager, ManagerFactory, SearchRequest,
+    ScoredDocList, ScoredDoc, RequestContextMatching, MetaIndex
 )
 from ir_axioms.model import Query, Document, TextDocument
 from ir_axioms.model.context import RerankingContext
@@ -67,12 +66,11 @@ class IndexRerankingContext(RerankingContext):
             return IndexRef.of(str(self.index_location.absolute()))
 
     @cached_property
-    def _index(self) -> Union[PropertiesIndex, Index]:
+    def _index(self) -> Index:
         if isinstance(self.index_location, Index):
-            return with_properties(self.index_location)
+            return self.index_location
         else:
-            index = IndexFactory.of(self._index_ref)
-            return with_properties(index)
+            return IndexFactory.of(self._index_ref)
 
     @cached_property
     def _meta_index(self) -> MetaIndex:
@@ -144,16 +142,10 @@ class IndexRerankingContext(RerankingContext):
 
     @cached_property
     def _term_pipelines(self) -> List[TermPipelineAccessor]:
-        if isinstance(self._index, PropertiesIndex):
-            term_pipelines: str = self._index.getIndexProperty(
-                "termpipelines",
-                None
-            )
-        else:
-            term_pipelines = ApplicationSetup.getProperty(
-                "termpipelines",
-                "Stopwords,PorterStemmer"
-            )
+        term_pipelines = ApplicationSetup.getProperty(
+            "termpipelines",
+            "Stopwords,PorterStemmer"
+        )
         return [
             BaseTermPipelineAccessor(pipeline)
             for pipeline in split(r"\s*,\s*", term_pipelines.strip())
