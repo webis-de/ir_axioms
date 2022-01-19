@@ -20,4 +20,3 @@ def test_tfc1():
 
     assert axiom.preference(context, query, document2, document3) == 0
     assert axiom.preference(context, query, document3, document2) == 0
-
