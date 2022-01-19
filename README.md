@@ -15,6 +15,8 @@ such as [Pyserini](https://github.com/castorini/pyserini).
 We include several example notebooks which demonstrate reranking and evaluating preferences in [PyTerrier](https://github.com/terrier-org/pyterrier).
 You can find the examples in the [`examples/` directory](examples/).
 
+[![Open in Colab](https://img.shields.io/badge/notebook-open%20in%20colab-informational)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/pyterrier.ipynb)
+
 ## Development
 
 To build and develop this package you need to install the `build`, and `setuptools` and `wheel` packages:
