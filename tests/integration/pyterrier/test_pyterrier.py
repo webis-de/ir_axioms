@@ -23,7 +23,10 @@ def dataset(dataset_name: str) -> Dataset:
 @fixture
 def index_dir(tmp_path: Path, dataset: Dataset) -> Path:
     index_dir = tmp_path
-    indexer = IterDictIndexer(str(index_dir.absolute()))
+    indexer = IterDictIndexer(
+        str(index_dir.absolute()),
+        meta={"docno": 20, "text": 5000}
+    )
     indexer.index(
         {"docno": doc.doc_id, "text": doc.text}
         for doc in dataset.docs_iter()
@@ -108,7 +111,7 @@ def test_contents_document1(
     assert context.contents(document1) == (
         "compact memories have flexible capacities  a digital data "
         "storage\nsystem with capacity up to bits and random and or "
-        "sequential access\nis described\n"
+        "sequential access\nis described"
     )
 
 
@@ -120,7 +123,7 @@ def test_contents_document2(
         "an electronic analogue computer for solving systems of linear "
         "equations\nmathematical derivation of the operating principle "
         "and stability\nconditions for a computer consisting of "
-        "amplifiers\n"
+        "amplifiers"
     )
 
 
