@@ -18,13 +18,7 @@ QTArg = argumentative.QTArg
 QTPArg = argumentative.QTPArg
 aSL = argumentative.aSL
 
-WeightedAxiom = arithmetic.WeightedAxiom
-AggregatedAxiom = arithmetic.SumAxiom
-
 Axiom = base.Axiom
-NormalizedAxiom = base.NormalizedAxiom
-
-CachedAxiom = cache.CachedAxiom
 
 AxiomLike = conversion.AxiomLike
 to_axiom = conversion.to_axiom
