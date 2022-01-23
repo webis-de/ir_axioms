@@ -1,6 +1,7 @@
+from collections import defaultdict
 from dataclasses import dataclass
-from itertools import combinations, repeat
-from typing import List
+from itertools import combinations
+from typing import List, Dict
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import (
@@ -27,24 +28,27 @@ class REG(Axiom):
             document2: RankedDocument
     ):
         query_terms: List[str] = list(context.term_set(query))
-        similarity_sum: List[float] = list(repeat(0, len(query_terms)))
-        min_similarity_index: int = 0
+        if len(query_terms) < 1:
+            return 0
 
-        for i1, i2 in combinations(range(len(query_terms)), 2):
-            sim = synonym_set_similarity(query_terms[i1], query_terms[i2])
+        similarity_sum: Dict[str, float] = defaultdict(lambda: 0)
+        min_sim_term: str = query_terms[0]
 
-            similarity_sum[i1] += sim
-            if similarity_sum[i1] < similarity_sum[min_similarity_index]:
-                min_similarity_index = i1
+        for query_term1, query_term2 in combinations(query_terms, 2):
+            similarity = synonym_set_similarity(query_term1, query_term2)
 
-            similarity_sum[i2] += sim
-            if similarity_sum[i2] < similarity_sum[min_similarity_index]:
-                min_similarity_index = i2
+            similarity_sum[query_term1] += similarity
+            if similarity_sum[query_term1] < similarity_sum[min_sim_term]:
+                min_sim_term = query_term1
 
-        term_min = query_terms[min_similarity_index]
+            similarity_sum[query_term2] += similarity
+            if similarity_sum[query_term2] < similarity_sum[min_sim_term]:
+                min_sim_term = query_term2
+
+        print("Min sim term", min_sim_term)
         return strictly_greater(
-            context.term_frequency(document1, term_min),
-            context.term_frequency(document2, term_min),
+            context.term_frequency(document1, min_sim_term),
+            context.term_frequency(document2, min_sim_term),
         )
 
 
@@ -66,24 +70,27 @@ class ANTI_REG(Axiom):
             document2: RankedDocument
     ):
         query_terms: List[str] = list(context.term_set(query))
-        similarity_sum: List[float] = list(repeat(0, len(query_terms)))
-        max_similarity_index: int = 0
+        if len(query_terms) < 1:
+            return 0
 
-        for i1, i2 in combinations(range(len(query_terms)), 2):
-            sim = synonym_set_similarity(query_terms[i1], query_terms[i2])
+        similarity_sum: Dict[str, float] = defaultdict(lambda: 0)
+        max_sim_term: str = query_terms[0]
 
-            similarity_sum[i1] += sim
-            if similarity_sum[i1] > similarity_sum[max_similarity_index]:
-                max_similarity_index = i1
+        for query_term1, query_term2 in combinations(query_terms, 2):
+            similarity = synonym_set_similarity(query_term1, query_term2)
 
-            similarity_sum[i2] += sim
-            if similarity_sum[i2] > similarity_sum[max_similarity_index]:
-                max_similarity_index = i2
+            similarity_sum[query_term1] += similarity
+            if similarity_sum[query_term1] > similarity_sum[max_sim_term]:
+                max_sim_term = query_term1
 
-        term_max = query_terms[max_similarity_index]
+            similarity_sum[query_term2] += similarity
+            if similarity_sum[query_term2] > similarity_sum[max_sim_term]:
+                max_sim_term = query_term2
+
+        print("Max sim term", max_sim_term)
         return strictly_greater(
-            context.term_frequency(document1, term_max),
-            context.term_frequency(document2, term_max),
+            context.term_frequency(document1, max_sim_term),
+            context.term_frequency(document2, max_sim_term),
         )
 
 
@@ -100,8 +107,8 @@ class AND(Axiom):
         query_terms = context.term_set(query)
         document1_terms = context.term_set(document1)
         document2_terms = context.term_set(document2)
-        s1 = query_terms & document1_terms == query_terms
-        s2 = query_terms & document2_terms == query_terms
+        s1 = query_terms.issubset(document1_terms)
+        s2 = query_terms.issubset(document2_terms)
         return strictly_greater(s1, s2)
 
 
@@ -157,11 +164,12 @@ class M_AND(Axiom):
         query_terms = context.term_set(query)
         document1_terms = context.term_set(document1)
         document2_terms = context.term_set(document2)
-        s1 = query_terms & document1_terms
-        s2 = query_terms & document2_terms
-        return strictly_greater(len(s1), len(s2))
+        query_term_count1 = query_terms & document1_terms
+        query_term_count2 = query_terms & document2_terms
+        return strictly_greater(len(query_term_count1), len(query_term_count2))
 
 
+@dataclass(frozen=True)
 class LEN_M_AND(M_AND):
     """
     Modified M_AND:
@@ -219,6 +227,7 @@ class DIV(Axiom):
         return strictly_greater(overlap2, overlap1)
 
 
+@dataclass(frozen=True)
 class LEN_DIV(DIV):
     """
     Modified DIV:
@@ -228,7 +237,7 @@ class LEN_DIV(DIV):
     """
     name = "LEN_DIV"
 
-    margin_fraction = 0.1
+    margin_fraction: float = 0.1
 
     def preference(
             self,
