@@ -10,13 +10,17 @@ from ir_axioms.model.context import RerankingContext
 class Axiom(ABC):
     """
     Base class for all axioms.
-    Implements the various operators ``+``, ``-``, ``*``, ``/`` ``|`` ``&``
-    as well as ``search()`` for executing a single query and ``compile()`` for rewriting complex pipelines into more simples ones.
+    Implements the various operators
+    ``+``, ``-``, ``*``, ``/``, ``%``, ``&``, ``~``
+    as well as ``rerank()`` for re-ranking with KwikSort,
+    ``preferences()`` for collecting all preferences for a ranking,
+    and other methods for evaluating rankings
+    in comparison to the axiom's preferences.
     """
 
     name: str = None
     """
-    The axiom's 
+    The axiom classes unique, short name, describing its behavior.
     """
 
     def __init_subclass__(cls, **kwargs):
@@ -32,6 +36,25 @@ class Axiom(ABC):
             document1: RankedDocument,
             document2: RankedDocument
     ) -> float:
+        """
+        Return whether to prefer the first document (return value > 0),
+        the second document (return value < 0), or neither (return value = 0),
+        when retrieving a query, given a reranking context.
+
+        Note that the order of ``document1`` and ``document2``
+        in the original ranking is *only* determined
+        by their ``rank`` attributes,
+        not by their order in the ``preference()`` function invocation.
+
+        :param context: Reranking context for accessing index statistics
+        and retrieval scores.
+        :param query: Query for the original ranking
+        :param document1: Document from an original ranking.
+        :param document2: Document from an original ranking.
+        :return: >0 if ``document1`` should be preferred,
+        <0 if ``document2`` should be preferred,
+        or 0 if neither document should be preferred over the other.
+        """
         pass
 
     def __add__(self, other: Union["Axiom", float]) -> "Axiom":
@@ -108,7 +131,7 @@ class Axiom(ABC):
 
     def _multiplicative_inverse(self) -> "Axiom":
         from ir_axioms.axiom.arithmetic import MultiplicativeInverseAxiom
-        return  MultiplicativeInverseAxiom(self)
+        return MultiplicativeInverseAxiom(self)
 
     def __pos__(self) -> "Axiom":
         """
