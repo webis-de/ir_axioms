@@ -99,18 +99,18 @@ class M_TDC(Axiom):
         query_terms = context.term_set(query)
         sum_term_frequency1 = 0
         sum_term_frequency2 = 0
-        one_count_different = False
+        term_frequency_different = False
         for term in query_terms:
             count1 = context.term_frequency(document1, term)
             count2 = context.term_frequency(document2, term)
             if count1 != count2:
-                one_count_different = True
+                term_frequency_different = True
             sum_term_frequency1 += count1
             sum_term_frequency2 += count2
 
         return (
-                sum_term_frequency1 == sum_term_frequency2 and
-                one_count_different
+                isclose(sum_term_frequency1, sum_term_frequency2) and
+                term_frequency_different
         )
 
     def preference(
@@ -125,44 +125,56 @@ class M_TDC(Axiom):
 
         query_terms = context.term_set(query)
 
-        score = 0
+        score1 = 0
+        score2 = 0
 
-        for qt1, qt2 in combinations(query_terms, 2):
+        for query_term1, query_term2 in combinations(query_terms, 2):
+            idf_qt1 = context.inverse_document_frequency(query_term1)
+            idf_qt2 = context.inverse_document_frequency(query_term2)
 
-            if (
-                    context.inverse_document_frequency(qt1) <
-                    context.inverse_document_frequency(qt2)
-            ):
+            if isclose(idf_qt1, idf_qt2):
+                # Skip query term pair, as they are equally rare.
+                # We would introduce randomness into this axiom otherwise.
+                continue
+
+            if idf_qt1 < idf_qt2:
                 # Query term 1 is rarer. Swap query terms.
-                qt1, qt2 = qt2, qt1
+                query_term1, query_term2 = query_term2, query_term1
 
-            tf_d1_qt1 = context.term_frequency(document1, qt1)
-            tf_d1_qt2 = context.term_frequency(document1, qt2)
-            tf_d2_qt1 = context.term_frequency(document2, qt1)
-            tf_d2_qt2 = context.term_frequency(document2, qt2)
-            tf_q_qt1 = context.term_frequency(query, qt1)
-            tf_q_qt2 = context.term_frequency(query, qt2)
+            tf_d1_qt1 = context.term_frequency(document1, query_term1)
+            tf_d1_qt2 = context.term_frequency(document1, query_term2)
+            tf_d2_qt1 = context.term_frequency(document2, query_term1)
+            tf_d2_qt2 = context.term_frequency(document2, query_term2)
+            tf_q_qt1 = context.term_frequency(query, query_term1)
+            tf_q_qt2 = context.term_frequency(query, query_term2)
+
             if not (
                     (
-                            tf_d1_qt1 == tf_d2_qt2 and
-                            tf_d1_qt2 == tf_d2_qt1
+                            isclose(tf_d1_qt1, tf_d2_qt2) and
+                            isclose(tf_d1_qt2, tf_d2_qt1)
                     ) or
-                    tf_q_qt1 > tf_q_qt2
+                    tf_q_qt1 >= tf_q_qt2
+            ):
+                # Term pair is valid.
+                continue
+
+            if (
+                    tf_q_qt1 < tf_q_qt2 and
+                    (tf_d1_qt1 != tf_d2_qt2 or tf_d1_qt2 != tf_d2_qt1)
             ):
                 # Term pair is valid.
                 continue
 
             # Document with more occurrences of query term 1 gets a point.
-            difference = tf_d1_qt1 - tf_d2_qt1
-            if difference > 0:
-                score += 1
-            elif difference < 0:
-                score -= 1
+            if tf_d1_qt1 > tf_d2_qt1:
+                score1 += 1
+            elif tf_d1_qt1 < tf_d2_qt1:
+                score2 += 1
             else:
                 # Don't change score.
                 pass
 
-        return strictly_greater(score, 0)
+        return strictly_greater(score1, score2)
 
 
 @dataclass(frozen=True)
