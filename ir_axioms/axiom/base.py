@@ -106,8 +106,7 @@ class Axiom(ABC):
         return self & other
 
     def __neg__(self) -> "Axiom":
-        from ir_axioms.axiom.arithmetic import NegatedAxiom
-        return NegatedAxiom(self)
+        return self * -1
 
     def __pos__(self) -> "Axiom":
         """
