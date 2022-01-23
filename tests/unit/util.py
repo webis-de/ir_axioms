@@ -4,15 +4,10 @@ from typing import Union, List, Set
 
 from nltk import word_tokenize
 
-from ir_axioms.model import Query, Document, RankedDocument
+from ir_axioms.model import Query, Document, RankedTextDocument
 from ir_axioms.model.context import RerankingContext
 from ir_axioms.model.retrieval_model import RetrievalModel
 from ir_axioms.utils.nltk import download_nltk_dependencies
-
-
-@dataclass(frozen=True)
-class RankedTextDocument(RankedDocument):
-    contents: str
 
 
 @dataclass(frozen=True)

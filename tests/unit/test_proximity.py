@@ -1,6 +1,6 @@
 from ir_axioms.axiom.proximity import PROX1, PROX2, PROX3, PROX4, PROX5
-from ir_axioms.model import Query
-from tests.unit.util import MemoryRerankingContext, RankedTextDocument
+from ir_axioms.model import Query, RankedTextDocument
+from tests.unit.util import MemoryRerankingContext
 
 
 def test_prox1():
