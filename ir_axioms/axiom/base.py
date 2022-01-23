@@ -124,8 +124,7 @@ class Axiom(ABC):
         will only be called if the context-query-documents tuple
         does not already exist in the cache.
         """
-        from ir_axioms.axiom.cache import CachedAxiom
-        return CachedAxiom(self)
+        return self.cached()
 
     def weighted(self, weight: float) -> "Axiom":
         return self * weight
