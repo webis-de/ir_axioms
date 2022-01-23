@@ -19,7 +19,7 @@ QTPArg = argumentative.QTPArg
 aSL = argumentative.aSL
 
 WeightedAxiom = arithmetic.WeightedAxiom
-AggregatedAxiom = arithmetic.AggregatedAxiom
+AggregatedAxiom = arithmetic.SumAxiom
 
 Axiom = base.Axiom
 NormalizedAxiom = base.NormalizedAxiom

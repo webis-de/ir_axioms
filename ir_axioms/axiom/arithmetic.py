@@ -27,7 +27,7 @@ class WeightedAxiom(Axiom):
 
 
 @dataclass(frozen=True)
-class AggregatedAxiom(Axiom):
+class SumAxiom(Axiom):
     axioms: Iterable[Axiom]
 
     def preference(

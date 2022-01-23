@@ -36,8 +36,8 @@ class Axiom(ABC):
 
     @final
     def aggregate(self, *others: "Axiom") -> "Axiom":
-        from ir_axioms.axiom.arithmetic import AggregatedAxiom
-        return AggregatedAxiom([self, *others])
+        from ir_axioms.axiom.arithmetic import SumAxiom
+        return SumAxiom([self, *others])
 
     @final
     def __add__(self, other: "Axiom"):
