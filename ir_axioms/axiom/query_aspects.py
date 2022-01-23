@@ -45,7 +45,6 @@ class REG(Axiom):
             if similarity_sum[query_term2] < similarity_sum[min_sim_term]:
                 min_sim_term = query_term2
 
-        print("Min sim term", min_sim_term)
         return strictly_greater(
             context.term_frequency(document1, min_sim_term),
             context.term_frequency(document2, min_sim_term),
@@ -87,7 +86,6 @@ class ANTI_REG(Axiom):
             if similarity_sum[query_term2] > similarity_sum[max_sim_term]:
                 max_sim_term = query_term2
 
-        print("Max sim term", max_sim_term)
         return strictly_greater(
             context.term_frequency(document1, max_sim_term),
             context.term_frequency(document2, max_sim_term),
