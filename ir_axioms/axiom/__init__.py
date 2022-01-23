@@ -1,9 +1,12 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from inspect import isabstract
-from typing import Iterable, final, List
+from typing import final, List
 
 from ir_axioms import registry
+from ir_axioms.axiom.arithmetic import (
+    WeightedAxiom as _WeightedAxiom, AggregatedAxiom as _AggregatedAxiom
+)
 from ir_axioms.axiom.cache import CachedAxiom as _CachedAxiom
 from ir_axioms.axiom.conversion import (
     to_axiom as _to_axiom, parse_axiom as _parse_axiom, AxiomLike as _AxiomLike
@@ -143,43 +146,6 @@ class Axiom(ABC):
 
 
 @dataclass(frozen=True)
-class WeightedAxiom(Axiom):
-    axiom: Axiom
-    weight: float
-
-    def preference(
-            self,
-            context: RerankingContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ) -> float:
-        return self.weight * self.axiom.preference(
-            context,
-            query,
-            document1,
-            document2
-        )
-
-
-@dataclass(frozen=True)
-class AggregatedAxiom(Axiom):
-    axioms: Iterable[Axiom]
-
-    def preference(
-            self,
-            context: RerankingContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ) -> float:
-        return sum(
-            axiom.preference(context, query, document1, document2)
-            for axiom in self.axioms
-        )
-
-
-@dataclass(frozen=True)
 class NormalizedAxiom(Axiom):
     axiom: Axiom
 
@@ -205,6 +171,8 @@ class NormalizedAxiom(Axiom):
 
 
 # Re-export from child modules.
+WeightedAxiom = _WeightedAxiom
+AggregatedAxiom = _AggregatedAxiom
 CachedAxiom = _CachedAxiom
 AxiomLike = _AxiomLike
 parse_axiom = _parse_axiom
