@@ -1,3 +1,5 @@
+from math import isclose
+
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import approximately_equal
 from ir_axioms.model import Query, RankedDocument
@@ -21,8 +23,8 @@ class LB1(Axiom):
         for term in context.term_set(query):
             tf1 = context.term_frequency(document1, term)
             tf2 = context.term_frequency(document2, term)
-            if tf1 == 0 and tf2 > 0:
+            if isclose(tf1, 0) and tf2 > 0:
                 return -1
-            if tf2 == 0 and tf1 > 0:
+            if isclose(tf2, 0) and tf1 > 0:
                 return 1
         return 0

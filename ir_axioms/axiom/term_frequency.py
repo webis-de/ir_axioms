@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from itertools import combinations
-from math import floor
+from math import isclose
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import (
@@ -67,14 +67,14 @@ class TFC3(Axiom):
                 d2q2 = context.term_frequency(document2, query_term2)
 
                 if d1q1 != 0 and d1q2 != 0:
-                    if d2q1 == d1q1 + d1q2 and d2q2 == 0:
+                    if isclose(d2q1, d1q1 + d1q2) and isclose(d2q2, 0):
                         sum_document1 += 1
-                    if d2q2 == d1q2 + d1q1 and d2q1 == 0:
+                    if isclose(d2q2, d1q2 + d1q1) and isclose(d2q1, 0):
                         sum_document1 += 1
                 if d2q1 != 0 and d2q2 != 0:
-                    if d1q1 == d2q1 + d2q2 and d1q2 == 0:
+                    if isclose(d1q1, d2q1 + d2q2) and isclose(d1q2, 0):
                         sum_document2 += 1
-                    if d1q2 == d2q2 + d2q1 and d1q1 == 0:
+                    if isclose(d1q2, d2q2 + d2q1) and isclose(d1q1, 0):
                         sum_document2 += 1
 
         return strictly_greater(sum_document1, sum_document2)

@@ -36,7 +36,7 @@ def approximately_equal(*args, margin_fraction: float = 0.1):
 
     abs_max = max(args, key=lambda item: abs(item))
     if abs_max == 0:
-        # All values must be 0.
+        # All values are 0.
         return True
 
     boundaries = (

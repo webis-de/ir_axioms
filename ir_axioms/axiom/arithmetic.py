@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from functools import reduce
+from math import isclose
 from operator import mul
 from typing import Iterable, Union
 
@@ -168,7 +169,7 @@ class MajorityVoteAxiom(Axiom):
             return 0
 
     def __mod__(self, other: Union[Axiom, float]) -> Axiom:
-        if isinstance(other, Axiom) and self.minimum_votes == 0.5:
+        if isinstance(other, Axiom) and isclose(self.minimum_votes, 0.5):
             # Avoid chaining operators
             # if this vote has the default minimum vote proportion.
             return MajorityVoteAxiom([*self.axioms, other])
