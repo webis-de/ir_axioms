@@ -22,6 +22,7 @@ Axiom = base.Axiom
 
 AxiomLike = conversion.AxiomLike
 to_axiom = conversion.to_axiom
+AutoAxiom = conversion.AutoAxiom
 
 LNC1 = length_norm.LNC1
 TF_LNC = length_norm.TF_LNC
