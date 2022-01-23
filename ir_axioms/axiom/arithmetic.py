@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from functools import reduce
 from operator import mul
-from typing import Iterable
+from typing import Iterable, Union
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.model import Query, RankedDocument
@@ -38,6 +38,12 @@ class SumAxiom(Axiom):
             for axiom in self.axioms
         )
 
+    def __add__(self, other: Union[Axiom, float]) -> Axiom:
+        if isinstance(other, Axiom):
+            return SumAxiom([*self.axioms, other])
+        else:
+            return super().__add__(other)
+
 
 @dataclass(frozen=True)
 class ProductAxiom(Axiom):
@@ -58,9 +64,12 @@ class ProductAxiom(Axiom):
             ),
         )
 
-
-
-
+    def __mul__(self, other: Union[Axiom, float]) -> Axiom:
+        if isinstance(other, Axiom):
+            # Avoid chaining operators.
+            return ProductAxiom([*self.axioms, other])
+        else:
+            return super().__mul__(other)
 
 
 @dataclass(frozen=True)
@@ -80,6 +89,11 @@ class MultiplicativeInverseAxiom(Axiom):
             document1,
             document2
         )
+
+    def _multiplicative_inverse(self) -> Axiom:
+        # The inverse of the wrapped, inverted axiom
+        # is the original, wrapped axiom.
+        return self.axiom
 
 
 @dataclass(frozen=True)
@@ -103,6 +117,13 @@ class AndAxiom(Axiom):
             return -1
         else:
             return 0
+
+    def __and__(self, other: Union[Axiom, float]) -> Axiom:
+        if isinstance(other, Axiom):
+            # Avoid chaining operators.
+            return AndAxiom([*self.axioms, other])
+        else:
+            return super().__and__(other)
 
 
 @dataclass(frozen=True)
@@ -146,6 +167,14 @@ class MajorityVoteAxiom(Axiom):
             # Draw.
             return 0
 
+    def __mod__(self, other: Union[Axiom, float]) -> Axiom:
+        if isinstance(other, Axiom) and self.minimum_votes == 0.5:
+            # Avoid chaining operators
+            # if this vote has the default minimum vote proportion.
+            return MajorityVoteAxiom([*self.axioms, other])
+        else:
+            return super().__mod__(other)
+
 
 @dataclass(frozen=True)
 class NormalizedAxiom(Axiom):
@@ -170,3 +199,7 @@ class NormalizedAxiom(Axiom):
             return -1
         else:
             return 0
+
+    def __pos__(self) -> Axiom:
+        # This axiom is already normalized.
+        return self

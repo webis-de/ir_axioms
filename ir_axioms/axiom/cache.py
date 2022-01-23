@@ -106,3 +106,11 @@ class CachedAxiom(Axiom):
             )
             self._cache[(context, query, document1, document2)] = preference
             return preference
+
+    def cached(self, capacity: int = 4096) -> Axiom:
+        if self.capacity >= capacity:
+            # This axiom is already cached with a larger.
+            return self
+        else:
+            # Cache wrapped axiom with higher capacity.
+            return CachedAxiom(self.axiom, capacity)
