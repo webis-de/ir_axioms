@@ -4,7 +4,7 @@ from inspect import isabstract
 from typing import Iterable, final, List
 
 from ir_axioms import registry
-from ir_axioms.axiom.cache import _AxiomLRUCache
+from ir_axioms.axiom.cache import CachedAxiom as _CachedAxiom
 from ir_axioms.axiom.conversion import (
     to_axiom as _to_axiom, parse_axiom as _parse_axiom, AxiomLike as _AxiomLike
 )
@@ -204,34 +204,8 @@ class NormalizedAxiom(Axiom):
             return 0
 
 
-@dataclass(frozen=True)
-class CachedAxiom(Axiom):
-    axiom: Axiom
-    capacity: int = 4096
-
-    _cache = _AxiomLRUCache(capacity)
-
-    def preference(
-            self,
-            context: RerankingContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ) -> float:
-        if (context, query, document1, document2) in self._cache:
-            return self._cache[(context, query, document1, document2)]
-        else:
-            preference = self.axiom.preference(
-                context,
-                query,
-                document1,
-                document2
-            )
-            self._cache[(context, query, document1, document2)] = preference
-            return preference
-
-
 # Re-export from child modules.
+CachedAxiom = _CachedAxiom
 AxiomLike = _AxiomLike
 parse_axiom = _parse_axiom
 to_axiom = _to_axiom

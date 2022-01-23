@@ -2,6 +2,7 @@ from collections import OrderedDict as OrderedDictImpl
 from dataclasses import field, dataclass
 from typing import OrderedDict, Tuple
 
+from ir_axioms.axiom import Axiom
 from ir_axioms.model import RankedDocument, Query
 from ir_axioms.model.context import RerankingContext
 
@@ -78,3 +79,30 @@ class _AxiomLRUCache:
 
         if len(self._cache) > self.capacity:
             self._cache.popitem(last=False)
+
+
+@dataclass(frozen=True)
+class CachedAxiom(Axiom):
+    axiom: Axiom
+    capacity: int = 4096
+
+    _cache = _AxiomLRUCache(capacity)
+
+    def preference(
+            self,
+            context: RerankingContext,
+            query: Query,
+            document1: RankedDocument,
+            document2: RankedDocument
+    ) -> float:
+        if (context, query, document1, document2) in self._cache:
+            return self._cache[(context, query, document1, document2)]
+        else:
+            preference = self.axiom.preference(
+                context,
+                query,
+                document1,
+                document2
+            )
+            self._cache[(context, query, document1, document2)] = preference
+            return preference
