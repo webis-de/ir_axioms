@@ -34,7 +34,6 @@ class Axiom(ABC):
     ) -> float:
         pass
 
-    @final
     def __add__(self, other: Union["Axiom", float]) -> "Axiom":
         if isinstance(other, Axiom):
             from ir_axioms.axiom.arithmetic import SumAxiom
@@ -45,19 +44,15 @@ class Axiom(ABC):
         else:
             return NotImplemented
 
-    @final
     def __radd__(self, other: Union["Axiom", float]) -> "Axiom":
         return self + other
 
-    @final
     def __sub__(self, other: Union["Axiom", float]) -> "Axiom":
         return self + -other
 
-    @final
     def __rsub__(self, other: Union["Axiom", float]) -> "Axiom":
         return -self + other
 
-    @final
     def __mul__(self, other: Union["Axiom", float]) -> "Axiom":
         if isinstance(other, Axiom):
             from ir_axioms.axiom.arithmetic import ProductAxiom
@@ -68,11 +63,9 @@ class Axiom(ABC):
         else:
             return NotImplemented
 
-    @final
     def __rmul__(self, other: Union["Axiom", float]) -> "Axiom":
         return self * other
 
-    @final
     def __truediv__(self, other: Union["Axiom", float]) -> "Axiom":
         if isinstance(other, Axiom):
             from ir_axioms.axiom.arithmetic import InvertedAxiom
@@ -82,12 +75,10 @@ class Axiom(ABC):
         else:
             return NotImplemented
 
-    @final
     def __rtruediv__(self, other: Union["Axiom", float]) -> "Axiom":
         from ir_axioms.axiom.arithmetic import InvertedAxiom
         return InvertedAxiom(self) * other
 
-    @final
     def __mod__(self, other: Union["Axiom", float]) -> "Axiom":
         if isinstance(other, Axiom):
             from ir_axioms.axiom.arithmetic import MajorityVoteAxiom
@@ -98,11 +89,9 @@ class Axiom(ABC):
         else:
             return NotImplemented
 
-    @final
     def __rmod__(self, other: Union["Axiom", float]) -> "Axiom":
         return self % other
 
-    @final
     def __and__(self, other: Union["Axiom", float]) -> "Axiom":
         if isinstance(other, Axiom):
             from ir_axioms.axiom.arithmetic import AndAxiom
@@ -113,16 +102,13 @@ class Axiom(ABC):
         else:
             return NotImplemented
 
-    @final
     def __rand__(self, other: "Axiom") -> "Axiom":
         return self & other
 
-    @final
     def __neg__(self) -> "Axiom":
         from ir_axioms.axiom.arithmetic import NegatedAxiom
         return NegatedAxiom(self)
 
-    @final
     def __pos__(self) -> "Axiom":
         """
         Return the normalized preference of this axiom,
@@ -131,7 +117,6 @@ class Axiom(ABC):
         from ir_axioms.axiom.arithmetic import NormalizedAxiom
         return NormalizedAxiom(self)
 
-    @final
     def __invert__(self) -> "Axiom":
         """
         Cache this axiom's preferences, meaning the ``preference()`` method
@@ -141,11 +126,9 @@ class Axiom(ABC):
         from ir_axioms.axiom.cache import CachedAxiom
         return CachedAxiom(self)
 
-    @final
     def weighted(self, weight: float) -> "Axiom":
         return self * weight
 
-    @final
     def normalized(self) -> "Axiom":
         """
         Return the normalized preference of this axiom,
@@ -153,7 +136,6 @@ class Axiom(ABC):
         """
         return +self
 
-    @final
     def cached(self, capacity: int = 4096) -> "Axiom":
         """
         Cache this axiom's preferences, meaning the ``preference()`` method
