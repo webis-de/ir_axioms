@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from itertools import combinations, repeat
 from typing import List
 
-from ir_axioms.axiom import Axiom
+from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import (
     strictly_greater, synonym_set_similarity, approximately_same_length,
     vocabulary_overlap

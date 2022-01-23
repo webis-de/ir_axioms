@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from itertools import combinations
 from math import floor
 
-from ir_axioms.axiom import Axiom
+from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import (
     approximately_equal, strictly_greater, approximately_same_length
 )

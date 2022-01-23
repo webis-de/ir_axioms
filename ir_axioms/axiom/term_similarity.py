@@ -7,7 +7,7 @@ from typing import Set, Tuple
 
 from pymagnitude import Magnitude
 
-from ir_axioms.axiom import Axiom
+from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import synonym_set_similarity, strictly_greater, \
     approximately_equal
 from ir_axioms.model import Query, RankedDocument

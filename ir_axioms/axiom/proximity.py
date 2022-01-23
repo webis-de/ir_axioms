@@ -1,7 +1,7 @@
 from math import inf
 from typing import List
 
-from ir_axioms.axiom import Axiom
+from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import (
     strictly_less, strictly_greater, same_query_term_subset,
     average_between_query_terms, all_query_terms_in_documents,

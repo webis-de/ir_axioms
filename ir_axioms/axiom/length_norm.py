@@ -1,4 +1,4 @@
-from ir_axioms.axiom import Axiom
+from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import (
     approximately_equal, strictly_less, strictly_greater
 )
