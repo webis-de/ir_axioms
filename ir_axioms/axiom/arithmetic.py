@@ -141,6 +141,48 @@ class AndAxiom(Axiom):
 
 
 @dataclass(frozen=True)
+class MajorityVoteAxiom(Axiom):
+    axioms: Iterable[Axiom]
+    minimum_votes: float = 0.5
+    """
+    Minimum portion of votes in favor or against either document,
+    to be considered a majority, 
+    for example, 0.5 for absolute majority, 0.6 for qualified majority,
+    or 0 for relative majority.
+    """
+
+    def preference(
+            self,
+            context: RerankingContext,
+            query: Query,
+            document1: RankedDocument,
+            document2: RankedDocument
+    ) -> float:
+        preferences = [
+            axiom.preference(context, query, document1, document2)
+            for axiom in self.axioms
+        ]
+        count = len(preferences)
+        positive_count = sum(1 for preference in preferences if preference > 0)
+        negative_count = sum(1 for preference in preferences if preference < 0)
+        positive_proportion = positive_count / count
+        negative_proportion = negative_count / count
+        if (
+                positive_proportion > negative_proportion and
+                positive_proportion >= self.minimum_votes
+        ):
+            return 1
+        elif (
+                negative_proportion > positive_proportion and
+                negative_proportion >= self.minimum_votes
+        ):
+            return -1
+        else:
+            # Draw.
+            return 0
+
+
+@dataclass(frozen=True)
 class NormalizedAxiom(Axiom):
     axiom: Axiom
 
