@@ -28,7 +28,6 @@ jobs:
       - name: "🧰 Install dependencies"
         run: |
           python -m pip install --upgrade pip build twine
-          pip install -e .
       - name: "🏗️ Build Python wheel"
         run: python -m build
       - name: "🧪 Check package bundles"
@@ -66,10 +65,10 @@ jobs:
       - name: "🧰 Install dependencies"
         run: |
           python -m pip install --upgrade pip
-          pip install -e .
-          pip install -e .[test]
+          pip install .
+          pip install .[test]
       - name: "🔍 Check Python code format"
-        run: flake8 ir_axioms tests examples
+        run: flake8 ir_axioms/ tests/ examples/
   lint:
     name: "🔍 Python Lint"
     needs:
@@ -98,10 +97,10 @@ jobs:
       - name: "🧰 Install dependencies"
         run: |
           python -m pip install --upgrade pip
-          pip install -e .
-          pip install -e .[test]
+          pip install .
+          pip install .[test]
       - name: "🔍 Lint Python code"
-        run: pylint -E ir_axioms tests examples --ignore-paths=^ir_axioms.backend,^tests.integration
+        run: pylint -E ir_axioms tests.unit examples --ignore-paths=^ir_axioms.backend
   lint-backend:
     name: "🔍 Python Lint backend"
     needs:
@@ -133,11 +132,11 @@ jobs:
       - name: "🧰 Install dependencies"
         run: |
           python -m pip install --upgrade pip
-          pip install -e .
-          pip install -e .[test]
-          pip install -e .[${{ matrix.backend }}]
+          pip install .
+          pip install .[test]
+          pip install .[${{ matrix.backend }}]
       - name: "🔍 Lint Python code"
-        run: pylint -E ir_axioms/backend/${{ matrix.backend }}/ tests/integration/${{ matrix.backend }}/
+        run: pylint -E ir_axioms.backend.${{ matrix.backend }} tests.integration.${{ matrix.backend }}
   unit-tests:
     name: "🧪 Python unit tests"
     needs:
@@ -166,10 +165,10 @@ jobs:
       - name: "🧰 Install dependencies"
         run: |
           python -m pip install --upgrade pip
-          pip install -e .
-          pip install -e .[test]
+          pip install .
+          pip install .[test]
       - name: "🧪 Test Python code"
-        run: pytest ir_axioms --ignore=ir_axioms/backend/ tests --ignore=tests/integration/ examples
+        run: pytest ir_axioms/ tests/unit/ examples/ --ignore=ir_axioms/backend/
   integration-tests:
     name: "🧪 Python integration tests"
     needs:
@@ -201,8 +200,8 @@ jobs:
       - name: "🧰 Install dependencies"
         run: |
           python -m pip install --upgrade pip
-          pip install -e .
-          pip install -e .[test]
-          pip install -e .[${{ matrix.backend }}]
+          pip install .
+          pip install .[test]
+          pip install .[${{ matrix.backend }}]
       - name: "🧪 Test Python code"
         run: pytest tests/integration/${{ matrix.backend }}/

@@ -4,7 +4,6 @@ image: "python:3.9"
   stage: build
   before_script:
     - python -m pip install --upgrade pip build twine
-    - pip install -e .
   script:
     - python -m build
     - twine check dist/*
@@ -13,19 +12,19 @@ image: "python:3.9"
   stage: test
   before_script:
     - python -m pip install --upgrade pip
-    - pip install -e .
-    - pip install -e .[test]
+    - pip install .
+    - pip install .[test]
   script:
-    - flake8 ir_axioms tests examples
+    - flake8 ir_axioms/ tests/ examples/
 
 "🔍 Python Lint":
   stage: test
   before_script:
     - python -m pip install --upgrade pip
-    - pip install -e .
-    - pip install -e .[test]
+    - pip install .
+    - pip install .[test]
   script:
-    - pylint -E ir_axioms tests examples --ignore-paths=^ir_axioms.backend,^tests.integration
+    - pylint -E ir_axioms tests.unit examples --ignore-paths=^ir_axioms.backend
 
 "🔍 Python Lint backend":
   stage: test
@@ -36,20 +35,20 @@ image: "python:3.9"
           - pyterrier
   before_script:
     - python -m pip install --upgrade pip
-    - pip install -e .
-    - pip install -e .[test]
-    - pip install -e .[${backend}]
+    - pip install .
+    - pip install .[test]
+    - pip install .[${backend}]
   script:
-    - pylint -E ir_axioms/backend/${backend}/ tests/integration/${backend}/
+    - pylint -E ir_axioms.backend.${backend} tests.integration.${backend}
 
 "🧪 Python unit tests":
   stage: test
   before_script:
     - python -m pip install --upgrade pip
-    - pip install -e .
-    - pip install -e .[test]
+    - pip install .
+    - pip install .[test]
   script:
-    - pytest ir_axioms --ignore=ir_axioms/backend/ tests --ignore=tests/integration/ examples
+    - pytest ir_axioms/ tests/unit/ examples/ --ignore=ir_axioms/backend/
 
 "🧪 Python integration tests":
   stage: test
@@ -60,8 +59,8 @@ image: "python:3.9"
           - pyterrier
   before_script:
     - python -m pip install --upgrade pip
-    - pip install -e .
-    - pip install -e .[test]
-    - pip install -e .[${backend}]
+    - pip install .
+    - pip install .[test]
+    - pip install .[${backend}]
   script:
     - pytest tests/integration/${backend}/
