@@ -53,13 +53,12 @@ class TFC3(Axiom):
         sum_document2 = 0
 
         query_terms = set(context.terms(query))
-        query_term_pairs = combinations(query_terms, 2)
-        for query_term1, query_term2 in query_term_pairs:
+        for query_term1, query_term2 in combinations(query_terms, 2):
             idf1 = context.inverse_document_frequency(query_term1)
             idf2 = context.inverse_document_frequency(query_term2)
 
-            term_discrimination1 = floor(100 * idf1)
-            term_discrimination2 = floor(100 * idf2)
+            term_discrimination1 = round(idf1, 2)
+            term_discrimination2 = round(idf2, 2)
 
             if approximately_equal(term_discrimination1, term_discrimination2):
                 d1q1 = context.term_frequency(document1, query_term1)
@@ -67,18 +66,16 @@ class TFC3(Axiom):
                 d1q2 = context.term_frequency(document1, query_term2)
                 d2q2 = context.term_frequency(document2, query_term2)
 
-                sum_document1 += (
-                        (d2q1 == d1q1 + d1q2) and
-                        (d2q2 == 0) and
-                        (d1q1 != 0) and
-                        (d1q2 != 0)
-                )
-                sum_document2 += (
-                        (d1q1 == d2q1 + d2q2) and
-                        (d1q2 == 0) and
-                        (d2q1 != 0) and
-                        (d2q2 != 0)
-                )
+                if d1q1 != 0 and d1q2 != 0:
+                    if d2q1 == d1q1 + d1q2 and d2q2 == 0:
+                        sum_document1 += 1
+                    if d2q2 == d1q2 + d1q1 and d2q1 == 0:
+                        sum_document1 += 1
+                if d2q1 != 0 and d2q2 != 0:
+                    if d1q1 == d2q1 + d2q2 and d1q2 == 0:
+                        sum_document2 += 1
+                    if d1q2 == d2q2 + d2q1 and d1q1 == 0:
+                        sum_document2 += 1
 
         return strictly_greater(sum_document1, sum_document2)
 
