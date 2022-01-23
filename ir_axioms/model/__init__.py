@@ -23,5 +23,5 @@ class RankedDocument(Document):
 
 
 @dataclass(frozen=True)
-class RankedTextDocument(RankedDocument, TextDocument):
+class RankedTextDocument(TextDocument, RankedDocument):
     pass
