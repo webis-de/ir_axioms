@@ -58,6 +58,25 @@ class WeightedAxiom(Axiom):
 
 
 @dataclass(frozen=True)
+class NegatedAxiom(Axiom):
+    axiom: Axiom
+
+    def preference(
+            self,
+            context: RerankingContext,
+            query: Query,
+            document1: RankedDocument,
+            document2: RankedDocument
+    ) -> float:
+        return -self.axiom.preference(
+            context,
+            query,
+            document1,
+            document2
+        )
+
+
+@dataclass(frozen=True)
 class AndAxiom(Axiom):
     axioms: Iterable[Axiom]
 
