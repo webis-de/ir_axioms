@@ -1,4 +1,4 @@
-from ir_axioms.axiom.term_frequency import TFC1
+from ir_axioms.axiom import TFC1
 from ir_axioms.model import Query, RankedTextDocument
 from tests.unit.util import MemoryRerankingContext
 
