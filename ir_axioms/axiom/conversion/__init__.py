@@ -1,13 +1,7 @@
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from inspect import isabstract
-from typing import Iterable, Union, final, List
+from typing import Iterable, Union
 
-from ir_axioms.axiom import Axiom, AggregatedAxiom
-from ir_axioms.axiom.cache import _AxiomLRUCache
-from ir_axioms.model import Query, RankedDocument
-from ir_axioms.model.context import RerankingContext
 from ir_axioms import registry
+from ir_axioms.axiom import Axiom, AggregatedAxiom
 
 AxiomLike = Union[str, Axiom, Iterable["AxiomLike"]]
 
