@@ -59,24 +59,6 @@ class ProductAxiom(Axiom):
         )
 
 
-@dataclass(frozen=True)
-class WeightedAxiom(Axiom):
-    axiom: Axiom
-    weight: float
-
-    def preference(
-            self,
-            context: RerankingContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ) -> float:
-        return self.weight * self.axiom.preference(
-            context,
-            query,
-            document1,
-            document2
-        )
 
 
 @dataclass(frozen=True)
