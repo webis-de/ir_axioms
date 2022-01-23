@@ -58,3 +58,7 @@ class RS_QL(RetrievalScoreAxiom):
 
     def __init__(self, mu: float = 1000):
         super(RS_QL, self).__init__(DirichletLM(mu))
+
+
+# Aliases for shorter names:
+RS = RetrievalScoreAxiom
