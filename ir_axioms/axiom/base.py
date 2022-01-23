@@ -140,27 +140,3 @@ class Axiom(ABC):
             for count in self.permutation_count(context, query, ranking)
         ]
 
-
-@dataclass(frozen=True)
-class NormalizedAxiom(Axiom):
-    axiom: Axiom
-
-    def preference(
-            self,
-            context: RerankingContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ) -> float:
-        preference = self.axiom.preference(
-            context,
-            query,
-            document1,
-            document2
-        )
-        if preference > 0:
-            return 1
-        elif preference < 0:
-            return -1
-        else:
-            return 0
