@@ -47,7 +47,7 @@ class _FastTextWikiNewsTermSimilarity(_WordEmbeddingTermSimilarity):
     embeddings_path = "fasttext/medium/wiki-news-300d-1M.magnitude"
 
 
-class _STMC1Base(Axiom, _TermSimilarity, ABC):
+class _STMC1(Axiom, _TermSimilarity, ABC):
 
     def _average_similarity(self, terms1: Set[str], terms2: Set[str]) -> float:
         return mean(
@@ -73,15 +73,15 @@ class _STMC1Base(Axiom, _TermSimilarity, ABC):
         )
 
 
-class STMC1(_STMC1Base, _WordNetTermSimilarity):
+class STMC1(_STMC1, _WordNetTermSimilarity):
     name = "STMC1"
 
 
-class STMC1_f(_STMC1Base, _FastTextWikiNewsTermSimilarity):
+class STMC1_f(_STMC1, _FastTextWikiNewsTermSimilarity):
     name = "STMC1_f"
 
 
-class _STMC2Base(Axiom, _TermSimilarity, ABC):
+class _STMC2(Axiom, _TermSimilarity, ABC):
 
     def _tuple_similarity(self, terms: Tuple[str, str]) -> float:
         term1, term2 = terms
@@ -158,9 +158,9 @@ class _STMC2Base(Axiom, _TermSimilarity, ABC):
         return 0
 
 
-class STMC2(_STMC2Base, _WordNetTermSimilarity):
+class STMC2(_STMC2, _WordNetTermSimilarity):
     name = "STMC2"
 
 
-class STMC2_f(_STMC2Base, _FastTextWikiNewsTermSimilarity):
+class STMC2_f(_STMC2, _FastTextWikiNewsTermSimilarity):
     name = "STMC2_f"
