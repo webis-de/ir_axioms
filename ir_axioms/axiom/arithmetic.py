@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from functools import reduce
+from operator import mul
 from typing import Iterable
 
 from ir_axioms.axiom.base import Axiom
@@ -34,6 +36,26 @@ class SumAxiom(Axiom):
         return sum(
             axiom.preference(context, query, document1, document2)
             for axiom in self.axioms
+        )
+
+
+@dataclass(frozen=True)
+class ProductAxiom(Axiom):
+    axioms: Iterable[Axiom]
+
+    def preference(
+            self,
+            context: RerankingContext,
+            query: Query,
+            document1: RankedDocument,
+            document2: RankedDocument
+    ) -> float:
+        return reduce(
+            mul,
+            (
+                axiom.preference(context, query, document1, document2)
+                for axiom in self.axioms
+            ),
         )
 
 
