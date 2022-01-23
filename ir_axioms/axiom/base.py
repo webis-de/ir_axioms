@@ -68,16 +68,14 @@ class Axiom(ABC):
 
     def __truediv__(self, other: Union["Axiom", float]) -> "Axiom":
         if isinstance(other, Axiom):
-            from ir_axioms.axiom.arithmetic import InvertedAxiom
-            return self * InvertedAxiom(other)
+            return self * other._multiplicative_inverse()
         elif isinstance(other, float):
             return self * (1 / other)
         else:
             return NotImplemented
 
     def __rtruediv__(self, other: Union["Axiom", float]) -> "Axiom":
-        from ir_axioms.axiom.arithmetic import InvertedAxiom
-        return InvertedAxiom(self) * other
+        return self._multiplicative_inverse() * other
 
     def __mod__(self, other: Union["Axiom", float]) -> "Axiom":
         if isinstance(other, Axiom):
@@ -107,6 +105,10 @@ class Axiom(ABC):
 
     def __neg__(self) -> "Axiom":
         return self * -1
+
+    def _multiplicative_inverse(self) -> "Axiom":
+        from ir_axioms.axiom.arithmetic import MultiplicativeInverseAxiom
+        return  MultiplicativeInverseAxiom(self)
 
     def __pos__(self) -> "Axiom":
         """

@@ -64,7 +64,7 @@ class ProductAxiom(Axiom):
 
 
 @dataclass(frozen=True)
-class InvertedAxiom(Axiom):
+class MultiplicativeInverseAxiom(Axiom):
     axiom: Axiom
 
     def preference(
