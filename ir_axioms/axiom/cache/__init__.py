@@ -2,7 +2,7 @@ from collections import OrderedDict as OrderedDictImpl
 from dataclasses import field, dataclass
 from typing import OrderedDict, Tuple
 
-from ir_axioms.axiom import Axiom
+from ir_axioms.axiom.base import Axiom
 from ir_axioms.model import RankedDocument, Query
 from ir_axioms.model.context import RerankingContext
 
