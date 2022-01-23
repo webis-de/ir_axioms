@@ -55,3 +55,26 @@ class WeightedAxiom(Axiom):
             document1,
             document2
         )
+
+
+@dataclass(frozen=True)
+class AndAxiom(Axiom):
+    axioms: Iterable[Axiom]
+
+    def preference(
+            self,
+            context: RerankingContext,
+            query: Query,
+            document1: RankedDocument,
+            document2: RankedDocument
+    ) -> float:
+        preferences = [
+            axiom.preference(context, query, document1, document2)
+            for axiom in self.axioms
+        ]
+        if all(preference > 0 for preference in preferences):
+            return 1
+        elif all(preference > 0 for preference in preferences):
+            return -1
+        else:
+            return 0
