@@ -1,6 +1,6 @@
 from ir_axioms.axiom.term_similarity import STMC1, STMC2
 from ir_axioms.model import Query
-from tests.util import MemoryRerankingContext, RankedTextDocument
+from tests.unit.util import MemoryRerankingContext, RankedTextDocument
 
 
 def test_stmc1():
