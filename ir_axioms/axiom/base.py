@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from inspect import isabstract
-from typing import final, List
+from typing import final, List, Union
 
 from ir_axioms import registry
 from ir_axioms.model import Query, RankedDocument
@@ -9,9 +8,19 @@ from ir_axioms.model.context import RerankingContext
 
 
 class Axiom(ABC):
+    """
+    Base class for all axioms.
+    Implements the various operators ``+``, ``-``, ``*``, ``/`` ``|`` ``&``
+    as well as ``search()`` for executing a single query and ``compile()`` for rewriting complex pipelines into more simples ones.
+    """
+
     name: str = None
+    """
+    The axiom's 
+    """
 
     def __init_subclass__(cls, **kwargs):
+        # Automatically register this subclass to the global axiom registry.
         if not isabstract(cls) and cls.name is not None:
             registry[cls.name] = cls
 
@@ -26,29 +35,131 @@ class Axiom(ABC):
         pass
 
     @final
-    def weighted(self, weight: float) -> "Axiom":
-        from ir_axioms.axiom.arithmetic import WeightedAxiom
-        return WeightedAxiom(self, weight)
+    def __add__(self, other: Union["Axiom", float]) -> "Axiom":
+        if isinstance(other, Axiom):
+            from ir_axioms.axiom.arithmetic import SumAxiom
+            return SumAxiom([self, other])
+        elif isinstance(other, float):
+            from ir_axioms.axiom.arithmetic import UniformAxiom
+            return self + UniformAxiom(other)
+        else:
+            return NotImplemented
 
     @final
-    def __mul__(self, weight: float):
-        return self.weighted(weight)
+    def __radd__(self, other: Union["Axiom", float]) -> "Axiom":
+        return self + other
 
     @final
-    def aggregate(self, *others: "Axiom") -> "Axiom":
-        from ir_axioms.axiom.arithmetic import SumAxiom
-        return SumAxiom([self, *others])
+    def __sub__(self, other: Union["Axiom", float]) -> "Axiom":
+        return self + -other
 
     @final
-    def __add__(self, other: "Axiom"):
-        return self.aggregate(other)
+    def __rsub__(self, other: Union["Axiom", float]) -> "Axiom":
+        return -self + other
 
     @final
-    def normalized(self) -> "Axiom":
+    def __mul__(self, other: Union["Axiom", float]) -> "Axiom":
+        if isinstance(other, Axiom):
+            from ir_axioms.axiom.arithmetic import ProductAxiom
+            return ProductAxiom([self, other])
+        elif isinstance(other, float):
+            from ir_axioms.axiom.arithmetic import UniformAxiom
+            return self * UniformAxiom(other)
+        else:
+            return NotImplemented
+
+    @final
+    def __rmul__(self, other: Union["Axiom", float]) -> "Axiom":
+        return self * other
+
+    @final
+    def __truediv__(self, other: Union["Axiom", float]) -> "Axiom":
+        if isinstance(other, Axiom):
+            from ir_axioms.axiom.arithmetic import InvertedAxiom
+            return self * InvertedAxiom(other)
+        elif isinstance(other, float):
+            return self * (1 / other)
+        else:
+            return NotImplemented
+
+    @final
+    def __rtruediv__(self, other: Union["Axiom", float]) -> "Axiom":
+        from ir_axioms.axiom.arithmetic import InvertedAxiom
+        return InvertedAxiom(self) * other
+
+    @final
+    def __mod__(self, other: Union["Axiom", float]) -> "Axiom":
+        if isinstance(other, Axiom):
+            from ir_axioms.axiom.arithmetic import MajorityVoteAxiom
+            return MajorityVoteAxiom([self, other])
+        elif isinstance(other, float):
+            from ir_axioms.axiom.arithmetic import UniformAxiom
+            return self % UniformAxiom(other)
+        else:
+            return NotImplemented
+
+    @final
+    def __rmod__(self, other: Union["Axiom", float]) -> "Axiom":
+        return self % other
+
+    @final
+    def __and__(self, other: Union["Axiom", float]) -> "Axiom":
+        if isinstance(other, Axiom):
+            from ir_axioms.axiom.arithmetic import AndAxiom
+            return AndAxiom([self, other])
+        elif isinstance(other, float):
+            from ir_axioms.axiom.arithmetic import UniformAxiom
+            return self & UniformAxiom(other)
+        else:
+            return NotImplemented
+
+    @final
+    def __rand__(self, other: "Axiom") -> "Axiom":
+        return self & other
+
+    @final
+    def __neg__(self) -> "Axiom":
+        from ir_axioms.axiom.arithmetic import NegatedAxiom
+        return NegatedAxiom(self)
+
+    @final
+    def __pos__(self) -> "Axiom":
+        """
+        Return the normalized preference of this axiom,
+        replacing positive values with 1 and negative values with -1.
+        """
+        from ir_axioms.axiom.arithmetic import NormalizedAxiom
         return NormalizedAxiom(self)
 
     @final
+    def __invert__(self) -> "Axiom":
+        """
+        Cache this axiom's preferences, meaning the ``preference()`` method
+        will only be called if the context-query-documents tuple
+        does not already exist in the cache.
+        """
+        from ir_axioms.axiom.cache import CachedAxiom
+        return CachedAxiom(self)
+
+    @final
+    def weighted(self, weight: float) -> "Axiom":
+        return self * weight
+
+    @final
+    def normalized(self) -> "Axiom":
+        """
+        Return the normalized preference of this axiom,
+        replacing positive values with 1 and negative values with -1.
+        """
+        return +self
+
+    @final
     def cached(self, capacity: int = 4096) -> "Axiom":
+        """
+        Cache this axiom's preferences, meaning the ``preference()`` method
+        will only be called if the context-query-documents tuple
+        does not already exist in the cache.
+        """
         from ir_axioms.axiom.cache import CachedAxiom
         return CachedAxiom(self, capacity)
 
@@ -139,4 +250,3 @@ class Axiom(ABC):
             (count - 1) / len(ranking) if len(ranking) > 0 else 0
             for count in self.permutation_count(context, query, ranking)
         ]
-
