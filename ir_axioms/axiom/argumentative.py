@@ -9,7 +9,7 @@ from targer.model import (
     TargerArgumentSentences, TargerArgumentLabel, TargerArgumentTag
 )
 
-from ir_axioms.axiom import Axiom
+from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import approximately_same_length
 from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
