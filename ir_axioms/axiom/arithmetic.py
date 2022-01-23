@@ -7,6 +7,22 @@ from ir_axioms.model.context import RerankingContext
 
 
 @dataclass(frozen=True)
+class SumAxiom(Axiom):
+    axioms: Iterable[Axiom]
+
+    def preference(
+            self,
+            context: RerankingContext,
+            query: Query,
+            document1: RankedDocument,
+            document2: RankedDocument
+    ) -> float:
+        return sum(
+            axiom.preference(context, query, document1, document2)
+            for axiom in self.axioms
+        )
+
+@dataclass(frozen=True)
 class WeightedAxiom(Axiom):
     axiom: Axiom
     weight: float
@@ -23,21 +39,4 @@ class WeightedAxiom(Axiom):
             query,
             document1,
             document2
-        )
-
-
-@dataclass(frozen=True)
-class SumAxiom(Axiom):
-    axioms: Iterable[Axiom]
-
-    def preference(
-            self,
-            context: RerankingContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ) -> float:
-        return sum(
-            axiom.preference(context, query, document1, document2)
-            for axiom in self.axioms
         )
