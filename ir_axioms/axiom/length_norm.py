@@ -32,21 +32,6 @@ class LNC1(Axiom):
         )
 
 
-class LNC2(Axiom):
-    name = "LNC2"
-
-    def preference(
-            self,
-            context: RerankingContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ):
-        # LNC2 makes no sense as implemented and was useless in previous trials
-        # TODO: May we delete it?
-        return 0
-
-
 class TF_LNC(Axiom):
     name = "TF_LNC"
 
