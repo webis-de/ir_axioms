@@ -18,14 +18,14 @@ class Axiom(ABC):
     in comparison to the axiom's preferences.
     """
 
-    name: str = None
+    name: str = NotImplemented
     """
     The axiom classes unique, short name, describing its behavior.
     """
 
     def __init_subclass__(cls, **kwargs):
         # Automatically register this subclass to the global axiom registry.
-        if not isabstract(cls) and cls.name is not None:
+        if not isabstract(cls) and cls.name is not NotImplemented:
             registry[cls.name] = cls
 
     @abstractmethod
