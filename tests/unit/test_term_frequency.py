@@ -59,14 +59,14 @@ def test_m_tdc():
 
 
 def test_len_m_tdc_false_precondition():
-    query = Query("test query words")
+    query = Query("test query words phrases")
     document1 = RankedTextDocument(
         "d1", 2, 1,
         "this is the test document and contains words and phrases a b c d"
     )
     document2 = RankedTextDocument(
         "d2", 1, 2,
-        "another document contains query words but is not very interesting"
+        "another document contains query words but is not very words"
     )
     context = MemoryRerankingContext({document1, document2})
 
@@ -78,14 +78,14 @@ def test_len_m_tdc_false_precondition():
 
 
 def test_len_m_tdc():
-    query = Query("test query words")
+    query = Query("test query words phrases")
     document1 = RankedTextDocument(
         "d1", 2, 1,
         "this is the test document and contains words and phrases"
     )
     document2 = RankedTextDocument(
         "d2", 1, 2,
-        "another document contains query words but is not very interesting"
+        "another document contains query words but is not very words"
     )
     context = MemoryRerankingContext({document1, document2})
 
