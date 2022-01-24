@@ -1,7 +1,7 @@
 from ir_axioms.axiom import (
     argumentative, arithmetic, base, cache, conversion, length_norm,
     lower_bound, proximity, query_aspects, retrieval_score, term_frequency,
-    term_similarity, simple
+    term_similarity, simple, trec
 )
 
 # Re-export from child modules.
@@ -60,6 +60,8 @@ TFC1 = term_frequency.TFC1
 TFC3 = term_frequency.TFC3
 M_TDC = term_frequency.M_TDC
 LEN_M_TDC = term_frequency.LEN_M_TDC
+
+TrecOracleAxiom = trec.TrecOracleAxiom
 
 STMC1 = term_similarity.STMC1
 STMC1_f = term_similarity.STMC1_f
