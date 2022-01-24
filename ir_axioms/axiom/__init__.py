@@ -18,6 +18,14 @@ QTArg = argumentative.QTArg
 QTPArg = argumentative.QTPArg
 aSL = argumentative.aSL
 
+UniformAxiom = arithmetic.UniformAxiom
+SumAxiom = arithmetic.SumAxiom
+ProductAxiom = arithmetic.ProductAxiom
+MultiplicativeInverseAxiom = arithmetic.MultiplicativeInverseAxiom
+AndAxiom = arithmetic.AndAxiom
+MajorityVoteAxiom = arithmetic.MajorityVoteAxiom
+NormalizedAxiom = arithmetic.NormalizedAxiom
+
 Axiom = base.Axiom
 
 AxiomLike = conversion.AxiomLike
