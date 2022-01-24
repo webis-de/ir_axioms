@@ -3,7 +3,7 @@ from collections import Counter, defaultdict
 from functools import lru_cache
 from itertools import product, combinations
 from statistics import mean
-from typing import List, Set, Iterator
+from typing import List, Set, Iterator, Dict, Iterable
 
 from nltk.corpus import wordnet
 
@@ -136,6 +136,15 @@ def synonym_set_similarity(
         return 0
 
     return similarity_sum / n
+
+
+def synonym_set_similarity_sums(terms: Iterable[str]) -> Dict[str, float]:
+    similarity_sums: Dict[str, float] = defaultdict(lambda: 0)
+    for term1, term2 in combinations(terms, 2):
+        similarity = synonym_set_similarity(term1, term2)
+        similarity_sums[term1] += similarity
+        similarity_sums[term2] += similarity
+    return similarity_sums
 
 
 def vocabulary_overlap(vocabulary1: Set[str], vocabulary2: Set[str]):
