@@ -204,7 +204,7 @@ class LEN_M_TDC(M_TDC):
         ):
             return False
 
-        return super(LEN_M_TDC, self).precondition(
+        return super().precondition(
             context,
             query,
             document1,

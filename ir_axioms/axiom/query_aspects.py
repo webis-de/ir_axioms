@@ -131,7 +131,7 @@ class LEN_AND(AND):
         ):
             return 0
 
-        return super(LEN_AND, self).preference(
+        return super().preference(
             context,
             query,
             document1,
@@ -188,7 +188,7 @@ class LEN_M_AND(M_AND):
         ):
             return 0
 
-        return super(LEN_M_AND, self).preference(
+        return super().preference(
             context,
             query,
             document1,
@@ -246,7 +246,7 @@ class LEN_DIV(DIV):
         ):
             return 0
 
-        return super(LEN_DIV, self).preference(
+        return super().preference(
             context,
             query,
             document1,
