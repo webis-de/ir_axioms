@@ -28,6 +28,8 @@ NormalizedAxiom = arithmetic.NormalizedAxiom
 
 Axiom = base.Axiom
 
+CachedAxiom = cache.CachedAxiom
+
 AxiomLike = conversion.AxiomLike
 to_axiom = conversion.to_axiom
 AutoAxiom = conversion.AutoAxiom
