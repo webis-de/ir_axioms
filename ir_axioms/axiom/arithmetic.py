@@ -133,7 +133,7 @@ class MajorityVoteAxiom(Axiom):
     minimum_votes: float = 0.5
     """
     Minimum portion of votes in favor or against either document,
-    to be considered a majority, 
+    to be considered a majority,
     for example, 0.5 for absolute majority, 0.6 for qualified majority,
     or 0 for relative majority.
     """
