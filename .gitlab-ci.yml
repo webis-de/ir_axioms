@@ -1,30 +1,47 @@
 image: "python:3.9-buster"
 
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  key:
+    files:
+      - requirements.txt
+      - requirements-test.txt
+      - requirements-pyterrier.txt
+      - requirements-pyserini.txt
+      - .gitlab-ci.yml
+    prefix: ${CI_JOB_NAME}
+  paths:
+    - .cache/pip
+    - venv/
+
+before_script:
+  - python -V
+  - python -m pip install --upgrade pip
+  - pip install virtualenv
+  - virtualenv venv
+  - source venv/bin/activate
+
 "🏗️ Python wheel":
   stage: build
-  before_script:
-    - python -m pip install --upgrade pip
-    - pip install build twine
   script:
+    - pip install build twine
     - python -m build
     - twine check dist/*
 
 "🔍 Python code format":
   stage: test
-  before_script:
-    - python -m pip install --upgrade pip
+  script:
     - pip install .
     - pip install .[test]
-  script:
     - flake8 ir_axioms/ tests/ examples/
 
 "🔍 Python Lint":
   stage: test
-  before_script:
-    - python -m pip install --upgrade pip
+  script:
     - pip install .
     - pip install .[test]
-  script:
     - pylint -E ir_axioms tests.unit examples --ignore-paths=^ir_axioms.backend
 
 "🔍 Python Lint backend":
@@ -34,22 +51,18 @@ image: "python:3.9-buster"
       - backend:
           - pyserini
           - pyterrier
-  before_script:
+  script:
     - apt-get update && apt-get upgrade && apt-get install openjdk-11-jre
-    - python -m pip install --upgrade pip
     - pip install .
     - pip install .[test]
     - pip install .[${backend}]
-  script:
     - pylint -E ir_axioms.backend.${backend} tests.integration.${backend}
 
 "🧪 Python unit tests":
   stage: test
-  before_script:
-    - python -m pip install --upgrade pip
+  script:
     - pip install .
     - pip install .[test]
-  script:
     - pytest ir_axioms/ tests/unit/ examples/ --ignore=ir_axioms/backend/
 
 "🧪 Python integration tests":
@@ -59,11 +72,9 @@ image: "python:3.9-buster"
       - backend:
           - pyserini
           - pyterrier
-  before_script:
+  script:
     - apt-get update && apt-get upgrade && apt-get install openjdk-11-jre
-    - python -m pip install --upgrade pip
     - pip install .
     - pip install .[test]
     - pip install .[${backend}]
-  script:
     - pytest tests/integration/${backend}/
