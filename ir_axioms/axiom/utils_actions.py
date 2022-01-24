@@ -24,7 +24,7 @@ def _kwiksort(
     pivot = vertices[randint(0, len(vertices) - 1)]
 
     for vertex in vertices:
-        if vertex == pivot:
+        if vertex is pivot:
             continue
 
         preference = axiom.preference(context, query, vertex, pivot)
