@@ -1,7 +1,7 @@
 from ir_axioms.axiom import (
     argumentative, arithmetic, base, cache, conversion, length_norm,
     lower_bound, proximity, query_aspects, retrieval_score, term_frequency,
-    term_similarity
+    term_similarity, simple
 )
 
 # Re-export from child modules.
@@ -51,6 +51,10 @@ RS_BM25 = retrieval_score.RS_BM25
 RS_PL2 = retrieval_score.RS_PL2
 RS_QL = retrieval_score.RS_QL
 RS = retrieval_score.RS
+
+NopAxiom = simple.NopAxiom
+OriginalAxiom = simple.OriginalAxiom
+RandomAxiom = simple.RandomAxiom
 
 TFC1 = term_frequency.TFC1
 TFC3 = term_frequency.TFC3
