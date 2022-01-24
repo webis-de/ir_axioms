@@ -135,6 +135,11 @@ jobs:
           pip install .
           pip install .[test]
           pip install .[${{ matrix.backend }}]
+      - name: "🧰 Install Java"
+        uses: actions/setup-java@v2
+        with:
+          distribution: temurin
+          java-version: 11
       - name: "🔍 Lint Python code"
         run: pylint -E ir_axioms.backend.${{ matrix.backend }} tests.integration.${{ matrix.backend }}
   unit-tests:
@@ -203,5 +208,10 @@ jobs:
           pip install .
           pip install .[test]
           pip install .[${{ matrix.backend }}]
+      - name: "🧰 Install Java"
+        uses: actions/setup-java@v2
+        with:
+          distribution: temurin
+          java-version: 11
       - name: "🧪 Test Python code"
         run: pytest tests/integration/${{ matrix.backend }}/
