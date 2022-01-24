@@ -1,4 +1,4 @@
-image: "python:3.9-alpine"
+image: "python:3.9-buster"
 
 "🏗️ Python wheel":
   stage: build
@@ -35,7 +35,7 @@ image: "python:3.9-alpine"
           - pyserini
           - pyterrier
   before_script:
-    - apk --no-cache add openjdk11 --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
+    - apt-get update && apt-get upgrade && apt-get install openjdk-11-jre
     - python -m pip install --upgrade pip
     - pip install .
     - pip install .[test]
@@ -60,7 +60,7 @@ image: "python:3.9-alpine"
           - pyserini
           - pyterrier
   before_script:
-    - apk --no-cache add openjdk11 --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
+    - apt-get update && apt-get upgrade && apt-get install openjdk-11-jre
     - python -m pip install --upgrade pip
     - pip install .
     - pip install .[test]
