@@ -175,7 +175,7 @@ class Axiom(ABC):
             query: Query,
             ranking: List[RankedDocument],
     ) -> List[RankedDocument]:
-        from ir_axioms.axiom.utils_actions import _kwiksort, _reset_score
+        from ir_axioms.axiom.sort import _kwiksort, _reset_score
 
         ranking = _kwiksort(self, query, context, ranking)
         ranking = _reset_score(ranking)
