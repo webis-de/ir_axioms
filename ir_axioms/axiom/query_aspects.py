@@ -1,12 +1,10 @@
-from collections import defaultdict
 from dataclasses import dataclass
-from itertools import combinations
-from typing import List, Dict
+from typing import Set
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import (
-    strictly_greater, synonym_set_similarity, approximately_same_length,
-    vocabulary_overlap
+    strictly_greater, approximately_same_length,
+    vocabulary_overlap, synonym_set_similarity_sums
 )
 from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
@@ -27,27 +25,25 @@ class REG(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        query_terms: List[str] = list(context.term_set(query))
-        if len(query_terms) < 1:
-            return 0
+        query_terms = context.term_set(query)
+        similarity_sum = synonym_set_similarity_sums(query_terms)
 
-        similarity_sum: Dict[str, float] = defaultdict(lambda: 0)
-        min_sim_term: str = query_terms[0]
-
-        for query_term1, query_term2 in combinations(query_terms, 2):
-            similarity = synonym_set_similarity(query_term1, query_term2)
-
-            similarity_sum[query_term1] += similarity
-            if similarity_sum[query_term1] < similarity_sum[min_sim_term]:
-                min_sim_term = query_term1
-
-            similarity_sum[query_term2] += similarity
-            if similarity_sum[query_term2] < similarity_sum[min_sim_term]:
-                min_sim_term = query_term2
+        print(similarity_sum)
+        minimum_similarity = min(
+            similarity
+            for _, similarity in similarity_sum.items()
+        )
+        minimum_similarity_terms: Set[str] = {
+            term
+            for term, similarity in similarity_sum.items()
+            if similarity == minimum_similarity
+        }
+        assert len(minimum_similarity_terms) == 1
+        minimum_similarity_term = next(iter(minimum_similarity_terms))
 
         return strictly_greater(
-            context.term_frequency(document1, min_sim_term),
-            context.term_frequency(document2, min_sim_term),
+            context.term_frequency(document1, minimum_similarity_term),
+            context.term_frequency(document2, minimum_similarity_term),
         )
 
 
@@ -68,27 +64,25 @@ class ANTI_REG(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        query_terms: List[str] = list(context.term_set(query))
-        if len(query_terms) < 1:
-            return 0
+        query_terms = context.term_set(query)
+        similarity_sum = synonym_set_similarity_sums(query_terms)
 
-        similarity_sum: Dict[str, float] = defaultdict(lambda: 0)
-        max_sim_term: str = query_terms[0]
+        maximum_similarity = max(
+            similarity
+            for _, similarity in similarity_sum.items()
+        )
+        maximum_similarity_terms: Set[str] = {
+            term
+            for term, similarity in similarity_sum.items()
+            if similarity == maximum_similarity
+        }
+        assert len(maximum_similarity_terms) == 1
 
-        for query_term1, query_term2 in combinations(query_terms, 2):
-            similarity = synonym_set_similarity(query_term1, query_term2)
-
-            similarity_sum[query_term1] += similarity
-            if similarity_sum[query_term1] > similarity_sum[max_sim_term]:
-                max_sim_term = query_term1
-
-            similarity_sum[query_term2] += similarity
-            if similarity_sum[query_term2] > similarity_sum[max_sim_term]:
-                max_sim_term = query_term2
+        maximum_similarity_term = next(iter(maximum_similarity_terms))
 
         return strictly_greater(
-            context.term_frequency(document1, max_sim_term),
-            context.term_frequency(document2, max_sim_term),
+            context.term_frequency(document1, maximum_similarity_term),
+            context.term_frequency(document2, maximum_similarity_term),
         )
 
 
