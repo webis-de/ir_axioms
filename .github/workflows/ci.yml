@@ -11,7 +11,7 @@ jobs:
         os:
           - ubuntu-latest
           - macos-latest
-          #- windows-latest
+          - windows-latest
         python:
           - 3.8
           - 3.9
@@ -45,8 +45,6 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
-          #- windows-latest
         python:
           - 3.8
           - 3.9
@@ -77,8 +75,6 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
-          #- windows-latest
         python:
           - 3.8
           - 3.9
@@ -109,8 +105,6 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
-          #- windows-latest
         python:
           - 3.8
           - 3.9
@@ -150,8 +144,6 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
-          #- windows-latest
         python:
           - 3.8
           - 3.9
@@ -182,8 +174,6 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
-          #- windows-latest
         python:
           - 3.8
           - 3.9
