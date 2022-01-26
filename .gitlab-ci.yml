@@ -49,7 +49,7 @@ before_script:
           - pyserini
           - pyterrier
   script:
-    - apt-get update && apt-get upgrade && apt-get install openjdk-11-jdk
+    - apt-get update && apt-get upgrade && yes | apt-get install openjdk-11-jdk
     - pip install .
     - pip install .[test]
     - pip install .[${backend}]
@@ -70,7 +70,7 @@ before_script:
           - pyserini
           - pyterrier
   script:
-    - apt-get update && apt-get upgrade && apt-get install openjdk-11-jdk
+    - apt-get update && apt-get upgrade && yes | apt-get install openjdk-11-jdk
     - pip install .
     - pip install .[test]
     - pip install .[${backend}]
