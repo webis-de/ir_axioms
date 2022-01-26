@@ -7,10 +7,9 @@ except ImportError as error:
     ) from error
 
 # Ensure that the Terrier JVM has started.
-from pyterrier import started, init
+from pyterrier import started
 
-if not started():
-    init()
+assert started()
 
 # Re-export modules.
 from pyterrier import IndexRef, IndexFactory  # noqa: F401
