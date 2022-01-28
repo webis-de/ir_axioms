@@ -226,7 +226,6 @@ class Axiom(ABC):
         return [
             [
                 self.is_permutated(context, query, document1, document2)
-                if index1 != index2 else False
                 for index2, document2 in enumerate(ranking)
             ]
             for index1, document1 in enumerate(ranking)
@@ -251,7 +250,8 @@ class Axiom(ABC):
             query: Query,
             ranking: List[RankedDocument],
     ) -> List[float]:
+        ranking_length = len(ranking)
         return [
-            (count - 1) / len(ranking) if len(ranking) > 0 else 0
+            count / ranking_length if ranking_length > 0 else 0
             for count in self.permutation_count(context, query, ranking)
         ]
