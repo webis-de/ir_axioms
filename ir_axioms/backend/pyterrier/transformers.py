@@ -167,7 +167,7 @@ class AxiomaticRankingTransformerBase(AxiomaticTransformerBase, ABC):
     def transform(self, ranking: DataFrame) -> DataFrame:
         _require_columns(
             self, ranking,
-            "qid", "query", "docid", "docno", "rank", "score"
+            "qid", "query", "docno", "rank", "score"
         )
         return _apply_per_query_run(
             ranking,
