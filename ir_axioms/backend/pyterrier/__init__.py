@@ -8,13 +8,12 @@ from typing import List, Optional, Union, Callable, NamedTuple
 from ir_datasets import Dataset, load
 from ir_datasets.indices import Docstore
 
-from ir_axioms.backend.pyterrier.safe import IndexRef, IndexFactory
 from ir_axioms.backend.pyterrier.util import (
-    StringReader, Tokeniser, EnglishTokeniser, Lexicon, CollectionStatistics,
-    ApplicationSetup, BaseTermPipelineAccessor, WeightingModel, TfModel,
-    TfIdfModel, BM25Model, PL2Model, DirichletLMModel, Index,
-    TermPipelineAccessor, Manager, ManagerFactory, SearchRequest,
-    ScoredDocList, ScoredDoc, RequestContextMatching, MetaIndex
+    EnglishTokeniser, Lexicon, CollectionStatistics, BaseTermPipelineAccessor,
+    WeightingModel, TfModel, TfIdfModel, BM25Model, PL2Model, DirichletLMModel,
+    Index, TermPipelineAccessor, Manager, ManagerFactory, SearchRequest,
+    ScoredDocList, ScoredDoc, RequestContextMatching, MetaIndex, IndexRef,
+    Tokeniser, IndexFactory, ApplicationSetup, StringReader
 )
 from ir_axioms.model import Query, Document, TextDocument
 from ir_axioms.model.context import RerankingContext

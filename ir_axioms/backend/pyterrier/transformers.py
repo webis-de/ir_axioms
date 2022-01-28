@@ -9,10 +9,10 @@ from pandas.core.groupby import DataFrameGroupBy
 from tqdm import tqdm
 
 from ir_axioms.axiom import Axiom, AxiomLike, to_axiom
-from ir_axioms.backend.pyterrier import (
-    IndexRerankingContext, EnglishTokeniser, Index
-)
-from ir_axioms.backend.pyterrier.safe import Transformer, IndexRef, Tokeniser
+from ir_axioms.backend.pyterrier import IndexRerankingContext
+from ir_axioms.backend.pyterrier.util import IndexRef, Index, Tokeniser, \
+    EnglishTokeniser
+from ir_axioms.backend.pyterrier.safe import Transformer
 from ir_axioms.model import Query, RankedDocument, RankedTextDocument
 from ir_axioms.model.context import RerankingContext
 
