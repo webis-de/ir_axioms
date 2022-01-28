@@ -57,67 +57,67 @@ class Axiom(ABC):
         """
         pass
 
-    def __add__(self, other: Union["Axiom", float]) -> "Axiom":
+    def __add__(self, other: Union["Axiom", float, int]) -> "Axiom":
         if isinstance(other, Axiom):
             from ir_axioms.axiom.arithmetic import SumAxiom
             return SumAxiom([self, other])
-        elif isinstance(other, float):
+        elif isinstance(other, (float, int)):
             from ir_axioms.axiom.arithmetic import UniformAxiom
             return self + UniformAxiom(other)
         else:
             return NotImplemented
 
-    def __radd__(self, other: Union["Axiom", float]) -> "Axiom":
+    def __radd__(self, other: Union["Axiom", float, int]) -> "Axiom":
         return self + other
 
-    def __sub__(self, other: Union["Axiom", float]) -> "Axiom":
+    def __sub__(self, other: Union["Axiom", float, int]) -> "Axiom":
         return self + -other
 
-    def __rsub__(self, other: Union["Axiom", float]) -> "Axiom":
+    def __rsub__(self, other: Union["Axiom", float, int]) -> "Axiom":
         return -self + other
 
-    def __mul__(self, other: Union["Axiom", float]) -> "Axiom":
+    def __mul__(self, other: Union["Axiom", float, int]) -> "Axiom":
         if isinstance(other, Axiom):
             from ir_axioms.axiom.arithmetic import ProductAxiom
             return ProductAxiom([self, other])
-        elif isinstance(other, float):
+        elif isinstance(other, (float, int)):
             from ir_axioms.axiom.arithmetic import UniformAxiom
             return self * UniformAxiom(other)
         else:
             return NotImplemented
 
-    def __rmul__(self, other: Union["Axiom", float]) -> "Axiom":
+    def __rmul__(self, other: Union["Axiom", float, int]) -> "Axiom":
         return self * other
 
-    def __truediv__(self, other: Union["Axiom", float]) -> "Axiom":
+    def __truediv__(self, other: Union["Axiom", float, int]) -> "Axiom":
         if isinstance(other, Axiom):
             return self * other._multiplicative_inverse()
-        elif isinstance(other, float):
+        elif isinstance(other, (float, int)):
             return self * (1 / other)
         else:
             return NotImplemented
 
-    def __rtruediv__(self, other: Union["Axiom", float]) -> "Axiom":
+    def __rtruediv__(self, other: Union["Axiom", float, int]) -> "Axiom":
         return self._multiplicative_inverse() * other
 
-    def __mod__(self, other: Union["Axiom", float]) -> "Axiom":
+    def __mod__(self, other: Union["Axiom", float, int]) -> "Axiom":
         if isinstance(other, Axiom):
             from ir_axioms.axiom.arithmetic import MajorityVoteAxiom
             return MajorityVoteAxiom([self, other])
-        elif isinstance(other, float):
+        elif isinstance(other, (float, int)):
             from ir_axioms.axiom.arithmetic import UniformAxiom
             return self % UniformAxiom(other)
         else:
             return NotImplemented
 
-    def __rmod__(self, other: Union["Axiom", float]) -> "Axiom":
+    def __rmod__(self, other: Union["Axiom", float, int]) -> "Axiom":
         return self % other
 
-    def __and__(self, other: Union["Axiom", float]) -> "Axiom":
+    def __and__(self, other: Union["Axiom", float, int]) -> "Axiom":
         if isinstance(other, Axiom):
             from ir_axioms.axiom.arithmetic import AndAxiom
             return AndAxiom([self, other])
-        elif isinstance(other, float):
+        elif isinstance(other, (float, int)):
             from ir_axioms.axiom.arithmetic import UniformAxiom
             return self & UniformAxiom(other)
         else:

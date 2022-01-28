@@ -39,7 +39,7 @@ class SumAxiom(Axiom):
             for axiom in self.axioms
         )
 
-    def __add__(self, other: Union[Axiom, float]) -> Axiom:
+    def __add__(self, other: Union[Axiom, float, int]) -> Axiom:
         if isinstance(other, Axiom):
             return SumAxiom([*self.axioms, other])
         else:
@@ -65,7 +65,7 @@ class ProductAxiom(Axiom):
             ),
         )
 
-    def __mul__(self, other: Union[Axiom, float]) -> Axiom:
+    def __mul__(self, other: Union[Axiom, float, int]) -> Axiom:
         if isinstance(other, Axiom):
             # Avoid chaining operators.
             return ProductAxiom([*self.axioms, other])
@@ -119,7 +119,7 @@ class AndAxiom(Axiom):
         else:
             return 0
 
-    def __and__(self, other: Union[Axiom, float]) -> Axiom:
+    def __and__(self, other: Union[Axiom, float, int]) -> Axiom:
         if isinstance(other, Axiom):
             # Avoid chaining operators.
             return AndAxiom([*self.axioms, other])
@@ -168,7 +168,7 @@ class MajorityVoteAxiom(Axiom):
             # Draw.
             return 0
 
-    def __mod__(self, other: Union[Axiom, float]) -> Axiom:
+    def __mod__(self, other: Union[Axiom, float, int]) -> Axiom:
         if isinstance(other, Axiom) and isclose(self.minimum_votes, 0.5):
             # Avoid chaining operators
             # if this vote has the default minimum vote proportion.
