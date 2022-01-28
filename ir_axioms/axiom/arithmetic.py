@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-from functools import reduce
-from math import isclose
-from operator import mul
+from math import isclose, prod
 from typing import Iterable, Union
 
 from ir_axioms.axiom.base import Axiom
@@ -57,12 +55,9 @@ class ProductAxiom(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ) -> float:
-        return reduce(
-            mul,
-            (
-                axiom.preference(context, query, document1, document2)
-                for axiom in self.axioms
-            ),
+        return prod(
+            axiom.preference(context, query, document1, document2)
+            for axiom in self.axioms
         )
 
     def __mul__(self, other: Union[Axiom, float, int]) -> Axiom:
