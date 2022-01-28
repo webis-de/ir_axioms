@@ -35,14 +35,17 @@ def _require_columns(
         )
 
 
-def _apply_per_query(
+def _apply_per_query_run(
         ranking: DataFrame,
         function: Callable[[DataFrame], DataFrame],
         desc: Optional[str] = None,
         verbose: bool = False,
 ) -> DataFrame:
+    group_columns = ["qid", "query"]
+    if "name" in ranking.columns:
+        group_columns.append("name")
     query_rankings: DataFrameGroupBy = ranking.groupby(
-        by=["qid", "query"],
+        by=group_columns,
         as_index=False,
         sort=False,
     )
@@ -166,7 +169,7 @@ class AxiomaticRankingTransformerBase(AxiomaticTransformerBase, ABC):
             self, ranking,
             "qid", "query", "docid", "docno", "rank", "score"
         )
-        return _apply_per_query(
+        return _apply_per_query_run(
             ranking,
             self.transform_ranking,
             desc=self.description,
