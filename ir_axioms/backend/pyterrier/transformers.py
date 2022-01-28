@@ -10,9 +10,10 @@ from tqdm import tqdm
 
 from ir_axioms.axiom import Axiom, AxiomLike, to_axiom
 from ir_axioms.backend.pyterrier import IndexRerankingContext
-from ir_axioms.backend.pyterrier.util import IndexRef, Index, Tokeniser, \
-    EnglishTokeniser
-from ir_axioms.backend.pyterrier.safe import Transformer
+from ir_axioms.backend.pyterrier.util import (
+    IndexRef, Index, Tokeniser, EnglishTokeniser
+)
+from ir_axioms.backend.pyterrier.safe import TransformerBase, Transformer
 from ir_axioms.model import Query, RankedDocument, RankedTextDocument
 from ir_axioms.model.context import RerankingContext
 
@@ -119,7 +120,7 @@ def _merge_scores(
     return reranked_ranking
 
 
-class AxiomaticTransformerBase(Transformer):
+class AxiomaticTransformerBase(TransformerBase):
     axiom: Axiom
     reranking_context: RerankingContext
     contents_accessor: Optional[Union[str, Callable[[NamedTuple], str]]]
