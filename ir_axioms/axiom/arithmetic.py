@@ -9,7 +9,7 @@ from ir_axioms.model.context import RerankingContext
 
 @dataclass(frozen=True)
 class UniformAxiom(Axiom):
-    preference: float
+    scalar: float
 
     def preference(
             self,
@@ -18,7 +18,7 @@ class UniformAxiom(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ) -> float:
-        return self.preference
+        return self.scalar
 
 
 @dataclass(frozen=True)
