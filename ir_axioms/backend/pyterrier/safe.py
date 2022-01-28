@@ -11,8 +11,20 @@ from pyterrier import started
 
 assert started()
 
+from jnius import autoclass as _autoclass  # noqa: F402
+from pyterrier.index import (
+    IndexRef as _IndexRef, IterDictIndexer as _IterDictIndexer,
+    Tokeniser as _Tokeniser, IndexFactory as _IndexFactory,
+    ApplicationSetup as _ApplicationSetup, StringReader as _StringReader
+)  # noqa: F402
+from pyterrier.transformer import Transformer as _Transformer  # noqa: F402
+
 # Re-export modules.
-from pyterrier import IndexRef, IndexFactory  # noqa: F401
-from pyterrier.index import Tokeniser, IterDictIndexer  # noqa: F401
-from pyterrier.transformer import TransformerBase  # noqa: F401
-from jnius import autoclass  # noqa: F401
+IndexRef = _IndexRef
+IterDictIndexer = _IterDictIndexer
+Tokeniser = _Tokeniser
+IndexFactory = _IndexFactory
+ApplicationSetup = _ApplicationSetup
+StringReader = _StringReader
+Transformer = _Transformer
+autoclass = _autoclass

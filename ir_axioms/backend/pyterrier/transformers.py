@@ -12,15 +12,13 @@ from ir_axioms.axiom import Axiom, AxiomLike, to_axiom
 from ir_axioms.backend.pyterrier import (
     IndexRerankingContext, EnglishTokeniser, Index
 )
-from ir_axioms.backend.pyterrier.safe import (
-    IndexRef, Tokeniser, TransformerBase
-)
+from ir_axioms.backend.pyterrier.safe import Transformer, IndexRef, Tokeniser
 from ir_axioms.model import Query, RankedDocument, RankedTextDocument
 from ir_axioms.model.context import RerankingContext
 
 
 def _require_columns(
-        transformer: TransformerBase,
+        transformer: Transformer,
         ranking: DataFrame,
         *expected_columns: str,
 ) -> None:
@@ -121,7 +119,7 @@ def _merge_scores(
     return reranked_ranking
 
 
-class AxiomaticTransformerBase(TransformerBase):
+class AxiomaticTransformerBase(Transformer):
     axiom: Axiom
     reranking_context: RerankingContext
     contents_accessor: Optional[Union[str, Callable[[NamedTuple], str]]]

@@ -1,14 +1,11 @@
 from ir_axioms.backend.pyterrier.safe import autoclass
 
 RequestContextMatching = autoclass("org.terrier.python.RequestContextMatching")
-ApplicationSetup = autoclass("org.terrier.utility.ApplicationSetup")
-StringReader = autoclass("java.io.StringReader")
 Index = autoclass("org.terrier.structures.Index")
 PropertiesIndex = autoclass("org.terrier.structures.PropertiesIndex")
 MetaIndex = autoclass("org.terrier.structures.MetaIndex")
 Lexicon = autoclass("org.terrier.structures.Lexicon")
 CollectionStatistics = autoclass("org.terrier.structures.CollectionStatistics")
-Tokeniser = autoclass("org.terrier.indexing.tokenisation.Tokeniser")
 EnglishTokeniser = autoclass(
     "org.terrier.indexing.tokenisation.EnglishTokeniser"
 )
