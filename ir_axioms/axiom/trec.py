@@ -13,7 +13,7 @@ from ir_axioms.model.context import RerankingContext
 
 @dataclass(frozen=True)
 class TrecOracleAxiom(Axiom):
-    name = "TrecOracleAxiom"
+    name = "trec-oracle"
 
     qrel: TrecQrel
     topics: TrecTopics

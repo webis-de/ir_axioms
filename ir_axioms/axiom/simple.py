@@ -7,7 +7,7 @@ from ir_axioms.model.context import RerankingContext
 
 
 class NopAxiom(Axiom):
-    name = "NopAxiom"
+    name = "nop"
 
     def preference(
             self,
@@ -20,7 +20,7 @@ class NopAxiom(Axiom):
 
 
 class OriginalAxiom(Axiom):
-    name = "OriginalAxiom"
+    name = "original"
 
     def preference(
             self,
@@ -33,7 +33,7 @@ class OriginalAxiom(Axiom):
 
 
 class RandomAxiom(Axiom):
-    name = "RandomAxiom"
+    name = "random"
     _random: Random
 
     def __init__(self, random: Random = Random()):

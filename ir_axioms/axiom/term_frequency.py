@@ -87,7 +87,7 @@ class M_TDC(Axiom):
     Shi, S., Wen, J.R., Yu, Q., Song, R., Ma, W.Y.: Gravitation-based model
     for information retrieval. In: SIGIR ’05.
     """
-    name = "M_TDC"
+    name = "M-TDC"
 
     @staticmethod
     def precondition(
@@ -185,7 +185,7 @@ class LEN_M_TDC(M_TDC):
     The precondition for the documents' lengths can be varied.
     Default margin fraction: 0.1
     """
-    name = "LEN_M_TDC"
+    name = "LEN-M-TDC"
 
     margin_fraction: float = 0.1
 

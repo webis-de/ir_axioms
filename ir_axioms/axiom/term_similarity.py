@@ -78,7 +78,7 @@ class STMC1(_STMC1, _WordNetTermSimilarity):
 
 
 class STMC1_f(_STMC1, _FastTextWikiNewsTermSimilarity):
-    name = "STMC1_f"
+    name = "STMC1-fastText"
 
 
 class _STMC2(Axiom, _TermSimilarity, ABC):
@@ -163,4 +163,4 @@ class STMC2(_STMC2, _WordNetTermSimilarity):
 
 
 class STMC2_f(_STMC2, _FastTextWikiNewsTermSimilarity):
-    name = "STMC2_f"
+    name = "STMC2-fastText"

@@ -55,7 +55,7 @@ class ANTI_REG(Axiom):
 
     Modified to use maximum similarity instead of minimum similarity.
     """
-    name = "ANTI_REG"
+    name = "ANTI-REG"
 
     def preference(
             self,
@@ -112,7 +112,7 @@ class LEN_AND(AND):
 
     Default margin fraction: 0.1
     """
-    name = "LEN_AND"
+    name = "LEN-AND"
 
     margin_fraction: float = 0.1
 
@@ -144,7 +144,7 @@ class M_AND(Axiom):
     Modified AND:
     One document contains a larger subset of query terms.
     """
-    name = "M_AND"
+    name = "M-AND"
 
     def preference(
             self,
@@ -169,7 +169,7 @@ class LEN_M_AND(M_AND):
 
     Default margin fraction: 0.1
     """
-    name = "LEN_M_AND"
+    name = "LEN-M-AND"
 
     margin_fraction: float = 0.1
 
@@ -227,7 +227,7 @@ class LEN_DIV(DIV):
 
     Default margin fraction: 0.1
     """
-    name = "LEN_DIV"
+    name = "LEN-DIV"
 
     margin_fraction: float = 0.1
 

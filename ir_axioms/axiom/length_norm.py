@@ -33,7 +33,7 @@ class LNC1(Axiom):
 
 
 class TF_LNC(Axiom):
-    name = "TF_LNC"
+    name = "TF-LNC"
 
     def preference(
             self,
