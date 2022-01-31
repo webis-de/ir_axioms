@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from functools import lru_cache
+from functools import lru_cache, cached_property
 from math import nan
 from typing import Optional
 
@@ -12,35 +12,31 @@ from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
 
 
-@dataclass(frozen=True)
 class OracleAxiom(Axiom):
     name = "oracle"
 
-    topics: DataFrame
-    qrels: DataFrame
+    _qrels_topics: DataFrame
 
-    def __post_init__(self):
-        assert "query" in self.topics.columns
-        assert "qid" in self.topics.columns
-        assert "qid" in self.qrels.columns
-        assert "docno" in self.qrels.columns
-        assert "label" in self.qrels.columns
+    def __init__(
+            self,
+            topics: DataFrame,
+            qrels: DataFrame,
+    ):
+        assert "query" in topics.columns
+        assert "qid" in topics.columns
+        assert "qid" in qrels.columns
+        assert "docno" in qrels.columns
+        assert "label" in qrels.columns
+
+        self._qrels_topics = topics.merge(qrels, on=["qid"])
+        del self._qrels_topics["qid"]
+
+    @cached_property
+    def _qrels_topics_hash(self) -> int:
+        return hash(self._qrels_topics.to_json())
 
     def __hash__(self):
-        return hash((self.qrels.to_json(), self.topics.to_json()))
-
-    @lru_cache
-    def _topic_id(self, query: Query) -> Optional[int]:
-        topics = self.topics
-        topics = topics[topics["query"] == query.title]
-        if len(topics) == 0:
-            return None
-        elif len(topics) > 1:
-            logger.warning(
-                f"Found multiple topics for query '{query.title}': "
-                f"{topics['qid'].to_list()}"
-            )
-        return topics.iloc[0]["qid"]
+        return self._qrels_topics_hash
 
     @lru_cache
     def _judgement(
@@ -48,17 +44,14 @@ class OracleAxiom(Axiom):
             query: Query,
             document: RankedDocument
     ) -> Optional[int]:
-        topic_id = self._topic_id(query)
-        if topic_id is None:
-            return None
-        qrels = self.qrels
-        qrels = qrels[qrels["qid"] == topic_id]
+        qrels = self._qrels_topics
+        qrels = qrels[qrels["query"] == query.title]
         qrels = qrels[qrels["docno"] == document.id]
         if len(qrels) == 0:
             return None
         elif len(qrels) > 1:
             logger.warning(
-                f"Found multiple qrels for topic {topic_id}, "
+                f"Found multiple qrels for topic '{query.title}', "
                 f"document {document.id}: {qrels['label'].to_list()}"
             )
         return qrels.iloc[0]["label"]
