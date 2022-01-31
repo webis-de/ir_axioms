@@ -16,17 +16,29 @@ from ir_axioms.model.context import RerankingContext
 class OracleAxiom(Axiom):
     name = "oracle"
 
-    qrels: DataFrame
     topics: DataFrame
+    qrels: DataFrame
+
+    def __post_init__(self):
+        assert "query" in self.topics.columns
+        assert "qid" in self.topics.columns
+        assert "qid" in self.qrels.columns
+        assert "docno" in self.qrels.columns
+        assert "label" in self.qrels.columns
+
+    def __hash__(self):
+        return hash((self.qrels.to_json(), self.topics.to_json()))
 
     @lru_cache
     def _topic_id(self, query: Query) -> Optional[int]:
-        topics = self.topics[self.topics["query"] == query.title]
+        topics = self.topics
+        topics = topics[topics["query"] == query.title]
         if len(topics) == 0:
             return None
         elif len(topics) > 1:
             logger.warning(
-                f"Found multiple topics for query '{query.title}': {topics['qid'].to_list()}"
+                f"Found multiple topics for query '{query.title}': "
+                f"{topics['qid'].to_list()}"
             )
         return topics.iloc[0]["qid"]
 
@@ -39,10 +51,9 @@ class OracleAxiom(Axiom):
         topic_id = self._topic_id(query)
         if topic_id is None:
             return None
-        qrels = self.qrels[
-            self.qrels["qid"] == topic_id &
-            self.qrels["docno"] == document.id
-            ]
+        qrels = self.qrels
+        qrels = qrels[qrels["qid"] == topic_id]
+        qrels = qrels[qrels["docno"] == document.id]
         if len(qrels) == 0:
             return None
         elif len(qrels) > 1:

@@ -15,8 +15,8 @@ from ir_axioms.model.context import RerankingContext
 class TrecOracleAxiom(Axiom):
     name = "trec-oracle"
 
-    qrel: TrecQrel
     topics: TrecTopics
+    qrels: TrecQrel
 
     @lru_cache
     def _topic(self, query: Query) -> int:
@@ -38,7 +38,7 @@ class TrecOracleAxiom(Axiom):
     @lru_cache
     def _judgement(self, query: Query, document: RankedDocument) -> int:
         topic = self._topic(query)
-        judgement = self.qrel.get_judgement(document.id, topic)
+        judgement = self.qrels.get_judgement(document.id, topic)
         if isinstance(judgement, integer):
             judgement = int(judgement)
         if not isinstance(judgement, int):
