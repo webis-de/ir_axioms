@@ -1,6 +1,8 @@
 from abc import abstractmethod, ABC
 from pathlib import Path
-from typing import Union, Optional, List, Set, Callable, NamedTuple, Sequence
+from typing import (
+    Union, Optional, List, Set, Callable, NamedTuple, Sequence, final
+)
 
 from ir_datasets import Dataset
 from pandas import DataFrame
@@ -9,7 +11,8 @@ from tqdm import tqdm
 
 from ir_axioms.axiom import Axiom, AxiomLike, to_axiom
 from ir_axioms.backend.pyterrier import IndexRerankingContext
-from ir_axioms.backend.pyterrier.safe import TransformerBase, Transformer
+from ir_axioms.backend.pyterrier.safe import TransformerBase
+from ir_axioms.backend.pyterrier.transformer_utils import _require_columns
 from ir_axioms.backend.pyterrier.util import (
     IndexRef, Index, Tokeniser, EnglishTokeniser
 )
@@ -17,115 +20,72 @@ from ir_axioms.model import Query, RankedDocument, RankedTextDocument
 from ir_axioms.model.context import RerankingContext
 
 
-def _require_columns(
-        transformer: Transformer,
-        ranking: DataFrame,
-        *expected_columns: str,
-) -> None:
-    expected_columns: Set[str] = set(expected_columns)
-    columns: Set[str] = set(ranking.columns)
-    missing_columns: Set[str] = expected_columns - columns
-    if len(missing_columns) > 0:
-        raise ValueError(
-            f"{transformer.name} expected columns "
-            f"{', '.join(expected_columns)} but got columns "
-            f"{', '.join(columns)} (missing columns "
-            f"{', '.join(missing_columns)})."
+class PerGroupTransformer(TransformerBase, ABC):
+    _group_columns: Set[str]
+    _optional_group_columns: Set[str]
+    _verbose: bool = False
+    _description: Optional[str] = None
+    _unit: Optional[str] = None
+
+    def __init__(
+            self,
+            group_columns: Set[str],
+            optional_group_columns: Set[str] = None,
+            verbose: bool = False,
+            description: Optional[str] = None,
+            unit: Optional[str] = None,
+    ) -> None:
+        self._group_columns = group_columns
+        self._optional_group_columns = (
+            optional_group_columns
+            if optional_group_columns is not None
+            else {}
         )
+        self._verbose = verbose
+        self._description = description
+        self._unit = unit
 
+    @abstractmethod
+    def transform_group(self, topics_or_res: DataFrame) -> DataFrame:
+        pass
 
-def _apply_per_query_run(
-        ranking: DataFrame,
-        function: Callable[[DataFrame], DataFrame],
-        desc: Optional[str] = None,
-        verbose: bool = False,
-) -> DataFrame:
-    group_columns = ["qid", "query"]
-    if "name" in ranking.columns:
-        group_columns.append("name")
-    query_rankings: DataFrameGroupBy = ranking.groupby(
-        by=group_columns,
-        as_index=False,
-        sort=False,
-    )
-    if verbose:
-        # Show progress during reranking queries.
-        tqdm.pandas(
-            desc=desc,
-            unit="query",
+    @final
+    def transform(self, topics_or_res: DataFrame) -> DataFrame:
+        _require_columns(self, topics_or_res, self._group_columns)
+
+        group_columns = self._group_columns | {
+            column for column in self._optional_group_columns
+            if column in topics_or_res.columns
+        }
+
+        query_rankings: DataFrameGroupBy = topics_or_res.groupby(
+            by=list(group_columns),
+            as_index=False,
+            sort=False,
         )
-        query_rankings = query_rankings.progress_apply(function)
-    else:
-        query_rankings = query_rankings.apply(function)
-    return query_rankings.reset_index(drop=True)
-
-
-def _query(ranking: DataFrame) -> Query:
-    # As we grouped per query, we don't expect multiple queries here.
-    assert ranking["qid"].nunique() <= 1
-    assert ranking["query"].nunique() <= 1
-
-    # Convert to typed data classes.
-    return Query(ranking.iloc[0]["query"])
-
-
-def _documents(
-        ranking: DataFrame,
-        contents_accessor: Optional[Union[
-            str,
-            Callable[[NamedTuple], str]
-        ]]
-) -> List[RankedDocument]:
-    if (
-            contents_accessor is not None and
-            isinstance(contents_accessor, str) and
-            contents_accessor in ranking.columns
-    ):
-        return [
-            RankedTextDocument(
-                id=row["docno"],
-                contents=row[contents_accessor],
-                score=row["score"],
-                rank=row["rank"],
+        if self._verbose:
+            # Show progress during reranking queries.
+            tqdm.pandas(
+                desc=(
+                    self._description
+                    if self._description is not None
+                    else self.name
+                ),
+                unit=self._unit,
             )
-            for index, row in ranking.iterrows()
-        ]
-    else:
-        return [
-            RankedDocument(
-                id=row["docno"],
-                score=row["score"],
-                rank=row["rank"],
+            query_rankings = query_rankings.progress_apply(
+                self.transform_group
             )
-            for index, row in ranking.iterrows()
-        ]
+        else:
+            query_rankings = query_rankings.apply(self.transform_group)
+        return query_rankings.reset_index(drop=True)
 
 
-def _merge_scores(
-        ranking: DataFrame,
-        reranked: List[RankedDocument]
-) -> DataFrame:
-    # Convert reranked documents back to data frame.
-    reranked_ranking = DataFrame({
-        'docno': [doc.id for doc in reranked],
-        'rank': [doc.rank for doc in reranked],
-        'score': [doc.score for doc in reranked],
-    })
-
-    # Remove old scores and ranks.
-    ranking = ranking.copy()
-    del ranking["rank"]
-    del ranking["score"]
-
-    # Merge with new scores.
-    reranked_ranking = reranked_ranking.merge(ranking, on="docno")
-    return reranked_ranking
-
-
-class AxiomTransformer(TransformerBase, ABC):
-    reranking_context: RerankingContext
-    contents_accessor: Optional[Union[str, Callable[[NamedTuple], str]]]
-    verbose: bool
+class AxiomTransformer(PerGroupTransformer, ABC):
+    _context: RerankingContext
+    _contents_accessor: Optional[
+        Union[str, Callable[[NamedTuple], str]]
+    ]
 
     def __init__(
             self,
@@ -138,9 +98,17 @@ class AxiomTransformer(TransformerBase, ABC):
             tokeniser: Tokeniser = EnglishTokeniser(),
             cache_dir: Optional[Path] = None,
             verbose: bool = False,
+            description: Optional[str] = None,
     ):
-        # If specified, fetch document contents from ir_datasets.
-        self.reranking_context = IndexRerankingContext(
+        super().__init__(
+            group_columns={"query"},
+            optional_group_columns={"qid", "name"},
+            verbose=verbose,
+            description=description,
+            unit="query"
+        )
+
+        self._context = IndexRerankingContext(
             index_location=index,
             dataset=dataset,
             contents_accessor=contents_accessor,
@@ -148,26 +116,62 @@ class AxiomTransformer(TransformerBase, ABC):
             cache_dir=cache_dir,
         )
 
-        self.contents_accessor = contents_accessor
-        self.verbose = verbose
+        self._contents_accessor = contents_accessor
 
-    description: Optional[str] = None
+    @final
+    def transform_group(self, topics_or_res: DataFrame) -> DataFrame:
+        _require_columns(
+            self,
+            topics_or_res,
+            {"query", "docno", "rank", "score"}
+        )
+
+        if len(topics_or_res.index) == 0:
+            # Empty ranking, skip reranking.
+            return topics_or_res
+
+        # Convert query.
+        # As we grouped per query, we don't expect multiple queries here.
+        assert topics_or_res["query"].nunique() <= 1
+        query = Query(topics_or_res.iloc[0]["query"])
+
+        # Load document list.
+        documents: List[RankedDocument]
+        if (
+                self._contents_accessor is not None and
+                isinstance(self._contents_accessor, str) and
+                self._contents_accessor in topics_or_res.columns
+        ):
+            # Load contents from dataframe column.
+            documents = [
+                RankedTextDocument(
+                    id=row["docno"],
+                    contents=row[self._contents_accessor],
+                    score=row["score"],
+                    rank=row["rank"],
+                )
+                for index, row in topics_or_res.iterrows()
+            ]
+        else:
+            documents = [
+                RankedDocument(
+                    id=row["docno"],
+                    score=row["score"],
+                    rank=row["rank"],
+                )
+                for index, row in topics_or_res.iterrows()
+            ]
+
+        return self.transform_query_ranking(query, documents, topics_or_res)
 
     @abstractmethod
-    def transform_ranking(self, ranking: DataFrame) -> DataFrame:
+    def transform_query_ranking(
+            self,
+            query: Query,
+            documents: List[RankedDocument],
+            topics_or_res: DataFrame,
+    ) -> DataFrame:
         pass
-
-    def transform(self, ranking: DataFrame) -> DataFrame:
-        _require_columns(
-            self, ranking,
-            "qid", "query", "docno", "rank", "score"
-        )
-        return _apply_per_query_run(
-            ranking,
-            self.transform_ranking,
-            desc=self.description,
-            verbose=self.verbose
-        )
 
 
 class SingleAxiomTransformer(AxiomTransformer, ABC):
@@ -185,6 +189,7 @@ class SingleAxiomTransformer(AxiomTransformer, ABC):
             tokeniser: Tokeniser = EnglishTokeniser(),
             cache_dir: Optional[Path] = None,
             verbose: bool = False,
+            description: Optional[str] = None,
     ):
         super().__init__(
             index=index,
@@ -193,6 +198,7 @@ class SingleAxiomTransformer(AxiomTransformer, ABC):
             tokeniser=tokeniser,
             cache_dir=cache_dir,
             verbose=verbose,
+            description=description,
         )
         self.axiom = to_axiom(axiom)
 
@@ -212,6 +218,7 @@ class MultiAxiomTransformer(AxiomTransformer, ABC):
             tokeniser: Tokeniser = EnglishTokeniser(),
             cache_dir: Optional[Path] = None,
             verbose: bool = False,
+            description: Optional[str] = None,
     ):
         super().__init__(
             index=index,
@@ -220,77 +227,63 @@ class MultiAxiomTransformer(AxiomTransformer, ABC):
             tokeniser=tokeniser,
             cache_dir=cache_dir,
             verbose=verbose,
+            description=description,
         )
         self.axioms = [to_axiom(axiom) for axiom in axioms]
 
 
 class AxiomaticReranker(SingleAxiomTransformer):
     name = "AxiomaticReranker"
-    description = "Reranking with axiom preferences"
 
-    def transform_ranking(self, ranking: DataFrame) -> DataFrame:
-        if len(ranking.index) == 0:
-            # Empty ranking, skip reranking.
-            return ranking
-
-        # Convert to typed data classes.
-        query = _query(ranking)
-        documents = _documents(ranking, self.contents_accessor)
-
+    def transform_query_ranking(
+            self,
+            query: Query,
+            documents: List[RankedDocument],
+            topics_or_res: DataFrame,
+    ) -> DataFrame:
         # Rerank documents.
-        reranked_documents = self.axiom.rerank(
-            self.reranking_context,
-            query,
-            documents,
-        )
+        reranked_documents = self.axiom.rerank(self._context, query, documents)
 
-        # Merge reranked documents back to data frame.
-        reranked = _merge_scores(ranking, reranked_documents)
+        # Convert reranked documents back to data frame.
+        reranked = DataFrame({
+            "docno": [doc.id for doc in reranked_documents],
+            "rank": [doc.rank for doc in reranked_documents],
+            "score": [doc.score for doc in reranked_documents],
+        })
+
+        # Remove original scores and ranks.
+        original_ranking = topics_or_res.copy()
+        del original_ranking["rank"]
+        del original_ranking["score"]
+
+        # Merge with new scores.
+        reranked = reranked.merge(original_ranking, on="docno")
         return reranked
 
 
 class AxiomaticPreferences(MultiAxiomTransformer):
     name = "AxiomaticPreferences"
-    description = "Compute axiomatic preferences"
 
-    def _unroll_axiom_preferences(
+    def transform_query_ranking(
             self,
-            axiom: Axiom,
             query: Query,
-            ranking: List[RankedDocument],
-    ):
-        return [
-            axiom.preference(self.reranking_context, query, document1, document2)
-            for document1 in ranking
-            for document2 in ranking
-        ]
-
-    def transform_ranking(self, ranking: DataFrame):
-        if len(ranking.index) == 0:
-            # Empty ranking, skip feature scoring.
-            return ranking
-
-        # Convert to typed data classes.
-        query = _query(ranking)
-        documents = _documents(ranking, self.contents_accessor)
-
+            documents: List[RankedDocument],
+            topics_or_res: DataFrame,
+    ) -> DataFrame:
         # Cross product.
         product_columns = ["qid", "query"]
-        if "name" in ranking.columns:
-            product_columns.append("name")
-        pairs = ranking.merge(
-            ranking,
+        pairs = topics_or_res.merge(
+            topics_or_res,
             on=product_columns,
             suffixes=("_a", "_b"),
         )
 
         # Compute axiom preferences.
         for axiom in self.axioms:
-            pairs[f"{axiom.name}_preference"] = self._unroll_axiom_preferences(
-                axiom,
-                query,
-                documents,
-            )
+            pairs[f"{axiom.name}_preference"] = [
+                axiom.preference(self._context, query, document1, document2)
+                for document1 in documents
+                for document2 in documents
+            ]
 
         return pairs
-
