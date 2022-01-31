@@ -104,7 +104,7 @@ class IndexRerankingContext(RerankingContext):
     @lru_cache
     def document_frequency(self, term: str) -> int:
         entry = self._lexicon.getLexiconEntry(term)
-        if entry is None:
+        if entry is None or entry.getNumberOfEntries() == 0:
             return 0
         return entry.getDocumentFrequency()
 

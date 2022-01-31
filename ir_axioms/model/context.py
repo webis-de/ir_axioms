@@ -55,8 +55,11 @@ class RerankingContext(ABC):
             term: str
     ) -> float:
         terms = self.terms(query_or_document)
+        terms_len = len(terms)
+        if terms_len == 0:
+            return 0
         term_count = sum(1 for other in terms if other == term)
-        return term_count / len(terms)
+        return term_count / terms_len
 
     @abstractmethod
     def retrieval_score(
