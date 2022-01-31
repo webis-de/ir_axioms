@@ -5,6 +5,7 @@ from typing import Sequence, Optional, Union, Callable, NamedTuple
 
 from ir_datasets import Dataset
 from pandas import DataFrame, concat
+from tqdm import tqdm
 
 from ir_axioms.axiom import Axiom, OriginalAxiom
 from ir_axioms.backend.pyterrier.axiom import OracleAxiom
@@ -20,8 +21,10 @@ class AxiomaticExperiment:
     retrieval_systems: Sequence[Transformer]
     topics: DataFrame
     qrels: DataFrame
-    axioms: Sequence[Axiom]
     index: Union[Path, IndexRef, Index]
+    axioms: Sequence[Axiom]
+    filter_by_qrels: bool = False
+    filter_by_topics: bool = False
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[Union[
         str,
@@ -48,15 +51,8 @@ class AxiomaticExperiment:
             contents_accessor=self.contents_accessor,
             tokeniser=self.tokeniser,
             cache_dir=self.cache_dir,
-            verbose=self.verbose,
+            verbose=False,
         )
-
-    @cached_property
-    def _results(self) -> DataFrame:
-        return concat([
-            system.transform(self.topics)
-            for system in self.retrieval_systems
-        ])
 
     @property
     def preferences(self) -> DataFrame:
@@ -79,4 +75,14 @@ class AxiomaticExperiment:
         - oracle_preference: Preference from qrels (NaN if qrels are missing)
         - <axiom>_preference: Preference from each axiom <axiom>
         """
-        return self._preferences_transformer.transform(self._results)
+        systems = self.retrieval_systems
+        if self.verbose:
+            systems = tqdm(
+                systems,
+                desc="AxiomaticExperiment",
+                unit="system",
+            )
+        return concat([
+            (system >> self._preferences_transformer).transform(self.topics)
+            for system in systems
+        ])
