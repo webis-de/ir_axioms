@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from inspect import isabstract
 from typing import final, List, Union
 
+from numpy import array, ndarray
+
 from ir_axioms import registry
 from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
@@ -195,6 +197,15 @@ class Axiom(ABC):
             ]
             for document1 in ranking
         ]
+
+    @final
+    def preference_matrix(
+            self,
+            context: RerankingContext,
+            query: Query,
+            ranking: List[RankedDocument],
+    ) -> ndarray:
+        return array(self.preferences(context, query, ranking))
 
     @final
     def is_permutated(
