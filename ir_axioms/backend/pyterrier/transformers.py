@@ -275,9 +275,12 @@ class AxiomaticPreferences(MultiAxiomTransformer):
         documents = _documents(ranking, self.contents_accessor)
 
         # Cross product.
+        product_columns = ["qid", "query"]
+        if "name" in ranking.columns:
+            product_columns.append("name")
         pairs = ranking.merge(
             ranking,
-            how="cross",
+            on=product_columns,
             suffixes=("_a", "_b"),
         )
 
