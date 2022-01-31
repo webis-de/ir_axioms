@@ -60,7 +60,6 @@ class TrecTrack:
             unit="run",
             total=num_files,
         )
-        files = islice(files, 2)
         return [
             Transformer.from_df(
                 read_results(
