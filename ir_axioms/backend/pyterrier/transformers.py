@@ -1,7 +1,6 @@
 from abc import abstractmethod, ABC
-from itertools import chain
 from pathlib import Path
-from typing import Union, Optional, List, Set, Callable, NamedTuple
+from typing import Union, Optional, List, Set, Callable, NamedTuple, Sequence
 
 from ir_datasets import Dataset
 from pandas import DataFrame
@@ -10,10 +9,10 @@ from tqdm import tqdm
 
 from ir_axioms.axiom import Axiom, AxiomLike, to_axiom
 from ir_axioms.backend.pyterrier import IndexRerankingContext
+from ir_axioms.backend.pyterrier.safe import TransformerBase, Transformer
 from ir_axioms.backend.pyterrier.util import (
     IndexRef, Index, Tokeniser, EnglishTokeniser
 )
-from ir_axioms.backend.pyterrier.safe import TransformerBase, Transformer
 from ir_axioms.model import Query, RankedDocument, RankedTextDocument
 from ir_axioms.model.context import RerankingContext
 
@@ -123,15 +122,13 @@ def _merge_scores(
     return reranked_ranking
 
 
-class AxiomaticTransformerBase(TransformerBase):
-    axiom: Axiom
+class AxiomTransformer(TransformerBase, ABC):
     reranking_context: RerankingContext
     contents_accessor: Optional[Union[str, Callable[[NamedTuple], str]]]
     verbose: bool
 
     def __init__(
             self,
-            axiom: AxiomLike,
             index: Union[Path, IndexRef, Index],
             dataset: Optional[Union[Dataset, str]] = None,
             contents_accessor: Optional[Union[
@@ -142,8 +139,6 @@ class AxiomaticTransformerBase(TransformerBase):
             cache_dir: Optional[Path] = None,
             verbose: bool = False,
     ):
-        self.axiom = to_axiom(axiom)
-
         # If specified, fetch document contents from ir_datasets.
         self.reranking_context = IndexRerankingContext(
             index_location=index,
@@ -156,8 +151,6 @@ class AxiomaticTransformerBase(TransformerBase):
         self.contents_accessor = contents_accessor
         self.verbose = verbose
 
-
-class AxiomaticRankingTransformerBase(AxiomaticTransformerBase, ABC):
     description: Optional[str] = None
 
     @abstractmethod
@@ -177,7 +170,61 @@ class AxiomaticRankingTransformerBase(AxiomaticTransformerBase, ABC):
         )
 
 
-class AxiomaticReranker(AxiomaticRankingTransformerBase):
+class SingleAxiomTransformer(AxiomTransformer, ABC):
+    axiom: Axiom
+
+    def __init__(
+            self,
+            axiom: AxiomLike,
+            index: Union[Path, IndexRef, Index],
+            dataset: Optional[Union[Dataset, str]] = None,
+            contents_accessor: Optional[Union[
+                str,
+                Callable[[NamedTuple], str]
+            ]] = "text",
+            tokeniser: Tokeniser = EnglishTokeniser(),
+            cache_dir: Optional[Path] = None,
+            verbose: bool = False,
+    ):
+        super().__init__(
+            index=index,
+            dataset=dataset,
+            contents_accessor=contents_accessor,
+            tokeniser=tokeniser,
+            cache_dir=cache_dir,
+            verbose=verbose,
+        )
+        self.axiom = to_axiom(axiom)
+
+
+class MultiAxiomTransformer(AxiomTransformer, ABC):
+    axioms: Sequence[Axiom]
+
+    def __init__(
+            self,
+            axioms: Sequence[AxiomLike],
+            index: Union[Path, IndexRef, Index],
+            dataset: Optional[Union[Dataset, str]] = None,
+            contents_accessor: Optional[Union[
+                str,
+                Callable[[NamedTuple], str]
+            ]] = "text",
+            tokeniser: Tokeniser = EnglishTokeniser(),
+            cache_dir: Optional[Path] = None,
+            verbose: bool = False,
+    ):
+        super().__init__(
+            index=index,
+            dataset=dataset,
+            contents_accessor=contents_accessor,
+            tokeniser=tokeniser,
+            cache_dir=cache_dir,
+            verbose=verbose,
+        )
+        self.axioms = [to_axiom(axiom) for axiom in axioms]
+
+
+class AxiomaticReranker(SingleAxiomTransformer):
     name = "AxiomaticReranker"
     description = "Reranking with axiom preferences"
 
@@ -202,9 +249,21 @@ class AxiomaticReranker(AxiomaticRankingTransformerBase):
         return reranked
 
 
-class AxiomaticPreferences(AxiomaticRankingTransformerBase):
+class AxiomaticPreferences(MultiAxiomTransformer):
     name = "AxiomaticPreferences"
     description = "Compute axiomatic preferences"
+
+    def _unroll_axiom_preferences(
+            self,
+            axiom: Axiom,
+            query: Query,
+            ranking: List[RankedDocument],
+    ):
+        return [
+            axiom.preference(self.reranking_context, query, document1, document2)
+            for document1 in ranking
+            for document2 in ranking
+        ]
 
     def transform_ranking(self, ranking: DataFrame):
         if len(ranking.index) == 0:
@@ -218,24 +277,59 @@ class AxiomaticPreferences(AxiomaticRankingTransformerBase):
         # Cross product.
         pairs = ranking.merge(
             ranking,
-            on=["qid", "query"],
+            how="cross",
             suffixes=("_a", "_b"),
         )
 
         # Compute axiom preferences.
-        preferences = list(chain(
-            *self.axiom.preferences(
-                self.reranking_context,
+        for axiom in self.axioms:
+            pairs[f"{axiom.name}_preference"] = self._unroll_axiom_preferences(
+                axiom,
                 query,
                 documents,
             )
-        ))
-        pairs["preference"] = preferences
 
         return pairs
 
 
-class AxiomaticPermutationsCount(AxiomaticRankingTransformerBase):
+class AxiomaticPreferenceMatrices(MultiAxiomTransformer):
+    name = "AxiomaticPreferenceMatrices"
+    description = "Compute axiomatic preference matrices"
+
+    def transform_ranking(self, ranking: DataFrame):
+        if len(ranking.index) == 0:
+            # Empty ranking, skip feature scoring.
+            return ranking
+
+        # Convert to typed data classes.
+        query = _query(ranking)
+        documents = _documents(ranking, self.contents_accessor)
+
+        # Compute axiom preferences.
+        preference_matrices = {
+            axiom.name: axiom.preference_matrix(
+                self.reranking_context,
+                query,
+                documents
+            )
+            for axiom in self.axioms
+        }
+
+        template_columns = ["qid", "query"]
+        if "name" in ranking.columns:
+            template_columns.append("name")
+        template: dict = ranking[template_columns].iloc[0].to_dict()
+        return DataFrame([
+            {
+                **template,
+                "axiom": axiom_name,
+                "preferences": preference_matrix
+            }
+            for axiom_name, preference_matrix in preference_matrices.items()
+        ])
+
+
+class AxiomaticPermutationsCount(SingleAxiomTransformer):
     name = "AxiomaticPermutationsCount"
     description = "Counting permutations compared to axiom preferences"
 
