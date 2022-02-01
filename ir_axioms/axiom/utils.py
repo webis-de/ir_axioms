@@ -105,7 +105,7 @@ def approximately_same_length(
     )
 
 
-@lru_cache(2048)
+@lru_cache(maxsize=4096)
 def synonym_set(
         term: str,
         smoothing: int = 0
@@ -115,6 +115,7 @@ def synonym_set(
     return wordnet.synsets(term)[:cutoff]
 
 
+@lru_cache(maxsize=4096)
 def synonym_set_similarity(
         term1: str,
         term2: str,

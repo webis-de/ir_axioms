@@ -54,7 +54,7 @@ class AxiomaticExperiment:
             verbose=False,
         )
 
-    @property
+    @cached_property
     def preferences(self) -> DataFrame:
         """
         Return a dataframe with each axiom's preference for each

@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from functools import lru_cache
 from statistics import mean
 from typing import List, Set, Dict, Optional
 
@@ -16,6 +17,7 @@ from ir_axioms.model.context import RerankingContext
 from ir_axioms.utils.nltk import download_nltk_dependencies
 
 
+@lru_cache(maxsize=4096)
 def _normalize(word: str):
     download_nltk_dependencies("wordnet")
     _word_net_lemmatizer = WordNetLemmatizer()

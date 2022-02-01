@@ -49,7 +49,7 @@ class IndexRerankingContext(RerankingContext):
     def document_count(self) -> int:
         return self._index_reader.stats()["documents"]
 
-    @lru_cache
+    @lru_cache(maxsize=4096)
     def document_frequency(self, term: str) -> int:
         return self._index_reader.object.getDF(
             self._index_reader.reader,
@@ -60,7 +60,7 @@ class IndexRerankingContext(RerankingContext):
     def _searcher(self) -> SimpleSearcher:
         return SimpleSearcher(str(self.index_dir.absolute()))
 
-    @lru_cache
+    @lru_cache(maxsize=1024)
     def document_contents(self, document: Document) -> str:
         # Shortcut when text is given in the document.
         if isinstance(document, TextDocument):
@@ -81,7 +81,7 @@ class IndexRerankingContext(RerankingContext):
         json_document = loads(document.raw())
         return json_document["contents"]
 
-    @lru_cache
+    @lru_cache(maxsize=1024)
     def terms(
             self,
             query_or_document: Union[Query, Document]
@@ -116,7 +116,7 @@ class IndexRerankingContext(RerankingContext):
                 f"the {type(model)} retrieval model."
             )
 
-    @lru_cache
+    @lru_cache(maxsize=4096)
     def retrieval_score(
             self,
             query: Query,

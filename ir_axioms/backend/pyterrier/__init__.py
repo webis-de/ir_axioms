@@ -101,14 +101,14 @@ class IndexRerankingContext(RerankingContext):
     def document_count(self) -> int:
         return self._collection_statistics.numberOfDocuments
 
-    @lru_cache
+    @lru_cache(maxsize=4096)
     def document_frequency(self, term: str) -> int:
         entry = self._lexicon.getLexiconEntry(term)
         if entry is None or entry.getNumberOfEntries() == 0:
             return 0
         return entry.getDocumentFrequency()
 
-    @lru_cache
+    @lru_cache(maxsize=1024)
     def document_contents(self, document: Document) -> str:
         # Shortcut when text is given in the document.
         if isinstance(document, TextDocument):
@@ -150,7 +150,7 @@ class IndexRerankingContext(RerankingContext):
             for pipeline in split(r"\s*,\s*", term_pipelines.strip())
         ]
 
-    @lru_cache
+    @lru_cache(maxsize=1024)
     def terms(
             self,
             query_or_document: Union[Query, Document]
@@ -207,7 +207,7 @@ class IndexRerankingContext(RerankingContext):
         # noinspection PyProtectedMember
         return ManagerFactory._from_(self._index_ref)
 
-    @lru_cache
+    @lru_cache(maxsize=4096)
     def retrieval_score(
             self,
             query: Query,

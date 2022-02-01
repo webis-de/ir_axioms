@@ -38,7 +38,7 @@ class _WordEmbeddingTermSimilarity(_TermSimilarity):
     def _embeddings(self):
         return Magnitude(self.embeddings_path, stream=True)
 
-    @lru_cache
+    @lru_cache(maxsize=4096)
     def similarity(self, term1: str, term2: str):
         return self._embeddings.similarity(term1, term2)
 

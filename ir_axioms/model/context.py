@@ -20,6 +20,7 @@ class RerankingContext(ABC):
     def document_frequency(self, term: str) -> int:
         pass
 
+    @lru_cache(maxsize=1024)
     def inverse_document_frequency(self, term: str) -> float:
         document_frequency = self.document_frequency(term)
         if document_frequency == 0:
@@ -30,6 +31,7 @@ class RerankingContext(ABC):
     def document_contents(self, document: Document) -> str:
         pass
 
+    @lru_cache(maxsize=1024)
     def contents(self, query_or_document: Union[Query, Document]) -> str:
         if isinstance(query_or_document, Query):
             return query_or_document.title
@@ -48,7 +50,7 @@ class RerankingContext(ABC):
     def term_set(self, query_or_document: Union[Query, Document]) -> Set[str]:
         return set(self.terms(query_or_document))
 
-    @lru_cache
+    @lru_cache(maxsize=4096)
     def term_frequency(
             self,
             query_or_document: Union[Query, Document],
