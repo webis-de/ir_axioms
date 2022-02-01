@@ -11,6 +11,7 @@ except ImportError as error:
     ) from error
 
 from jnius import autoclass as _autoclass
+from pyterrier.apply import generic as _generic
 from pyterrier.index import IterDictIndexer as _IterDictIndexer
 from pyterrier.transformer import (
     Transformer as _Transformer, TransformerBase as _TransformerBase
@@ -21,3 +22,4 @@ IterDictIndexer = _IterDictIndexer
 Transformer = _Transformer
 TransformerBase = _TransformerBase
 autoclass = _autoclass
+generic = _generic
