@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from functools import cached_property
-from itertools import islice
 from pathlib import Path
 from typing import List
 
