@@ -49,17 +49,18 @@ class PerGroupTransformer(TransformerBase, ABC):
     def transform_group(self, topics_or_res: DataFrame) -> DataFrame:
         pass
 
-    @final
-    def transform(self, topics_or_res: DataFrame) -> DataFrame:
-        _require_columns(self, topics_or_res, self._group_columns)
-
-        group_columns = self._group_columns | {
+    def _all_group_columns(self, topics_or_res: DataFrame) -> Set[str]:
+        return self._group_columns | {
             column for column in self._optional_group_columns
             if column in topics_or_res.columns
         }
 
+    @final
+    def transform(self, topics_or_res: DataFrame) -> DataFrame:
+        _require_columns(self, topics_or_res, self._group_columns)
+
         query_rankings: DataFrameGroupBy = topics_or_res.groupby(
-            by=list(group_columns),
+            by=list(self._all_group_columns(topics_or_res)),
             as_index=False,
             sort=False,
         )
@@ -271,10 +272,9 @@ class AxiomaticPreferences(MultiAxiomTransformer):
             topics_or_res: DataFrame,
     ) -> DataFrame:
         # Cross product.
-        product_columns = ["qid", "query"]
         pairs = topics_or_res.merge(
             topics_or_res,
-            on=product_columns,
+            on=list(self._all_group_columns(topics_or_res)),
             suffixes=("_a", "_b"),
         )
 
