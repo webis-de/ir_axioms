@@ -43,15 +43,14 @@ _retrieval_score_application_properties = {
     ]),
 }
 
+ContentsAccessor = Union[str, Callable[[NamedTuple], str]]
+
 
 @dataclass(unsafe_hash=True, frozen=True)
 class IndexRerankingContext(RerankingContext):
     index_location: Union[Path, IndexRef, Index]
     dataset: Optional[Union[Dataset, str]] = None
-    contents_accessor: Optional[Union[
-        str,
-        Callable[[NamedTuple], str]
-    ]] = "text"
+    contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Tokeniser = EnglishTokeniser()
     cache_dir: Optional[Path] = None
 

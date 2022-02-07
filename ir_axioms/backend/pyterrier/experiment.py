@@ -8,6 +8,7 @@ from pandas import DataFrame, concat
 from tqdm import tqdm
 
 from ir_axioms.axiom import Axiom, OriginalAxiom
+from ir_axioms.backend.pyterrier import ContentsAccessor
 from ir_axioms.backend.pyterrier.axiom import OracleAxiom
 from ir_axioms.backend.pyterrier.safe import Transformer, generic
 from ir_axioms.backend.pyterrier.transformers import AxiomaticPreferences
@@ -26,10 +27,7 @@ class AxiomaticExperiment:
     filter_by_topics: bool = True
     filter_by_qrels: bool = True
     dataset: Optional[Union[Dataset, str]] = None
-    contents_accessor: Optional[Union[
-        str,
-        Callable[[NamedTuple], str]
-    ]] = "text"
+    contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Tokeniser = EnglishTokeniser()
     cache_dir: Optional[Path] = None
     verbose: bool = False
