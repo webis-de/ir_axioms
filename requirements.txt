@@ -8,3 +8,4 @@ pandas==1.4.0
 tqdm>=4.8,==4.*
 ir-datasets>=0.4,==0.*
 numpy>=1.22,==1.*
+diskcache>=5.4,==5.*
