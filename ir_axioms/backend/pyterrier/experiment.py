@@ -12,9 +12,7 @@ from ir_axioms.backend.pyterrier import ContentsAccessor
 from ir_axioms.backend.pyterrier.axiom import OracleAxiom
 from ir_axioms.backend.pyterrier.safe import Transformer, generic
 from ir_axioms.backend.pyterrier.transformers import AxiomaticPreferences
-from ir_axioms.backend.pyterrier.util import (
-    IndexRef, Index, Tokeniser, EnglishTokeniser
-)
+from ir_axioms.backend.pyterrier.util import IndexRef, Index, Tokeniser
 
 
 @dataclass(frozen=True)
@@ -28,7 +26,7 @@ class AxiomaticExperiment:
     filter_by_qrels: bool = True
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
-    tokeniser: Tokeniser = EnglishTokeniser()
+    tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None
     verbose: bool = False
 
