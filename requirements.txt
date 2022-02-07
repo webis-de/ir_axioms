@@ -4,6 +4,7 @@ requests>=2.26,==2.*
 targer-api@git+https://github.com/heinrichreimer/targer-api.git@c52f5b2711b9e6bc67bb013309e2ab5a42d02d50
 trectools>=0.0.44,==0.0.*
 class-registry>=2.1,==2.*
-pandas>=1.0,==1.*
+pandas==1.4.0
 tqdm>=4.8,==4.*
 ir-datasets>=0.4,==0.*
+numpy>=1.22,==1.*
