@@ -60,8 +60,12 @@ class IndexRerankingContext(RerankingContext):
             return self.index_location
         elif isinstance(self.index_location, Index):
             return self.index_location.getIndexRef()
-        else:
+        elif isinstance(self.index_location, Path):
             return IndexRef.of(str(self.index_location.absolute()))
+        else:
+            raise ValueError(
+                f"Unknown index location type: {self.index_location}"
+            )
 
     @cached_property
     def _index(self) -> Index:
