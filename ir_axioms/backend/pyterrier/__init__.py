@@ -8,6 +8,8 @@ from typing import List, Optional, Union, Callable, NamedTuple
 from ir_datasets import Dataset, load
 from ir_datasets.indices import Docstore
 
+from ir_axioms.backend.pyterrier.config import \
+    RETRIEVAL_SCORE_APPLICATION_PROPERTIES
 from ir_axioms.backend.pyterrier.util import (
     EnglishTokeniser, Lexicon, CollectionStatistics, BaseTermPipelineAccessor,
     WeightingModel, TfModel, TfIdfModel, BM25Model, PL2Model, DirichletLMModel,
@@ -20,28 +22,6 @@ from ir_axioms.model.context import RerankingContext
 from ir_axioms.model.retrieval_model import (
     RetrievalModel, Tf, TfIdf, BM25, PL2, DirichletLM
 )
-
-_retrieval_score_application_properties = {
-    "querying.processes": ",".join([
-        "terrierql:TerrierQLParser",
-        "parsecontrols:TerrierQLToControls",
-        "parseql:TerrierQLToMatchingQueryTerms",
-        "applypipeline:ApplyTermPipeline",
-        "context_wmodel:org.terrier.python.WmodelFromContextProcess",
-        "localmatching:LocalManager$ApplyLocalMatching",
-        "filters:LocalManager$PostFilterProcess"
-    ]),
-    "querying.postfilters": "decorate:SimpleDecorate",
-    "querying.default.controls": ",".join([
-        "parsecontrols:on",
-        "parseql:on",
-        "applypipeline:on",
-        "terrierql:on",
-        "localmatching:on",
-        "filters:on",
-        "decorate:on"
-    ]),
-}
 
 ContentsAccessor = Union[str, Callable[[NamedTuple], str]]
 
@@ -231,7 +211,7 @@ class IndexRerankingContext(RerankingContext):
             return 0
 
         # Setup retrieval as per BatchRetrieve.
-        for key, value in _retrieval_score_application_properties.items():
+        for key, value in RETRIEVAL_SCORE_APPLICATION_PROPERTIES.items():
             ApplicationSetup.setProperty(key, value)
 
         # Build search request.
