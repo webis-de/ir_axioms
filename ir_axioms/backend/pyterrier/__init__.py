@@ -51,7 +51,7 @@ class IndexRerankingContext(RerankingContext):
     index_location: Union[Path, IndexRef, Index]
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
-    tokeniser: Tokeniser = EnglishTokeniser()
+    tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None
 
     @cached_property
@@ -139,6 +139,12 @@ class IndexRerankingContext(RerankingContext):
         )
 
     @cached_property
+    def _tokeniser(self) -> Tokeniser:
+        if self.tokeniser is None:
+            return EnglishTokeniser()
+        return self.tokeniser
+
+    @cached_property
     def _term_pipelines(self) -> List[TermPipelineAccessor]:
         term_pipelines = ApplicationSetup.getProperty(
             "termpipelines",
@@ -156,7 +162,7 @@ class IndexRerankingContext(RerankingContext):
     ) -> List[str]:
         text = self.contents(query_or_document)
         reader = StringReader(text)
-        terms = list(self.tokeniser.tokenise(reader))
+        terms = list(self._tokeniser.tokenise(reader))
         terms = [term for term in terms if term is not None]
         for pipeline in self._term_pipelines:
             terms = [
