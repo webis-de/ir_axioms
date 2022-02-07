@@ -30,20 +30,17 @@ class TrecTrack:
         return load(self.dataset_name)
 
     @cached_property
-    def index(self) -> IndexRef:
+    def index(self) -> Path:
         # Load documents and build index.
         index_dir = Path(f"./data/indices/{self.dataset_name}")
-        index_ref: IndexRef
-        if index_dir.exists():
-            index_ref = IndexRef.of(str(index_dir.absolute()))
-        else:
+        if not index_dir.exists():
             # Don't forget to include the 'text' field in the meta index.
             indexer = IterDictIndexer(str(index_dir))
-            index_ref = indexer.index(
+            indexer.index(
                 self.dataset.get_corpus_iter(),
                 fields=["text"]
             )
-        return index_ref
+        return index_dir
 
     @cached_property
     def result_dir(self) -> Path:
