@@ -9,7 +9,7 @@ from pyterrier import Transformer
 from pyterrier.datasets import IRDSDataset, get_dataset, Dataset
 from pyterrier.index import IterDictIndexer
 from pyterrier.io import read_results
-from pyterrier.transformer import TransformerBase
+from pyterrier.transformer import TransformerBase, SourceTransformer
 from tqdm import tqdm
 
 
@@ -59,12 +59,14 @@ class TrecTrack:
             total=num_files,
         )
         return [
-            Transformer.from_df(
-                read_results(
-                    str(path.absolute()),
-                    dataset=dataset,
-                )
-            ) >> TaggedTransformer(str(path.absolute()))
+            ~(
+                    SourceTransformer(
+                        read_results(
+                            str(path.absolute()),
+                            dataset=dataset,
+                        )
+                    ) >> TaggedTransformer(str(path.absolute()))
+            )
             for path in files
         ]
 
