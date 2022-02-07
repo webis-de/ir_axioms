@@ -145,7 +145,7 @@ class AxiomTransformer(PerGroupTransformer, ABC):
 @dataclass(frozen=True)
 class SingleAxiomTransformer(AxiomTransformer, ABC):
     axiom: AxiomLike
-    index_location: Union[Path, IndexRef, Index]
+    index: Union[Path, IndexRef, Index]
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Optional[Tokeniser] = None
