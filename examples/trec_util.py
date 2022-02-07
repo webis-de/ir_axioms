@@ -1,13 +1,15 @@
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import List
+from typing import List, Any
 
 from ir_datasets import load
-from pyterrier import Transformer, IndexRef
+from pandas import DataFrame
+from pyterrier import Transformer
 from pyterrier.datasets import IRDSDataset, get_dataset, Dataset
 from pyterrier.index import IterDictIndexer
 from pyterrier.io import read_results
+from pyterrier.transformer import TransformerBase
 from tqdm import tqdm
 
 
@@ -62,6 +64,14 @@ class TrecTrack:
                     str(path.absolute()),
                     dataset=dataset,
                 )
-            )
+            ) >> TaggedTransformer(str(path.absolute()))
             for path in files
         ]
+
+
+@dataclass(frozen=True)
+class TaggedTransformer(TransformerBase):
+    tag: Any
+
+    def transform(self, ranking: DataFrame) -> DataFrame:
+        return ranking
