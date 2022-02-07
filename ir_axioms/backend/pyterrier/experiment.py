@@ -94,9 +94,11 @@ class AxiomaticExperiment:
             )
         return concat([
             (
-                    system >>
-                    self._filter_transformer >>
-                    self._preferences_transformer
+                ~(
+                        system >>
+                        self._filter_transformer >>
+                        self._preferences_transformer
+                )
             ).transform(self.topics)
             for system in systems
         ])
