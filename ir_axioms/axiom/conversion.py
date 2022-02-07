@@ -4,12 +4,12 @@ from typing import Iterable, Union, Type, TypeVar
 
 from ir_axioms import registry
 from ir_axioms.axiom.arithmetic import SumAxiom, ProductAxiom, \
-    MajorityVoteAxiom, AndAxiom
+    MajorityVoteAxiom, AndAxiom, UniformAxiom
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
 
-AxiomLike = Union[str, Axiom, Iterable["AxiomLike"]]
+AxiomLike = Union[str, Axiom, int, float, Iterable["AxiomLike"]]
 
 AggregationAxiom = TypeVar(
     "AggregationAxiom",
@@ -26,6 +26,8 @@ def to_axiom(
 ) -> Axiom:
     if isinstance(axiom_like, str):
         return registry[axiom_like]
+    elif isinstance(axiom_like, (float, int)):
+        return UniformAxiom(axiom_like)
     elif isinstance(axiom_like, Iterable):
         return aggregation([to_axiom(item) for item in axiom_like])
     else:
