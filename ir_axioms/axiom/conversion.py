@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from functools import cached_property
 from typing import Iterable, Union, Type, TypeVar
 
 from ir_axioms import registry
@@ -31,15 +33,14 @@ def to_axiom(
         return axiom_like
 
 
+@dataclass(frozen=True)
 class AutoAxiom(Axiom):
-    _axiom: Axiom
+    axiom_like: AxiomLike
+    aggregation: Type[AggregationAxiom] = SumAxiom
 
-    def __init__(
-            self,
-            axiom_like: AxiomLike,
-            aggregation: Type[AggregationAxiom] = SumAxiom
-    ):
-        self._axiom = to_axiom(axiom_like, aggregation)
+    @cached_property
+    def _axiom(self) -> Axiom:
+        return to_axiom(self.axiom_like, self.aggregation)
 
     def preference(
             self,

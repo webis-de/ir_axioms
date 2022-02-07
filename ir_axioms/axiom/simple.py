@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from random import Random
 
 from ir_axioms.axiom.base import Axiom
@@ -6,6 +7,7 @@ from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
 
 
+@dataclass(frozen=True)
 class NopAxiom(Axiom):
     name = "nop"
 
@@ -19,6 +21,7 @@ class NopAxiom(Axiom):
         return 0
 
 
+@dataclass(frozen=True)
 class OriginalAxiom(Axiom):
     name = "original"
 
@@ -32,12 +35,11 @@ class OriginalAxiom(Axiom):
         return strictly_less(document1.rank, document2.rank)
 
 
+@dataclass(frozen=True)
 class RandomAxiom(Axiom):
     name = "random"
-    _random: Random
 
-    def __init__(self, random: Random = Random()):
-        self._random = random
+    random: Random = Random()
 
     def preference(
             self,
@@ -46,4 +48,4 @@ class RandomAxiom(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        return self._random.randint(-1, 1)
+        return self.random.randint(-1, 1)

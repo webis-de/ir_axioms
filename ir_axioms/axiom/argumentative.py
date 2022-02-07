@@ -146,7 +146,7 @@ def _sentence_length(
 
 
 @dataclass(frozen=True)
-class _TargerAxiomMixin:
+class _TargerMixin:
     models: Set[str] = field(default_factory=lambda: DEFAULT_TARGER_MODELS)
     api_url: str = DEFAULT_TARGER_API_URL
 
@@ -167,7 +167,8 @@ class _TargerAxiomMixin:
         )
 
 
-class ArgumentativeUnitsCountAxiom(Axiom, _TargerAxiomMixin):
+@dataclass(frozen=True)
+class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom):
     """
     Favor documents with more argumentative units.
     """
@@ -204,7 +205,7 @@ class ArgumentativeUnitsCountAxiom(Axiom, _TargerAxiomMixin):
 
 
 @dataclass(frozen=True)
-class QueryTermOccurrenceInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
+class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
     """
     Favor documents with more query terms in argumentative units.
     """
@@ -247,7 +248,7 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
 
 
 @dataclass(frozen=True)
-class QueryTermPositionInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
+class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
     """
     Favor documents where the first occurrence of a query term
     in an argumentative unit is closer to the beginning of the document.
