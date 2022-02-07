@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Sequence, Optional, Union, Callable, NamedTuple
+from typing import Sequence, Optional, Union
 
 from ir_datasets import Dataset
 from pandas import DataFrame, concat
@@ -10,7 +10,12 @@ from tqdm import tqdm
 from ir_axioms.axiom import Axiom, OriginalAxiom
 from ir_axioms.backend.pyterrier import ContentsAccessor
 from ir_axioms.backend.pyterrier.axiom import OracleAxiom
-from ir_axioms.backend.pyterrier.safe import Transformer, generic
+from ir_axioms.backend.pyterrier.safe import (
+    Transformer, IdentityTransformer
+)
+from ir_axioms.backend.pyterrier.transformer_utils import (
+    FilterTopicsTransformer, FilterQrelsTransformer
+)
 from ir_axioms.backend.pyterrier.transformers import AxiomaticPreferences
 from ir_axioms.backend.pyterrier.util import IndexRef, Index, Tokeniser
 
@@ -39,6 +44,15 @@ class AxiomaticExperiment:
         ]
 
     @cached_property
+    def _filter_transformer(self) -> Transformer:
+        pipeline = IdentityTransformer()
+        if self.filter_by_topics:
+            pipeline = pipeline >> FilterTopicsTransformer(self.topics)
+        if self.filter_by_qrels:
+            pipeline = pipeline >> FilterQrelsTransformer(self.qrels)
+        return pipeline
+
+    @cached_property
     def _preferences_transformer(self) -> Transformer:
         return AxiomaticPreferences(
             axioms=self._axioms,
@@ -49,18 +63,6 @@ class AxiomaticExperiment:
             cache_dir=self.cache_dir,
             verbose=False,
         )
-
-    def _filter(self, ranking: DataFrame):
-        if self.filter_by_topics:
-            # Retain only queries that are contained in the topics.
-            ranking = ranking[ranking["qid"].isin(self.topics["qid"])]
-        if self.filter_by_qrels:
-            # Retain only query-document pairs that are contained in the qrels.
-            ranking = ranking[
-                ranking["qid"].isin(self.qrels["qid"]) &
-                ranking["docno"].isin(self.qrels["docno"])
-                ]
-        return ranking
 
     @cached_property
     def preferences(self) -> DataFrame:
@@ -93,7 +95,7 @@ class AxiomaticExperiment:
         return concat([
             (
                     system >>
-                    generic(self._filter) >>
+                    self._filter_transformer >>
                     self._preferences_transformer
             ).transform(self.topics)
             for system in systems
