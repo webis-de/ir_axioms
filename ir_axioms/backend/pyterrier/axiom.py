@@ -12,24 +12,25 @@ from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
 
 
+@dataclass(frozen=True)
 class OracleAxiom(Axiom):
     name = "oracle"
 
-    _qrels_topics: DataFrame
+    topics: DataFrame
+    qrels: DataFrame
 
-    def __init__(
-            self,
-            topics: DataFrame,
-            qrels: DataFrame,
-    ):
-        assert "query" in topics.columns
-        assert "qid" in topics.columns
-        assert "qid" in qrels.columns
-        assert "docno" in qrels.columns
-        assert "label" in qrels.columns
+    @cached_property
+    def _qrels_topics(self) -> DataFrame:
+        assert "query" in self.topics.columns
+        assert "qid" in self.topics.columns
+        assert "qid" in self.qrels.columns
+        assert "docno" in self.qrels.columns
+        assert "label" in self.qrels.columns
 
-        self._qrels_topics = topics.merge(qrels, on=["qid"])
-        del self._qrels_topics["qid"]
+        qrels_topics = self.topics.merge(self.qrels, on=["qid"])
+        del qrels_topics["qid"]
+
+        return qrels_topics
 
     @cached_property
     def _qrels_topics_hash(self) -> int:
