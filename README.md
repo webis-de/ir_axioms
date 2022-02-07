@@ -5,7 +5,7 @@
 
 `ir_axioms` is a python package that provides a common, intuitive interface to many IR axioms.
 The package helps you to rerank and evaluate runs from various information retrieval frameworks 
-such as [Pyserini](https://github.com/castorini/pyserini).
+such as [PyTerrier](https://github.com/terrier-org/pyterrier) or [Pyserini](https://github.com/castorini/pyserini).
 
 ## Usage
 
