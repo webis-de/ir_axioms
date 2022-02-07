@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+from functools import cached_property
 from random import Random
+from typing import Any, Optional
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_less
@@ -39,7 +41,11 @@ class OriginalAxiom(Axiom):
 class RandomAxiom(Axiom):
     name = "random"
 
-    random: Random = Random()
+    seed: Optional[Any] = None
+
+    @cached_property
+    def _random(self) -> Random:
+        return Random(self.seed)
 
     def preference(
             self,
@@ -48,4 +54,4 @@ class RandomAxiom(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        return self.random.randint(-1, 1)
+        return self._random.randint(-1, 1)
