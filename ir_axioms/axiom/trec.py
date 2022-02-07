@@ -18,32 +18,32 @@ class TrecOracleAxiom(Axiom):
     topics: TrecTopics
     qrels: TrecQrel
 
-    @lru_cache
-    def _topic(self, query: Query) -> int:
+    @lru_cache(None)
+    def _topic(self, query_title: str) -> int:
         topics = [
             topic
             for topic, topic_query in self.topics.topics.items()
-            if topic_query == query.title
+            if topic_query == query_title
         ]
         if len(topics) == 0:
             raise RuntimeError(
-                f"Could not find topic for query '{query.title}'."
+                f"Could not find topic for query '{query_title}'."
             )
         elif len(topics) > 1:
             logger.warning(
-                f"Found multiple topics for query '{query.title}': {topics}"
+                f"Found multiple topics for query '{query_title}': {topics}"
             )
         return topics[0]
 
-    @lru_cache
-    def _judgement(self, query: Query, document: RankedDocument) -> int:
-        topic = self._topic(query)
-        judgement = self.qrels.get_judgement(document.id, topic)
+    @lru_cache(None)
+    def _judgement(self, query_title: str, document_id: str) -> int:
+        topic = self._topic(query_title)
+        judgement = self.qrels.get_judgement(document_id, topic)
         if isinstance(judgement, integer):
             judgement = int(judgement)
         if not isinstance(judgement, int):
             raise RuntimeError(
-                f"Invalid judgement for document {document.id} "
+                f"Invalid judgement for document {document_id} "
                 f"in topic {topic}: {type(judgement)}"
             )
         return judgement
@@ -55,6 +55,6 @@ class TrecOracleAxiom(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ) -> float:
-        judgement1 = self._judgement(query, document1)
-        judgement2 = self._judgement(query, document2)
+        judgement1 = self._judgement(query.title, document1.id)
+        judgement2 = self._judgement(query.title, document2.id)
         return strictly_greater(judgement1, judgement2)

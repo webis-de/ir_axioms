@@ -39,23 +39,23 @@ class OracleAxiom(Axiom):
     def __hash__(self):
         return self._qrels_topics_hash
 
-    @lru_cache
+    @lru_cache(None)
     def _judgement(
             self,
-            query: Query,
-            document: RankedDocument
+            query_title: str,
+            document_id: str,
     ) -> Optional[int]:
-        qrels = self._qrels_topics
-        qrels = qrels[qrels["query"] == query.title]
-        qrels = qrels[qrels["docno"] == document.id]
+        qrels: DataFrame = self._qrels_topics
+        qrels = qrels[qrels["query"] == query_title]
+        qrels = qrels[qrels["docno"] == document_id]
         if len(qrels) == 0:
             return None
-        elif len(qrels) > 1:
+        elif len(qrels.index) > 1:
             logger.warning(
-                f"Found multiple qrels for topic '{query.title}', "
-                f"document {document.id}: {qrels['label'].to_list()}"
+                f"Found multiple qrels for topic '{query_title}', "
+                f"document {document_id}: {qrels['label'].to_list()}"
             )
-        return qrels.iloc[0]["label"]
+        return qrels["label"].iloc[0]
 
     def preference(
             self,
@@ -64,8 +64,8 @@ class OracleAxiom(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ) -> float:
-        judgement1 = self._judgement(query, document1)
-        judgement2 = self._judgement(query, document2)
+        judgement1 = self._judgement(query.title, document1.id)
+        judgement2 = self._judgement(query.title, document2.id)
         if judgement1 is None or judgement2 is None:
             return nan
         return strictly_greater(judgement1, judgement2)
