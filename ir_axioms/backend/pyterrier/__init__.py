@@ -8,6 +8,8 @@ from typing import List, Optional, Union, Callable, NamedTuple
 from ir_datasets import Dataset, load
 from ir_datasets.indices import Docstore
 
+from ir_axioms.backend.pyterrier.config import \
+    RETRIEVAL_SCORE_APPLICATION_PROPERTIES
 from ir_axioms.backend.pyterrier.util import (
     EnglishTokeniser, Lexicon, CollectionStatistics, BaseTermPipelineAccessor,
     WeightingModel, TfModel, TfIdfModel, BM25Model, PL2Model, DirichletLMModel,
@@ -21,38 +23,15 @@ from ir_axioms.model.retrieval_model import (
     RetrievalModel, Tf, TfIdf, BM25, PL2, DirichletLM
 )
 
-_retrieval_score_application_properties = {
-    "querying.processes": ",".join([
-        "terrierql:TerrierQLParser",
-        "parsecontrols:TerrierQLToControls",
-        "parseql:TerrierQLToMatchingQueryTerms",
-        "applypipeline:ApplyTermPipeline",
-        "context_wmodel:org.terrier.python.WmodelFromContextProcess",
-        "localmatching:LocalManager$ApplyLocalMatching",
-        "filters:LocalManager$PostFilterProcess"
-    ]),
-    "querying.postfilters": "decorate:SimpleDecorate",
-    "querying.default.controls": ",".join([
-        "parsecontrols:on",
-        "parseql:on",
-        "applypipeline:on",
-        "terrierql:on",
-        "localmatching:on",
-        "filters:on",
-        "decorate:on"
-    ]),
-}
+ContentsAccessor = Union[str, Callable[[NamedTuple], str]]
 
 
 @dataclass(unsafe_hash=True, frozen=True)
 class IndexRerankingContext(RerankingContext):
     index_location: Union[Path, IndexRef, Index]
     dataset: Optional[Union[Dataset, str]] = None
-    contents_accessor: Optional[Union[
-        str,
-        Callable[[NamedTuple], str]
-    ]] = "text"
-    tokeniser: Tokeniser = EnglishTokeniser()
+    contents_accessor: Optional[ContentsAccessor] = "text"
+    tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None
 
     @cached_property
@@ -61,8 +40,12 @@ class IndexRerankingContext(RerankingContext):
             return self.index_location
         elif isinstance(self.index_location, Index):
             return self.index_location.getIndexRef()
-        else:
+        elif isinstance(self.index_location, Path):
             return IndexRef.of(str(self.index_location.absolute()))
+        else:
+            raise ValueError(
+                f"Unknown index location type: {self.index_location}"
+            )
 
     @cached_property
     def _index(self) -> Index:
@@ -101,29 +84,26 @@ class IndexRerankingContext(RerankingContext):
     def document_count(self) -> int:
         return self._collection_statistics.numberOfDocuments
 
-    @lru_cache(maxsize=4096)
+    @lru_cache(None)
     def document_frequency(self, term: str) -> int:
         entry = self._lexicon.getLexiconEntry(term)
         if entry is None or entry.getNumberOfEntries() == 0:
             return 0
         return entry.getDocumentFrequency()
 
-    @lru_cache(maxsize=1024)
-    def document_contents(self, document: Document) -> str:
-        # Shortcut when text is given in the document.
-        if isinstance(document, TextDocument):
-            return document.contents
-
+    @lru_cache(None)
+    def _document_contents(self, document_id: str) -> str:
         # Shortcut when ir_dataset is specified.
         if self._dataset is not None:
             documents_store: Docstore = self._dataset.docs_store()
-            document = documents_store.get(document.id)
+            store_document \
+                = documents_store.get(document_id)
             if self.contents_accessor is None:
-                return document.text
+                return store_document.text
             elif isinstance(self.contents_accessor, str):
-                return getattr(document, self.contents_accessor)
+                return getattr(store_document, self.contents_accessor)
             else:
-                return self.contents_accessor(document)
+                return self.contents_accessor(store_document)
 
         metaindex_keys: List[str] = self._meta_index.getKeys()
         if self.contents_accessor not in metaindex_keys:
@@ -133,11 +113,24 @@ class IndexRerankingContext(RerankingContext):
                 f"Keys present in metaindex "
                 f"are {metaindex_keys}."
             )
-        doc_id = self._meta_index.getDocument("docno", document.id)
+        doc_id = self._meta_index.getDocument("docno", document_id)
         return self._meta_index.getItem(
             self.contents_accessor,
             doc_id
         )
+
+    def document_contents(self, document: Document) -> str:
+        # Shortcut when text is given in the document.
+        if isinstance(document, TextDocument):
+            return document.contents
+
+        return self._document_contents(document.id)
+
+    @cached_property
+    def _tokeniser(self) -> Tokeniser:
+        if self.tokeniser is None:
+            return EnglishTokeniser()
+        return self.tokeniser
 
     @cached_property
     def _term_pipelines(self) -> List[TermPipelineAccessor]:
@@ -150,25 +143,25 @@ class IndexRerankingContext(RerankingContext):
             for pipeline in split(r"\s*,\s*", term_pipelines.strip())
         ]
 
-    @lru_cache(maxsize=1024)
-    def terms(
-            self,
-            query_or_document: Union[Query, Document]
-    ) -> List[str]:
-        text = self.contents(query_or_document)
+    @lru_cache(None)
+    def _terms(self, text: str) -> List[str]:
         reader = StringReader(text)
-        terms = list(self.tokeniser.tokenise(reader))
+        terms = list(self._tokeniser.tokenise(reader))
         terms = [term for term in terms if term is not None]
         for pipeline in self._term_pipelines:
             terms = [
                 pipeline.pipelineTerm(term)
                 for term in terms
             ]
-        terms = [term for term in terms if term is not None]
+        terms = [str(term) for term in terms if term is not None]
         return terms
 
+    def terms(self, query_or_document: Union[Query, Document]) -> List[str]:
+        text = self.contents(query_or_document)
+        return self._terms(text)
+
     @staticmethod
-    @lru_cache
+    @lru_cache(None)
     def _weighting_model(model: RetrievalModel) -> WeightingModel:
         if isinstance(model, Tf):
             return TfModel()
@@ -207,35 +200,34 @@ class IndexRerankingContext(RerankingContext):
         # noinspection PyProtectedMember
         return ManagerFactory._from_(self._index_ref)
 
-    @lru_cache(maxsize=4096)
-    def retrieval_score(
+    @lru_cache(None)
+    def _retrieval_score(
             self,
-            query: Query,
-            document: Document,
-            model: RetrievalModel
+            query_title: str,
+            document_id: str,
+            weighting_model: WeightingModel
     ) -> float:
-        if len(query.title) == 0:
+        if len(query_title) == 0:
             return 0
 
         # Setup retrieval as per BatchRetrieve.
-        for key, value in _retrieval_score_application_properties.items():
+        for key, value in RETRIEVAL_SCORE_APPLICATION_PROPERTIES.items():
             ApplicationSetup.setProperty(key, value)
 
+        manager = self._manager
+
         # Build search request.
-        request: SearchRequest = self._manager.newSearchRequestFromQuery(
-            query.title
+        request: SearchRequest = manager.newSearchRequestFromQuery(
+            query_title
         )
 
         # Set weighting model.
         request.setControl("context_wmodel", "on")
-        request.setContextObject(
-            "context_wmodel",
-            self._weighting_model(model)
-        )
+        request.setContextObject("context_wmodel", weighting_model)
 
         # Filter documents matching the original ID.
         matching = RequestContextMatching.of(request)
-        matching.fromDocnos([document.id])
+        matching.fromDocnos([document_id])
         matching.build()
 
         # Return search score from weighting model.
@@ -251,14 +243,26 @@ class IndexRerankingContext(RerankingContext):
         request.setControl("end", str(1 - 1))
 
         # Execute search request.
-        self._manager.runSearchRequest(request)
+        manager.runSearchRequest(request)
 
         # Parse result document.
         result_docs: ScoredDocList = request.getResults()
         assert len(result_docs) == 1
         first_result_doc: ScoredDoc = result_docs[0]
-        assert first_result_doc.getMetadata("docno") == document.id
+        assert first_result_doc.getMetadata("docno") == document_id
 
         # Get retrieval score.
-        score = first_result_doc.getScore()
+        score = float(first_result_doc.getScore())
         return score
+
+    def retrieval_score(
+            self,
+            query: Query,
+            document: Document,
+            model: RetrievalModel
+    ) -> float:
+        return self._retrieval_score(
+            query.title,
+            document.id,
+            self._weighting_model(model)
+        )

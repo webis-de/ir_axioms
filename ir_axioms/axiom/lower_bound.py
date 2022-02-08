@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from math import isclose
 
 from ir_axioms.axiom.base import Axiom
@@ -6,6 +7,7 @@ from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
 
 
+@dataclass(frozen=True)
 class LB1(Axiom):
     name = "LB1"
 
