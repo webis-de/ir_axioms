@@ -22,7 +22,7 @@ class _TermSimilarity(ABC):
 
 
 class _WordNetTermSimilarity(_TermSimilarity):
-    @lru_cache
+    @lru_cache(maxsize=4096)
     def similarity(self, term1: str, term2: str) -> float:
         return synonym_set_similarity(term1, term2)
 
