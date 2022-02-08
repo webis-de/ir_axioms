@@ -5,16 +5,18 @@ srun \
   --cpus-per-task 1 \
   --mem=100G \
   --container-writable \
-  --container-image=python:3.8.10 \
+  --container-image=alpine:3.15 \
   --container-name=sigir22-ir-axioms-"$USER" \
   --pty \
   --container-mounts="$PWD":/workspace,"$HOME"/.ir_datasets:/root/.ir_datasets \
   --chdir "$PWD" \
   bash -c "cd /workspace &&
-    apt-get -y update &&
-    apt-get -y install git openjdk-11-jdk &&
-    python -m pip install --upgrade pip &&
-    python -m pip install -e . &&
-    python -m pip install -e .[pyterrier] &&
-    python -m pip install -e .[test] &&
+    apk update &&
+    apk upgrade &&
+    apk add bash unzip curl openjdk7-jre python3
+    python3 -m ensurepip &&
+    pip3 install --upgrade pip setuptools &&
+    pip3 install -e . &&
+    pip3 install -e .[pyterrier] &&
+    pip3 install -e .[test] &&
     jupyter-lab --ip 0.0.0.0 --allow-root"
