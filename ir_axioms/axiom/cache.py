@@ -39,28 +39,27 @@ class CachedAxiom(Axiom):
             return self.axiom.preference(context, query, document1, document2)
 
         key = self._key(query, document1, document2)
+        preference: float
 
         if key in cache:
             # Cache hit.
-            return cache[key]
-
-        # Cache miss.
-        preference: float
-
-        symmetric_key = self._key(query, document2, document1)
-        if symmetric_key in cache:
-            # Cache hit for symmetric key.
-            inverse_preference = cache[symmetric_key]
-            preference = -inverse_preference
+            preference = cache[key]
         else:
-            preference = self.axiom.preference(
-                context,
-                query,
-                document1,
-                document2
-            )
-
-        cache[key] = preference
+            symmetric_key = self._key(query, document2, document1)
+            if symmetric_key in cache:
+                # Cache hit for symmetric key.
+                inverse_preference = cache[symmetric_key]
+                preference = -inverse_preference
+            else:
+                # Cache miss.
+                preference = self.axiom.preference(
+                    context,
+                    query,
+                    document1,
+                    document2
+                )
+            cache[key] = preference
+        cache.close()
         return preference
 
     def cached(self) -> Axiom:
