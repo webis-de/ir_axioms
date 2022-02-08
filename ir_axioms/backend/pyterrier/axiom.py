@@ -32,13 +32,6 @@ class OracleAxiom(Axiom):
 
         return qrels_topics
 
-    @cached_property
-    def _qrels_topics_hash(self) -> int:
-        return hash(self._qrels_topics.to_json())
-
-    def __hash__(self):
-        return self._qrels_topics_hash
-
     @lru_cache(None)
     def _judgement(
             self,
@@ -69,3 +62,6 @@ class OracleAxiom(Axiom):
         if (judgement1 is None) or (judgement2 is None):
             return nan
         return strictly_greater(judgement1, judgement2)
+
+    def cached(self) -> "Axiom":
+        return self
