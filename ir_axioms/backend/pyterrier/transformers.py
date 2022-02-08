@@ -173,7 +173,7 @@ class AxiomaticReranker(SingleAxiomTransformer):
     name = "AxiomaticReranker"
     description = "Reranking axiomatically"
 
-    axioms: Sequence[AxiomLike]
+    axiom: AxiomLike
     index: Union[Path, IndexRef, Index]
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
