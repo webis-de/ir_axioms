@@ -18,6 +18,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />
       <excludeFolder url="file://$MODULE_DIR$/examples/cache" />
       <excludeFolder url="file://$MODULE_DIR$/examples/trec-system-runs" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/pyterrier" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
