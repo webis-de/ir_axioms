@@ -37,11 +37,12 @@ class AxiomaticExperiment:
 
     @cached_property
     def _axioms(self) -> Sequence[Axiom]:
-        return [
+        axioms = [
             OriginalAxiom(),
             OracleAxiom(self.topics, self.qrels),
             *self.axioms,
         ]
+        return [axiom.cached() for axiom in axioms]
 
     @cached_property
     def _filter_transformer(self) -> Transformer:
