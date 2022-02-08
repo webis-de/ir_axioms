@@ -7,7 +7,7 @@ from typing import Union, Optional, List, Set, Sequence, final
 from ir_datasets import Dataset
 from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from ir_axioms.axiom import AxiomLike, to_axiom
 from ir_axioms.axiom.base import Axiom

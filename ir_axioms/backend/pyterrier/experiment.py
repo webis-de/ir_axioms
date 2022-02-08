@@ -5,7 +5,7 @@ from typing import Sequence, Optional, Union
 
 from ir_datasets import Dataset
 from pandas import DataFrame, concat
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from ir_axioms.axiom import Axiom, OriginalAxiom
 from ir_axioms.backend.pyterrier import ContentsAccessor
@@ -62,7 +62,7 @@ class AxiomaticExperiment:
             contents_accessor=self.contents_accessor,
             tokeniser=self.tokeniser,
             cache_dir=self.cache_dir,
-            verbose=False,
+            verbose=self.verbose,
         )
 
     @cached_property
@@ -87,19 +87,21 @@ class AxiomaticExperiment:
         - <axiom>_preference: Preference from each axiom <axiom>
         """
         systems = self.retrieval_systems
+        pipelines = [
+            ~(
+                    system >>
+                    self._filter_transformer >>
+                    self._preferences_transformer
+            )
+            for system in systems
+        ]
         if self.verbose:
-            systems = tqdm(
-                systems,
+            pipelines = tqdm(
+                pipelines,
                 desc="AxiomaticExperiment",
                 unit="system",
             )
         return concat([
-            (
-                ~(
-                        system >>
-                        self._filter_transformer >>
-                        self._preferences_transformer
-                )
-            ).transform(self.topics)
-            for system in systems
+            pipeline.transform(self.topics)
+            for pipeline in pipelines
         ])
