@@ -32,6 +32,13 @@ class OracleAxiom(Axiom):
 
         return qrels_topics
 
+    @cached_property
+    def _qrels_topics_hash(self) -> int:
+        return hash(self._qrels_topics.to_json())
+
+    def __hash__(self):
+        return self._qrels_topics_hash
+
     @lru_cache(None)
     def _judgement(
             self,
