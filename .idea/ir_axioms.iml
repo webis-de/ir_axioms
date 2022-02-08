@@ -17,6 +17,7 @@
       <excludeFolder url="file://$MODULE_DIR$/venv-test" />
       <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />
       <excludeFolder url="file://$MODULE_DIR$/examples/cache" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/trec-system-runs" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
