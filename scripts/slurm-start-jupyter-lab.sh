@@ -10,4 +10,11 @@ srun \
   --pty \
   --container-mounts="$PWD":/workspace,"$HOME"/.ir_datasets:/root/.ir_datasets \
   --chdir "$PWD" \
-  bash -c "cd /workspace && python -m pip install --upgrade pip && python -m pip install -e . -e .[pyterrier] -e .[test] && jupyter-lab --ip 0.0.0.0 --allow-root"
+  bash -c "cd /workspace &&
+    apt-get -y update &&
+    apt-get -y install git openjdk-11-jdk &&
+    python -m pip install --upgrade pip &&
+    python -m pip install -e . &&
+    python -m pip install -e .[pyterrier] &&
+    python -m pip install -e .[test] &&
+    jupyter-lab --ip 0.0.0.0 --allow-root"

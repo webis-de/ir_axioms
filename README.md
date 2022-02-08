@@ -44,6 +44,11 @@ pip install -e .[pyterrier]
 
 ### Testing
 
+Install test dependencies:
+```shell
+pip install -e .[test]
+```
+
 Verify your changes against our test suite to verify.
 ```shell
 flake8
@@ -64,5 +69,5 @@ python -m build
 
 If you want to play around with ir_axioms in Jupyter Lab, you can use this command to provision a server via Slurm:
 ```shell
-./slurm-start-jupyter-lab.sh
+scripts/slurm-start-jupyter-lab.sh
 ```
