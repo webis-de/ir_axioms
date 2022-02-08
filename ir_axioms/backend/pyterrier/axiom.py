@@ -48,7 +48,7 @@ class OracleAxiom(Axiom):
         qrels: DataFrame = self._qrels_topics
         qrels = qrels[qrels["query"] == query_title]
         qrels = qrels[qrels["docno"] == document_id]
-        if len(qrels) == 0:
+        if len(qrels.index) == 0:
             return None
         elif len(qrels.index) > 1:
             logger.warning(
@@ -66,6 +66,6 @@ class OracleAxiom(Axiom):
     ) -> float:
         judgement1 = self._judgement(query.title, document1.id)
         judgement2 = self._judgement(query.title, document2.id)
-        if judgement1 is None or judgement2 is None:
+        if (judgement1 is None) or (judgement2 is None):
             return nan
         return strictly_greater(judgement1, judgement2)
