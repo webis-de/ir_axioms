@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple, Optional
+from typing import Optional
 
 from diskcache import Cache
 
@@ -20,11 +20,15 @@ class CachedAxiom(Axiom):
 
     def _key(
             self,
+            context: RerankingContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
-    ) -> Tuple[str, str, str, str]:
-        return self.axiom.name, query.title, document1.id, document2.id
+    ) -> str:
+        return (
+            f"{self.axiom!r},{context!r},"
+            f"{query.title},{document1.id},{document2.id}"
+        )
 
     def preference(
             self,
@@ -38,14 +42,14 @@ class CachedAxiom(Axiom):
         if cache is None:
             return self.axiom.preference(context, query, document1, document2)
 
-        key = self._key(query, document1, document2)
+        key = self._key(context, query, document1, document2)
         preference: float
 
         if key in cache:
             # Cache hit.
             preference = cache[key]
         else:
-            symmetric_key = self._key(query, document2, document1)
+            symmetric_key = self._key(context, query, document2, document1)
             if symmetric_key in cache:
                 # Cache hit for symmetric key.
                 inverse_preference = cache[symmetric_key]
