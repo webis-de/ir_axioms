@@ -10,6 +10,7 @@ from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
 
 
+@dataclass(frozen=True)
 class TFC1(Axiom):
     name = "TFC1"
 
@@ -36,6 +37,7 @@ class TFC1(Axiom):
         return strictly_greater(term_frequency1, term_frequency2)
 
 
+@dataclass(frozen=True)
 class TFC3(Axiom):
     name = "TFC3"
 
@@ -80,6 +82,7 @@ class TFC3(Axiom):
         return strictly_greater(sum_document1, sum_document2)
 
 
+@dataclass(frozen=True)
 class M_TDC(Axiom):
     """
     Modified TDC as in:

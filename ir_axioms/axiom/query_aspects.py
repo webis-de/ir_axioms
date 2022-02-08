@@ -10,6 +10,7 @@ from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
 
 
+@dataclass(frozen=True)
 class REG(Axiom):
     """
     Reference:
@@ -47,6 +48,7 @@ class REG(Axiom):
         )
 
 
+@dataclass(frozen=True)
 class ANTI_REG(Axiom):
     """
     Reference:
@@ -86,6 +88,7 @@ class ANTI_REG(Axiom):
         )
 
 
+@dataclass(frozen=True)
 class AND(Axiom):
     name = "AND"
 
@@ -139,6 +142,7 @@ class LEN_AND(AND):
         )
 
 
+@dataclass(frozen=True)
 class M_AND(Axiom):
     """
     Modified AND:
@@ -196,6 +200,7 @@ class LEN_M_AND(M_AND):
         )
 
 
+@dataclass(frozen=True)
 class DIV(Axiom):
     name = "DIV"
 

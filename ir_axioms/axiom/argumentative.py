@@ -4,11 +4,10 @@ from statistics import mean
 from typing import List, Set, Dict, Optional
 
 from nltk import WordNetLemmatizer, sent_tokenize, word_tokenize
-from targer.api import fetch_arguments
-from targer.constants import DEFAULT_TARGER_API_URL, DEFAULT_TARGER_MODELS
-from targer.model import (
-    TargerArgumentSentences, TargerArgumentLabel, TargerArgumentTag
+from targer_api import (
+    ArgumentSentences, ArgumentLabel, ArgumentTag, analyze_text
 )
+from targer_api.constants import DEFAULT_TARGER_MODELS, DEFAULT_TARGER_API_URL
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import approximately_same_length
@@ -24,20 +23,20 @@ def _normalize(word: str):
     return _word_net_lemmatizer.lemmatize(word).lower()
 
 
-def _count_argumentative_units(sentences: TargerArgumentSentences) -> int:
+def _count_argumentative_units(sentences: ArgumentSentences) -> int:
     return _count_claims(sentences) + _count_premises(sentences)
 
 
-def _count_premises(sentences: TargerArgumentSentences) -> int:
+def _count_premises(sentences: ArgumentSentences) -> int:
     count: int = 0
     for sentence in sentences:
         for tag in sentence:
-            if tag.label == TargerArgumentLabel.P_B and tag.probability > 0.5:
+            if tag.label == ArgumentLabel.P_B and tag.probability > 0.5:
                 count += 1
     return count
 
 
-def _count_claims(sentences: TargerArgumentSentences) -> int:
+def _count_claims(sentences: ArgumentSentences) -> int:
     last_tag_was_claim: bool = False
     count: int = 0
     for sentence in sentences:
@@ -60,31 +59,31 @@ def _count_claims(sentences: TargerArgumentSentences) -> int:
     return count
 
 
-def _is_claim(tag: TargerArgumentTag) -> bool:
+def _is_claim(tag: ArgumentTag) -> bool:
     return (
-            tag.label == TargerArgumentLabel.C_B or
-            tag.label == TargerArgumentLabel.C_I or
-            tag.label == TargerArgumentLabel.MC_B or
-            tag.label == TargerArgumentLabel.MC_I
+            tag.label == ArgumentLabel.C_B or
+            tag.label == ArgumentLabel.C_I or
+            tag.label == ArgumentLabel.MC_B or
+            tag.label == ArgumentLabel.MC_I
     )
 
 
-def _is_premise(tag: TargerArgumentTag) -> bool:
+def _is_premise(tag: ArgumentTag) -> bool:
     return (
-            tag.label == TargerArgumentLabel.P_B or
-            tag.label == TargerArgumentLabel.P_I or
-            tag.label == TargerArgumentLabel.MP_B or
-            tag.label == TargerArgumentLabel.MP_I
+            tag.label == ArgumentLabel.P_B or
+            tag.label == ArgumentLabel.P_I or
+            tag.label == ArgumentLabel.MP_B or
+            tag.label == ArgumentLabel.MP_I
     )
 
 
-def _is_claim_or_premise(tag: TargerArgumentTag) -> bool:
+def _is_claim_or_premise(tag: ArgumentTag) -> bool:
     return _is_claim(tag) or _is_premise(tag)
 
 
 def _count_query_terms(
         context: RerankingContext,
-        sentences: TargerArgumentSentences,
+        sentences: ArgumentSentences,
         query: Query,
         normalize: bool = True,
 ) -> int:
@@ -106,7 +105,7 @@ def _count_query_terms(
 
 def _query_term_position_in_argument(
         context: RerankingContext,
-        sentences: TargerArgumentSentences,
+        sentences: ArgumentSentences,
         query: Query,
         penalty: int,
         normalize: bool = True,
@@ -122,7 +121,7 @@ def _query_term_position_in_argument(
             normalized_token = _normalize(token) if normalize else token
             if (
                     normalized_term == normalized_token and
-                    tag.label != TargerArgumentLabel.O and
+                    tag.label != ArgumentLabel.O and
                     tag.probability > 0.5
             ):
                 term_arg_pos.append(position)
@@ -146,7 +145,7 @@ def _sentence_length(
 
 
 @dataclass(frozen=True)
-class _TargerAxiomMixin:
+class _TargerMixin:
     models: Set[str] = field(default_factory=lambda: DEFAULT_TARGER_MODELS)
     api_url: str = DEFAULT_TARGER_API_URL
 
@@ -154,10 +153,10 @@ class _TargerAxiomMixin:
             self,
             context: RerankingContext,
             document: RankedDocument,
-    ) -> Dict[str, TargerArgumentSentences]:
-        return fetch_arguments(
+    ) -> Dict[str, ArgumentSentences]:
+        return analyze_text(
             context.contents(document),
-            models=self.models,
+            model_or_models=self.models,
             api_url=self.api_url,
             cache_dir=(
                 context.cache_dir / "targer"
@@ -167,7 +166,8 @@ class _TargerAxiomMixin:
         )
 
 
-class ArgumentativeUnitsCountAxiom(Axiom, _TargerAxiomMixin):
+@dataclass(frozen=True)
+class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom):
     """
     Favor documents with more argumentative units.
     """
@@ -204,7 +204,7 @@ class ArgumentativeUnitsCountAxiom(Axiom, _TargerAxiomMixin):
 
 
 @dataclass(frozen=True)
-class QueryTermOccurrenceInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
+class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
     """
     Favor documents with more query terms in argumentative units.
     """
@@ -247,7 +247,7 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
 
 
 @dataclass(frozen=True)
-class QueryTermPositionInArgumentativeUnitsAxiom(Axiom, _TargerAxiomMixin):
+class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
     """
     Favor documents where the first occurrence of a query term
     in an argumentative unit is closer to the beginning of the document.

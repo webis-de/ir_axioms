@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from functools import lru_cache, cached_property
 from itertools import product
 from math import nan
@@ -21,12 +22,12 @@ class _TermSimilarity(ABC):
 
 
 class _WordNetTermSimilarity(_TermSimilarity):
-    @lru_cache
+    @lru_cache(maxsize=4096)
     def similarity(self, term1: str, term2: str) -> float:
         return synonym_set_similarity(term1, term2)
 
 
-class _WordEmbeddingTermSimilarity(_TermSimilarity):
+class _WordEmbeddingTermSimilarity(_TermSimilarity, ABC):
     embeddings_path: str
 
     @property
@@ -47,6 +48,7 @@ class _FastTextWikiNewsTermSimilarity(_WordEmbeddingTermSimilarity):
     embeddings_path = "fasttext/medium/wiki-news-300d-1M.magnitude"
 
 
+@dataclass(frozen=True)
 class _STMC1(Axiom, _TermSimilarity, ABC):
 
     def _average_similarity(self, terms1: Set[str], terms2: Set[str]) -> float:
@@ -73,14 +75,17 @@ class _STMC1(Axiom, _TermSimilarity, ABC):
         )
 
 
+@dataclass(frozen=True)
 class STMC1(_STMC1, _WordNetTermSimilarity):
     name = "STMC1"
 
 
+@dataclass(frozen=True)
 class STMC1_f(_STMC1, _FastTextWikiNewsTermSimilarity):
     name = "STMC1-fastText"
 
 
+@dataclass(frozen=True)
 class _STMC2(Axiom, _TermSimilarity, ABC):
 
     def _tuple_similarity(self, terms: Tuple[str, str]) -> float:
@@ -158,9 +163,11 @@ class _STMC2(Axiom, _TermSimilarity, ABC):
         return 0
 
 
+@dataclass(frozen=True)
 class STMC2(_STMC2, _WordNetTermSimilarity):
     name = "STMC2"
 
 
+@dataclass(frozen=True)
 class STMC2_f(_STMC2, _FastTextWikiNewsTermSimilarity):
     name = "STMC2-fastText"

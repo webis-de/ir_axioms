@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from math import inf
 from typing import List
 
@@ -11,6 +12,7 @@ from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
 
 
+@dataclass(frozen=True)
 class PROX1(Axiom):
     name = "PROX1"
 
@@ -46,6 +48,7 @@ class PROX1(Axiom):
         return strictly_greater(average2, average1)
 
 
+@dataclass(frozen=True)
 class PROX2(Axiom):
     name = "PROX2"
 
@@ -75,6 +78,7 @@ class PROX2(Axiom):
         return strictly_greater(first_position_sum2, first_position_sum1)
 
 
+@dataclass(frozen=True)
 class PROX3(Axiom):
     name = "PROX3"
 
@@ -110,6 +114,7 @@ class PROX3(Axiom):
         )
 
 
+@dataclass(frozen=True)
 class PROX4(Axiom):
     name = "PROX4"
 
@@ -147,6 +152,7 @@ class PROX4(Axiom):
             return strictly_greater(count1, count2)
 
 
+@dataclass(frozen=True)
 class PROX5(Axiom):
     name = "PROX5"
 

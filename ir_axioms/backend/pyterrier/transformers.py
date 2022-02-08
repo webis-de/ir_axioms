@@ -1,78 +1,55 @@
 from abc import abstractmethod, ABC
+from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
-from typing import (
-    Union, Optional, List, Set, Callable, NamedTuple, Sequence, final
-)
+from typing import Union, Optional, List, Set, Sequence, final
 
 from ir_datasets import Dataset
 from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
-from ir_axioms.axiom import Axiom, AxiomLike, to_axiom
-from ir_axioms.backend.pyterrier import IndexRerankingContext
+from ir_axioms.axiom import AxiomLike, to_axiom
+from ir_axioms.axiom.base import Axiom
+from ir_axioms.backend.pyterrier import IndexRerankingContext, ContentsAccessor
 from ir_axioms.backend.pyterrier.safe import TransformerBase
 from ir_axioms.backend.pyterrier.transformer_utils import _require_columns
-from ir_axioms.backend.pyterrier.util import (
-    IndexRef, Index, Tokeniser, EnglishTokeniser
-)
+from ir_axioms.backend.pyterrier.util import IndexRef, Index, Tokeniser
 from ir_axioms.model import Query, RankedDocument, RankedTextDocument
 from ir_axioms.model.context import RerankingContext
 
 
 class PerGroupTransformer(TransformerBase, ABC):
-    _group_columns: Set[str]
-    _optional_group_columns: Set[str]
-    _verbose: bool = False
-    _description: Optional[str] = None
-    _unit: Optional[str] = None
-
-    def __init__(
-            self,
-            group_columns: Set[str],
-            optional_group_columns: Set[str] = None,
-            verbose: bool = False,
-            description: Optional[str] = None,
-            unit: Optional[str] = None,
-    ) -> None:
-        self._group_columns = group_columns
-        self._optional_group_columns = (
-            optional_group_columns
-            if optional_group_columns is not None
-            else {}
-        )
-        self._verbose = verbose
-        self._description = description
-        self._unit = unit
+    group_columns: Set[str] = NotImplemented
+    optional_group_columns: Set[str] = {}
+    verbose: bool = False
+    description: Optional[str] = None
+    unit: Optional[str] = None
 
     @abstractmethod
     def transform_group(self, topics_or_res: DataFrame) -> DataFrame:
         pass
 
     def _all_group_columns(self, topics_or_res: DataFrame) -> Set[str]:
-        return self._group_columns | {
-            column for column in self._optional_group_columns
+        return self.group_columns | {
+            column for column in self.optional_group_columns
             if column in topics_or_res.columns
         }
 
     @final
     def transform(self, topics_or_res: DataFrame) -> DataFrame:
-        _require_columns(self, topics_or_res, self._group_columns)
+        _require_columns(self, topics_or_res, self.group_columns)
 
         query_rankings: DataFrameGroupBy = topics_or_res.groupby(
             by=list(self._all_group_columns(topics_or_res)),
             as_index=False,
             sort=False,
         )
-        if self._verbose:
+        if self.verbose:
             # Show progress during reranking queries.
             tqdm.pandas(
-                desc=(
-                    self._description
-                    if self._description is not None
-                    else self.name
-                ),
-                unit=self._unit,
+                desc=self.description,
+                unit=self.unit,
             )
             query_rankings = query_rankings.progress_apply(
                 self.transform_group
@@ -83,41 +60,27 @@ class PerGroupTransformer(TransformerBase, ABC):
 
 
 class AxiomTransformer(PerGroupTransformer, ABC):
-    _context: RerankingContext
-    _contents_accessor: Optional[
-        Union[str, Callable[[NamedTuple], str]]
-    ]
+    index: Union[Path, IndexRef, Index] = NotImplemented
+    dataset: Optional[Union[Dataset, str]] = None
+    contents_accessor: Optional[ContentsAccessor] = "text"
+    tokeniser: Optional[Tokeniser] = None
+    cache_dir: Optional[Path] = None
+    verbose: bool = False
+    description: Optional[str] = None
 
-    def __init__(
-            self,
-            index: Union[Path, IndexRef, Index],
-            dataset: Optional[Union[Dataset, str]] = None,
-            contents_accessor: Optional[Union[
-                str,
-                Callable[[NamedTuple], str]
-            ]] = "text",
-            tokeniser: Tokeniser = EnglishTokeniser(),
-            cache_dir: Optional[Path] = None,
-            verbose: bool = False,
-            description: Optional[str] = None,
-    ):
-        super().__init__(
-            group_columns={"query"},
-            optional_group_columns={"qid", "name"},
-            verbose=verbose,
-            description=description,
-            unit="query"
+    group_columns = {"query"}
+    optional_group_columns = {"qid", "name"}
+    unit = "query"
+
+    @property
+    def _context(self) -> RerankingContext:
+        return IndexRerankingContext(
+            index_location=self.index,
+            dataset=self.dataset,
+            contents_accessor=self.contents_accessor,
+            tokeniser=self.tokeniser,
+            cache_dir=self.cache_dir,
         )
-
-        self._context = IndexRerankingContext(
-            index_location=index,
-            dataset=dataset,
-            contents_accessor=contents_accessor,
-            tokeniser=tokeniser,
-            cache_dir=cache_dir,
-        )
-
-        self._contents_accessor = contents_accessor
 
     @final
     def transform_group(self, topics_or_res: DataFrame) -> DataFrame:
@@ -139,15 +102,15 @@ class AxiomTransformer(PerGroupTransformer, ABC):
         # Load document list.
         documents: List[RankedDocument]
         if (
-                self._contents_accessor is not None and
-                isinstance(self._contents_accessor, str) and
-                self._contents_accessor in topics_or_res.columns
+                self.contents_accessor is not None and
+                isinstance(self.contents_accessor, str) and
+                self.contents_accessor in topics_or_res.columns
         ):
             # Load contents from dataframe column.
             documents = [
                 RankedTextDocument(
                     id=row["docno"],
-                    contents=row[self._contents_accessor],
+                    contents=row[self.contents_accessor],
                     score=row["score"],
                     rank=row["rank"],
                 )
@@ -176,65 +139,47 @@ class AxiomTransformer(PerGroupTransformer, ABC):
 
 
 class SingleAxiomTransformer(AxiomTransformer, ABC):
-    axiom: Axiom
+    axiom: AxiomLike
+    index: Union[Path, IndexRef, Index]
+    dataset: Optional[Union[Dataset, str]] = None
+    contents_accessor: Optional[ContentsAccessor] = "text"
+    tokeniser: Optional[Tokeniser] = None
+    cache_dir: Optional[Path] = None
+    verbose: bool = False
+    description: Optional[str] = None
 
-    def __init__(
-            self,
-            axiom: AxiomLike,
-            index: Union[Path, IndexRef, Index],
-            dataset: Optional[Union[Dataset, str]] = None,
-            contents_accessor: Optional[Union[
-                str,
-                Callable[[NamedTuple], str]
-            ]] = "text",
-            tokeniser: Tokeniser = EnglishTokeniser(),
-            cache_dir: Optional[Path] = None,
-            verbose: bool = False,
-            description: Optional[str] = None,
-    ):
-        super().__init__(
-            index=index,
-            dataset=dataset,
-            contents_accessor=contents_accessor,
-            tokeniser=tokeniser,
-            cache_dir=cache_dir,
-            verbose=verbose,
-            description=description,
-        )
-        self.axiom = to_axiom(axiom)
+    @cached_property
+    def _axiom(self) -> Axiom:
+        return to_axiom(self.axiom)
 
 
 class MultiAxiomTransformer(AxiomTransformer, ABC):
-    axioms: Sequence[Axiom]
+    axioms: Sequence[AxiomLike]
+    index: Union[Path, IndexRef, Index]
+    dataset: Optional[Union[Dataset, str]] = None
+    contents_accessor: Optional[ContentsAccessor] = "text"
+    tokeniser: Optional[Tokeniser] = None
+    cache_dir: Optional[Path] = None
+    verbose: bool = False
+    description: Optional[str] = None
 
-    def __init__(
-            self,
-            axioms: Sequence[AxiomLike],
-            index: Union[Path, IndexRef, Index],
-            dataset: Optional[Union[Dataset, str]] = None,
-            contents_accessor: Optional[Union[
-                str,
-                Callable[[NamedTuple], str]
-            ]] = "text",
-            tokeniser: Tokeniser = EnglishTokeniser(),
-            cache_dir: Optional[Path] = None,
-            verbose: bool = False,
-            description: Optional[str] = None,
-    ):
-        super().__init__(
-            index=index,
-            dataset=dataset,
-            contents_accessor=contents_accessor,
-            tokeniser=tokeniser,
-            cache_dir=cache_dir,
-            verbose=verbose,
-            description=description,
-        )
-        self.axioms = [to_axiom(axiom) for axiom in axioms]
+    @cached_property
+    def _axioms(self) -> Sequence[Axiom]:
+        return [to_axiom(axiom) for axiom in self.axioms]
 
 
+@dataclass(frozen=True)
 class AxiomaticReranker(SingleAxiomTransformer):
     name = "AxiomaticReranker"
+    description = "Reranking axiomatically"
+
+    axiom: AxiomLike
+    index: Union[Path, IndexRef, Index]
+    dataset: Optional[Union[Dataset, str]] = None
+    contents_accessor: Optional[ContentsAccessor] = "text"
+    tokeniser: Optional[Tokeniser] = None
+    cache_dir: Optional[Path] = None
+    verbose: bool = False
 
     def transform_query_ranking(
             self,
@@ -243,7 +188,9 @@ class AxiomaticReranker(SingleAxiomTransformer):
             topics_or_res: DataFrame,
     ) -> DataFrame:
         # Rerank documents.
-        reranked_documents = self.axiom.rerank(self._context, query, documents)
+        reranked_documents = self.axiom.cached().rerank(
+            self._context, query, documents
+        )
 
         # Convert reranked documents back to data frame.
         reranked = DataFrame({
@@ -262,8 +209,18 @@ class AxiomaticReranker(SingleAxiomTransformer):
         return reranked
 
 
+@dataclass(frozen=True)
 class AxiomaticPreferences(MultiAxiomTransformer):
     name = "AxiomaticPreferences"
+    description = "Computing query axiom preferences"
+
+    axioms: Sequence[AxiomLike]
+    index: Union[Path, IndexRef, Index]
+    dataset: Optional[Union[Dataset, str]] = None
+    contents_accessor: Optional[ContentsAccessor] = "text"
+    tokeniser: Optional[Tokeniser] = None
+    cache_dir: Optional[Path] = None
+    verbose: bool = False
 
     def transform_query_ranking(
             self,
@@ -279,9 +236,17 @@ class AxiomaticPreferences(MultiAxiomTransformer):
         )
 
         # Compute axiom preferences.
-        for axiom in self.axioms:
+        context = self._context
+        axioms = self.axioms
+        if self.verbose:
+            axioms = tqdm(
+                axioms,
+                desc="Computing axiom preferences",
+                unit="axiom",
+            )
+        for axiom in axioms:
             pairs[f"{axiom.name}_preference"] = [
-                axiom.preference(self._context, query, document1, document2)
+                axiom.cached().preference(context, query, document1, document2)
                 for document1 in documents
                 for document2 in documents
             ]

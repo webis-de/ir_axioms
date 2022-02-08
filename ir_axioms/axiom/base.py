@@ -161,14 +161,14 @@ class Axiom(ABC):
         """
         return +self
 
-    def cached(self, capacity: int = 4096) -> "Axiom":
+    def cached(self) -> "Axiom":
         """
         Cache this axiom's preferences, meaning the ``preference()`` method
         will only be called if the context-query-documents tuple
         does not already exist in the cache.
         """
         from ir_axioms.axiom.cache import CachedAxiom
-        return CachedAxiom(self, capacity)
+        return CachedAxiom(self)
 
     @final
     def rerank(
