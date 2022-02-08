@@ -18,13 +18,13 @@ class CachedAxiom(Axiom):
             return None
         return Cache(str(context.cache_dir.absolute()))
 
-    @staticmethod
     def _key(
+            self,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
-    ) -> Tuple[str, str, str]:
-        return query.title, document1.id, document2.id
+    ) -> Tuple[str, str, str, str]:
+        return self.axiom.name, query.title, document1.id, document2.id
 
     def preference(
             self,
