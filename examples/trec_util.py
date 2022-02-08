@@ -19,10 +19,7 @@ class TrecTrack:
     track: str
     dataset_name: str
     cache_dir: Path
-    base_results_dir: Path = Path(
-        "/mnt/ceph/storage/data-in-progress/data-research/"
-        "web-search/web-search-trec/trec-system-runs"
-    )
+    base_results_dir: Path
 
     @cached_property
     def dataset(self) -> IRDSDataset:
