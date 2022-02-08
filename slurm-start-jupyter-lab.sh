@@ -6,7 +6,7 @@ srun \
   --mem=100G \
   --container-writable \
   --container-image=python:3.8.10 \
-  --container-name=sigir22-ir-axioms-02 \
+  --container-name=sigir22-ir-axioms-"$USER" \
   --pty \
   --container-mounts="$PWD":/workspace,"$HOME"/.ir_datasets:/root/.ir_datasets \
   --chdir "$PWD" \
