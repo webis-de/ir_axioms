@@ -98,7 +98,7 @@ class AxiomaticExperiment:
         if self.verbose:
             pipelines = tqdm(
                 pipelines,
-                desc="AxiomaticExperiment",
+                desc="Computing system axiomatic preferences",
                 unit="system",
             )
         return concat([

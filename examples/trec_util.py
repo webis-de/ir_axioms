@@ -10,7 +10,7 @@ from pyterrier.datasets import IRDSDataset, get_dataset, Dataset
 from pyterrier.index import IterDictIndexer
 from pyterrier.io import read_results
 from pyterrier.transformer import TransformerBase
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 
 @dataclass(frozen=True, unsafe_hash=True)

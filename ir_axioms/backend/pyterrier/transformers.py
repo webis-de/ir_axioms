@@ -48,11 +48,7 @@ class PerGroupTransformer(TransformerBase, ABC):
         if self.verbose:
             # Show progress during reranking queries.
             tqdm.pandas(
-                desc=(
-                    self.description
-                    if self.description is not None
-                    else self.name
-                ),
+                desc=self.description,
                 unit=self.unit,
             )
             query_rankings = query_rankings.progress_apply(
@@ -142,7 +138,6 @@ class AxiomTransformer(PerGroupTransformer, ABC):
         pass
 
 
-@dataclass(frozen=True)
 class SingleAxiomTransformer(AxiomTransformer, ABC):
     axiom: AxiomLike
     index: Union[Path, IndexRef, Index]
@@ -158,7 +153,6 @@ class SingleAxiomTransformer(AxiomTransformer, ABC):
         return to_axiom(self.axiom)
 
 
-@dataclass(frozen=True)
 class MultiAxiomTransformer(AxiomTransformer, ABC):
     axioms: Sequence[AxiomLike]
     index: Union[Path, IndexRef, Index]
@@ -174,8 +168,18 @@ class MultiAxiomTransformer(AxiomTransformer, ABC):
         return [to_axiom(axiom) for axiom in self.axioms]
 
 
+@dataclass(frozen=True)
 class AxiomaticReranker(SingleAxiomTransformer):
     name = "AxiomaticReranker"
+    description = "Reranking axiomatically"
+
+    axioms: Sequence[AxiomLike]
+    index: Union[Path, IndexRef, Index]
+    dataset: Optional[Union[Dataset, str]] = None
+    contents_accessor: Optional[ContentsAccessor] = "text"
+    tokeniser: Optional[Tokeniser] = None
+    cache_dir: Optional[Path] = None
+    verbose: bool = False
 
     def transform_query_ranking(
             self,
@@ -203,8 +207,18 @@ class AxiomaticReranker(SingleAxiomTransformer):
         return reranked
 
 
+@dataclass(frozen=True)
 class AxiomaticPreferences(MultiAxiomTransformer):
     name = "AxiomaticPreferences"
+    description = "Computing query axiom preferences"
+
+    axioms: Sequence[AxiomLike]
+    index: Union[Path, IndexRef, Index]
+    dataset: Optional[Union[Dataset, str]] = None
+    contents_accessor: Optional[ContentsAccessor] = "text"
+    tokeniser: Optional[Tokeniser] = None
+    cache_dir: Optional[Path] = None
+    verbose: bool = False
 
     def transform_query_ranking(
             self,
@@ -221,7 +235,14 @@ class AxiomaticPreferences(MultiAxiomTransformer):
 
         # Compute axiom preferences.
         context = self._context
-        for axiom in self.axioms:
+        axioms = self.axioms
+        if self.verbose:
+            axioms = tqdm(
+                axioms,
+                desc="Computing axiom preferences",
+                unit="axiom",
+            )
+        for axiom in axioms:
             pairs[f"{axiom.name}_preference"] = [
                 axiom.preference(context, query, document1, document2)
                 for document1 in documents
