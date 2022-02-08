@@ -42,7 +42,7 @@ class AxiomaticExperiment:
             OracleAxiom(self.topics, self.qrels),
             *self.axioms,
         ]
-        return [axiom.cached() for axiom in axioms]
+        return [axiom for axiom in axioms]
 
     @cached_property
     def _filter_transformer(self) -> Transformer:
