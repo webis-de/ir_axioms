@@ -153,7 +153,7 @@ class IndexRerankingContext(RerankingContext):
                 pipeline.pipelineTerm(term)
                 for term in terms
             ]
-        terms = [term for term in terms if term is not None]
+        terms = [str(term) for term in terms if term is not None]
         return terms
 
     def terms(self, query_or_document: Union[Query, Document]) -> List[str]:
@@ -250,7 +250,7 @@ class IndexRerankingContext(RerankingContext):
         assert first_result_doc.getMetadata("docno") == document_id
 
         # Get retrieval score.
-        score = first_result_doc.getScore()
+        score = float(first_result_doc.getScore())
         return score
 
     def retrieval_score(
