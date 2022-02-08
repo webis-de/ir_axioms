@@ -220,9 +220,10 @@ class AxiomaticPreferences(MultiAxiomTransformer):
         )
 
         # Compute axiom preferences.
+        context = self._context
         for axiom in self.axioms:
             pairs[f"{axiom.name}_preference"] = [
-                axiom.preference(self._context, query, document1, document2)
+                axiom.preference(context, query, document1, document2)
                 for document1 in documents
                 for document2 in documents
             ]
