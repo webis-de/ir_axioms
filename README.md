@@ -59,3 +59,10 @@ A wheel for this package can be built by:
 ```shell
 python -m build
 ```
+
+### Slurm
+
+If you want to play around with ir_axioms in Jupyter Lab, you can use this command to provision a server via Slurm:
+```shell
+./slurm-start-jupyter-lab.sh
+```
