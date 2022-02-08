@@ -214,8 +214,10 @@ class IndexRerankingContext(RerankingContext):
         for key, value in RETRIEVAL_SCORE_APPLICATION_PROPERTIES.items():
             ApplicationSetup.setProperty(key, value)
 
+        manager = self._manager
+
         # Build search request.
-        request: SearchRequest = self._manager.newSearchRequestFromQuery(
+        request: SearchRequest = manager.newSearchRequestFromQuery(
             query_title
         )
 
@@ -241,7 +243,7 @@ class IndexRerankingContext(RerankingContext):
         request.setControl("end", str(1 - 1))
 
         # Execute search request.
-        self._manager.runSearchRequest(request)
+        manager.runSearchRequest(request)
 
         # Parse result document.
         result_docs: ScoredDocList = request.getResults()
