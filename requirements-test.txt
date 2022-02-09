@@ -1,6 +1,0 @@
-flake8>=4.0,==4.*
-pylint>=2.12,==2.*
-pytest>=6.2,==6.*
-pytest-cov>=3.0,==3.*
-jupyter>=1.0,==1.*
-jupyterlab>=3.2,==3.*
