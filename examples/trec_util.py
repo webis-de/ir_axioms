@@ -47,7 +47,7 @@ class TrecTrack:
         return self.base_results_dir / f"trec{self.edition}" / self.track
 
     @cached_property
-    def results(self) -> List[Transformer]:
+    def _transformers(self) -> List["_TrecTrackSourceTransformer"]:
         dataset = self.dataset
         num_files = sum(1 for _ in self.result_dir.iterdir())
         files = tqdm(
@@ -57,23 +57,33 @@ class TrecTrack:
             total=num_files,
         )
         return [
-            _TrecTrackSourceTransformer(
-                str(path.absolute()),
-                dataset,
-            )
+            _TrecTrackSourceTransformer(path, dataset)
             for path in files
         ]
+
+    @property
+    def results(self) -> List[Transformer]:
+        return self._transformers
+
+    @cached_property
+    def result_names(self) -> List[str]:
+        return [transformer.name for transformer in self._transformers]
 
 
 @dataclass(frozen=True)
 class _TrecTrackSourceTransformer(TransformerBase):
-    filename: str
+    file: Path
     dataset: IRDSDataset
+
+    @cached_property
+    def name(self) -> str:
+        name = self.file.stem.replace("input.", "")
+        return f"Trec({name})"
 
     @cached_property
     def _results(self) -> DataFrame:
         return read_results(
-            self.filename,
+            str(self.file.absolute()),
             dataset=self.dataset,
         )
 
