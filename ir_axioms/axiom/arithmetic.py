@@ -189,12 +189,12 @@ class CascadeAxiom(Axiom):
         )
         return next(decisive_preferences, 0)
 
-    def __rshift__(self, other: Union[Axiom, float, int]) -> Axiom:
+    def __or__(self, other: Union[Axiom, float, int]) -> Axiom:
         if isinstance(other, Axiom):
             # Avoid chaining operators.
             return CascadeAxiom([*self.axioms, other])
         else:
-            return super().__rshift__(other)
+            return super().__or__(other)
 
 
 @dataclass(frozen=True)
