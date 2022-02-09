@@ -59,81 +59,98 @@ class Axiom(ABC):
         """
         pass
 
-    def __add__(self, other: Union["Axiom", float, int]) -> "Axiom":
+    def __add__(self, other: "AxiomLike") -> "Axiom":
         if isinstance(other, Axiom):
             from ir_axioms.axiom.arithmetic import SumAxiom
             return SumAxiom([self, other])
-        elif isinstance(other, (float, int)):
-            from ir_axioms.axiom.arithmetic import UniformAxiom
-            return self + UniformAxiom(other)
+        elif isinstance(other, (float, int, str)):
+            from ir_axioms.axiom.conversion import to_axiom
+            return self + to_axiom(other)
         else:
             return NotImplemented
 
-    def __radd__(self, other: Union["Axiom", float, int]) -> "Axiom":
+    def __radd__(self, other: "AxiomLike") -> "Axiom":
         return self + other
 
-    def __sub__(self, other: Union["Axiom", float, int]) -> "Axiom":
+    def plus(self, other: "AxiomLike") -> "Axiom":
+        return self + other
+
+    def __sub__(self, other: "AxiomLike") -> "Axiom":
         return self + -other
 
-    def __rsub__(self, other: Union["Axiom", float, int]) -> "Axiom":
+    def __rsub__(self, other: "AxiomLike") -> "Axiom":
         return -self + other
 
-    def __mul__(self, other: Union["Axiom", float, int]) -> "Axiom":
+    def minus(self, other: "AxiomLike") -> "Axiom":
+        return self - other
+
+    def __mul__(self, other: "AxiomLike") -> "Axiom":
         if isinstance(other, Axiom):
             from ir_axioms.axiom.arithmetic import ProductAxiom
             return ProductAxiom([self, other])
-        elif isinstance(other, (float, int)):
-            from ir_axioms.axiom.arithmetic import UniformAxiom
-            return self * UniformAxiom(other)
+        elif isinstance(other, (float, int, str)):
+            from ir_axioms.axiom.conversion import to_axiom
+            return self * to_axiom(other)
         else:
             return NotImplemented
 
-    def __rmul__(self, other: Union["Axiom", float, int]) -> "Axiom":
+    def __rmul__(self, other: "AxiomLike") -> "Axiom":
         return self * other
 
-    def __truediv__(self, other: Union["Axiom", float, int]) -> "Axiom":
+    def times(self, other: "AxiomLike") -> "Axiom":
+        return self * other
+
+    def weighted(self, weight: float) -> "Axiom":
+        return self * weight
+
+    def __truediv__(self, other: "AxiomLike") -> "Axiom":
         if isinstance(other, Axiom):
-            return self * other._multiplicative_inverse()
-        elif isinstance(other, (float, int)):
-            return self * (1 / other)
+            from ir_axioms.axiom.arithmetic import MultiplicativeInverseAxiom
+            return self * MultiplicativeInverseAxiom(other)
+        elif isinstance(other, (float, int, str)):
+            from ir_axioms.axiom.conversion import to_axiom
+            return self / to_axiom(other)
         else:
             return NotImplemented
 
-    def __rtruediv__(self, other: Union["Axiom", float, int]) -> "Axiom":
-        return self._multiplicative_inverse() * other
+    def __rtruediv__(self, other: "AxiomLike") -> "Axiom":
+        from ir_axioms.axiom.arithmetic import MultiplicativeInverseAxiom
+        return MultiplicativeInverseAxiom(self) * other
 
-    def __mod__(self, other: Union["Axiom", float, int]) -> "Axiom":
+    def divide(self, other: "AxiomLike") -> "Axiom":
+        return self / other
+
+    def __mod__(self, other: "AxiomLike") -> "Axiom":
         if isinstance(other, Axiom):
             from ir_axioms.axiom.arithmetic import MajorityVoteAxiom
             return MajorityVoteAxiom([self, other])
-        elif isinstance(other, (float, int)):
-            from ir_axioms.axiom.arithmetic import UniformAxiom
-            return self % UniformAxiom(other)
+        elif isinstance(other, (float, int, str)):
+            from ir_axioms.axiom.conversion import to_axiom
+            return self % to_axiom(other)
         else:
             return NotImplemented
 
-    def __rmod__(self, other: Union["Axiom", float, int]) -> "Axiom":
+    def __rmod__(self, other: "AxiomLike") -> "Axiom":
         return self % other
 
-    def __and__(self, other: Union["Axiom", float, int]) -> "Axiom":
+    def majority_vote(self, other: "AxiomLike") -> "Axiom":
+        return self % other
+
+    def __and__(self, other: "AxiomLike") -> "Axiom":
         if isinstance(other, Axiom):
             from ir_axioms.axiom.arithmetic import AndAxiom
             return AndAxiom([self, other])
-        elif isinstance(other, (float, int)):
-            from ir_axioms.axiom.arithmetic import UniformAxiom
-            return self & UniformAxiom(other)
+        elif isinstance(other, (float, int, str)):
+            from ir_axioms.axiom.conversion import to_axiom
+            return self & to_axiom(other)
         else:
             return NotImplemented
 
-    def __rand__(self, other: "Axiom") -> "Axiom":
+    def __rand__(self, other: "AxiomLike") -> "Axiom":
         return self & other
 
     def __neg__(self) -> "Axiom":
         return self * -1
-
-    def _multiplicative_inverse(self) -> "Axiom":
-        from ir_axioms.axiom.arithmetic import MultiplicativeInverseAxiom
-        return MultiplicativeInverseAxiom(self)
 
     def __pos__(self) -> "Axiom":
         """
@@ -143,17 +160,6 @@ class Axiom(ABC):
         from ir_axioms.axiom.arithmetic import NormalizedAxiom
         return NormalizedAxiom(self)
 
-    def __invert__(self) -> "Axiom":
-        """
-        Cache this axiom's preferences, meaning the ``preference()`` method
-        will only be called if the context-query-documents tuple
-        does not already exist in the cache.
-        """
-        return self.cached()
-
-    def weighted(self, weight: float) -> "Axiom":
-        return self * weight
-
     def normalized(self) -> "Axiom":
         """
         Return the normalized preference of this axiom,
@@ -161,11 +167,19 @@ class Axiom(ABC):
         """
         return +self
 
+    def __invert__(self) -> "Axiom":
+        """
+        Cache this axiom's preferences in the context's cache directory,
+        meaning the ``preference()`` method will only be called once
+        for each query-documents tuple.
+        """
+        return self.cached()
+
     def cached(self) -> "Axiom":
         """
-        Cache this axiom's preferences, meaning the ``preference()`` method
-        will only be called if the context-query-documents tuple
-        does not already exist in the cache.
+        Cache this axiom's preferences in the context's cache directory,
+        meaning the ``preference()`` method will only be called once
+        for each query-documents tuple.
         """
         from ir_axioms.axiom.cache import CachedAxiom
         return CachedAxiom(self)
@@ -266,3 +280,6 @@ class Axiom(ABC):
             count / ranking_length if ranking_length > 0 else 0
             for count in self.permutation_count(context, query, ranking)
         ]
+
+
+AxiomLike = Union[Axiom, str, int, float]

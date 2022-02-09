@@ -86,11 +86,6 @@ class MultiplicativeInverseAxiom(Axiom):
             document2
         )
 
-    def _multiplicative_inverse(self) -> Axiom:
-        # The inverse of the wrapped, inverted axiom
-        # is the original, wrapped axiom.
-        return self.axiom
-
 
 @dataclass(frozen=True)
 class AndAxiom(Axiom):

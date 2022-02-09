@@ -27,10 +27,10 @@ MajorityVoteAxiom = arithmetic.MajorityVoteAxiom
 NormalizedAxiom = arithmetic.NormalizedAxiom
 
 Axiom = base.Axiom
+AxiomLike = base.AxiomLike
 
 CachedAxiom = cache.CachedAxiom
 
-AxiomLike = conversion.AxiomLike
 to_axiom = conversion.to_axiom
 AutoAxiom = conversion.AutoAxiom
 
