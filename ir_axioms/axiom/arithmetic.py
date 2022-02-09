@@ -173,6 +173,36 @@ class MajorityVoteAxiom(Axiom):
 
 
 @dataclass(frozen=True)
+class CascadeAxiom(Axiom):
+    axioms: Iterable[Axiom]
+
+    def preference(
+            self,
+            context: RerankingContext,
+            query: Query,
+            document1: RankedDocument,
+            document2: RankedDocument
+    ) -> float:
+        preferences = (
+            axiom.preference(context, query, document1, document2)
+            for axiom in self.axioms
+        )
+        decisive_preferences = (
+            preference
+            for preference in preferences
+            if preference != 0
+        )
+        return next(decisive_preferences, 0)
+
+    def __rshift__(self, other: Union[Axiom, float, int]) -> Axiom:
+        if isinstance(other, Axiom):
+            # Avoid chaining operators.
+            return CascadeAxiom([*self.axioms, other])
+        else:
+            return super().__rshift__(other)
+
+
+@dataclass(frozen=True)
 class NormalizedAxiom(Axiom):
     axiom: Axiom
 
