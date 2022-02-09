@@ -149,6 +149,25 @@ class Axiom(ABC):
     def __rand__(self, other: "AxiomLike") -> "Axiom":
         return self & other
 
+    def __or__(self, other: "AxiomLike") -> "Axiom":
+        if isinstance(other, Axiom):
+            from ir_axioms.axiom.arithmetic import CascadeAxiom
+            return CascadeAxiom([self, other])
+        elif isinstance(other, (float, int, str)):
+            from ir_axioms.axiom.conversion import to_axiom
+            return self | to_axiom(other)
+        else:
+            return NotImplemented
+
+    def __ror__(self, other: "AxiomLike") -> "Axiom":
+        if isinstance(other, Axiom):
+            return other | self
+        elif isinstance(other, (float, int, str)):
+            from ir_axioms.axiom.conversion import to_axiom
+            return to_axiom(other) | self
+        else:
+            return NotImplemented
+
     def __neg__(self) -> "Axiom":
         return self * -1
 
