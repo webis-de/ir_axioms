@@ -132,6 +132,7 @@ def _query_term_position_in_argument(
     return mean(term_arg_pos)
 
 
+@lru_cache(None)
 def _sentence_length(
         context: RerankingContext,
         document: RankedDocument,
@@ -139,7 +140,7 @@ def _sentence_length(
     download_nltk_dependencies("punkt")
     sentences = sent_tokenize(context.contents(document))
     return mean(
-        len(word_tokenize(sentence))
+        len(word_tokenize(sentence, preserve_line=True))
         for sentence in sentences
     )
 
