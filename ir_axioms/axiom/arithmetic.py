@@ -89,6 +89,7 @@ class MultiplicativeInverseAxiom(Axiom):
 
 @dataclass(frozen=True)
 class AndAxiom(Axiom):
+    # TODO: And is a special case of majority vote with a majority of 1.0
     axioms: Iterable[Axiom]
 
     def preference(
