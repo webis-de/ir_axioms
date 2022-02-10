@@ -11,8 +11,8 @@ srun \
   --chdir "$PWD" \
   --pty \
   su -c "cd /workspace &&
-    apt update &&
-    apt install openjdk-11-jdk &&
+    apt update -y &&
+    apt install -y openjdk-11-jdk &&
     export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/ &&
     pip install cython &&
     pip install --editable .[test,pyterrier] &&
