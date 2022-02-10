@@ -1,7 +1,7 @@
 from ir_axioms.axiom import (
     argumentative, arithmetic, base, cache, conversion, length_norm,
     lower_bound, proximity, query_aspects, retrieval_score, term_frequency,
-    term_similarity, simple, trec
+    term_similarity, simple, trec, estimator
 )
 
 # Re-export from child modules.
@@ -33,6 +33,8 @@ CachedAxiom = cache.CachedAxiom
 
 to_axiom = conversion.to_axiom
 AutoAxiom = conversion.AutoAxiom
+
+EstimatorAxiom = estimator.EstimatorAxiom
 
 LNC1 = length_norm.LNC1
 TF_LNC = length_norm.TF_LNC
