@@ -12,12 +12,13 @@ from tqdm.auto import tqdm
 
 from ir_axioms.axiom import AxiomLike, to_axiom
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.backend.pyterrier import IndexRerankingContext, ContentsAccessor
+from ir_axioms.backend.pyterrier import TerrierIndexContext, ContentsAccessor
 from ir_axioms.backend.pyterrier.safe import TransformerBase
 from ir_axioms.backend.pyterrier.transformer_utils import _require_columns
 from ir_axioms.backend.pyterrier.util import IndexRef, Index, Tokeniser
-from ir_axioms.model import Query, RankedDocument, RankedTextDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import (
+    Query, RankedDocument, RankedTextDocument, IndexContext
+)
 
 
 class PerGroupTransformer(TransformerBase, ABC):
@@ -74,8 +75,8 @@ class AxiomTransformer(PerGroupTransformer, ABC):
     unit = "query"
 
     @property
-    def _context(self) -> RerankingContext:
-        return IndexRerankingContext(
+    def _context(self) -> IndexContext:
+        return TerrierIndexContext(
             index_location=self.index,
             dataset=self.dataset,
             contents_accessor=self.contents_accessor,

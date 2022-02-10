@@ -4,8 +4,7 @@ from typing import Optional
 from diskcache import Cache
 
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.model import RankedDocument, Query
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import RankedDocument, Query, IndexContext
 
 
 @dataclass(frozen=True)
@@ -13,14 +12,14 @@ class CachedAxiom(Axiom):
     axiom: Axiom
 
     @staticmethod
-    def _cache(context: RerankingContext) -> Optional[Cache]:
+    def _cache(context: IndexContext) -> Optional[Cache]:
         if context.cache_dir is None:
             return None
         return Cache(str(context.cache_dir.absolute()))
 
     def _key(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -32,7 +31,7 @@ class CachedAxiom(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument

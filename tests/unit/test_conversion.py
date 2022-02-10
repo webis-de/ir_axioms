@@ -3,7 +3,7 @@ from ir_axioms.axiom import (
     ProductAxiom, AndAxiom, MajorityVoteAxiom
 )
 from ir_axioms.model import Query, RankedTextDocument
-from tests.unit.util import MemoryRerankingContext
+from tests.unit.util import MemoryIndexContext
 
 
 def test_to_axiom_axiom():
@@ -26,7 +26,7 @@ def test_auto_axiom_original():
     query = Query("q1 q2 q3")
     document1 = RankedTextDocument("d1", 2, 1, "w1 w2 w3")
     document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
-    context = MemoryRerankingContext({document1, document2})
+    context = MemoryIndexContext({document1, document2})
 
     axiom = OriginalAxiom()
     auto_axiom = AutoAxiom("OriginalAxiom")

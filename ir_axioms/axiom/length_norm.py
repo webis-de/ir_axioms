@@ -4,8 +4,7 @@ from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import (
     approximately_equal, strictly_less, strictly_greater
 )
-from ir_axioms.model import Query, RankedDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import Query, RankedDocument, IndexContext
 
 
 @dataclass(frozen=True)
@@ -14,7 +13,7 @@ class LNC1(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -41,7 +40,7 @@ class TF_LNC(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument

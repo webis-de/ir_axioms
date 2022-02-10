@@ -4,8 +4,7 @@ from functools import cached_property
 from ir_axioms import registry
 from ir_axioms.axiom.arithmetic import UniformAxiom
 from ir_axioms.axiom.base import Axiom, AxiomLike
-from ir_axioms.model import Query, RankedDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import Query, RankedDocument, IndexContext
 
 
 def to_axiom(axiom_like: AxiomLike) -> Axiom:
@@ -29,7 +28,7 @@ class AutoAxiom(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument,

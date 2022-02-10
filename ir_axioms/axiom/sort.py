@@ -3,15 +3,14 @@ from typing import List
 
 from ir_axioms import logger
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.model import Query, RankedDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import Query, RankedDocument, IndexContext
 
 
 # TODO: Move to other module.
 def _kwiksort(
         axiom: Axiom,
         query: Query,
-        context: RerankingContext,
+        context: IndexContext,
         vertices: List[RankedDocument]
 ) -> List[RankedDocument]:
     if len(vertices) == 0:

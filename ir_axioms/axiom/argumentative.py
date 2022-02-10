@@ -11,8 +11,7 @@ from targer_api.constants import DEFAULT_TARGER_MODELS, DEFAULT_TARGER_API_URL
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import approximately_same_length
-from ir_axioms.model import Query, RankedDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import Query, RankedDocument, IndexContext
 from ir_axioms.utils.nltk import download_nltk_dependencies
 
 
@@ -82,7 +81,7 @@ def _is_claim_or_premise(tag: ArgumentTag) -> bool:
 
 
 def _count_query_terms(
-        context: RerankingContext,
+        context: IndexContext,
         sentences: ArgumentSentences,
         query: Query,
         normalize: bool = True,
@@ -104,7 +103,7 @@ def _count_query_terms(
 
 
 def _query_term_position_in_argument(
-        context: RerankingContext,
+        context: IndexContext,
         sentences: ArgumentSentences,
         query: Query,
         penalty: int,
@@ -134,7 +133,7 @@ def _query_term_position_in_argument(
 
 @lru_cache(None)
 def _sentence_length(
-        context: RerankingContext,
+        context: IndexContext,
         document: RankedDocument,
 ) -> float:
     download_nltk_dependencies("punkt")
@@ -152,7 +151,7 @@ class _TargerMixin:
 
     def fetch_arguments(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             document: RankedDocument,
     ) -> Dict[str, ArgumentSentences]:
         return analyze_text(
@@ -176,7 +175,7 @@ class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -219,7 +218,7 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -279,7 +278,7 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -344,7 +343,7 @@ class AverageSentenceLengthAxiom(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument

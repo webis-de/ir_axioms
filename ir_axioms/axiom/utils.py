@@ -7,8 +7,7 @@ from typing import List, Set, Iterator, Dict, Iterable
 
 from nltk.corpus import wordnet
 
-from ir_axioms.model import Query, RankedDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import Query, RankedDocument, IndexContext
 from ir_axioms.utils.nltk import download_nltk_dependencies
 
 
@@ -50,7 +49,7 @@ def approximately_equal(*args, margin_fraction: float = 0.1):
 
 
 def all_query_terms_in_documents(
-        context: RerankingContext,
+        context: IndexContext,
         query: Query,
         document1: RankedDocument,
         document2: RankedDocument
@@ -69,7 +68,7 @@ def all_query_terms_in_documents(
 
 
 def same_query_term_subset(
-        context: RerankingContext,
+        context: IndexContext,
         query: Query,
         document1: RankedDocument,
         document2: RankedDocument
@@ -93,7 +92,7 @@ def same_query_term_subset(
 
 
 def approximately_same_length(
-        context: RerankingContext,
+        context: IndexContext,
         document1: RankedDocument,
         document2: RankedDocument,
         margin_fraction: float = 0.1

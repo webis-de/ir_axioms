@@ -1,6 +1,6 @@
 from ir_axioms.axiom import LB1
 from ir_axioms.model import Query, RankedTextDocument
-from tests.unit.util import MemoryRerankingContext
+from tests.unit.util import MemoryIndexContext
 
 
 def test_lb1():
@@ -13,7 +13,7 @@ def test_lb1():
         "d2", 1.01, 1,
         "test document that contains words and phrases"
     )
-    context = MemoryRerankingContext({document2, document1})
+    context = MemoryIndexContext({document2, document1})
 
     ax1 = LB1()
 

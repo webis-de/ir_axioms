@@ -6,8 +6,7 @@ from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import (
     approximately_equal, strictly_greater, approximately_same_length
 )
-from ir_axioms.model import Query, RankedDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import Query, RankedDocument, IndexContext
 
 
 @dataclass(frozen=True)
@@ -16,7 +15,7 @@ class TFC1(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -43,7 +42,7 @@ class TFC3(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -94,7 +93,7 @@ class M_TDC(Axiom):
 
     @staticmethod
     def precondition(
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -118,7 +117,7 @@ class M_TDC(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -194,7 +193,7 @@ class LEN_M_TDC(M_TDC):
 
     def precondition(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument

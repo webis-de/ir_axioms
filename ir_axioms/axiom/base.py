@@ -5,8 +5,7 @@ from typing import final, List, Union, Callable
 from numpy import array, ndarray
 
 from ir_axioms import registry
-from ir_axioms.model import Query, RankedDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import Query, RankedDocument, IndexContext
 
 
 class Axiom(ABC):
@@ -33,7 +32,7 @@ class Axiom(ABC):
     @abstractmethod
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -206,7 +205,7 @@ class Axiom(ABC):
     @final
     def rerank(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             ranking: List[RankedDocument],
     ) -> List[RankedDocument]:
@@ -219,7 +218,7 @@ class Axiom(ABC):
     @final
     def preferences(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             ranking: List[RankedDocument],
     ) -> List[List[float]]:
@@ -234,7 +233,7 @@ class Axiom(ABC):
     @final
     def preference_matrix(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             ranking: List[RankedDocument],
     ) -> ndarray:
@@ -243,7 +242,7 @@ class Axiom(ABC):
     @final
     def aggregated_preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             ranking: List[RankedDocument],
             aggregation: Callable[[List[float]], float]
@@ -256,7 +255,7 @@ class Axiom(ABC):
     @final
     def is_permutated(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document_1: RankedDocument,
             document_2: RankedDocument
@@ -276,7 +275,7 @@ class Axiom(ABC):
     @final
     def permutations(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             ranking: List[RankedDocument],
     ) -> List[List[bool]]:
@@ -291,7 +290,7 @@ class Axiom(ABC):
     @final
     def permutation_count(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             ranking: List[RankedDocument],
     ) -> List[int]:
@@ -303,7 +302,7 @@ class Axiom(ABC):
     @final
     def permutation_frequency(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             ranking: List[RankedDocument],
     ) -> List[float]:

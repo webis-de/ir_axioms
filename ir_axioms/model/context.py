@@ -8,7 +8,7 @@ from ir_axioms.model import Query, Document
 from ir_axioms.model.retrieval_model import RetrievalModel
 
 
-class RerankingContext(ABC):
+class IndexContext(ABC):
     cache_dir: Optional[Path] = None
 
     @property

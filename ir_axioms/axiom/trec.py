@@ -7,8 +7,7 @@ from trectools import TrecQrel, TrecTopics
 from ir_axioms import logger
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_greater
-from ir_axioms.model import Query, RankedDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import Query, RankedDocument, IndexContext
 
 
 @dataclass(frozen=True)
@@ -50,7 +49,7 @@ class TrecOracleAxiom(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument

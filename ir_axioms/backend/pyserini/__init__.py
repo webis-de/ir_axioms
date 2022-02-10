@@ -15,15 +15,14 @@ from ir_axioms.backend.pyserini.util import (
     Similarity, ClassicSimilarity, BM25Similarity, DFRSimilarity,
     BasicModelIn, AfterEffectL, NormalizationH2, LMDirichletSimilarity
 )
-from ir_axioms.model import Query, Document, TextDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import Query, Document, TextDocument, IndexContext
 from ir_axioms.model.retrieval_model import (
     RetrievalModel, TfIdf, BM25, DirichletLM, PL2
 )
 
 
 @dataclass(unsafe_hash=True, frozen=True)
-class IndexRerankingContext(RerankingContext):
+class PyseriniIndexContext(IndexContext):
     index_dir: Path
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[Union[

@@ -1,6 +1,6 @@
 from ir_axioms.axiom import TFC1, TFC3, LEN_M_TDC, M_TDC
 from ir_axioms.model import Query, RankedTextDocument
-from tests.unit.util import MemoryRerankingContext
+from tests.unit.util import MemoryIndexContext
 
 
 def test_tfc1():
@@ -8,7 +8,7 @@ def test_tfc1():
     document1 = RankedTextDocument("d1", 3, 1, "w1 w1 w2 w3")
     document2 = RankedTextDocument("d2", 2, 2, "w1 w2 w1 w1")
     document3 = RankedTextDocument("d2", 1, 3, "w1 w2 w1 w1")
-    context = MemoryRerankingContext({document1, document2, document3})
+    context = MemoryIndexContext({document1, document2, document3})
 
     axiom = TFC1()
 
@@ -27,7 +27,7 @@ def test_tfc3():
     document1 = RankedTextDocument("d1", 3, 1, "w1 w2 w2")
     document2 = RankedTextDocument("d2", 2, 2, "w2 w3 w1")
     document3 = RankedTextDocument("d3", 1, 3, "w3 w1 w1")
-    context = MemoryRerankingContext({document1, document2, document3})
+    context = MemoryIndexContext({document1, document2, document3})
 
     axiom = TFC3()
 
@@ -49,7 +49,7 @@ def test_m_tdc():
         "d2", 1, 2,
         "another document contains query words but is not very words"
     )
-    context = MemoryRerankingContext({document1, document2})
+    context = MemoryIndexContext({document1, document2})
 
     axiom = M_TDC()
 
@@ -68,7 +68,7 @@ def test_len_m_tdc_false_precondition():
         "d2", 1, 2,
         "another document contains query words but is not very words"
     )
-    context = MemoryRerankingContext({document1, document2})
+    context = MemoryIndexContext({document1, document2})
 
     axiom = LEN_M_TDC(0.1)
 
@@ -87,7 +87,7 @@ def test_len_m_tdc():
         "d2", 1, 2,
         "another document contains query words but is not very words"
     )
-    context = MemoryRerankingContext({document1, document2})
+    context = MemoryIndexContext({document1, document2})
 
     axiom = LEN_M_TDC(0.3)
 

@@ -17,8 +17,7 @@ from ir_axioms.backend.pyterrier.util import (
     ScoredDocList, ScoredDoc, RequestContextMatching, MetaIndex, IndexRef,
     Tokeniser, IndexFactory, ApplicationSetup, StringReader
 )
-from ir_axioms.model import Query, Document, TextDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import Query, Document, TextDocument, IndexContext
 from ir_axioms.model.retrieval_model import (
     RetrievalModel, Tf, TfIdf, BM25, PL2, DirichletLM
 )
@@ -27,7 +26,7 @@ ContentsAccessor = Union[str, Callable[[NamedTuple], str]]
 
 
 @dataclass(unsafe_hash=True, frozen=True)
-class IndexRerankingContext(RerankingContext):
+class TerrierIndexContext(IndexContext):
     index_location: Union[Path, IndexRef, Index]
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"

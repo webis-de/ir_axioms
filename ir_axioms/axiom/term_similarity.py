@@ -11,8 +11,7 @@ from pymagnitude import Magnitude
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import synonym_set_similarity, strictly_greater, \
     approximately_equal
-from ir_axioms.model import Query, RankedDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import Query, RankedDocument, IndexContext
 
 
 class _TermSimilarity(ABC):
@@ -60,7 +59,7 @@ class _STMC1(Axiom, _TermSimilarity, ABC):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -104,7 +103,7 @@ class _STMC2(Axiom, _TermSimilarity, ABC):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
