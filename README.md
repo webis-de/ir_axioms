@@ -51,12 +51,25 @@ pip install -e .[test]
 
 Verify your changes against our test suite to verify.
 ```shell
-flake8
-pylint -E ir_axioms
-pytest
+flake8 ir_axioms tests
+pylint -E ir_axioms tests.unit --ignore-paths=^ir_axioms.backend
+pytest ir_axioms/ tests/unit/ --ignore=ir_axioms/backend/
 ```
 
 Please also add tests for the axioms or integrations you've added.
+
+#### Testing backend integrations
+
+Install test dependencies (replace `<BACKEND>` with either `pyserini` or `pyterrier`):
+```shell
+pip install -e .[<BACKEND>]
+```
+
+Verify your changes against our test suite to verify.
+```shell
+pylint -E ir_axioms.backend.<BACKEND> tests.integration.<BACKEND>
+pytest tests/integration/<BACKEND>/
+```
 
 ### Build wheel
 
