@@ -4,7 +4,7 @@ from math import log
 from pathlib import Path
 from typing import Set, List, Optional, Union
 
-from ir_axioms.model import Query, Document
+from ir_axioms.model.base import Query, Document
 from ir_axioms.model.retrieval_model import RetrievalModel
 
 
