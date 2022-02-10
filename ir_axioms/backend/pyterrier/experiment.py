@@ -27,8 +27,8 @@ class AxiomaticExperiment:
     qrels: DataFrame
     index: Union[Path, IndexRef, Index]
     axioms: Sequence[Axiom]
-    filter_by_topics: bool = True
     filter_by_qrels: bool = True
+    filter_by_topics: bool = False
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Optional[Tokeniser] = None
