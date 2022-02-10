@@ -4,7 +4,25 @@ from typing import List, Tuple, TypeVar, Iterable
 
 from numpy import array
 from sklearn.base import is_classifier
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.ensemble import (
+    AdaBoostClassifier, AdaBoostRegressor, BaggingClassifier, BaggingRegressor,
+    ExtraTreesClassifier, ExtraTreesRegressor, GradientBoostingClassifier,
+    GradientBoostingRegressor, RandomForestClassifier, RandomForestRegressor,
+    StackingClassifier, StackingRegressor, VotingClassifier, VotingRegressor,
+    HistGradientBoostingRegressor, HistGradientBoostingClassifier)
+from sklearn.gaussian_process import (
+    GaussianProcessClassifier, GaussianProcessRegressor
+)
+from sklearn.linear_model import LogisticRegression, LinearRegression
+from sklearn.naive_bayes import (
+    BernoulliNB, CategoricalNB, ComplementNB, GaussianNB, MultinomialNB
+)
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+from sklearn.neural_network import MLPClassifier, MLPRegressor
+from sklearn.tree import (
+    DecisionTreeClassifier, DecisionTreeRegressor, ExtraTreeClassifier,
+    ExtraTreeRegressor
+)
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.model import RankedDocument, Query, IndexContext
@@ -22,11 +40,41 @@ class EstimatorAxiom(Axiom, ABC):
         pass
 
 
-# TODO: Add more classifiers and regressions.
 ScikitEstimatorType = TypeVar(
     "ScikitEstimatorType",
+    AdaBoostClassifier,
+    AdaBoostRegressor,
+    BaggingClassifier,
+    BaggingRegressor,
+    ExtraTreesClassifier,
+    ExtraTreesRegressor,
+    GradientBoostingClassifier,
+    GradientBoostingRegressor,
     RandomForestClassifier,
     RandomForestRegressor,
+    StackingClassifier,
+    StackingRegressor,
+    VotingClassifier,
+    VotingRegressor,
+    HistGradientBoostingRegressor,
+    HistGradientBoostingClassifier,
+    GaussianProcessClassifier,
+    GaussianProcessRegressor,
+    LogisticRegression,
+    LinearRegression,
+    BernoulliNB,
+    CategoricalNB,
+    ComplementNB,
+    GaussianNB,
+    MultinomialNB,
+    KNeighborsClassifier,
+    KNeighborsRegressor,
+    MLPClassifier,
+    MLPRegressor,
+    DecisionTreeClassifier,
+    DecisionTreeRegressor,
+    ExtraTreeClassifier,
+    ExtraTreeRegressor,
 )
 
 
