@@ -13,7 +13,7 @@ def test_registry():
 
 
 def test_registry_axiom():
-    axiom = registry["NopAxiom"]
+    axiom = registry["NOP"]
 
     assert axiom is not None
     assert isinstance(axiom, Axiom)
@@ -27,7 +27,7 @@ def test_registry_original():
     context = MemoryIndexContext({document1, document2})
 
     axiom = OriginalAxiom()
-    registry_axiom = registry["OriginalAxiom"]
+    registry_axiom = registry["ORIG"]
 
     assert (
             registry_axiom.preference(context, query, document1, document2) ==

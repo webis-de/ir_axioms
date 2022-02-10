@@ -12,7 +12,7 @@ from ir_axioms.model import Query, RankedDocument, IndexContext
 
 @dataclass(frozen=True)
 class TrecOracleAxiom(Axiom):
-    name = "TREC-oracle"
+    name = "TREC"
 
     topics: TrecTopics
     qrels: TrecQrel

@@ -15,7 +15,7 @@ def test_to_axiom_axiom():
 
 
 def test_to_axiom_string():
-    axiom = to_axiom("NopAxiom")
+    axiom = to_axiom("NOP")
 
     assert axiom is not None
     assert isinstance(axiom, Axiom)
@@ -29,7 +29,7 @@ def test_auto_axiom_original():
     context = MemoryIndexContext({document1, document2})
 
     axiom = OriginalAxiom()
-    auto_axiom = AutoAxiom("OriginalAxiom")
+    auto_axiom = AutoAxiom("ORIG")
 
     assert (
             auto_axiom.preference(context, query, document1, document2) ==

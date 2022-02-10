@@ -10,7 +10,7 @@ from ir_axioms.model import Query, RankedDocument, IndexContext
 
 @dataclass(frozen=True)
 class NopAxiom(Axiom):
-    name = "nop"
+    name = "NOP"
 
     def preference(
             self,
@@ -24,7 +24,7 @@ class NopAxiom(Axiom):
 
 @dataclass(frozen=True)
 class OriginalAxiom(Axiom):
-    name = "original"
+    name = "ORIG"
 
     def preference(
             self,
@@ -38,7 +38,7 @@ class OriginalAxiom(Axiom):
 
 @dataclass(frozen=True)
 class RandomAxiom(Axiom):
-    name = "random"
+    name = "RANDOM"
 
     seed: Optional[Any] = None
 
