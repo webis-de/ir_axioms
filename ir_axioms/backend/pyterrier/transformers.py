@@ -2,9 +2,10 @@ from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Union, Optional, List, Set, Sequence, final
+from typing import Union, Optional, List, Set, Sequence, final, Callable
 
 from ir_datasets import Dataset
+from numpy import array
 from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
 from tqdm.auto import tqdm
@@ -171,7 +172,7 @@ class MultiAxiomTransformer(AxiomTransformer, ABC):
 @dataclass(frozen=True)
 class AxiomaticReranker(SingleAxiomTransformer):
     name = "AxiomaticReranker"
-    description = "Reranking axiomatically"
+    description = "Reranking query axiomatically"
 
     axiom: AxiomLike
     index: Union[Path, IndexRef, Index]
@@ -207,6 +208,47 @@ class AxiomaticReranker(SingleAxiomTransformer):
         # Merge with new scores.
         reranked = reranked.merge(original_ranking, on="docno")
         return reranked
+
+
+@dataclass(frozen=True)
+class AggregatedAxiomaticPreference(MultiAxiomTransformer):
+    name = "AggregatedAxiomaticPreference"
+    description = "Aggregating query axiom preferences"
+
+    axioms: Sequence[AxiomLike]
+    index: Union[Path, IndexRef, Index]
+    aggregation: Callable[[List[float]], float] = sum
+    dataset: Optional[Union[Dataset, str]] = None
+    contents_accessor: Optional[ContentsAccessor] = "text"
+    tokeniser: Optional[Tokeniser] = None
+    cache_dir: Optional[Path] = None
+    verbose: bool = False
+
+    def transform_query_ranking(
+            self,
+            query: Query,
+            documents: List[RankedDocument],
+            topics_or_res: DataFrame,
+    ) -> DataFrame:
+        axioms = self.axioms
+        context = self._context
+        aggregation = self.aggregation
+
+        aggregated_preferences = [
+            axiom.cached().aggregated_preference(
+                context,
+                query,
+                documents,
+                aggregation
+            )
+            for axiom in axioms
+        ]
+
+        transposed = list(map(array, zip(*aggregated_preferences)))
+
+        features = topics_or_res
+        features["features"] = transposed
+        return features
 
 
 @dataclass(frozen=True)
