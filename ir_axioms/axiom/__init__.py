@@ -65,6 +65,9 @@ RS = retrieval_score.RS
 NopAxiom = simple.NopAxiom
 OriginalAxiom = simple.OriginalAxiom
 RandomAxiom = simple.RandomAxiom
+NOP = simple.NOP
+ORIG = simple.ORIG
+RANDOM = simple.RANDOM
 
 TFC1 = term_frequency.TFC1
 TFC3 = term_frequency.TFC3
@@ -72,6 +75,7 @@ M_TDC = term_frequency.M_TDC
 LEN_M_TDC = term_frequency.LEN_M_TDC
 
 TrecOracleAxiom = trec.TrecOracleAxiom
+TREC = trec.TREC
 
 STMC1 = term_similarity.STMC1
 STMC1_f = term_similarity.STMC1_f

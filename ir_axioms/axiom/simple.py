@@ -54,3 +54,9 @@ class RandomAxiom(Axiom):
             document2: RankedDocument
     ):
         return self._random.randint(-1, 1)
+
+
+# Aliases for shorter names:
+NOP = NopAxiom
+ORIG = OriginalAxiom
+RANDOM = RandomAxiom

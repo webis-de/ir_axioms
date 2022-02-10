@@ -57,3 +57,7 @@ class TrecOracleAxiom(Axiom):
         judgement1 = self._judgement(query.title, document1.id)
         judgement2 = self._judgement(query.title, document2.id)
         return strictly_greater(judgement1, judgement2)
+
+
+# Aliases for shorter names:
+TREC = TrecOracleAxiom
