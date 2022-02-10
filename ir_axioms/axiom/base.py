@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from inspect import isabstract
-from typing import final, List, Union
+from typing import final, List, Union, Callable
 
 from numpy import array, ndarray
 
@@ -239,6 +239,19 @@ class Axiom(ABC):
             ranking: List[RankedDocument],
     ) -> ndarray:
         return array(self.preferences(context, query, ranking))
+
+    @final
+    def aggregated_preference(
+            self,
+            context: RerankingContext,
+            query: Query,
+            ranking: List[RankedDocument],
+            aggregation: Callable[[List[float]], float]
+    ) -> List[float]:
+        return [
+            aggregation(preferences)
+            for preferences in self.preferences(context, query, ranking)
+        ]
 
     @final
     def is_permutated(
