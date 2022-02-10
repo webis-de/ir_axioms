@@ -32,7 +32,11 @@ class TrecTrack:
     @cached_property
     def index(self) -> Path:
         # Load documents and build index.
-        index_dir = self.cache_dir / "indices" / self.dataset_name
+        index_dir = (
+                self.cache_dir /
+                "indices" /
+                self.dataset_name.replace("/", "-")
+        )
         if not index_dir.exists():
             # Don't forget to include the 'text' field in the meta index.
             indexer = IterDictIndexer(str(index_dir))
