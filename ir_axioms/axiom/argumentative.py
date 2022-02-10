@@ -17,7 +17,7 @@ from ir_axioms.utils.nltk import download_nltk_dependencies
 
 @lru_cache(maxsize=4096)
 def _normalize(word: str):
-    download_nltk_dependencies("wordnet")
+    download_nltk_dependencies("wordnet", "omw-1.4")
     _word_net_lemmatizer = WordNetLemmatizer()
     return _word_net_lemmatizer.lemmatize(word).lower()
 
