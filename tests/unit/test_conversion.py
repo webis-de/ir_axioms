@@ -1,6 +1,5 @@
 from ir_axioms.axiom import (
-    NopAxiom, OriginalAxiom, AutoAxiom, to_axiom, Axiom, SumAxiom,
-    ProductAxiom, AndAxiom, MajorityVoteAxiom
+    NopAxiom, OriginalAxiom, AutoAxiom, to_axiom, Axiom, UniformAxiom
 )
 from ir_axioms.model import Query, RankedTextDocument
 from tests.unit.util import MemoryIndexContext
@@ -20,6 +19,14 @@ def test_to_axiom_string():
     assert axiom is not None
     assert isinstance(axiom, Axiom)
     assert isinstance(axiom, NopAxiom)
+
+
+def test_to_axiom_uniform():
+    axiom = to_axiom(42)
+
+    assert axiom is not None
+    assert isinstance(axiom, Axiom)
+    assert isinstance(axiom, UniformAxiom)
 
 
 def test_auto_axiom_original():
