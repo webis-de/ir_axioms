@@ -7,6 +7,7 @@ from ir_axioms.model import Query, RankedDocument
 from ir_axioms.model.context import RerankingContext
 
 
+# TODO: Move to other module.
 def _kwiksort(
         axiom: Axiom,
         query: Query,
