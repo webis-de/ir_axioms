@@ -15,5 +15,5 @@ srun \
     apt install -y openjdk-11-jdk &&
     export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/ &&
     pip install cython &&
-    pip install --editable .[test,pyterrier] &&
+    pip install --editable .[pyterrier,examples,test] &&
     jupyter-lab --ip 0.0.0.0 --allow-root"
