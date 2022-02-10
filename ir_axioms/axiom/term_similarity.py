@@ -40,7 +40,7 @@ class _WordEmbeddingTermSimilarity(_TermSimilarity, ABC):
 
     @lru_cache(maxsize=4096)
     def similarity(self, term1: str, term2: str):
-        return self._embeddings.similarity(term1, term2)
+        return float(self._embeddings.similarity(term1, term2))
 
 
 class _FastTextWikiNewsTermSimilarity(_WordEmbeddingTermSimilarity):
