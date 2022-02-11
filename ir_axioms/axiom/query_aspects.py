@@ -201,8 +201,10 @@ class _ASPECT_REG(Axiom, TermSimilarityMixin, ABC):
                     # Merge aspects.
                     merged_aspect = a1 | a2
                     query_aspects.add(merged_aspect)
+                    break  # Go to begin of while-loop.
 
-            # No more mergable aspects.
+            # We iterated over all aspect pairs
+            # and did not find any mergable aspects.
             break
 
         count_document1_aspects = {
