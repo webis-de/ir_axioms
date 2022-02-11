@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from functools import lru_cache, cached_property
+from functools import cached_property
 from math import nan
 from typing import Optional
 
@@ -38,13 +38,12 @@ class OracleAxiom(Axiom):
     def __hash__(self):
         return self._qrels_topics_hash
 
-    @lru_cache(None)
     def _judgement(
             self,
             query_title: str,
             document_id: str,
     ) -> Optional[int]:
-        qrels: DataFrame = self._qrels_topics.copy()
+        qrels: DataFrame = self._qrels_topics
         qrels = qrels[qrels["query"] == query_title]
         qrels = qrels[qrels["docno"] == document_id]
         if len(qrels.index) == 0:
@@ -69,5 +68,5 @@ class OracleAxiom(Axiom):
             return nan
         return strictly_greater(judgement1, judgement2)
 
-    def cached(self) -> "Axiom":
+    def cached(self) -> Axiom:
         return self
