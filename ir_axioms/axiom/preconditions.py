@@ -63,4 +63,4 @@ class LEN_Mixin(Axiom):
         ):
             # Documents have different lengths.
             return 0
-        return NotImplemented
+        return super().preference(context, query, document1, document2)
