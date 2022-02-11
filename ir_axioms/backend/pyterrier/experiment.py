@@ -10,9 +10,7 @@ from tqdm.auto import tqdm
 from ir_axioms.axiom import Axiom, OriginalAxiom
 from ir_axioms.backend.pyterrier import ContentsAccessor
 from ir_axioms.backend.pyterrier.axiom import OracleAxiom
-from ir_axioms.backend.pyterrier.safe import (
-    Transformer, IdentityTransformer
-)
+from ir_axioms.backend.pyterrier.safe import Transformer
 from ir_axioms.backend.pyterrier.transformer_utils import (
     FilterTopicsTransformer, FilterQrelsTransformer
 )
@@ -27,7 +25,7 @@ class AxiomaticExperiment:
     qrels: DataFrame
     index: Union[Path, IndexRef, Index]
     axioms: Sequence[Axiom]
-    depth: int = 10
+    depth: Optional[int] = 10
     filter_by_qrels: bool = True
     filter_by_topics: bool = False
     dataset: Optional[Union[Dataset, str]] = None
@@ -46,12 +44,23 @@ class AxiomaticExperiment:
         return [axiom for axiom in axioms]
 
     @cached_property
-    def _filter_transformer(self) -> Transformer:
-        pipeline = IdentityTransformer()
+    def _filter_topics(self) -> Transformer:
+        return FilterTopicsTransformer(self.topics)
+
+    @cached_property
+    def _filter_qrels(self) -> Transformer:
+        return FilterQrelsTransformer(self.qrels)
+
+    def _pipeline(self, system: Transformer) -> Transformer:
+        pipeline = system
+        if self.depth is not None:
+            # noinspection PyTypeChecker
+            pipeline = pipeline % self.depth
         if self.filter_by_topics:
-            pipeline = pipeline >> FilterTopicsTransformer(self.topics)
+            pipeline = pipeline >> self._filter_topics
         if self.filter_by_qrels:
-            pipeline = pipeline >> FilterQrelsTransformer(self.qrels)
+            pipeline = pipeline >> self._filter_qrels
+        pipeline = ~pipeline
         return pipeline
 
     @cached_property
@@ -65,6 +74,12 @@ class AxiomaticExperiment:
             cache_dir=self.cache_dir,
             verbose=self.verbose,
         )
+
+    def _preferences_pipeline(self, system: Transformer) -> Transformer:
+        pipeline = self._pipeline(system)
+        pipeline = pipeline >> self._preferences_transformer
+        pipeline = ~pipeline
+        return pipeline
 
     @cached_property
     def preferences(self) -> DataFrame:
@@ -83,18 +98,14 @@ class AxiomaticExperiment:
         - score_b: Document B score
         - rank_b: Document B rank
         - rank_b: Document B relevance label (if qrels were given)
-        - original_preference: Preference from original retrieved ranking
-        - oracle_preference: Preference from qrels (NaN if qrels are missing)
+        - ORIG_preference: Preference from original retrieved ranking
+        - ORACLE_preference: Preference from qrels (NaN if qrels are missing)
         - <axiom>_preference: Preference from each axiom <axiom>
         """
         systems = self.retrieval_systems
         # noinspection PyTypeChecker
         pipelines = [
-            ~(
-                    system % self.depth >>
-                    self._filter_transformer >>
-                    self._preferences_transformer
-            )
+            self._preferences_pipeline(system)
             for system in systems
         ]
         if self.verbose:
