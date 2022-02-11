@@ -40,6 +40,21 @@ class EstimatorAxiom(Axiom, ABC):
         pass
 
 
+def _query_document_pairs(
+        query_rankings: Iterable[Tuple[Query, List[RankedDocument]]]
+) -> Iterable[Tuple[
+    Query,
+    RankedDocument,
+    RankedDocument,
+]]:
+    return (
+        (query, document1, document2)
+        for query, ranking in query_rankings
+        for document1 in ranking
+        for document2 in ranking
+    )
+
+
 ScikitEstimatorType = TypeVar(
     "ScikitEstimatorType",
     AdaBoostClassifier,
@@ -83,28 +98,13 @@ class ScikitLearnEstimatorAxiom(EstimatorAxiom, ABC):
     axioms: List[Axiom]
     estimator: ScikitEstimatorType = RandomForestClassifier
 
-    @staticmethod
-    def _query_document_pairs(
-            query_rankings: Iterable[Tuple[Query, List[RankedDocument]]]
-    ) -> Iterable[Tuple[
-        Query,
-        RankedDocument,
-        RankedDocument,
-    ]]:
-        return (
-            (query, document1, document2)
-            for query, ranking in query_rankings
-            for document1 in ranking
-            for document2 in ranking
-        )
-
     def fit(
             self,
             target: Axiom,
             context: IndexContext,
             query_rankings: Iterable[Tuple[Query, List[RankedDocument]]]
     ) -> None:
-        query_document_pairs = self._query_document_pairs(query_rankings)
+        query_document_pairs = _query_document_pairs(query_rankings)
         preferences_x = array([
             [
                 axiom.cached().preference(

@@ -10,7 +10,6 @@ from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import (
     strictly_less, strictly_greater,
 
-
 )
 from ir_axioms.model import Query, RankedDocument, IndexContext
 
@@ -95,6 +94,7 @@ def _take_closest(sorted_list: List[int], target: int):
     else:
         return before
 
+
 def _query_term_index_groups(
         query_terms: Set[str],
         document_terms: List[str]
@@ -112,7 +112,6 @@ def _query_term_index_groups(
                 if len(indexes[other_term]) > 0
             ]
             yield group
-
 
 
 def _average_smallest_span(
@@ -213,23 +212,23 @@ class PROX2(Axiom):
         return strictly_greater(first_position_sum2, first_position_sum1)
 
 
+def _find_index(query_terms: List[str], document_terms: List[str]):
+    query_terms_length = len(query_terms)
+    terms_length = len(document_terms)
+    for index, term in enumerate(document_terms):
+        if (
+                term == query_terms[0] and
+                index + query_terms_length <= terms_length and
+                document_terms[index:(index + query_terms_length)] ==
+                query_terms
+        ):
+            return index
+    return inf
+
+
 @dataclass(frozen=True)
 class PROX3(Axiom):
     name = "PROX3"
-
-    @staticmethod
-    def find_index(query_terms: List[str], document_terms: List[str]):
-        query_terms_length = len(query_terms)
-        terms_length = len(document_terms)
-        for index, term in enumerate(document_terms):
-            if (
-                    term == query_terms[0] and
-                    index + query_terms_length <= terms_length and
-                    document_terms[index:(index + query_terms_length)] ==
-                    query_terms
-            ):
-                return index
-        return inf
 
     def preference(
             self,
@@ -244,8 +243,8 @@ class PROX3(Axiom):
         document1_terms = context.terms(document1)
         document2_terms = context.terms(document2)
         return strictly_less(
-            self.find_index(query_terms, document1_terms),
-            self.find_index(query_terms, document2_terms)
+            _find_index(query_terms, document1_terms),
+            _find_index(query_terms, document2_terms)
         )
 
 

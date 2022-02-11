@@ -21,6 +21,33 @@ from ir_axioms.model.retrieval_model import (
 )
 
 
+@lru_cache(None)
+def _similarity(model: RetrievalModel) -> Similarity:
+    if isinstance(model, TfIdf):
+        return ClassicSimilarity()
+    elif isinstance(model, BM25):
+        if model.k_3 != 8:
+            warning(
+                "The Pyserini backend doesn't support setting "
+                "the k_3 parameter for the BM25 retrieval model. "
+                "It will be ignored."
+            )
+        return BM25Similarity(model.k_1, model.b)
+    elif isinstance(model, PL2):
+        return DFRSimilarity(
+            BasicModelIn(),
+            AfterEffectL(),
+            NormalizationH2(model.c)
+        )
+    elif isinstance(model, DirichletLM):
+        return LMDirichletSimilarity(model.mu)
+    else:
+        raise NotImplementedError(
+            f"The Pyserini backend doesn't support "
+            f"the {type(model)} retrieval model."
+        )
+
+
 @dataclass(unsafe_hash=True, frozen=True)
 class PyseriniIndexContext(IndexContext):
     index_dir: Path
@@ -88,33 +115,6 @@ class PyseriniIndexContext(IndexContext):
         text = self.contents(query_or_document)
         return self._index_reader.analyze(text)
 
-    @staticmethod
-    @lru_cache(None)
-    def _similarity(model: RetrievalModel) -> Similarity:
-        if isinstance(model, TfIdf):
-            return ClassicSimilarity()
-        elif isinstance(model, BM25):
-            if model.k_3 != 8:
-                warning(
-                    "The Pyserini backend doesn't support setting "
-                    "the k_3 parameter for the BM25 retrieval model. "
-                    "It will be ignored."
-                )
-            return BM25Similarity(model.k_1, model.b)
-        elif isinstance(model, PL2):
-            return DFRSimilarity(
-                BasicModelIn(),
-                AfterEffectL(),
-                NormalizationH2(model.c)
-            )
-        elif isinstance(model, DirichletLM):
-            return LMDirichletSimilarity(model.mu)
-        else:
-            raise NotImplementedError(
-                f"The Pyserini backend doesn't support "
-                f"the {type(model)} retrieval model."
-            )
-
     @lru_cache(None)
     def retrieval_score(
             self,
@@ -125,5 +125,5 @@ class PyseriniIndexContext(IndexContext):
         return self._index_reader.compute_query_document_score(
             document.id,
             query.title,
-            self._similarity(model)
+            _similarity(model)
         )

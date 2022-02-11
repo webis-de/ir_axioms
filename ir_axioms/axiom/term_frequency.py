@@ -82,6 +82,29 @@ class TFC3(LEN_Mixin, _TFC3):
     name = "TFC3"
 
 
+def _single_different_term_frequency(
+        context: IndexContext,
+        query: Query,
+        document1: RankedDocument,
+        document2: RankedDocument
+):
+    query_terms = context.term_set(query)
+    sum_term_frequency1 = 0
+    sum_term_frequency2 = 0
+    term_frequency_different = False
+    for term in query_terms:
+        count1 = context.term_frequency(document1, term)
+        count2 = context.term_frequency(document2, term)
+        if count1 != count2:
+            term_frequency_different = True
+        sum_term_frequency1 += count1
+        sum_term_frequency2 += count2
+
+    return (
+            isclose(sum_term_frequency1, sum_term_frequency2) and
+            term_frequency_different
+    )
+
 
 @dataclass(frozen=True)
 class M_TDC(Axiom):
@@ -93,30 +116,6 @@ class M_TDC(Axiom):
     """
     name = "M-TDC"
 
-    @staticmethod
-    def single_different_term_frequency(
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ):
-        query_terms = context.term_set(query)
-        sum_term_frequency1 = 0
-        sum_term_frequency2 = 0
-        term_frequency_different = False
-        for term in query_terms:
-            count1 = context.term_frequency(document1, term)
-            count2 = context.term_frequency(document2, term)
-            if count1 != count2:
-                term_frequency_different = True
-            sum_term_frequency1 += count1
-            sum_term_frequency2 += count2
-
-        return (
-                isclose(sum_term_frequency1, sum_term_frequency2) and
-                term_frequency_different
-        )
-
     def preference(
             self,
             context: IndexContext,
@@ -124,7 +123,7 @@ class M_TDC(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        if not self.single_different_term_frequency(
+        if not _single_different_term_frequency(
                 context,
                 query,
                 document1,

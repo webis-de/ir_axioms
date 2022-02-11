@@ -22,6 +22,42 @@ from ir_axioms.model.retrieval_model import (
     RetrievalModel, Tf, TfIdf, BM25, PL2, DirichletLM
 )
 
+
+@lru_cache(None)
+def _weighting_model(model: RetrievalModel) -> WeightingModel:
+    if isinstance(model, Tf):
+        return TfModel()
+    if isinstance(model, TfIdf):
+        return TfIdfModel()
+    elif isinstance(model, BM25):
+        if model.k_1 != 1.2:
+            warning(
+                "The PyTerrier backend doesn't support setting "
+                "the k_1 parameter for the BM25 retrieval model. "
+                "It will be ignored."
+            )
+        if model.k_3 != 8:
+            warning(
+                "The Pyserini backend doesn't support setting "
+                "the k_3 parameter for the BM25 retrieval model. "
+                "It will be ignored."
+            )
+        weighting_model = BM25Model()
+        weighting_model.setParameter(model.b)
+        return weighting_model
+    elif isinstance(model, PL2):
+        return PL2Model(model.c)
+    elif isinstance(model, DirichletLM):
+        weighting_model = DirichletLMModel()
+        weighting_model.setParameter(model.mu)
+        return weighting_model
+    else:
+        raise NotImplementedError(
+            f"The Pyserini backend doesn't support "
+            f"the {type(model)} retrieval model."
+        )
+
+
 ContentsAccessor = Union[str, Callable[[NamedTuple], str]]
 
 
@@ -159,41 +195,6 @@ class TerrierIndexContext(IndexContext):
         text = self.contents(query_or_document)
         return self._terms(text)
 
-    @staticmethod
-    @lru_cache(None)
-    def _weighting_model(model: RetrievalModel) -> WeightingModel:
-        if isinstance(model, Tf):
-            return TfModel()
-        if isinstance(model, TfIdf):
-            return TfIdfModel()
-        elif isinstance(model, BM25):
-            if model.k_1 != 1.2:
-                warning(
-                    "The PyTerrier backend doesn't support setting "
-                    "the k_1 parameter for the BM25 retrieval model. "
-                    "It will be ignored."
-                )
-            if model.k_3 != 8:
-                warning(
-                    "The Pyserini backend doesn't support setting "
-                    "the k_3 parameter for the BM25 retrieval model. "
-                    "It will be ignored."
-                )
-            weighting_model = BM25Model()
-            weighting_model.setParameter(model.b)
-            return weighting_model
-        elif isinstance(model, PL2):
-            return PL2Model(model.c)
-        elif isinstance(model, DirichletLM):
-            weighting_model = DirichletLMModel()
-            weighting_model.setParameter(model.mu)
-            return weighting_model
-        else:
-            raise NotImplementedError(
-                f"The Pyserini backend doesn't support "
-                f"the {type(model)} retrieval model."
-            )
-
     @cached_property
     def _manager(self) -> Manager:
         # noinspection PyProtectedMember
@@ -263,5 +264,5 @@ class TerrierIndexContext(IndexContext):
         return self._retrieval_score(
             query.title,
             document.id,
-            self._weighting_model(model)
+            _weighting_model(model)
         )
