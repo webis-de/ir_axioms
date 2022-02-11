@@ -26,7 +26,11 @@ class Axiom(ABC):
 
     def __init_subclass__(cls, **kwargs):
         # Automatically register this subclass to the global axiom registry.
-        if not isabstract(cls) and cls.name is not NotImplemented:
+        if (
+                not isabstract(cls) and
+                hasattr(cls, "name") and
+                cls.name is not NotImplemented
+        ):
             registry[cls.name] = cls
 
     @abstractmethod
