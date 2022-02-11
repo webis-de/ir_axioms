@@ -1,7 +1,7 @@
 from ir_axioms.axiom import (
     argumentative, arithmetic, base, cache, conversion, length_norm,
     lower_bound, proximity, query_aspects, retrieval_score, term_frequency,
-    term_similarity, simple, trec, estimator
+    term_similarity, simple, trec, estimator, preconditions
 )
 
 # Re-export from child modules.
@@ -38,6 +38,8 @@ EstimatorAxiom = estimator.EstimatorAxiom
 
 LNC1 = length_norm.LNC1
 TF_LNC = length_norm.TF_LNC
+
+LEN = preconditions.LEN
 
 LB1 = lower_bound.LB1
 
