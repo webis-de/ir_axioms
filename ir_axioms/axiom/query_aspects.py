@@ -4,8 +4,7 @@ from typing import Set
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import (
-    strictly_greater, approximately_same_length,
-    vocabulary_overlap, synonym_set_similarity_sums
+    strictly_greater, approximately_same_length, vocabulary_overlap
 )
 from ir_axioms.model import Query, RankedDocument, IndexContext
 from ir_axioms.utils.similarity import (
@@ -32,7 +31,8 @@ class _REG(Axiom, TermSimilarityMixin, ABC):
         query_terms = context.term_set(query)
         similarity_sum = synonym_set_similarity_sums(query_terms)
 
-        print(similarity_sum)
+        similarity_sum = self.similarity_sums(query_terms)
+
         minimum_similarity = min(
             similarity
             for _, similarity in similarity_sum.items()
@@ -62,7 +62,7 @@ class REG_fastText(_REG, FastTextWikiNewsTermSimilarityMixin):
 
 
 @dataclass(frozen=True)
-class _ANTI_REG(Axiom):
+class _ANTI_REG(Axiom, TermSimilarityMixin, ABC):
     """
     Reference:
     Zheng, W., Fang, H.: Query aspect based term weighting regularization
@@ -79,7 +79,8 @@ class _ANTI_REG(Axiom):
             document2: RankedDocument
     ):
         query_terms = context.term_set(query)
-        similarity_sum = synonym_set_similarity_sums(query_terms)
+
+        similarity_sum = self.similarity_sums(query_terms)
 
         maximum_similarity = max(
             similarity
