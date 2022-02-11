@@ -190,7 +190,7 @@ class AxiomaticReranker(SingleAxiomTransformer):
             topics_or_res: DataFrame,
     ) -> DataFrame:
         # Rerank documents.
-        reranked_documents = self.axiom.cached().rerank(
+        reranked_documents = self.axiom.rerank(
             self._context, query, documents
         )
 
@@ -236,7 +236,7 @@ class AggregatedAxiomaticPreference(MultiAxiomTransformer):
         aggregation = self.aggregation
 
         aggregated_preferences = [
-            axiom.cached().aggregated_preference(
+            axiom.aggregated_preference(
                 context,
                 query,
                 documents,
