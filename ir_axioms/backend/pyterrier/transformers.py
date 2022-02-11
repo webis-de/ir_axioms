@@ -1,6 +1,7 @@
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from functools import cached_property
+from itertools import product
 from pathlib import Path
 from typing import Union, Optional, List, Set, Sequence, final, Callable
 
@@ -288,10 +289,14 @@ class AxiomaticPreferences(MultiAxiomTransformer):
                 unit="axiom",
             )
         for axiom in axioms:
+            document_pairs = tqdm(
+                list(product(documents, documents)),
+                desc="Computing axiom preference",
+                unit="pair",
+            )
             pairs[f"{axiom.name}_preference"] = [
                 axiom.preference(context, query, document1, document2)
-                for document1 in documents
-                for document2 in documents
+                for document1, document2 in document_pairs
             ]
 
         return pairs
