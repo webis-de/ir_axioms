@@ -114,19 +114,19 @@ class AxiomTransformer(PerGroupTransformer, ABC):
             # Load contents from dataframe column.
             documents = [
                 RankedTextDocument(
-                    id=row["docno"],
-                    contents=row[self.contents_accessor],
-                    score=row["score"],
-                    rank=row["rank"],
+                    id=str(row["docno"]),
+                    contents=str(row[self.contents_accessor]),
+                    score=float(row["score"]),
+                    rank=int(row["rank"]),
                 )
                 for index, row in topics_or_res.iterrows()
             ]
         else:
             documents = [
                 RankedDocument(
-                    id=row["docno"],
-                    score=row["score"],
-                    rank=row["rank"],
+                    id=str(row["docno"]),
+                    score=float(row["score"]),
+                    rank=int(row["rank"]),
                 )
                 for index, row in topics_or_res.iterrows()
             ]
