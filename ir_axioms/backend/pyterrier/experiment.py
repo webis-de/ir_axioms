@@ -27,6 +27,7 @@ class AxiomaticExperiment:
     qrels: DataFrame
     index: Union[Path, IndexRef, Index]
     axioms: Sequence[Axiom]
+    depth: int = 10
     filter_by_qrels: bool = True
     filter_by_topics: bool = False
     dataset: Optional[Union[Dataset, str]] = None
@@ -87,9 +88,10 @@ class AxiomaticExperiment:
         - <axiom>_preference: Preference from each axiom <axiom>
         """
         systems = self.retrieval_systems
+        # noinspection PyTypeChecker
         pipelines = [
             ~(
-                    system >>
+                    system % self.depth >>
                     self._filter_transformer >>
                     self._preferences_transformer
             )
