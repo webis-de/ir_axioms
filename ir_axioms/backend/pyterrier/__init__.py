@@ -70,24 +70,17 @@ class TerrierIndexContext(IndexContext):
     cache_dir: Optional[Path] = None
 
     @cached_property
-    def _index_ref(self) -> IndexRef:
-        if isinstance(self.index_location, IndexRef):
-            return self.index_location
-        elif isinstance(self.index_location, Index):
-            return self.index_location.getIndexRef()
-        elif isinstance(self.index_location, Path):
-            return IndexRef.of(str(self.index_location.absolute()))
-        else:
-            raise ValueError(
-                f"Unknown index location type: {self.index_location}"
-            )
-
-    @cached_property
     def _index(self) -> Index:
         if isinstance(self.index_location, Index):
             return self.index_location
+        elif isinstance(self.index_location, IndexRef):
+            return IndexFactory.of(self.index_location)
+        elif isinstance(self.index_location, Path):
+            return IndexFactory.of(str(self.index_location.absolute()))
         else:
-            return IndexFactory.of(self._index_ref)
+            raise ValueError(
+                f"Cannot load index from location {self.index_location}."
+            )
 
     @cached_property
     def _meta_index(self) -> MetaIndex:
@@ -97,6 +90,10 @@ class TerrierIndexContext(IndexContext):
                 f"Index {self.index_location} does not have a metaindex."
             )
         return meta_index
+
+    @cached_property
+    def _meta_index_keys(self) -> List[str]:
+        return [str(key) for key in self._meta_index.getKeys()]
 
     @cached_property
     def _lexicon(self) -> Lexicon:
@@ -112,27 +109,39 @@ class TerrierIndexContext(IndexContext):
             return None
         elif isinstance(self.dataset, Dataset):
             return self.dataset
-        else:
+        elif isinstance(self.dataset, str):
             return load(self.dataset)
+        else:
+            raise ValueError(f"Cannot load dataset {self.dataset}.")
+
+    @cached_property
+    def _dataset_doc_store(self) -> Optional[Docstore]:
+        if self._dataset is None:
+            return None
+        else:
+            return self._dataset.docs_store()
 
     @cached_property
     def document_count(self) -> int:
-        return self._collection_statistics.numberOfDocuments
+        return int(self._collection_statistics.numberOfDocuments)
 
     @lru_cache(None)
     def document_frequency(self, term: str) -> int:
         entry = self._lexicon.getLexiconEntry(term)
         if entry is None or entry.getNumberOfEntries() == 0:
+            del entry
             return 0
-        return entry.getDocumentFrequency()
+        else:
+            document_frequency = int(entry.getDocumentFrequency())
+            del entry
+            return document_frequency
 
     @lru_cache(None)
     def _document_contents(self, document_id: str) -> str:
         # Shortcut when ir_dataset is specified.
-        if self._dataset is not None:
-            documents_store: Docstore = self._dataset.docs_store()
-            store_document \
-                = documents_store.get(document_id)
+        documents_store = self._dataset_doc_store
+        if documents_store is not None:
+            store_document = documents_store.get(document_id)
             if self.contents_accessor is None:
                 return store_document.text
             elif isinstance(self.contents_accessor, str):
@@ -140,19 +149,29 @@ class TerrierIndexContext(IndexContext):
             else:
                 return self.contents_accessor(store_document)
 
-        metaindex_keys: List[str] = self._meta_index.getKeys()
-        if self.contents_accessor not in metaindex_keys:
+        if (
+                self.contents_accessor is None or
+                not isinstance(self.contents_accessor, str)
+        ):
+            raise ValueError(
+                f"Cannot load contents "
+                f"from metaindex field {self.contents_accessor}."
+            )
+
+        if self.contents_accessor not in self._meta_index_keys:
             raise ValueError(
                 f"Index {self.index_location} did not have "
                 f"requested metaindex key {self.contents_accessor}. "
                 f"Keys present in metaindex "
-                f"are {metaindex_keys}."
+                f"are {self._meta_index_keys}."
             )
-        doc_id = self._meta_index.getDocument("docno", document_id)
-        return self._meta_index.getItem(
+
+        doc_id = int(self._meta_index.getDocument("docno", document_id))
+        contents = str(self._meta_index.getItem(
             self.contents_accessor,
-            doc_id
-        )
+            doc_id,
+        ))
+        return contents
 
     def document_contents(self, document: Document) -> str:
         # Shortcut when text is given in the document.
@@ -169,10 +188,10 @@ class TerrierIndexContext(IndexContext):
 
     @cached_property
     def _term_pipelines(self) -> List[TermPipelineAccessor]:
-        term_pipelines = ApplicationSetup.getProperty(
+        term_pipelines = str(ApplicationSetup.getProperty(
             "termpipelines",
             "Stopwords,PorterStemmer"
-        )
+        ))
         return [
             BaseTermPipelineAccessor(pipeline)
             for pipeline in split(r"\s*,\s*", term_pipelines.strip())
@@ -181,14 +200,19 @@ class TerrierIndexContext(IndexContext):
     @lru_cache(None)
     def _terms(self, text: str) -> List[str]:
         reader = StringReader(text)
-        terms = list(self._tokeniser.tokenise(reader))
-        terms = [term for term in terms if term is not None]
+        terms = [
+            str(term)
+            for term in self._tokeniser.tokenise(reader)
+            if term is not None
+        ]
+        del reader
+
         for pipeline in self._term_pipelines:
             terms = [
-                pipeline.pipelineTerm(term)
+                str(pipeline.pipelineTerm(term))
                 for term in terms
+                if term is not None
             ]
-        terms = [str(term) for term in terms if term is not None]
         return terms
 
     def terms(self, query_or_document: Union[Query, Document]) -> List[str]:
@@ -197,8 +221,11 @@ class TerrierIndexContext(IndexContext):
 
     @cached_property
     def _manager(self) -> Manager:
+        index_ref = self._index.getIndexRef()
         # noinspection PyProtectedMember
-        return ManagerFactory._from_(self._index_ref)
+        manager = ManagerFactory._from_(index_ref)
+        del index_ref
+        return manager
 
     @lru_cache(None)
     def _retrieval_score(
@@ -247,13 +274,21 @@ class TerrierIndexContext(IndexContext):
 
         # Parse result document.
         result_docs: ScoredDocList = request.getResults()
+
         assert len(result_docs) == 1
         first_result_doc: ScoredDoc = result_docs[0]
-        assert first_result_doc.getMetadata("docno") == document_id
+        assert str(first_result_doc.getMetadata("docno")) == document_id
 
         # Get retrieval score.
-        score = float(first_result_doc.getScore())
-        return score
+        retrieval_score = float(first_result_doc.getScore())
+
+        # Cleanup.
+        del first_result_doc
+        del result_docs
+        del request
+        del matching
+
+        return retrieval_score
 
     def retrieval_score(
             self,
