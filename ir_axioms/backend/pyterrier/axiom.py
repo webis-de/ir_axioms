@@ -44,7 +44,7 @@ class OracleAxiom(Axiom):
             query_title: str,
             document_id: str,
     ) -> Optional[int]:
-        qrels: DataFrame = self._qrels_topics
+        qrels: DataFrame = self._qrels_topics.copy()
         qrels = qrels[qrels["query"] == query_title]
         qrels = qrels[qrels["docno"] == document_id]
         if len(qrels.index) == 0:
