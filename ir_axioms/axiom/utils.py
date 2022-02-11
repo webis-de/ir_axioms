@@ -91,19 +91,6 @@ def same_query_term_subset(
     return (in_document1 == in_document2) and len(in_document1) > 1
 
 
-def approximately_same_length(
-        context: IndexContext,
-        document1: RankedDocument,
-        document2: RankedDocument,
-        margin_fraction: float = 0.1
-) -> bool:
-    return approximately_equal(
-        len(context.terms(document1)),
-        len(context.terms(document2)),
-        margin_fraction=margin_fraction
-    )
-
-
 @lru_cache(maxsize=4096)
 def synonym_set(
         term: str,

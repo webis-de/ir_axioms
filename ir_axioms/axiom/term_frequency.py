@@ -3,16 +3,13 @@ from itertools import combinations
 from math import isclose
 
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.axiom.preconditions import LEN
-from ir_axioms.axiom.utils import (
-    approximately_equal, strictly_greater, approximately_same_length
-)
+from ir_axioms.axiom.preconditions import LEN_Mixin
+from ir_axioms.axiom.utils import approximately_equal, strictly_greater
 from ir_axioms.model import Query, RankedDocument, IndexContext
 
 
 @dataclass(frozen=True)
-class TFC1(Axiom):
-    name = "TFC1"
+class _TFC1(Axiom):
 
     def preference(
             self,
@@ -21,9 +18,6 @@ class TFC1(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ) -> float:
-        if not approximately_same_length(context, document1, document2):
-            return 0
-
         term_frequency1: float = 0
         term_frequency2: float = 0
         for qt in context.terms(query):
@@ -38,8 +32,12 @@ class TFC1(Axiom):
 
 
 @dataclass(frozen=True)
-class TFC3(Axiom):
-    name = "TFC3"
+class TFC1(LEN_Mixin, _TFC1):
+    name = "TFC1"
+
+
+@dataclass(frozen=True)
+class _TFC3(Axiom):
 
     def preference(
             self,
@@ -48,9 +46,6 @@ class TFC3(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ) -> float:
-        if not approximately_same_length(context, document1, document2):
-            return 0
-
         sum_document1 = 0
         sum_document2 = 0
 
@@ -80,6 +75,12 @@ class TFC3(Axiom):
                         sum_document2 += 1
 
         return strictly_greater(sum_document1, sum_document2)
+
+
+@dataclass(frozen=True)
+class TFC3(LEN_Mixin, _TFC3):
+    name = "TFC3"
+
 
 
 @dataclass(frozen=True)

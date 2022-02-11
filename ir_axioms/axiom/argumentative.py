@@ -10,7 +10,7 @@ from targer_api import (
 from targer_api.constants import DEFAULT_TARGER_MODELS, DEFAULT_TARGER_API_URL
 
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.axiom.utils import approximately_same_length
+from ir_axioms.axiom.preconditions import LEN_Mixin
 from ir_axioms.model import Query, RankedDocument, IndexContext
 from ir_axioms.utils.nltk import download_nltk_dependencies
 
@@ -171,7 +171,6 @@ class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom):
     """
     Favor documents with more argumentative units.
     """
-    name = "ArgUC"
 
     def preference(
             self,
@@ -180,9 +179,6 @@ class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        if not approximately_same_length(context, document1, document2):
-            return 0
-
         arguments1 = self.fetch_arguments(context, document1)
         arguments2 = self.fetch_arguments(context, document2)
 
@@ -204,11 +200,15 @@ class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom):
 
 
 @dataclass(frozen=True)
+class ArgUC(LEN_Mixin, ArgumentativeUnitsCountAxiom):
+    name = "ArgUC"
+
+
+@dataclass(frozen=True)
 class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
     """
     Favor documents with more query terms in argumentative units.
     """
-    name = "QTArg"
 
     normalize: bool = True
     """
@@ -223,9 +223,6 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        if not approximately_same_length(context, document1, document2):
-            return 0
-
         arguments1 = self.fetch_arguments(context, document1)
         arguments2 = self.fetch_arguments(context, document2)
 
@@ -244,6 +241,11 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
             return -1
         else:
             return 0
+
+
+@dataclass(frozen=True)
+class QTArg(LEN_Mixin, QueryTermOccurrenceInArgumentativeUnitsAxiom):
+    name = "QTArg"
 
 
 @dataclass(frozen=True)
@@ -262,7 +264,6 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
             Distributed Representations of Text for Web Search. In: Proceedings
             of WWW 2017. pp. 1291–1299. ACM.
     """
-    name = "QTPArg"
 
     normalize: bool = True
     """
@@ -283,9 +284,6 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        if not approximately_same_length(context, document1, document2):
-            return 0
-
         arguments1 = self.fetch_arguments(context, document1)
         arguments2 = self.fetch_arguments(context, document2)
 
@@ -324,6 +322,11 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
 
 
 @dataclass(frozen=True)
+class QTPArg(LEN_Mixin, QueryTermPositionInArgumentativeUnitsAxiom):
+    name = "QTPArg"
+
+
+@dataclass(frozen=True)
 class AverageSentenceLengthAxiom(Axiom):
     """
     Favor documents with an average sentence length between
@@ -336,7 +339,6 @@ class AverageSentenceLengthAxiom(Axiom):
         Markel, M.: Technical Communication. 9th ed. Bedford/St Martin’s (2010)
         Newell, C.: Editing Tip: Sentence Length (2014)
     """
-    name = "aSL"
 
     min_sentence_length: int = 12
     max_sentence_length: int = 20
@@ -348,9 +350,6 @@ class AverageSentenceLengthAxiom(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        if not approximately_same_length(context, document1, document2):
-            return 0
-
         sentence_length1 = _sentence_length(context, document1)
         sentence_length2 = _sentence_length(context, document2)
 
@@ -377,8 +376,6 @@ class AverageSentenceLengthAxiom(Axiom):
             return 0
 
 
-# Aliases for shorter names:
-ArgUC = ArgumentativeUnitsCountAxiom
-QTArg = QueryTermOccurrenceInArgumentativeUnitsAxiom
-QTPArg = QueryTermPositionInArgumentativeUnitsAxiom
-aSL = AverageSentenceLengthAxiom
+@dataclass(frozen=True)
+class aSL(LEN_Mixin, AverageSentenceLengthAxiom):
+    name = "aSL"
