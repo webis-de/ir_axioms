@@ -79,7 +79,7 @@ class AxiomTransformer(PerGroupTransformer, ABC):
     optional_group_columns = {"qid", "name"}
     unit = "query"
 
-    @property
+    @cached_property
     def _context(self) -> IndexContext:
         return TerrierIndexContext(
             index_location=self.index,
