@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from functools import lru_cache, cached_property
 from itertools import product, combinations
-from typing import final, List, Final, Iterable, Dict
+from typing import final, List, Final, Iterable, Dict, ClassVar
 
 from nltk.corpus import wordnet
 from pymagnitude import Magnitude
@@ -70,7 +70,7 @@ class WordNetSynonymSetTermSimilarityMixin(TermSimilarityMixin):
 
 
 class MagnitudeTermSimilarityMixin(TermSimilarityMixin, ABC):
-    embeddings_path: str = NotImplemented
+    embeddings_path: ClassVar[str] = NotImplemented
 
     @cached_property
     def _embeddings(self):
