@@ -1,3 +1,4 @@
+from abc import ABC
 from dataclasses import dataclass
 from typing import Set
 
@@ -7,16 +8,19 @@ from ir_axioms.axiom.utils import (
     vocabulary_overlap, synonym_set_similarity_sums
 )
 from ir_axioms.model import Query, RankedDocument, IndexContext
+from ir_axioms.utils.similarity import (
+    TermSimilarityMixin, WordNetSynonymSetTermSimilarityMixin,
+    FastTextWikiNewsTermSimilarityMixin
+)
 
 
 @dataclass(frozen=True)
-class REG(Axiom):
+class _REG(Axiom, TermSimilarityMixin, ABC):
     """
     Reference:
     Zheng, W., Fang, H.: Query aspect based term weighting regularization
     in information retrieval. In: Gurrin, C., et al. (eds.) ECIR 2010.
     """
-    name = "REG"
 
     def preference(
             self,
@@ -48,7 +52,17 @@ class REG(Axiom):
 
 
 @dataclass(frozen=True)
-class ANTI_REG(Axiom):
+class REG(_REG, WordNetSynonymSetTermSimilarityMixin):
+    name = "REG"
+
+
+@dataclass(frozen=True)
+class REG_fastText(_REG, FastTextWikiNewsTermSimilarityMixin):
+    name = "REG-fastText"
+
+
+@dataclass(frozen=True)
+class _ANTI_REG(Axiom):
     """
     Reference:
     Zheng, W., Fang, H.: Query aspect based term weighting regularization
@@ -56,7 +70,6 @@ class ANTI_REG(Axiom):
 
     Modified to use maximum similarity instead of minimum similarity.
     """
-    name = "ANTI-REG"
 
     def preference(
             self,
@@ -85,6 +98,16 @@ class ANTI_REG(Axiom):
             context.term_frequency(document1, maximum_similarity_term),
             context.term_frequency(document2, maximum_similarity_term),
         )
+
+
+@dataclass(frozen=True)
+class ANTI_REG(_ANTI_REG, WordNetSynonymSetTermSimilarityMixin):
+    name = "ANTI-REG"
+
+
+@dataclass(frozen=True)
+class ANTI_REG_fastText(_ANTI_REG, FastTextWikiNewsTermSimilarityMixin):
+    name = "ANTI-REG-fastText"
 
 
 @dataclass(frozen=True)
@@ -256,3 +279,8 @@ class LEN_DIV(DIV):
             document1,
             document2
         )
+
+
+# Shorthand names:
+REG_f = REG_fastText
+ANTI_REG_f = ANTI_REG_fastText

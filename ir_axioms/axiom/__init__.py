@@ -48,7 +48,11 @@ PROX4 = proximity.PROX4
 PROX5 = proximity.PROX5
 
 REG = query_aspects.REG
+REG_fastText = query_aspects.REG_fastText
+REG_f = query_aspects.REG_f
 ANTI_REG = query_aspects.ANTI_REG
+ANTI_REG_fastText = query_aspects.ANTI_REG_fastText
+ANTI_REG_f = query_aspects.ANTI_REG_f
 AND = query_aspects.AND
 LEN_AND = query_aspects.LEN_AND
 M_AND = query_aspects.M_AND
