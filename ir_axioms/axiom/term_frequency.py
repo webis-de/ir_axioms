@@ -1,8 +1,9 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import combinations
 from math import isclose
 
 from ir_axioms.axiom.base import Axiom
+from ir_axioms.axiom.preconditions import LEN
 from ir_axioms.axiom.utils import (
     approximately_equal, strictly_greater, approximately_same_length
 )
@@ -92,7 +93,7 @@ class M_TDC(Axiom):
     name = "M-TDC"
 
     @staticmethod
-    def precondition(
+    def single_different_term_frequency(
             context: IndexContext,
             query: Query,
             document1: RankedDocument,
@@ -122,7 +123,7 @@ class M_TDC(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        if not self.precondition(context, query, document1, document2):
+        if not self.single_different_term_frequency(context, query, document1, document2):
             return 0
 
         query_terms = context.term_set(query)
@@ -180,35 +181,6 @@ class M_TDC(Axiom):
 
 
 @dataclass(frozen=True)
-class LEN_M_TDC(M_TDC):
-    """
-    Modified M_TDC
-
-    The precondition for the documents' lengths can be varied.
-    Default margin fraction: 0.1
-    """
+class LEN_M_TDC(LEN):
     name = "LEN-M-TDC"
-
-    margin_fraction: float = 0.1
-
-    def precondition(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ):
-        if not approximately_same_length(
-                context,
-                document1,
-                document2,
-                margin_fraction=self.margin_fraction
-        ):
-            return False
-
-        return super().precondition(
-            context,
-            query,
-            document1,
-            document2
-        )
+    axiom: Axiom = field(init=False, default=M_TDC())
