@@ -1,54 +1,20 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass
-from functools import lru_cache, cached_property
 from itertools import product
 from math import nan
 from statistics import mean
 from typing import Set, Tuple
 
-from pymagnitude import Magnitude
-
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.axiom.utils import synonym_set_similarity, strictly_greater, \
+from ir_axioms.axiom.utils import strictly_greater, \
     approximately_equal
 from ir_axioms.model import Query, RankedDocument, IndexContext
-
-
-class _TermSimilarity(ABC):
-    @abstractmethod
-    def similarity(self, term1: str, term2: str) -> float:
-        pass
-
-
-class _WordNetTermSimilarity(_TermSimilarity):
-    @lru_cache(maxsize=4096)
-    def similarity(self, term1: str, term2: str) -> float:
-        return synonym_set_similarity(term1, term2)
-
-
-class _WordEmbeddingTermSimilarity(_TermSimilarity, ABC):
-    embeddings_path: str
-
-    @property
-    @abstractmethod
-    def embeddings_path(self) -> str:
-        pass
-
-    @cached_property
-    def _embeddings(self):
-        return Magnitude(self.embeddings_path)
-
-    @lru_cache(maxsize=4096)
-    def similarity(self, term1: str, term2: str):
-        return float(self._embeddings.similarity(term1, term2))
-
-
-class _FastTextWikiNewsTermSimilarity(_WordEmbeddingTermSimilarity):
-    embeddings_path = "fasttext/medium/wiki-news-300d-1M.magnitude"
+from ir_axioms.utils.similarity import TermSimilarityMixin, \
+    WordNetSynonymSetTermSimilarityMixin, FastTextWikiNewsTermSimilarityMixin
 
 
 @dataclass(frozen=True)
-class _STMC1(Axiom, _TermSimilarity, ABC):
+class _STMC1(Axiom, TermSimilarityMixin, ABC):
 
     def _average_similarity(self, terms1: Set[str], terms2: Set[str]) -> float:
         return mean(
@@ -75,17 +41,17 @@ class _STMC1(Axiom, _TermSimilarity, ABC):
 
 
 @dataclass(frozen=True)
-class STMC1(_STMC1, _WordNetTermSimilarity):
+class STMC1(_STMC1, WordNetSynonymSetTermSimilarityMixin):
     name = "STMC1"
 
 
 @dataclass(frozen=True)
-class STMC1_f(_STMC1, _FastTextWikiNewsTermSimilarity):
+class STMC1_fastText(_STMC1, FastTextWikiNewsTermSimilarityMixin):
     name = "STMC1-fastText"
 
 
 @dataclass(frozen=True)
-class _STMC2(Axiom, _TermSimilarity, ABC):
+class _STMC2(Axiom, TermSimilarityMixin, ABC):
 
     def _tuple_similarity(self, terms: Tuple[str, str]) -> float:
         term1, term2 = terms
@@ -163,10 +129,15 @@ class _STMC2(Axiom, _TermSimilarity, ABC):
 
 
 @dataclass(frozen=True)
-class STMC2(_STMC2, _WordNetTermSimilarity):
+class STMC2(_STMC2, WordNetSynonymSetTermSimilarityMixin):
     name = "STMC2"
 
 
 @dataclass(frozen=True)
-class STMC2_f(_STMC2, _FastTextWikiNewsTermSimilarity):
+class STMC2_fastText(_STMC2, FastTextWikiNewsTermSimilarityMixin):
     name = "STMC2-fastText"
+
+
+# Shorthand names:
+STMC1_f = STMC1_fastText
+STMC2_f = STMC2_fastText
