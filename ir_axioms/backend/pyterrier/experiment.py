@@ -37,12 +37,27 @@ class AxiomaticExperiment:
 
     @cached_property
     def _axioms(self) -> Sequence[Axiom]:
-        axioms = [
+        return [
             OriginalAxiom(),
             OracleAxiom(self.topics, self.qrels),
             *self.axioms,
         ]
-        return [axiom for axiom in axioms]
+
+    @cached_property
+    def _axiom_names(self) -> Sequence[str]:
+        names: Sequence[str]
+        if (
+                self.axiom_names is not None and
+                len(self.axiom_names) == len(self.axioms)
+        ):
+            names = self.axiom_names
+        else:
+            names = [str(axiom) for axiom in self.axioms]
+        return [
+            OriginalAxiom.name,
+            OracleAxiom.name,
+            *names,
+        ]
 
     @cached_property
     def _filter_topics(self) -> Transformer:
@@ -67,7 +82,7 @@ class AxiomaticExperiment:
     def _preferences_transformer(self) -> Transformer:
         return AxiomaticPreferences(
             axioms=self._axioms,
-            axiom_names=self.axiom_names,
+            axiom_names=self._axiom_names,
             index=self.index,
             dataset=self.dataset,
             contents_accessor=self.contents_accessor,
