@@ -93,6 +93,9 @@ class _STMC2(Axiom, TermSimilarityMixin, ABC):
         query_terms = context.term_set(query)
         non_query_terms = document_terms - query_terms
 
+        if len(query_terms) == 0 or len(non_query_terms) == 0:
+            return 0
+
         most_similar_query_term, most_similar_non_query_term = (
             self._most_similar_terms(query_terms, non_query_terms)
         )

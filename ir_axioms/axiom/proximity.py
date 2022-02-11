@@ -141,6 +141,8 @@ def _closest_grouping_size_and_count(
     ]
 
     occurrences_counter: Counter = counter(non_query_term_occurrences)
+    if len(occurrences_counter.keys()) == 0:
+        return 0, 0
     min_occurrences = min(occurrences_counter.keys())
     min_occurrences_count = occurrences_counter[min_occurrences]
     return min_occurrences, min_occurrences_count
