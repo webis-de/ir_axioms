@@ -2,6 +2,7 @@ from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import product
+from logging import DEBUG
 from pathlib import Path
 from typing import Union, Optional, List, Set, Sequence, final, Callable
 
@@ -11,6 +12,7 @@ from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
 from tqdm.auto import tqdm
 
+from ir_axioms import logger
 from ir_axioms.axiom import AxiomLike, to_axiom
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.backend.pyterrier import TerrierIndexContext, ContentsAccessor
@@ -289,11 +291,14 @@ class AxiomaticPreferences(MultiAxiomTransformer):
                 unit="axiom",
             )
         for axiom in axioms:
-            document_pairs = tqdm(
-                list(product(documents, documents)),
-                desc="Computing axiom preference",
-                unit="pair",
-            )
+            document_pairs = list(product(documents, documents))
+            if self.verbose and 0 < logger.level <= DEBUG:
+                # Very verbose progress bars.
+                document_pairs = tqdm(
+                    document_pairs,
+                    desc="Computing axiom preference",
+                    unit="pair",
+                )
             pairs[f"{axiom.name}_preference"] = [
                 axiom.preference(context, query, document1, document2)
                 for document1, document2 in document_pairs
