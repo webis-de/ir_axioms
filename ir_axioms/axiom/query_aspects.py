@@ -5,12 +5,25 @@ from typing import Set
 from ir_axioms import logger
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.preconditions import LEN_Mixin
-from ir_axioms.axiom.utils import strictly_greater, vocabulary_overlap
+from ir_axioms.axiom.utils import strictly_greater
 from ir_axioms.model import Query, RankedDocument, IndexContext
 from ir_axioms.utils.similarity import (
     TermSimilarityMixin, WordNetSynonymSetTermSimilarityMixin,
     FastTextWikiNewsTermSimilarityMixin
 )
+
+
+def _vocabulary_overlap(vocabulary1: Set[str], vocabulary2: Set[str]):
+    """
+    Vocabulary overlap as calculated by the Jaccard coefficient.
+    """
+    intersection_length = len(vocabulary1 & vocabulary2)
+    if intersection_length == 0:
+        return 0
+    return (
+            intersection_length /
+            (len(vocabulary1) + len(vocabulary2) - intersection_length)
+    )
 
 
 @dataclass(frozen=True)
@@ -193,11 +206,11 @@ class DIV(Axiom):
             document2: RankedDocument
     ):
         query_terms = context.term_set(query)
-        overlap1 = vocabulary_overlap(
+        overlap1 = _vocabulary_overlap(
             query_terms,
             context.term_set(document1)
         )
-        overlap2 = vocabulary_overlap(
+        overlap2 = _vocabulary_overlap(
             query_terms,
             context.term_set(document2)
         )

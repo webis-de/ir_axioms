@@ -1,14 +1,150 @@
+from bisect import bisect_left
+from collections import Counter as counter, defaultdict
 from dataclasses import dataclass
+from itertools import combinations
 from math import inf
-from typing import List
+from statistics import mean
+from typing import List, Set, Counter, Iterator
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import (
-    strictly_less, strictly_greater, same_query_term_subset,
-    average_between_query_terms, all_query_terms_in_documents,
-    closest_grouping_size_and_count, average_smallest_span
+    strictly_less, strictly_greater,
+
+
 )
 from ir_axioms.model import Query, RankedDocument, IndexContext
+
+
+def _same_query_term_subset(
+        context: IndexContext,
+        query: Query,
+        document1: RankedDocument,
+        document2: RankedDocument
+) -> bool:
+    """
+    Both documents contain the same set of query terms.
+    """
+
+    query_terms = context.term_set(query)
+    document1_terms = context.term_set(document1)
+    document2_terms = context.term_set(document2)
+
+    if len(query_terms) <= 1:
+        return False
+
+    in_document1 = query_terms & document1_terms
+    in_document2 = query_terms & document2_terms
+
+    # Both contain the same subset of at least two terms.
+    return (in_document1 == in_document2) and len(in_document1) > 1
+
+
+def _average_between_query_terms(
+        query_terms: Set[str],
+        document_terms: List[str]
+) -> float:
+    query_term_pairs = set(combinations(query_terms, 2))
+    if len(query_term_pairs) == 0:
+        # Single-term query.
+        return 0
+
+    number_words = 0
+    for item in query_term_pairs:
+        element1_position = document_terms.index(item[0])
+        element2_position = document_terms.index(item[1])
+        number_words += abs(element1_position - element2_position - 1)
+    return number_words / len(query_term_pairs)
+
+
+def _all_query_terms_in_documents(
+        context: IndexContext,
+        query: Query,
+        document1: RankedDocument,
+        document2: RankedDocument
+):
+    query_terms = context.term_set(query)
+    document1_terms = context.term_set(document1)
+    document2_terms = context.term_set(document2)
+
+    if len(query_terms) <= 1:
+        return False
+
+    return (
+            len(query_terms & document1_terms) == len(query_terms) and
+            len(query_terms & document2_terms) == len(query_terms)
+    )
+
+
+def _take_closest(sorted_list: List[int], target: int):
+    """
+    Return closest value to n.
+    If two numbers are equally close, return the smallest number.
+
+    It is assumed that l is sorted.
+    See: https://stackoverflow.com/questions/12141150
+    """
+    position = bisect_left(sorted_list, target)
+    if position == 0:
+        return sorted_list[0]
+    if position == len(sorted_list):
+        return sorted_list[-1]
+    before = sorted_list[position - 1]
+    after = sorted_list[position]
+    if after - target < target - before:
+        return after
+    else:
+        return before
+
+def _query_term_index_groups(
+        query_terms: Set[str],
+        document_terms: List[str]
+) -> Iterator[List[int]]:
+    indexes = defaultdict(list)
+    for index, term in enumerate(document_terms):
+        if term in query_terms:
+            indexes[term].append(index)
+    for term in query_terms:
+        other_query_terms = query_terms - {term}
+        for index in indexes[term]:
+            group = [index] + [
+                _take_closest(indexes[other_term], index)
+                for other_term in other_query_terms
+                if len(indexes[other_term]) > 0
+            ]
+            yield group
+
+
+
+def _average_smallest_span(
+        query_terms: Set[str],
+        document_terms: List[str]
+):
+    return mean(
+        max(group) - min(group)
+        for group in _query_term_index_groups(query_terms, document_terms)
+    )
+
+
+def _closest_grouping_size_and_count(
+        query_terms: Set[str],
+        document_terms: List[str]
+):
+    index_groups = _query_term_index_groups(query_terms, document_terms)
+
+    # Number of non-query terms within groups.
+    non_query_term_occurrences = [
+        len([
+            term
+            for term in document_terms[min(index_group) + 1:max(index_group)]
+            if term not in query_terms
+        ])
+        for index_group in index_groups
+    ]
+
+    occurrences_counter: Counter = counter(non_query_term_occurrences)
+    min_occurrences = min(occurrences_counter.keys())
+    min_occurrences_count = occurrences_counter[min_occurrences]
+    return min_occurrences, min_occurrences_count
 
 
 @dataclass(frozen=True)
@@ -22,7 +158,7 @@ class PROX1(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        if not same_query_term_subset(context, query, document1, document2):
+        if not _same_query_term_subset(context, query, document1, document2):
             return 0
 
         query_terms = context.term_set(query)
@@ -35,11 +171,11 @@ class PROX1(Axiom):
                 set(document2_terms)
         )
 
-        average1 = average_between_query_terms(
+        average1 = _average_between_query_terms(
             overlapping_terms,
             document1_terms
         )
-        average2 = average_between_query_terms(
+        average2 = _average_between_query_terms(
             overlapping_terms,
             document2_terms
         )
@@ -58,7 +194,7 @@ class PROX2(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        if not same_query_term_subset(context, query, document1, document2):
+        if not _same_query_term_subset(context, query, document1, document2):
             return 0
 
         query_terms = context.term_set(query)
@@ -102,7 +238,7 @@ class PROX3(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        if not same_query_term_subset(context, query, document1, document2):
+        if not _same_query_term_subset(context, query, document1, document2):
             return 0
         query_terms = context.terms(query)
         document1_terms = context.terms(document1)
@@ -124,7 +260,7 @@ class PROX4(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        if not all_query_terms_in_documents(
+        if not _all_query_terms_in_documents(
                 context,
                 query,
                 document1,
@@ -136,11 +272,11 @@ class PROX4(Axiom):
         document1_terms = context.terms(document1)
         document2_terms = context.terms(document2)
 
-        occurrences1, count1 = closest_grouping_size_and_count(
+        occurrences1, count1 = _closest_grouping_size_and_count(
             query_terms,
             document1_terms
         )
-        occurrences2, count2 = closest_grouping_size_and_count(
+        occurrences2, count2 = _closest_grouping_size_and_count(
             query_terms,
             document2_terms
         )
@@ -162,7 +298,7 @@ class PROX5(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        if not all_query_terms_in_documents(
+        if not _all_query_terms_in_documents(
                 context,
                 query,
                 document1,
@@ -174,7 +310,7 @@ class PROX5(Axiom):
         document1_terms = context.terms(document1)
         document2_terms = context.terms(document2)
 
-        smallest_span1 = average_smallest_span(query_terms, document1_terms)
-        smallest_span2 = average_smallest_span(query_terms, document2_terms)
+        smallest_span1 = _average_smallest_span(query_terms, document1_terms)
+        smallest_span2 = _average_smallest_span(query_terms, document2_terms)
 
         return strictly_less(smallest_span1, smallest_span2)
