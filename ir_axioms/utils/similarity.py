@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from collections import defaultdict
 from functools import lru_cache, cached_property
 from itertools import product, combinations
 from typing import final, List, Final, Iterable, Dict
@@ -50,8 +49,11 @@ class TermSimilarityMixin(ABC):
 
     @final
     def similarity_sums(self, terms: Iterable[str]) -> Dict[str, float]:
-        similarity_sums: Dict[str, float] = defaultdict(lambda: 0)
-        for term1, term2 in combinations(terms, 2):
+        similarity_sums: Dict[str, float] = {
+            term: 0
+            for term in terms
+        }
+        for term1, term2 in combinations(similarity_sums.keys(), 2):
             similarity = self.similarity(term1, term2)
             similarity_sums[term1] += similarity
             similarity_sums[term2] += similarity
