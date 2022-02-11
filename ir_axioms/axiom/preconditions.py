@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from ir_axioms.axiom import Axiom
+from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import approximately_equal
 from ir_axioms.model import IndexContext, Query, RankedDocument
 
