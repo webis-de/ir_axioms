@@ -289,7 +289,7 @@ class AxiomaticPreferences(MultiAxiomTransformer):
             )
         for axiom in axioms:
             pairs[f"{axiom.name}_preference"] = [
-                axiom.cached().preference(context, query, document1, document2)
+                axiom.preference(context, query, document1, document2)
                 for document1 in documents
                 for document2 in documents
             ]
