@@ -40,6 +40,7 @@ LNC1 = length_norm.LNC1
 TF_LNC = length_norm.TF_LNC
 
 LEN = preconditions.LEN
+LEN_Mixin = preconditions.LEN_Mixin
 
 LB1 = lower_bound.LB1
 

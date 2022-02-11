@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from itertools import combinations
 from math import isclose
 
@@ -123,7 +123,12 @@ class M_TDC(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        if not self.single_different_term_frequency(context, query, document1, document2):
+        if not self.single_different_term_frequency(
+                context,
+                query,
+                document1,
+                document2
+        ):
             return 0
 
         query_terms = context.term_set(query)
@@ -181,6 +186,5 @@ class M_TDC(Axiom):
 
 
 @dataclass(frozen=True)
-class LEN_M_TDC(LEN):
+class LEN_M_TDC(LEN_Mixin, M_TDC):
     name = "LEN-M-TDC"
-    axiom: Axiom = field(init=False, default=M_TDC())

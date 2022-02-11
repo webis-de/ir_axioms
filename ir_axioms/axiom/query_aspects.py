@@ -1,12 +1,11 @@
 from abc import ABC
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Set
 
 from ir_axioms import logger
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.axiom.preconditions import LEN
+from ir_axioms.axiom.preconditions import LEN_Mixin
 from ir_axioms.axiom.utils import strictly_greater, vocabulary_overlap
-
 from ir_axioms.model import Query, RankedDocument, IndexContext
 from ir_axioms.utils.similarity import (
     TermSimilarityMixin, WordNetSynonymSetTermSimilarityMixin,
@@ -150,9 +149,8 @@ class AND(Axiom):
 
 
 @dataclass(frozen=True)
-class LEN_AND(LEN):
+class LEN_AND(LEN_Mixin, AND):
     name = "LEN-AND"
-    axiom: Axiom = field(init=False, default=AND())
 
 
 @dataclass(frozen=True)
@@ -179,9 +177,8 @@ class M_AND(Axiom):
 
 
 @dataclass(frozen=True)
-class LEN_M_AND(LEN):
+class LEN_M_AND(LEN_Mixin, M_AND):
     name = "LEN-M-AND"
-    axiom: Axiom = field(init=False, default=M_AND())
 
 
 @dataclass(frozen=True)
@@ -209,9 +206,8 @@ class DIV(Axiom):
 
 
 @dataclass(frozen=True)
-class LEN_DIV(LEN):
+class LEN_DIV(LEN_Mixin, DIV):
     name = "LEN-DIV"
-    axiom: Axiom = field(init=False, default=DIV())
 
 
 # Shorthand names:
