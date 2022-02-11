@@ -2,6 +2,7 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import Set
 
+from ir_axioms import logger
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import (
     strictly_greater, approximately_same_length, vocabulary_overlap
@@ -29,7 +30,8 @@ class _REG(Axiom, TermSimilarityMixin, ABC):
             document2: RankedDocument
     ):
         query_terms = context.term_set(query)
-        similarity_sum = synonym_set_similarity_sums(query_terms)
+        if len(query_terms) == 0:
+            return 0
 
         similarity_sum = self.similarity_sums(query_terms)
 
@@ -42,7 +44,15 @@ class _REG(Axiom, TermSimilarityMixin, ABC):
             for term, similarity in similarity_sum.items()
             if similarity == minimum_similarity
         }
-        assert len(minimum_similarity_terms) == 1
+
+        if len(minimum_similarity_terms) != 1:
+            logger.debug(
+                f"The following terms were equally similar "
+                f"during evaluating the {self.name} axiom: "
+                f"{', '.join(minimum_similarity_terms)}"
+            )
+            return 0
+
         minimum_similarity_term = next(iter(minimum_similarity_terms))
 
         return strictly_greater(
@@ -79,6 +89,8 @@ class _ANTI_REG(Axiom, TermSimilarityMixin, ABC):
             document2: RankedDocument
     ):
         query_terms = context.term_set(query)
+        if len(query_terms) == 0:
+            return 0
 
         similarity_sum = self.similarity_sums(query_terms)
 
@@ -91,7 +103,14 @@ class _ANTI_REG(Axiom, TermSimilarityMixin, ABC):
             for term, similarity in similarity_sum.items()
             if similarity == maximum_similarity
         }
-        assert len(maximum_similarity_terms) == 1
+
+        if len(maximum_similarity_terms) != 1:
+            logger.debug(
+                f"The following terms were equally similar "
+                f"during evaluating the {self.name} axiom: "
+                f"{', '.join(maximum_similarity_terms)}"
+            )
+            return 0
 
         maximum_similarity_term = next(iter(maximum_similarity_terms))
 
