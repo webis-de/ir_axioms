@@ -42,3 +42,25 @@ class LEN(Axiom):
             return 0
 
         return self.axiom.preference(context, query, document1, document2)
+
+
+@dataclass(frozen=True)
+class LEN_Mixin(Axiom):
+    margin_fraction: float = 0.1
+
+    def preference(
+            self,
+            context: IndexContext,
+            query: Query,
+            document1: RankedDocument,
+            document2: RankedDocument
+    ):
+        if not approximately_same_length(
+                context,
+                document1,
+                document2,
+                self.margin_fraction,
+        ):
+            # Documents have different lengths.
+            return 0
+        return NotImplemented
