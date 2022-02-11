@@ -4,9 +4,7 @@ from functools import cached_property
 from itertools import product
 from logging import DEBUG
 from pathlib import Path
-from typing import (
-    Union, Optional, List, Set, Sequence, final, Callable, ClassVar
-)
+from typing import Union, Optional, List, Set, Sequence, final, Callable
 
 from ir_datasets import Dataset
 from numpy import array
@@ -27,9 +25,9 @@ from ir_axioms.model import (
 
 
 class PerGroupTransformer(TransformerBase, ABC):
-    group_columns: ClassVar[Set[str]] = NotImplemented
-    optional_group_columns: ClassVar[Set[str]] = {}
-    verbose: ClassVar[bool] = False
+    group_columns: Set[str] = NotImplemented
+    optional_group_columns: Set[str] = {}
+    verbose: bool = False
     description: Optional[str] = None
     unit: Optional[str] = None
 

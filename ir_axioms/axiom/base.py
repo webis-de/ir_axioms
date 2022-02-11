@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from inspect import isabstract
-from typing import final, List, Union, Callable, ClassVar
+from typing import final, List, Union, Callable
 
 from numpy import array, ndarray
 
@@ -19,7 +19,7 @@ class Axiom(ABC):
     in comparison to the axiom's preferences.
     """
 
-    name: ClassVar[str] = NotImplemented
+    name: str
     """
     The axiom classes unique, short name, describing its behavior.
     """
