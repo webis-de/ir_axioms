@@ -13,7 +13,7 @@ from ir_axioms.model import Query, RankedDocument, IndexContext
 
 @dataclass(frozen=True)
 class OracleAxiom(Axiom):
-    name = "oracle"
+    name = "ORACLE"
 
     topics: DataFrame
     qrels: DataFrame
