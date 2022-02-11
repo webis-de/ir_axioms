@@ -25,6 +25,7 @@ class AxiomaticExperiment:
     qrels: DataFrame
     index: Union[Path, IndexRef, Index]
     axioms: Sequence[Axiom]
+    axiom_names: Optional[Sequence[str]] = None
     depth: Optional[int] = 10
     filter_by_qrels: bool = True
     filter_by_topics: bool = False
@@ -66,6 +67,7 @@ class AxiomaticExperiment:
     def _preferences_transformer(self) -> Transformer:
         return AxiomaticPreferences(
             axioms=self._axioms,
+            axiom_names=self.axiom_names,
             index=self.index,
             dataset=self.dataset,
             contents_accessor=self.contents_accessor,

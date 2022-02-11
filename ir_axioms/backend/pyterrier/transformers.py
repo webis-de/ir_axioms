@@ -262,6 +262,7 @@ class AxiomaticPreferences(MultiAxiomTransformer):
 
     axioms: Sequence[AxiomLike]
     index: Union[Path, IndexRef, Index]
+    axiom_names: Optional[Sequence[str]] = None
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Optional[Tokeniser] = None
@@ -290,7 +291,17 @@ class AxiomaticPreferences(MultiAxiomTransformer):
                 desc="Computing axiom preferences",
                 unit="axiom",
             )
-        for axiom in axioms:
+
+        names: Sequence[str]
+        if (
+                self.axiom_names is not None and
+                len(self.axiom_names) == len(axioms)
+        ):
+            names = self.axiom_names
+        else:
+            names = [str(axiom) for axiom in axioms]
+
+        for name, axiom in zip(names, axioms):
             document_pairs = list(product(documents, documents))
             if self.verbose and 0 < logger.level <= DEBUG:
                 # Very verbose progress bars.
@@ -299,7 +310,7 @@ class AxiomaticPreferences(MultiAxiomTransformer):
                     desc="Computing axiom preference",
                     unit="pair",
                 )
-            pairs[f"{axiom.name}_preference"] = [
+            pairs[f"{name}_preference"] = [
                 axiom.preference(context, query, document1, document2)
                 for document1, document2 in document_pairs
             ]
