@@ -138,6 +138,8 @@ def _sentence_length(
 ) -> float:
     download_nltk_dependencies("punkt")
     sentences = sent_tokenize(context.contents(document))
+    if len(sentences) == 0:
+        return 0
     return mean(
         len(word_tokenize(sentence, preserve_line=True))
         for sentence in sentences
@@ -356,21 +358,12 @@ class AverageSentenceLengthAxiom(Axiom):
         min_length = self.min_sentence_length
         max_length = self.max_sentence_length
 
-        if (
-                min_length <= sentence_length1 <= max_length and
-                (
-                        sentence_length2 < min_length or
-                        sentence_length2 > max_length
-                )
-        ):
+        length_in_range1 = min_length <= sentence_length1 <= max_length
+        length_in_range2 = min_length <= sentence_length2 <= max_length
+
+        if length_in_range1 and not length_in_range2:
             return 1
-        elif (
-                min_length <= sentence_length2 <= max_length and
-                (
-                        sentence_length1 < min_length or
-                        sentence_length1 > max_length
-                )
-        ):
+        elif length_in_range2 and not length_in_range1:
             return -1
         else:
             return 0
