@@ -1,12 +1,12 @@
 from abc import ABC
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Set
 
 from ir_axioms import logger
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.axiom.utils import (
-    strictly_greater, approximately_same_length, vocabulary_overlap
-)
+from ir_axioms.axiom.preconditions import LEN
+from ir_axioms.axiom.utils import strictly_greater, vocabulary_overlap
+
 from ir_axioms.model import Query, RankedDocument, IndexContext
 from ir_axioms.utils.similarity import (
     TermSimilarityMixin, WordNetSynonymSetTermSimilarityMixin,
@@ -150,38 +150,9 @@ class AND(Axiom):
 
 
 @dataclass(frozen=True)
-class LEN_AND(AND):
-    """
-    Modified AND:
-    The precondition for the documents' lengths can be varied.
-
-    Default margin fraction: 0.1
-    """
+class LEN_AND(LEN):
     name = "LEN-AND"
-
-    margin_fraction: float = 0.1
-
-    def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ) -> float:
-        if not approximately_same_length(
-                context,
-                document1,
-                document2,
-                self.margin_fraction
-        ):
-            return 0
-
-        return super().preference(
-            context,
-            query,
-            document1,
-            document2
-        )
+    axiom: Axiom = field(init=False, default=AND())
 
 
 @dataclass(frozen=True)
@@ -208,38 +179,9 @@ class M_AND(Axiom):
 
 
 @dataclass(frozen=True)
-class LEN_M_AND(M_AND):
-    """
-    Modified M_AND:
-    The precondition for the documents' lengths can be varied.
-
-    Default margin fraction: 0.1
-    """
+class LEN_M_AND(LEN):
     name = "LEN-M-AND"
-
-    margin_fraction: float = 0.1
-
-    def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ) -> float:
-        if not approximately_same_length(
-                context,
-                document1,
-                document2,
-                self.margin_fraction
-        ):
-            return 0
-
-        return super().preference(
-            context,
-            query,
-            document1,
-            document2
-        )
+    axiom: Axiom = field(init=False, default=M_AND())
 
 
 @dataclass(frozen=True)
@@ -267,38 +209,9 @@ class DIV(Axiom):
 
 
 @dataclass(frozen=True)
-class LEN_DIV(DIV):
-    """
-    Modified DIV:
-    The precondition for the documents' lengths can be varied.
-
-    Default margin fraction: 0.1
-    """
+class LEN_DIV(LEN):
     name = "LEN-DIV"
-
-    margin_fraction: float = 0.1
-
-    def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ) -> float:
-        if not approximately_same_length(
-                context,
-                document1,
-                document2,
-                self.margin_fraction
-        ):
-            return 0
-
-        return super().preference(
-            context,
-            query,
-            document1,
-            document2
-        )
+    axiom: Axiom = field(init=False, default=DIV())
 
 
 # Shorthand names:
