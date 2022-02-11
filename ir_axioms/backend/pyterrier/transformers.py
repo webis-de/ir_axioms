@@ -286,7 +286,7 @@ class AxiomaticPreferences(MultiAxiomTransformer):
         # Compute axiom preferences.
         context = self._context
         axioms = self.axioms
-        if self.verbose:
+        if self.verbose and 0 < logger.level <= DEBUG:
             axioms = tqdm(
                 axioms,
                 desc="Computing axiom preferences",

@@ -60,7 +60,6 @@ class AxiomaticExperiment:
             pipeline = pipeline >> self._filter_topics
         if self.filter_by_qrels:
             pipeline = pipeline >> self._filter_qrels
-        pipeline = ~pipeline
         return pipeline
 
     @cached_property
@@ -78,7 +77,6 @@ class AxiomaticExperiment:
     def _preferences_pipeline(self, system: Transformer) -> Transformer:
         pipeline = self._pipeline(system)
         pipeline = pipeline >> self._preferences_transformer
-        pipeline = ~pipeline
         return pipeline
 
     @cached_property
