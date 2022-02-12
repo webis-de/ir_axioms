@@ -4,7 +4,7 @@
 [ -d "$HOME"/.ir_datasets ] || mkdir "$HOME"/.ir_datasets
 [ -d "$HOME"/.magnitude ] || mkdir "$HOME"/.magnitude
 srun \
-  --cpus-per-task 1 \
+  --cpus-per-task 20 \
   --mem=100G \
   --container-writable \
   --container-image=python:3.9-buster \
