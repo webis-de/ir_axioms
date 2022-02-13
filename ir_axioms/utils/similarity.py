@@ -14,7 +14,6 @@ def synonym_set(
         term: str,
         smoothing: int = 0
 ) -> List[str]:
-    download_nltk_dependencies("wordnet", "omw-1.4")
     cutoff = smoothing + 1
     return wordnet.synsets(term)[:cutoff]
 
@@ -62,6 +61,13 @@ class TermSimilarityMixin(ABC):
 
 class WordNetSynonymSetTermSimilarityMixin(TermSimilarityMixin):
     smoothing: int = 0
+
+    def __init__(self):
+        download_nltk_dependencies("wordnet", "omw-1.4")
+
+    # noinspection PyMethodMayBeStatic
+    def __post_init__(self):
+        download_nltk_dependencies("wordnet", "omw-1.4")
 
     @final
     @lru_cache(None)
