@@ -3,13 +3,14 @@ from functools import cached_property, lru_cache
 from logging import warning
 from pathlib import Path
 from re import split
-from typing import List, Optional, Union, Callable, NamedTuple
+from typing import Optional, Union, Callable, NamedTuple, Tuple
 
 from ir_datasets import Dataset, load
 from ir_datasets.indices import Docstore
 
-from ir_axioms.backend.pyterrier.config import \
+from ir_axioms.backend.pyterrier.config import (
     RETRIEVAL_SCORE_APPLICATION_PROPERTIES
+)
 from ir_axioms.backend.pyterrier.util import (
     EnglishTokeniser, Lexicon, CollectionStatistics, BaseTermPipelineAccessor,
     WeightingModel, TfModel, TfIdfModel, BM25Model, PL2Model, DirichletLMModel,
@@ -61,7 +62,7 @@ def _weighting_model(model: RetrievalModel) -> WeightingModel:
 ContentsAccessor = Union[str, Callable[[NamedTuple], str]]
 
 
-@dataclass(unsafe_hash=True, frozen=True)
+@dataclass(frozen=True)
 class TerrierIndexContext(IndexContext):
     index_location: Union[Path, IndexRef, Index]
     dataset: Optional[Union[Dataset, str]] = None
@@ -92,8 +93,8 @@ class TerrierIndexContext(IndexContext):
         return meta_index
 
     @cached_property
-    def _meta_index_keys(self) -> List[str]:
-        return [str(key) for key in self._meta_index.getKeys()]
+    def _meta_index_keys(self) -> Tuple[str]:
+        return tuple(str(key) for key in self._meta_index.getKeys())
 
     @cached_property
     def _lexicon(self) -> Lexicon:
@@ -187,35 +188,35 @@ class TerrierIndexContext(IndexContext):
         return self.tokeniser
 
     @cached_property
-    def _term_pipelines(self) -> List[TermPipelineAccessor]:
+    def _term_pipelines(self) -> Tuple[TermPipelineAccessor]:
         term_pipelines = str(ApplicationSetup.getProperty(
             "termpipelines",
             "Stopwords,PorterStemmer"
         ))
-        return [
+        return tuple(
             BaseTermPipelineAccessor(pipeline)
             for pipeline in split(r"\s*,\s*", term_pipelines.strip())
-        ]
+        )
 
     @lru_cache(None)
-    def _terms(self, text: str) -> List[str]:
+    def _terms(self, text: str) -> Tuple[str]:
         reader = StringReader(text)
-        terms = [
+        terms = tuple(
             str(term)
             for term in self._tokeniser.tokenise(reader)
             if term is not None
-        ]
+        )
         del reader
 
         for pipeline in self._term_pipelines:
-            terms = [
+            terms = tuple(
                 str(pipeline.pipelineTerm(term))
                 for term in terms
                 if term is not None
-            ]
+            )
         return terms
 
-    def terms(self, query_or_document: Union[Query, Document]) -> List[str]:
+    def terms(self, query_or_document: Union[Query, Document]) -> Tuple[str]:
         text = self.contents(query_or_document)
         return self._terms(text)
 

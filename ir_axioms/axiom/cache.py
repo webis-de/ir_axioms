@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-from functools import lru_cache
-from typing import Optional
 
 from diskcache import Cache
 
@@ -8,16 +6,10 @@ from ir_axioms.axiom.base import Axiom
 from ir_axioms.model import RankedDocument, Query, IndexContext
 
 
-@lru_cache(None)
-def _cache(context: IndexContext) -> Optional[Cache]:
-    if context.cache_dir is None:
-        return None
-    return Cache(str(context.cache_dir.absolute()))
-
-
 @dataclass(frozen=True)
 class CachedAxiom(Axiom):
     axiom: Axiom
+    disk: bool = False
 
     def _key(
             self,
@@ -38,7 +30,7 @@ class CachedAxiom(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ) -> float:
-        cache = _cache(context)
+        cache: Cache = context.cache
 
         if cache is None:
             return self.axiom.preference(context, query, document1, document2)

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from itertools import product
 from math import nan
 from statistics import mean
-from typing import Set, Tuple
+from typing import Tuple, Iterable
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_greater, approximately_equal
@@ -17,7 +17,11 @@ from ir_axioms.utils.similarity import (
 @dataclass(frozen=True)
 class _STMC1(Axiom, TermSimilarityMixin, ABC):
 
-    def _average_similarity(self, terms1: Set[str], terms2: Set[str]) -> float:
+    def _average_similarity(
+            self,
+            terms1: Iterable[str],
+            terms2: Iterable[str]
+    ) -> float:
         return mean(
             self.similarity(term1, term2)
             for term1 in terms1
@@ -60,8 +64,8 @@ class _STMC2(Axiom, TermSimilarityMixin, ABC):
 
     def _most_similar_terms(
             self,
-            terms1: Set[str],
-            terms2: Set[str]
+            terms1: Iterable[str],
+            terms2: Iterable[str]
     ) -> Tuple[str, str]:
         return max(
             product(terms1, terms2),

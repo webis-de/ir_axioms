@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from functools import lru_cache
+from pathlib import Path
 from statistics import mean
 from typing import List, Set, Dict, Optional
 
@@ -15,7 +16,7 @@ from ir_axioms.model import Query, RankedDocument, IndexContext
 from ir_axioms.utils.nltk import download_nltk_dependencies
 
 
-@lru_cache(maxsize=4096)
+@lru_cache(None)
 def _normalize(word: str):
     download_nltk_dependencies("wordnet", "omw-1.4")
     _word_net_lemmatizer = WordNetLemmatizer()
@@ -151,20 +152,31 @@ class _TargerMixin:
     models: Set[str] = field(default_factory=lambda: DEFAULT_TARGER_MODELS)
     api_url: str = DEFAULT_TARGER_API_URL
 
-    def fetch_arguments(
+    @lru_cache(None)
+    def _analyze_text(
+            self,
+            contents: str,
+            cache_dir: Optional[Path],
+    ) -> Dict[str, ArgumentSentences]:
+        return analyze_text(
+            contents,
+            model_or_models=self.models,
+            api_url=self.api_url,
+            cache_dir=(
+                cache_dir / "targer"
+                if cache_dir is not None
+                else None
+            )
+        )
+
+    def analyze_text(
             self,
             context: IndexContext,
             document: RankedDocument,
     ) -> Dict[str, ArgumentSentences]:
-        return analyze_text(
+        return self._analyze_text(
             context.contents(document),
-            model_or_models=self.models,
-            api_url=self.api_url,
-            cache_dir=(
-                context.cache_dir / "targer"
-                if context.cache_dir is not None
-                else None
-            )
+            context.cache_dir
         )
 
 
@@ -181,8 +193,8 @@ class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        arguments1 = self.fetch_arguments(context, document1)
-        arguments2 = self.fetch_arguments(context, document2)
+        arguments1 = self.analyze_text(context, document1)
+        arguments2 = self.analyze_text(context, document2)
 
         count1 = sum(
             _count_argumentative_units(sentences)
@@ -225,8 +237,8 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        arguments1 = self.fetch_arguments(context, document1)
-        arguments2 = self.fetch_arguments(context, document2)
+        arguments1 = self.analyze_text(context, document1)
+        arguments2 = self.analyze_text(context, document2)
 
         count1 = sum(
             _count_query_terms(context, sentences, query)
@@ -286,8 +298,8 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        arguments1 = self.fetch_arguments(context, document1)
-        arguments2 = self.fetch_arguments(context, document2)
+        arguments1 = self.analyze_text(context, document1)
+        arguments2 = self.analyze_text(context, document2)
 
         penalty = self.penalty
         if penalty is None:

@@ -3,14 +3,12 @@ from functools import cached_property, lru_cache
 from json import loads
 from logging import warning
 from pathlib import Path
-from typing import List, Optional, Union, Callable, NamedTuple
+from typing import Optional, Union, Callable, NamedTuple, Tuple
 
 from ir_datasets import load, Dataset
 from ir_datasets.indices import Docstore
 
-from ir_axioms.backend.pyserini.safe import (
-    IndexReader, SimpleSearcher
-)
+from ir_axioms.backend.pyserini.safe import IndexReader, SimpleSearcher
 from ir_axioms.backend.pyserini.util import (
     Similarity, ClassicSimilarity, BM25Similarity, DFRSimilarity,
     BasicModelIn, AfterEffectL, NormalizationH2, LMDirichletSimilarity
@@ -48,7 +46,7 @@ def _similarity(model: RetrievalModel) -> Similarity:
         )
 
 
-@dataclass(unsafe_hash=True, frozen=True)
+@dataclass(frozen=True)
 class PyseriniIndexContext(IndexContext):
     index_dir: Path
     dataset: Optional[Union[Dataset, str]] = None
@@ -75,7 +73,7 @@ class PyseriniIndexContext(IndexContext):
     def document_count(self) -> int:
         return self._index_reader.stats()["documents"]
 
-    # @lru_cache(maxsize=4096)
+    @lru_cache(None)
     def document_frequency(self, term: str) -> int:
         return self._index_reader.object.getDF(
             self._index_reader.reader,
@@ -111,9 +109,9 @@ class PyseriniIndexContext(IndexContext):
     def terms(
             self,
             query_or_document: Union[Query, Document]
-    ) -> List[str]:
+    ) -> Tuple[str]:
         text = self.contents(query_or_document)
-        return self._index_reader.analyze(text)
+        return tuple(str(term) for term in self._index_reader.analyze(text))
 
     @lru_cache(None)
     def retrieval_score(

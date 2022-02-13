@@ -2,7 +2,7 @@ from abc import ABC
 from dataclasses import dataclass
 from itertools import combinations
 from statistics import mean
-from typing import Set
+from typing import Set, FrozenSet
 
 from ir_axioms import logger
 from ir_axioms.axiom.base import Axiom
@@ -15,7 +15,8 @@ from ir_axioms.utils.similarity import (
 )
 
 
-def _vocabulary_overlap(vocabulary1: Set[str], vocabulary2: Set[str]):
+def _vocabulary_overlap(vocabulary1: FrozenSet[str],
+                        vocabulary2: FrozenSet[str]):
     """
     Vocabulary overlap as calculated by the Jaccard coefficient.
     """

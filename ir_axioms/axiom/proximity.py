@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from itertools import combinations
 from math import inf
 from statistics import mean
-from typing import List, Set, Counter, Iterator
+from typing import Counter, Tuple, FrozenSet, Generator
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import (
@@ -39,8 +39,8 @@ def _same_query_term_subset(
 
 
 def _average_between_query_terms(
-        query_terms: Set[str],
-        document_terms: List[str]
+        query_terms: FrozenSet[str],
+        document_terms: Tuple[str]
 ) -> float:
     query_term_pairs = set(combinations(query_terms, 2))
     if len(query_term_pairs) == 0:
@@ -74,7 +74,7 @@ def _all_query_terms_in_documents(
     )
 
 
-def _take_closest(sorted_list: List[int], target: int):
+def _take_closest(sorted_items: Tuple[int], target: int):
     """
     Return closest value to n.
     If two numbers are equally close, return the smallest number.
@@ -82,13 +82,13 @@ def _take_closest(sorted_list: List[int], target: int):
     It is assumed that l is sorted.
     See: https://stackoverflow.com/questions/12141150
     """
-    position = bisect_left(sorted_list, target)
+    position = bisect_left(sorted_items, target)
     if position == 0:
-        return sorted_list[0]
-    if position == len(sorted_list):
-        return sorted_list[-1]
-    before = sorted_list[position - 1]
-    after = sorted_list[position]
+        return sorted_items[0]
+    if position == len(sorted_items):
+        return sorted_items[-1]
+    before = sorted_items[position - 1]
+    after = sorted_items[position]
     if after - target < target - before:
         return after
     else:
@@ -96,9 +96,9 @@ def _take_closest(sorted_list: List[int], target: int):
 
 
 def _query_term_index_groups(
-        query_terms: Set[str],
-        document_terms: List[str]
-) -> Iterator[List[int]]:
+        query_terms: FrozenSet[str],
+        document_terms: Tuple[str]
+) -> Generator[Tuple[int], None, None]:
     indexes = defaultdict(list)
     for index, term in enumerate(document_terms):
         if term in query_terms:
@@ -106,17 +106,17 @@ def _query_term_index_groups(
     for term in query_terms:
         other_query_terms = query_terms - {term}
         for index in indexes[term]:
-            group = [index] + [
-                _take_closest(indexes[other_term], index)
+            group = (index,) + tuple(
+                _take_closest(tuple(indexes[other_term]), index)
                 for other_term in other_query_terms
                 if len(indexes[other_term]) > 0
-            ]
+            )
             yield group
 
 
 def _average_smallest_span(
-        query_terms: Set[str],
-        document_terms: List[str]
+        query_terms: FrozenSet[str],
+        document_terms: Tuple[str]
 ):
     return mean(
         max(group) - min(group)
@@ -125,8 +125,8 @@ def _average_smallest_span(
 
 
 def _closest_grouping_size_and_count(
-        query_terms: Set[str],
-        document_terms: List[str]
+        query_terms: FrozenSet[str],
+        document_terms: Tuple[str]
 ):
     index_groups = _query_term_index_groups(query_terms, document_terms)
 
@@ -214,7 +214,7 @@ class PROX2(Axiom):
         return strictly_greater(first_position_sum2, first_position_sum1)
 
 
-def _find_index(query_terms: List[str], document_terms: List[str]):
+def _find_index(query_terms: Tuple[str], document_terms: Tuple[str]):
     query_terms_length = len(query_terms)
     terms_length = len(document_terms)
     for index, term in enumerate(document_terms):
