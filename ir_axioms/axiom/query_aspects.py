@@ -2,7 +2,7 @@ from abc import ABC
 from dataclasses import dataclass
 from itertools import combinations
 from statistics import mean
-from typing import Set, FrozenSet
+from typing import Set, FrozenSet, List
 
 from ir_axioms import logger
 from ir_axioms.axiom.base import Axiom
@@ -183,30 +183,25 @@ class _ASPECT_REG(Axiom, TermSimilarityMixin, ABC):
             for term1, term2 in combinations(query_terms, 2)
         )
 
-        query_aspects: Set[Set[str]] = {{term} for term in query_terms}
-        while len(query_aspects) > 1:
-            for a1, a2 in combinations(query_aspects, 2):
-                a1: Set[str]
-                a2: Set[str]
+        query_aspects: List[Set[str]] = [{term} for term in query_terms]
+
+        # Iterate aspect 1 from start.
+        for i1 in range(0, len(query_aspects) - 1, +1):
+            a1 = query_aspects[i1]
+            # Iterate aspect 2 from end.
+            for i2 in range(len(query_aspects) - 1, i1 + 1, -1):
+                a2 = query_aspects[i2]
+
+                # Is any term pair similar enough to merge the aspects?
                 if any(
                         self.similarity(term1, term2) > average_similarity
                         for term1 in a1
                         for term2 in a2
                 ):
-                    # Remove mergable aspects.
-                    query_aspects = {
-                        aspect
-                        for i, aspect in enumerate(query_aspects)
-                        if aspect != a1 and aspect != a2
-                    }
-                    # Merge aspects.
-                    merged_aspect = a1 | a2
-                    query_aspects.add(merged_aspect)
-                    break  # Go to begin of while-loop.
-
-            # We iterated over all aspect pairs
-            # and did not find any mergable aspects.
-            break
+                    # Merge aspect 2 into aspect 1.
+                    a1.update(a2)
+                    # Remove merged aspect 2.
+                    query_aspects.pop(i2)
 
         count_document1_aspects = {
             1 for aspect in query_aspects
