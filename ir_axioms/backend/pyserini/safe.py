@@ -6,7 +6,11 @@ except ImportError as error:
         "The Pyserini backend requires that 'pyserini' is installed."
     ) from error
 
+from pyserini.index import IndexReader as _IndexReader
+from pyserini.search import SimpleSearcher as _SimpleSearcher
+from jnius import autoclass as _autoclass
+
 # Re-export modules.
-from pyserini.index import IndexReader  # noqa: F401
-from pyserini.search import SimpleSearcher  # noqa: F401
-from jnius import autoclass  # noqa: F401
+IndexReader = _IndexReader
+SimpleSearcher = _SimpleSearcher
+autoclass = _autoclass
