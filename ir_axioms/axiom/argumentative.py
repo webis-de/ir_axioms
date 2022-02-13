@@ -244,11 +244,11 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
         arguments2 = self.analyze_text(context, document2)
 
         count1 = sum(
-            _count_query_terms(context, sentences, query)
+            _count_query_terms(context, sentences, query, self.normalize)
             for _, sentences in arguments1.items()
         )
         count2 = sum(
-            _count_query_terms(context, sentences, query)
+            _count_query_terms(context, sentences, query, self.normalize)
             for _, sentences in arguments2.items()
         )
 
@@ -320,7 +320,8 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
                 context,
                 sentences,
                 query,
-                penalty
+                penalty,
+                self.normalize
             )
             for _, sentences in arguments1.items()
         ))
@@ -329,7 +330,8 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
                 context,
                 sentences,
                 query,
-                penalty
+                penalty,
+                self.normalize
             )
             for _, sentences in arguments2.items()
         ))
