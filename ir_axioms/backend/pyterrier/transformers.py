@@ -29,7 +29,7 @@ class PerGroupTransformer(TransformerBase, ABC):
     optional_group_columns: Set[str] = {}
     verbose: bool = False
     description: Optional[str] = None
-    unit: Optional[str] = None
+    unit: str = "it"
 
     @abstractmethod
     def transform_group(self, topics_or_res: DataFrame) -> DataFrame:
