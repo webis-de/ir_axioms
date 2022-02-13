@@ -18,7 +18,6 @@ from ir_axioms.utils.nltk import download_nltk_dependencies
 
 @lru_cache(None)
 def _normalize(word: str):
-    download_nltk_dependencies("wordnet", "omw-1.4")
     _word_net_lemmatizer = WordNetLemmatizer()
     return _word_net_lemmatizer.lemmatize(word).lower()
 
@@ -28,12 +27,12 @@ def _count_argumentative_units(sentences: ArgumentSentences) -> int:
 
 
 def _count_premises(sentences: ArgumentSentences) -> int:
-    count: int = 0
-    for sentence in sentences:
-        for tag in sentence:
-            if tag.label == ArgumentLabel.P_B and tag.probability > 0.5:
-                count += 1
-    return count
+    return sum(
+        1
+        for sentence in sentences
+        for tag in sentence
+        if tag.label == ArgumentLabel.P_B and tag.probability > 0.5
+    )
 
 
 def _count_claims(sentences: ArgumentSentences) -> int:
@@ -230,6 +229,10 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
     using the WordNet lemmatizer.
     """
 
+    # noinspection PyMethodMayBeStatic
+    def __post_init__(self):
+        download_nltk_dependencies("wordnet", "omw-1.4")
+
     def preference(
             self,
             context: IndexContext,
@@ -290,6 +293,10 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
     if a query term is not found in any argumentative unit for a document.
     Set to None to use the maximum length of the two compared documents.
     """
+
+    # noinspection PyMethodMayBeStatic
+    def __post_init__(self):
+        download_nltk_dependencies("wordnet", "omw-1.4")
 
     def preference(
             self,
