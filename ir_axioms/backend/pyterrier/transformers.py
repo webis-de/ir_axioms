@@ -301,8 +301,9 @@ class AxiomaticPreferences(MultiAxiomTransformer):
         else:
             names = [str(axiom) for axiom in axioms]
 
+        document_pairs = list(product(documents, documents))
+
         for name, axiom in zip(names, axioms):
-            document_pairs = list(product(documents, documents))
             if self.verbose and 0 < logger.level <= DEBUG:
                 # Very verbose progress bars.
                 document_pairs = tqdm(
