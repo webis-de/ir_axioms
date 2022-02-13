@@ -224,12 +224,12 @@ class _ASPECT_REG(Axiom, TermSimilarityMixin, ABC):
 
 @dataclass(frozen=True)
 class ASPECT_REG(_ASPECT_REG, WordNetSynonymSetTermSimilarityMixin):
-    name = "C-REG"
+    name = "ASPECT-REG"
 
 
 @dataclass(frozen=True)
 class ASPECT_REG_fastText(_ASPECT_REG, FastTextWikiNewsTermSimilarityMixin):
-    name = "C-REG-fastText"
+    name = "ASPECT-REG-fastText"
 
 
 @dataclass(frozen=True)
