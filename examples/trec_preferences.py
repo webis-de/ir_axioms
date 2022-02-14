@@ -13,6 +13,16 @@ from ir_axioms.axiom import (
     STMC1_fastText, STMC2, STMC2_fastText
 )
 
+if not started():
+    init(tqdm="auto")
+
+from pyterrier import Transformer
+from pyterrier.datasets import get_dataset
+from pyterrier.index import IterDictIndexer
+from pyterrier.io import read_results
+from pyterrier.text import get_text
+from ir_axioms.backend.pyterrier.experiment import AxiomaticExperiment
+
 
 @dataclass(frozen=True)
 class Track:
@@ -96,31 +106,19 @@ axioms = [
 ]
 
 results_dir = Path(__file__).parent
-cache_dir = Path("/var/tmp") / "ir-axioms-cache"
+cache_dir = Path(__file__).parent / "ir-axioms-cache"
 indices_dir = cache_dir / "indices"
-pyterrier_dir = cache_dir / "pyterrier"
 runs_base_dir = Path(
     "/mnt/ceph/storage/data-in-progress/data-research/"
     "web-search/web-search-trec/trec-system-runs"
 )
 cache_dir.mkdir(exist_ok=True)
 indices_dir.mkdir(exist_ok=True)
-pyterrier_dir.mkdir(exist_ok=True)
 
 print(f"Reading runs from {runs_base_dir.absolute()}")
 print(f"Storing results in {results_dir.absolute()}")
 print(f"Storing cache in {cache_dir.absolute()}")
 print(f"Storing indices in {indices_dir.absolute()}")
-print(f"Storing PyTerrier files in {pyterrier_dir.absolute()}")
-
-if not started():
-    init(tqdm="auto", home_dir=str(pyterrier_dir.absolute()))
-from pyterrier import Transformer
-from pyterrier.datasets import get_dataset
-from pyterrier.index import IterDictIndexer
-from pyterrier.io import read_results
-from pyterrier.text import get_text
-from ir_axioms.backend.pyterrier.experiment import AxiomaticExperiment
 
 for track, depth in configurations:
     dataset = get_dataset(f"irds:{track.dataset}")
