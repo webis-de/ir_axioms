@@ -106,17 +106,17 @@ axioms = [
 ]
 
 results_dir = Path(__file__).parent
-cache_dir = Path("/var/tmp").parent / "ir-axioms-cache"
-indices_dir = Path(__file__) / "cache" / "indices"
+cache_dir = Path("/var/tmp") / "ir-axioms-cache"
+indices_dir = Path(__file__).parent / "cache" / "indices"
 runs_base_dir = Path(
     "/mnt/ceph/storage/data-in-progress/data-research/"
     "web-search/web-search-trec/trec-system-runs"
 )
 
-print(f"Reading runs from {runs_base_dir}")
-print(f"Storing results in {results_dir}")
-print(f"Storing cache in {cache_dir}")
-print(f"Storing indices in {indices_dir}")
+print(f"Reading runs from {runs_base_dir.absolute()}")
+print(f"Storing results in {results_dir.absolute()}")
+print(f"Storing cache in {cache_dir.absolute()}")
+print(f"Storing indices in {indices_dir.absolute()}")
 
 for track, depth in configurations:
     dataset = get_dataset(f"irds:{track.dataset}")
