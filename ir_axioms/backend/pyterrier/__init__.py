@@ -276,6 +276,10 @@ class TerrierIndexContext(IndexContext):
         # Parse result document.
         result_docs: ScoredDocList = request.getResults()
 
+        if len(result_docs) == 0:
+            # Document was not received.
+            return 0
+
         assert len(result_docs) == 1
         first_result_doc: ScoredDoc = result_docs[0]
         assert str(first_result_doc.getMetadata("docno")) == document_id
