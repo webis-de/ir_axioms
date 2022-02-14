@@ -1,4 +1,5 @@
 from pyterrier import started, init
+from pyterrier.text import get_text
 
 if not started():
     init(tqdm="auto")
@@ -134,7 +135,8 @@ for track, depth in configurations:
         )
 
     run = [
-        Transformer.from_df(read_results(result_file))
+        Transformer.from_df(read_results(result_file)) >>
+        get_text(dataset, track.contents_field)
         for result_file in tqdm(run_files, desc="Load runs")
     ]
     run_name = [
@@ -150,7 +152,6 @@ for track, depth in configurations:
         topics=dataset.get_topics(),
         qrels=dataset.get_qrels(),
         index=index_dir,
-        dataset=ir_dataset,
         contents_accessor=track.contents_field,
         axioms=axioms,
         axiom_names=axiom_names,
