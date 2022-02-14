@@ -108,7 +108,7 @@ axioms = [
 
 results_dir = Path(__file__).parent
 cache_dir = Path("/var/tmp") / "ir-axioms-cache"
-indices_dir = Path(__file__).parent / "cache" / "indices"
+indices_dir = cache_dir / "indices"
 runs_base_dir = Path(
     "/mnt/ceph/storage/data-in-progress/data-research/"
     "web-search/web-search-trec/trec-system-runs"
