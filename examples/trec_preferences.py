@@ -113,11 +113,16 @@ runs_base_dir = Path(
     "web-search/web-search-trec/trec-system-runs"
 )
 
+print(f"Reading runs from {runs_base_dir}")
+print(f"Storing results in {results_dir}")
+print(f"Storing cache in {cache_dir}")
+print(f"Storing indices in {indices_dir}")
+
 for track, depth in configurations:
     dataset = get_dataset(f"irds:{track.dataset}")
     ir_dataset = load(track.dataset)
 
-    index_dir = cache_dir / "indices" / track.dataset.replace("/", "-")
+    index_dir = indices_dir / track.dataset.replace("/", "-")
     runs_dir = runs_base_dir / f"trec{track.edition}" / track.track
     run_files = list(runs_dir.iterdir())
 
