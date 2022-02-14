@@ -106,7 +106,7 @@ axioms = [
 ]
 
 results_dir = Path(__file__).parent
-cache_dir = Path(__file__).parent / "ir-axioms-cache"
+cache_dir = Path(__file__).parent / "cache"
 indices_dir = cache_dir / "indices"
 runs_base_dir = Path(
     "/mnt/ceph/storage/data-in-progress/data-research/"
