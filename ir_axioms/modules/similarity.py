@@ -9,6 +9,7 @@ from typing import (
 from nltk.corpus import wordnet
 from pymagnitude import Magnitude
 
+from ir_axioms import logger
 from ir_axioms.utils.nltk import download_nltk_dependencies
 
 
@@ -87,10 +88,84 @@ class TermSimilarityMixin(ABC):
     ) -> Optional[Tuple[str, str]]:
         if len(terms1) == 0 or len(terms2) == 0:
             return None
-        return max(
+        most_similar_pairs: Sequence[Tuple[str, str]] = tuple(sorted(
             product(terms1, terms2),
-            key=self._pair_similarity
-        )
+            key=self._pair_similarity,
+            reverse=True,
+        ))
+        most_similar_pair = most_similar_pairs[0]
+        if (
+                len(most_similar_pairs) > 1 and
+                self._pair_similarity(most_similar_pair) ==
+                self._pair_similarity(most_similar_pairs[1])
+        ):
+            # No definite winner.
+            logger.debug(
+                f"Cannot find most similar term pair. "
+                f"The following pairs were equally similar: "
+                f"{', '.join(str(pair) for pair in most_similar_pairs)}"
+            )
+            return None
+
+        return most_similar_pair
+
+    @final
+    def most_similar_term(
+            self,
+            terms: Collection[str],
+    ) -> Optional[str]:
+        if len(terms) == 0:
+            return None
+        similarity_sums = self.similarity_sums(terms)
+        most_similar_terms: Sequence[str] = tuple(sorted(
+            terms,
+            key=lambda term: similarity_sums[term],
+            reverse=True,
+        ))
+        most_similar_term = most_similar_terms[0]
+        if (
+                len(most_similar_terms) > 1 and
+                similarity_sums[most_similar_term] ==
+                similarity_sums[most_similar_terms[1]]
+        ):
+            # No definite winner.
+            logger.debug(
+                f"Cannot find most similar term. "
+                f"The following terms were equally similar: "
+                f"{', '.join(most_similar_terms)}"
+            )
+            return None
+
+        return most_similar_term
+
+    @final
+    def least_similar_term(
+            self,
+            terms: Collection[str],
+    ) -> Optional[str]:
+        if len(terms) == 0:
+            return None
+        similarity_sums = self.similarity_sums(terms)
+        least_similar_terms: Sequence[str] = tuple(sorted(
+            terms,
+            key=lambda term: similarity_sums[term],
+            reverse=False,
+        ))
+        least_similar_term = least_similar_terms[0]
+        if (
+                len(least_similar_terms) > 1 and
+                similarity_sums[least_similar_term] ==
+                similarity_sums[least_similar_terms[1]]
+        ):
+            # No definite winner.
+            logger.debug(
+                f"Cannot find least similar term. "
+                f"The following terms were equally similar: "
+                f"{', '.join(least_similar_terms)}"
+            )
+            return None
+
+        return least_similar_term
 
 
 class WordNetSynonymSetTermSimilarityMixin(TermSimilarityMixin):
