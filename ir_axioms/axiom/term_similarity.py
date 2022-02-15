@@ -1,9 +1,6 @@
 from abc import ABC
 from dataclasses import dataclass
-from itertools import product
 from math import nan
-from statistics import mean
-from typing import Tuple, Iterable
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_greater, approximately_equal
@@ -17,17 +14,6 @@ from ir_axioms.modules.similarity import (
 @dataclass(frozen=True)
 class _STMC1(Axiom, TermSimilarityMixin, ABC):
 
-    def _average_similarity(
-            self,
-            terms1: Iterable[str],
-            terms2: Iterable[str]
-    ) -> float:
-        return mean(
-            self.similarity(term1, term2)
-            for term1 in terms1
-            for term2 in terms2
-        )
-
     def preference(
             self,
             context: IndexContext,
@@ -40,8 +26,8 @@ class _STMC1(Axiom, TermSimilarityMixin, ABC):
         query_terms = context.term_set(query)
 
         return strictly_greater(
-            self._average_similarity(document1_terms, query_terms),
-            self._average_similarity(document2_terms, query_terms)
+            self.average_similarity(document1_terms, query_terms),
+            self.average_similarity(document2_terms, query_terms)
         )
 
 
@@ -57,20 +43,6 @@ class STMC1_fastText(_STMC1, FastTextWikiNewsTermSimilarityMixin):
 
 @dataclass(frozen=True)
 class _STMC2(Axiom, TermSimilarityMixin, ABC):
-
-    def _tuple_similarity(self, terms: Tuple[str, str]) -> float:
-        term1, term2 = terms
-        return self.similarity(term1, term2)
-
-    def _most_similar_terms(
-            self,
-            terms1: Iterable[str],
-            terms2: Iterable[str]
-    ) -> Tuple[str, str]:
-        return max(
-            product(terms1, terms2),
-            key=self._tuple_similarity
-        )
 
     def preference(
             self,
@@ -97,11 +69,15 @@ class _STMC2(Axiom, TermSimilarityMixin, ABC):
         query_terms = context.term_set(query)
         non_query_terms = document_terms - query_terms
 
-        if len(query_terms) == 0 or len(non_query_terms) == 0:
+        most_similar_terms = self.most_similar_pair(
+            query_terms,
+            non_query_terms,
+        )
+        if most_similar_terms is None:
             return 0
 
         most_similar_query_term, most_similar_non_query_term = (
-            self._most_similar_terms(query_terms, non_query_terms)
+            most_similar_terms
         )
 
         def term_frequency_ratio(
