@@ -2,7 +2,6 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import Set, FrozenSet, List
 
-from ir_axioms import logger
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.preconditions import LEN_Mixin
 from ir_axioms.axiom.utils import strictly_greater, approximately_equal
@@ -43,32 +42,10 @@ class _REG(Axiom, TermSimilarityMixin, ABC):
             document2: RankedDocument
     ):
         query_terms = context.term_set(query)
-        if len(query_terms) == 0:
+
+        minimum_similarity_term = self.least_similar_term(query_terms)
+        if minimum_similarity_term is None:
             return 0
-
-        similarity_sum = self.similarity_sums(query_terms)
-        if len(similarity_sum) == 0:
-            return 0
-
-        minimum_similarity = min(
-            similarity
-            for _, similarity in similarity_sum.items()
-        )
-        minimum_similarity_terms: Set[str] = {
-            term
-            for term, similarity in similarity_sum.items()
-            if similarity == minimum_similarity
-        }
-
-        if len(minimum_similarity_terms) != 1:
-            logger.debug(
-                f"The following terms were equally similar "
-                f"during evaluating the {self.name} axiom: "
-                f"{', '.join(minimum_similarity_terms)}"
-            )
-            return 0
-
-        minimum_similarity_term = next(iter(minimum_similarity_terms))
 
         return strictly_greater(
             context.term_frequency(document1, minimum_similarity_term),
@@ -104,32 +81,10 @@ class _ANTI_REG(Axiom, TermSimilarityMixin, ABC):
             document2: RankedDocument
     ):
         query_terms = context.term_set(query)
-        if len(query_terms) == 0:
+
+        maximum_similarity_term = self.most_similar_term(query_terms)
+        if maximum_similarity_term is None:
             return 0
-
-        similarity_sum = self.similarity_sums(query_terms)
-        if len(similarity_sum) == 0:
-            return 0
-
-        maximum_similarity = max(
-            similarity
-            for _, similarity in similarity_sum.items()
-        )
-        maximum_similarity_terms: Set[str] = {
-            term
-            for term, similarity in similarity_sum.items()
-            if similarity == maximum_similarity
-        }
-
-        if len(maximum_similarity_terms) != 1:
-            logger.debug(
-                f"The following terms were equally similar "
-                f"during evaluating the {self.name} axiom: "
-                f"{', '.join(maximum_similarity_terms)}"
-            )
-            return 0
-
-        maximum_similarity_term = next(iter(maximum_similarity_terms))
 
         return strictly_greater(
             context.term_frequency(document1, maximum_similarity_term),
