@@ -2,7 +2,7 @@ from abc import abstractmethod, ABC
 from functools import lru_cache, cached_property
 from math import log
 from pathlib import Path
-from typing import Optional, Union, FrozenSet, Tuple
+from typing import Optional, Union, FrozenSet, Sequence
 
 from diskcache import Cache
 
@@ -51,7 +51,10 @@ class IndexContext(ABC):
             )
 
     @abstractmethod
-    def terms(self, query_or_document: Union[Query, Document]) -> Tuple[str]:
+    def terms(
+            self,
+            query_or_document: Union[Query, Document]
+    ) -> Sequence[str]:
         pass
 
     def term_set(

@@ -3,7 +3,7 @@ from functools import cached_property, lru_cache
 from json import loads
 from logging import warning
 from pathlib import Path
-from typing import Optional, Union, Callable, NamedTuple, Tuple
+from typing import Optional, Union, Callable, NamedTuple, Sequence
 
 from ir_datasets import load, Dataset
 from ir_datasets.indices import Docstore
@@ -113,7 +113,7 @@ class PyseriniIndexContext(IndexContext):
     def terms(
             self,
             query_or_document: Union[Query, Document]
-    ) -> Tuple[str]:
+    ) -> Sequence[str]:
         text = self.contents(query_or_document)
         return tuple(str(term) for term in self._index_reader.analyze(text))
 

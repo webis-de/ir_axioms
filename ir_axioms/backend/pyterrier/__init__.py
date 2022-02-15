@@ -3,7 +3,7 @@ from functools import cached_property, lru_cache
 from logging import warning
 from pathlib import Path
 from re import split
-from typing import Optional, Union, Callable, NamedTuple, Tuple
+from typing import Optional, Union, Callable, NamedTuple, Sequence
 
 from ir_datasets import Dataset, load
 from ir_datasets.indices import Docstore
@@ -93,7 +93,7 @@ class TerrierIndexContext(IndexContext):
         return meta_index
 
     @cached_property
-    def _meta_index_keys(self) -> Tuple[str]:
+    def _meta_index_keys(self) -> Sequence[str]:
         return tuple(str(key) for key in self._meta_index.getKeys())
 
     @cached_property
@@ -192,7 +192,7 @@ class TerrierIndexContext(IndexContext):
         return self.tokeniser
 
     @cached_property
-    def _term_pipelines(self) -> Tuple[TermPipelineAccessor]:
+    def _term_pipelines(self) -> Sequence[TermPipelineAccessor]:
         term_pipelines = str(ApplicationSetup.getProperty(
             "termpipelines",
             "Stopwords,PorterStemmer"
@@ -203,7 +203,7 @@ class TerrierIndexContext(IndexContext):
         )
 
     @lru_cache(None)
-    def _terms(self, text: str) -> Tuple[str]:
+    def _terms(self, text: str) -> Sequence[str]:
         reader = StringReader(text)
         terms = tuple(
             str(term)
@@ -220,7 +220,10 @@ class TerrierIndexContext(IndexContext):
             )
         return terms
 
-    def terms(self, query_or_document: Union[Query, Document]) -> Tuple[str]:
+    def terms(
+            self,
+            query_or_document: Union[Query, Document]
+    ) -> Sequence[str]:
         text = self.contents(query_or_document)
         return self._terms(text)
 
