@@ -128,6 +128,8 @@ def _query_term_position_in_argument(
                 break
         if not found:
             term_arg_pos.append(penalty)
+    if len(term_arg_pos) == 0:
+        return penalty
     return mean(term_arg_pos)
 
 
@@ -307,6 +309,9 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
     ):
         arguments1 = self.analyze_text(context, document1)
         arguments2 = self.analyze_text(context, document2)
+
+        if len(arguments1) == 0 or len(arguments2) == 0:
+            return 0
 
         penalty = self.penalty
         if penalty is None:
