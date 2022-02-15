@@ -96,16 +96,22 @@ class _STMC2(Axiom, TermSimilarityMixin, ABC):
                 return nan
             return tf_most_similar_non_query_term / tf_most_similar_query_term
 
-        if approximately_equal(
-                len(document2_terms) / len(document1_terms),
-                term_frequency_ratio(document2, document1),
-                margin_fraction=0.2
+        if (
+                len(document1_terms) > 0 and
+                approximately_equal(
+                    len(document2_terms) / len(document1_terms),
+                    term_frequency_ratio(document2, document1),
+                    margin_fraction=0.2
+                )
         ):
             return 1
-        elif approximately_equal(
-                len(document1_terms) / len(document2_terms),
-                term_frequency_ratio(document1, document2),
-                margin_fraction=0.2
+        elif (
+                len(document2_terms) > 0 and
+                approximately_equal(
+                    len(document1_terms) / len(document2_terms),
+                    term_frequency_ratio(document1, document2),
+                    margin_fraction=0.2
+                )
         ):
             return -1
 
