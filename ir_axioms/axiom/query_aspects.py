@@ -156,6 +156,7 @@ class _ASPECT_REG(Axiom, TermSimilarityMixin, ABC):
     Zheng, W., Fang, H.: Query aspect based term weighting regularization
     in information retrieval. In: Gurrin, C., et al. (eds.) ECIR 2010.
     """
+    term_discriminator_margin_fraction: float = 0.1
 
     def preference(
             self,
@@ -174,7 +175,10 @@ class _ASPECT_REG(Axiom, TermSimilarityMixin, ABC):
             context.inverse_document_frequency(term)
             for term in query_terms
         }
-        if not approximately_equal(*term_discriminators):
+        if not approximately_equal(
+                *term_discriminators,
+                self.term_discriminator_margin_fraction
+        ):
             # Require same term discriminator for all query terms.
             return 0
 
