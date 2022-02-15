@@ -4,7 +4,7 @@ from functools import cached_property
 from itertools import product
 from logging import DEBUG
 from pathlib import Path
-from typing import Union, Optional, List, Set, Sequence, final, Callable
+from typing import Union, Optional, Set, Sequence, final, Callable
 
 from ir_datasets import Dataset
 from numpy import array
@@ -105,7 +105,7 @@ class AxiomTransformer(PerGroupTransformer, ABC):
         query = Query(topics_or_res.iloc[0]["query"])
 
         # Load document list.
-        documents: List[RankedDocument]
+        documents: Sequence[RankedDocument]
         if (
                 self.contents_accessor is not None and
                 isinstance(self.contents_accessor, str) and
@@ -137,7 +137,7 @@ class AxiomTransformer(PerGroupTransformer, ABC):
     def transform_query_ranking(
             self,
             query: Query,
-            documents: List[RankedDocument],
+            documents: Sequence[RankedDocument],
             topics_or_res: DataFrame,
     ) -> DataFrame:
         pass
@@ -189,7 +189,7 @@ class AxiomaticReranker(SingleAxiomTransformer):
     def transform_query_ranking(
             self,
             query: Query,
-            documents: List[RankedDocument],
+            documents: Sequence[RankedDocument],
             topics_or_res: DataFrame,
     ) -> DataFrame:
         # Rerank documents.
@@ -221,7 +221,7 @@ class AggregatedAxiomaticPreference(MultiAxiomTransformer):
 
     axioms: Sequence[AxiomLike]
     index: Union[Path, IndexRef, Index]
-    aggregation: Callable[[List[float]], float] = sum
+    aggregation: Callable[[Sequence[float]], float] = sum
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Optional[Tokeniser] = None
@@ -231,7 +231,7 @@ class AggregatedAxiomaticPreference(MultiAxiomTransformer):
     def transform_query_ranking(
             self,
             query: Query,
-            documents: List[RankedDocument],
+            documents: Sequence[RankedDocument],
             topics_or_res: DataFrame,
     ) -> DataFrame:
         axioms = self.axioms
@@ -272,7 +272,7 @@ class AxiomaticPreferences(MultiAxiomTransformer):
     def transform_query_ranking(
             self,
             query: Query,
-            documents: List[RankedDocument],
+            documents: Sequence[RankedDocument],
             topics_or_res: DataFrame,
     ) -> DataFrame:
         # Cross product.

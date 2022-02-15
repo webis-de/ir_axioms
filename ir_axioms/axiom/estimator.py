@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
-from typing import List, Tuple, TypeVar, Iterable
+from typing import Tuple, Iterable, Sequence, Union
 
 from numpy import array
 from sklearn.base import is_classifier
@@ -35,13 +35,13 @@ class EstimatorAxiom(Axiom, ABC):
             self,
             target: Axiom,
             context: IndexContext,
-            query_documents: Iterable[Tuple[Query, List[RankedDocument]]],
+            query_documents: Iterable[Tuple[Query, Sequence[RankedDocument]]],
     ) -> None:
         pass
 
 
 def _query_document_pairs(
-        query_rankings: Iterable[Tuple[Query, List[RankedDocument]]]
+        query_rankings: Iterable[Tuple[Query, Sequence[RankedDocument]]]
 ) -> Iterable[Tuple[
     Query,
     RankedDocument,
@@ -55,8 +55,7 @@ def _query_document_pairs(
     )
 
 
-ScikitEstimatorType = TypeVar(
-    "ScikitEstimatorType",
+ScikitEstimatorType = Union[
     AdaBoostClassifier,
     AdaBoostRegressor,
     BaggingClassifier,
@@ -90,19 +89,19 @@ ScikitEstimatorType = TypeVar(
     DecisionTreeRegressor,
     ExtraTreeClassifier,
     ExtraTreeRegressor,
-)
+]
 
 
 @dataclass
 class ScikitLearnEstimatorAxiom(EstimatorAxiom, ABC):
-    axioms: List[Axiom]
+    axioms: Sequence[Axiom]
     estimator: ScikitEstimatorType = RandomForestClassifier
 
     def fit(
             self,
             target: Axiom,
             context: IndexContext,
-            query_rankings: Iterable[Tuple[Query, List[RankedDocument]]]
+            query_rankings: Iterable[Tuple[Query, Sequence[RankedDocument]]]
     ) -> None:
         query_document_pairs = _query_document_pairs(query_rankings)
         preferences_x = array([

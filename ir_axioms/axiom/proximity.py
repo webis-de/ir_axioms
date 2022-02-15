@@ -101,7 +101,7 @@ def _query_term_index_groups(
         document_terms: Sequence[str]
 ) -> Sequence[Sequence[int]]:
     index_groups = []
-    indexes = defaultdict(list)
+    indexes = defaultdict(lambda: [])
     for index, term in enumerate(document_terms):
         if term in query_terms:
             indexes[term].append(index)

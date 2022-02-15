@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from inspect import isabstract
-from typing import final, List, Union, Callable
+from typing import final, Union, Callable, Sequence
 
 from numpy import array, ndarray
 
@@ -211,8 +211,8 @@ class Axiom(ABC):
             self,
             context: IndexContext,
             query: Query,
-            ranking: List[RankedDocument],
-    ) -> List[RankedDocument]:
+            ranking: Sequence[RankedDocument],
+    ) -> Sequence[RankedDocument]:
         from ir_axioms.modules.ranking import kwik_sort, reset_score
 
         ranking = kwik_sort(self, query, context, ranking)
@@ -224,8 +224,8 @@ class Axiom(ABC):
             self,
             context: IndexContext,
             query: Query,
-            ranking: List[RankedDocument],
-    ) -> List[List[float]]:
+            ranking: Sequence[RankedDocument],
+    ) -> Sequence[Sequence[float]]:
         return [
             [
                 self.preference(context, query, document1, document2)
@@ -239,7 +239,7 @@ class Axiom(ABC):
             self,
             context: IndexContext,
             query: Query,
-            ranking: List[RankedDocument],
+            ranking: Sequence[RankedDocument],
     ) -> ndarray:
         return array(self.preferences(context, query, ranking))
 
@@ -248,9 +248,9 @@ class Axiom(ABC):
             self,
             context: IndexContext,
             query: Query,
-            ranking: List[RankedDocument],
-            aggregation: Callable[[List[float]], float]
-    ) -> List[float]:
+            ranking: Sequence[RankedDocument],
+            aggregation: Callable[[Sequence[float]], float]
+    ) -> Sequence[float]:
         return [
             aggregation(preferences)
             for preferences in self.preferences(context, query, ranking)

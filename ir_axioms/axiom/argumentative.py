@@ -3,7 +3,7 @@ from functools import lru_cache
 from math import nan
 from pathlib import Path
 from statistics import mean
-from typing import List, Set, Dict, Optional
+from typing import Set, Dict, Optional
 
 from nltk import WordNetLemmatizer, sent_tokenize, word_tokenize
 from targer_api import (
@@ -110,7 +110,7 @@ def _query_term_position_in_argument(
         penalty: int,
         normalize: bool = True,
 ) -> float:
-    term_arg_pos: List[int] = []
+    term_argument_position = []
     tags = [tag for sentence in sentences for tag in sentence]
     for term in context.terms(query):
         normalized_term = _normalize(term) if normalize else term
@@ -124,14 +124,14 @@ def _query_term_position_in_argument(
                     tag.label != ArgumentLabel.O and
                     tag.probability > 0.5
             ):
-                term_arg_pos.append(position)
+                term_argument_position.append(position)
                 found = True
                 break
         if not found:
-            term_arg_pos.append(penalty)
-    if len(term_arg_pos) == 0:
+            term_argument_position.append(penalty)
+    if len(term_argument_position) == 0:
         return penalty
-    return mean(term_arg_pos)
+    return mean(term_argument_position)
 
 
 @lru_cache(None)

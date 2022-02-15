@@ -3,7 +3,7 @@ from functools import lru_cache, cached_property
 from itertools import product, combinations
 from statistics import mean
 from typing import (
-    final, List, Final, Iterable, Dict, Collection, Optional, Tuple
+    final, Final, Iterable, Dict, Collection, Optional, Tuple, Sequence
 )
 
 from nltk.corpus import wordnet
@@ -16,7 +16,7 @@ from ir_axioms.utils.nltk import download_nltk_dependencies
 def synonym_set(
         term: str,
         smoothing: int = 0
-) -> List[str]:
+) -> Sequence[str]:
     cutoff = smoothing + 1
     return wordnet.synsets(term)[:cutoff]
 

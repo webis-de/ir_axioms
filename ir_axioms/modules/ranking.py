@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
 from random import Random
-from typing import List, Optional, Any
+from typing import Optional, Any, Sequence
 
 from ir_axioms import logger
 from ir_axioms.axiom.base import Axiom
@@ -16,7 +16,7 @@ class PivotSelection(ABC):
             axiom: Axiom,
             query: Query,
             context: IndexContext,
-            vertices: List[RankedDocument]
+            vertices: Sequence[RankedDocument]
     ) -> RankedDocument:
         pass
 
@@ -34,7 +34,7 @@ class RandomPivotSelection(PivotSelection):
             axiom: Axiom,
             query: Query,
             context: IndexContext,
-            vertices: List[RankedDocument]
+            vertices: Sequence[RankedDocument]
     ) -> RankedDocument:
         return vertices[self._random.randint(0, len(vertices) - 1)]
 
@@ -46,7 +46,7 @@ class FirstPivotSelection(PivotSelection):
             axiom: Axiom,
             query: Query,
             context: IndexContext,
-            vertices: List[RankedDocument]
+            vertices: Sequence[RankedDocument]
     ) -> RankedDocument:
         return vertices[0]
 
@@ -58,7 +58,7 @@ class LastPivotSelection(PivotSelection):
             axiom: Axiom,
             query: Query,
             context: IndexContext,
-            vertices: List[RankedDocument]
+            vertices: Sequence[RankedDocument]
     ) -> RankedDocument:
         return vertices[-1]
 
@@ -70,7 +70,7 @@ class MiddlePivotSelection(PivotSelection):
             axiom: Axiom,
             query: Query,
             context: IndexContext,
-            vertices: List[RankedDocument]
+            vertices: Sequence[RankedDocument]
     ) -> RankedDocument:
         return vertices[(len(vertices) - 1) // 2]
 
@@ -79,9 +79,9 @@ def kwik_sort(
         axiom: Axiom,
         query: Query,
         context: IndexContext,
-        vertices: List[RankedDocument],
+        vertices: Sequence[RankedDocument],
         pivot_selection: PivotSelection = RandomPivotSelection(),
-) -> List[RankedDocument]:
+) -> Sequence[RankedDocument]:
     if len(vertices) == 0:
         return []
 
@@ -128,7 +128,7 @@ def kwik_sort(
     return [*vertices_left, pivot, *vertices_right]
 
 
-def reset_score(ranking: List[RankedDocument]) -> List[RankedDocument]:
+def reset_score(ranking: Sequence[RankedDocument]) -> Sequence[RankedDocument]:
     length = len(ranking)
     return [
         RankedDocument(
