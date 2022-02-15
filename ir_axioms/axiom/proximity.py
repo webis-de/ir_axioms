@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from itertools import combinations
 from math import inf
 from statistics import mean
-from typing import Counter, Tuple, FrozenSet, Sequence
+from typing import Counter, FrozenSet, Sequence
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import (
@@ -41,7 +41,7 @@ def _same_query_term_subset(
 
 def _average_between_query_terms(
         query_terms: FrozenSet[str],
-        document_terms: Tuple[str]
+        document_terms: Sequence[str]
 ) -> float:
     query_term_pairs = set(combinations(query_terms, 2))
     if len(query_term_pairs) == 0:
@@ -75,7 +75,7 @@ def _all_query_terms_in_documents(
     )
 
 
-def _take_closest(sorted_items: Tuple[int], target: int):
+def _take_closest(sorted_items: Sequence[int], target: int):
     """
     Return closest value to n.
     If two numbers are equally close, return the smallest number.
@@ -98,7 +98,7 @@ def _take_closest(sorted_items: Tuple[int], target: int):
 
 def _query_term_index_groups(
         query_terms: FrozenSet[str],
-        document_terms: Tuple[str]
+        document_terms: Sequence[str]
 ) -> Sequence[Sequence[int]]:
     index_groups = []
     indexes = defaultdict(list)
@@ -119,7 +119,7 @@ def _query_term_index_groups(
 
 def _average_smallest_span(
         query_terms: FrozenSet[str],
-        document_terms: Tuple[str]
+        document_terms: Sequence[str]
 ) -> float:
     index_groups = _query_term_index_groups(query_terms, document_terms)
     if len(index_groups) == 0:
@@ -132,7 +132,7 @@ def _average_smallest_span(
 
 def _closest_grouping_size_and_count(
         query_terms: FrozenSet[str],
-        document_terms: Tuple[str]
+        document_terms: Sequence[str]
 ):
     index_groups = _query_term_index_groups(query_terms, document_terms)
 
@@ -220,7 +220,7 @@ class PROX2(Axiom):
         return strictly_greater(first_position_sum2, first_position_sum1)
 
 
-def _find_index(query_terms: Tuple[str], document_terms: Tuple[str]):
+def _find_index(query_terms: Sequence[str], document_terms: Sequence[str]):
     query_terms_length = len(query_terms)
     terms_length = len(document_terms)
     for index, term in enumerate(document_terms):
