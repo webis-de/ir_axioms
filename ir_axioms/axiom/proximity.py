@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from itertools import combinations
 from math import inf
 from statistics import mean
-from typing import Counter, Tuple, FrozenSet, Generator
+from typing import Counter, Tuple, FrozenSet, Sequence
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import (
@@ -99,7 +99,8 @@ def _take_closest(sorted_items: Tuple[int], target: int):
 def _query_term_index_groups(
         query_terms: FrozenSet[str],
         document_terms: Tuple[str]
-) -> Generator[Tuple[int], None, None]:
+) -> Sequence[Sequence[int]]:
+    index_groups = []
     indexes = defaultdict(list)
     for index, term in enumerate(document_terms):
         if term in query_terms:
@@ -112,16 +113,20 @@ def _query_term_index_groups(
                 for other_term in other_query_terms
                 if len(indexes[other_term]) > 0
             )
-            yield group
+            index_groups.append(group)
+    return index_groups
 
 
 def _average_smallest_span(
         query_terms: FrozenSet[str],
         document_terms: Tuple[str]
-):
+) -> float:
+    index_groups = _query_term_index_groups(query_terms, document_terms)
+    if len(index_groups) == 0:
+        return inf
     return mean(
         max(group) - min(group)
-        for group in _query_term_index_groups(query_terms, document_terms)
+        for group in index_groups
     )
 
 

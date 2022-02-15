@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from functools import lru_cache
+from math import nan
 from pathlib import Path
 from statistics import mean
 from typing import List, Set, Dict, Optional
@@ -141,7 +142,7 @@ def _sentence_length(
     download_nltk_dependencies("punkt")
     sentences = sent_tokenize(context.contents(document))
     if len(sentences) == 0:
-        return 0
+        return nan
     return mean(
         len(word_tokenize(sentence, preserve_line=True))
         for sentence in sentences
@@ -320,7 +321,7 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
                 len(context.terms(document2)),
             ) + 1
 
-        position1 = mean(list(
+        position1 = mean(
             _query_term_position_in_argument(
                 context,
                 sentences,
@@ -329,8 +330,8 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
                 self.normalize
             )
             for _, sentences in arguments1.items()
-        ))
-        position2 = mean(list(
+        )
+        position2 = mean(
             _query_term_position_in_argument(
                 context,
                 sentences,
@@ -339,7 +340,7 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
                 self.normalize
             )
             for _, sentences in arguments2.items()
-        ))
+        )
 
         if position1 < position2:
             return 1

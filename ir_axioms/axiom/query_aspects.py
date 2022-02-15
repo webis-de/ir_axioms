@@ -47,6 +47,8 @@ class _REG(Axiom, TermSimilarityMixin, ABC):
             return 0
 
         similarity_sum = self.similarity_sums(query_terms)
+        if len(similarity_sum) == 0:
+            return 0
 
         minimum_similarity = min(
             similarity
@@ -106,6 +108,8 @@ class _ANTI_REG(Axiom, TermSimilarityMixin, ABC):
             return 0
 
         similarity_sum = self.similarity_sums(query_terms)
+        if len(similarity_sum) == 0:
+            return 0
 
         maximum_similarity = max(
             similarity

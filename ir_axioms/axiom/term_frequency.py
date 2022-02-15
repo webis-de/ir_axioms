@@ -49,13 +49,14 @@ class _TFC3(Axiom):
         sum_document1 = 0
         sum_document2 = 0
 
-        query_terms = set(context.terms(query))
+        query_terms = context.term_set(query)
         for query_term1, query_term2 in combinations(query_terms, 2):
-            idf1 = context.inverse_document_frequency(query_term1)
-            idf2 = context.inverse_document_frequency(query_term2)
-
-            term_discrimination1 = round(idf1, 2)
-            term_discrimination2 = round(idf2, 2)
+            term_discrimination1 = context.inverse_document_frequency(
+                query_term1
+            )
+            term_discrimination2 = context.inverse_document_frequency(
+                query_term2
+            )
 
             if approximately_equal(term_discrimination1, term_discrimination2):
                 d1q1 = context.term_frequency(document1, query_term1)
