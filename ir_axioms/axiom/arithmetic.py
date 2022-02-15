@@ -118,7 +118,7 @@ class AndAxiom(Axiom):
 
 
 @dataclass(frozen=True)
-class MajorityVoteAxiom(Axiom):
+class VoteAxiom(Axiom):
     axioms: Iterable[Axiom]
     minimum_votes: float = 0.5
     """
@@ -162,7 +162,7 @@ class MajorityVoteAxiom(Axiom):
         if isinstance(other, Axiom) and isclose(self.minimum_votes, 0.5):
             # Avoid chaining operators
             # if this vote has the default minimum vote proportion.
-            return MajorityVoteAxiom([*self.axioms, other])
+            return VoteAxiom([*self.axioms, other])
         else:
             return super().__mod__(other)
 

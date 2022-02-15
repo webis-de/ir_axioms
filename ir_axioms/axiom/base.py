@@ -125,8 +125,8 @@ class Axiom(ABC):
 
     def __mod__(self, other: "AxiomLike") -> "Axiom":
         if isinstance(other, Axiom):
-            from ir_axioms.axiom.arithmetic import MajorityVoteAxiom
-            return MajorityVoteAxiom([self, other])
+            from ir_axioms.axiom.arithmetic import VoteAxiom
+            return VoteAxiom([self, other])
         elif isinstance(other, (float, int, str)):
             from ir_axioms.axiom.conversion import to_axiom
             return self % to_axiom(other)

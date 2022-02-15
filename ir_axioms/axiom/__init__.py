@@ -23,7 +23,7 @@ SumAxiom = arithmetic.SumAxiom
 ProductAxiom = arithmetic.ProductAxiom
 MultiplicativeInverseAxiom = arithmetic.MultiplicativeInverseAxiom
 AndAxiom = arithmetic.AndAxiom
-MajorityVoteAxiom = arithmetic.MajorityVoteAxiom
+VoteAxiom = arithmetic.VoteAxiom
 NormalizedAxiom = arithmetic.NormalizedAxiom
 
 Axiom = base.Axiom
