@@ -1,7 +1,5 @@
 from abc import ABC
 from dataclasses import dataclass
-from itertools import combinations
-from statistics import mean
 from typing import Set, FrozenSet, List
 
 from ir_axioms import logger
@@ -182,10 +180,7 @@ class _ASPECT_REG(Axiom, TermSimilarityMixin, ABC):
             # Require same term discriminator for all query terms.
             return 0
 
-        average_similarity = mean(
-            self.similarity(term1, term2)
-            for term1, term2 in combinations(query_terms, 2)
-        )
+        average_similarity = self.average_similarity(query_terms, query_terms)
 
         query_aspects: List[Set[str]] = [{term} for term in query_terms]
 
