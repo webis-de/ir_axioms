@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
 from functools import lru_cache, cached_property
 from itertools import product, combinations
-from typing import final, List, Final, Iterable, Dict
+from statistics import mean
+from typing import (
+    final, List, Final, Iterable, Dict, Collection, Optional, Tuple
+)
 
 from nltk.corpus import wordnet
 from pymagnitude import Magnitude
@@ -58,12 +61,43 @@ class TermSimilarityMixin(ABC):
             similarity_sums[term2] += similarity
         return similarity_sums
 
+    @final
+    def average_similarity(
+            self,
+            terms1: Collection[str],
+            terms2: Collection[str]
+    ) -> float:
+        if len(terms1) == 0 or len(terms2) == 0:
+            return 0
+        return mean(
+            self.similarity(term1, term2)
+            for term1 in terms1
+            for term2 in terms2
+        )
+
+    def _pair_similarity(self, terms: Tuple[str, str]) -> float:
+        term1, term2 = terms
+        return self.similarity(term1, term2)
+
+    @final
+    def most_similar_pair(
+            self,
+            terms1: Collection[str],
+            terms2: Collection[str]
+    ) -> Optional[Tuple[str, str]]:
+        if len(terms1) == 0 or len(terms2) == 0:
+            return None
+        return max(
+            product(terms1, terms2),
+            key=self._pair_similarity
+        )
+
 
 class WordNetSynonymSetTermSimilarityMixin(TermSimilarityMixin):
     smoothing: int = 0
 
     def __init__(self):
-        download_nltk_dependencies("wordnet", "omw-1.4")
+        self.__post_init__()
 
     # noinspection PyMethodMayBeStatic
     def __post_init__(self):
