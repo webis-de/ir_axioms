@@ -9,7 +9,7 @@ from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.preconditions import LEN_Mixin
 from ir_axioms.axiom.utils import strictly_greater, approximately_equal
 from ir_axioms.model import Query, RankedDocument, IndexContext
-from ir_axioms.utils.similarity import (
+from ir_axioms.modules.similarity import (
     TermSimilarityMixin, WordNetSynonymSetTermSimilarityMixin,
     FastTextWikiNewsTermSimilarityMixin
 )
