@@ -213,10 +213,10 @@ class Axiom(ABC):
             query: Query,
             ranking: List[RankedDocument],
     ) -> List[RankedDocument]:
-        from ir_axioms.axiom.sort import _kwiksort, _reset_score
+        from ir_axioms.modules.ranking import kwik_sort, reset_score
 
-        ranking = _kwiksort(self, query, context, ranking)
-        ranking = _reset_score(ranking)
+        ranking = kwik_sort(self, query, context, ranking)
+        ranking = reset_score(ranking)
         return ranking
 
     @final
