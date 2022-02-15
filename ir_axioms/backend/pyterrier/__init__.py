@@ -142,13 +142,17 @@ class TerrierIndexContext(IndexContext):
         # Shortcut when ir_dataset is specified.
         documents_store = self._dataset_doc_store
         if documents_store is not None:
-            store_document = documents_store.get(document_id)
-            if self.contents_accessor is None:
-                return store_document.text
-            elif isinstance(self.contents_accessor, str):
-                return getattr(store_document, self.contents_accessor)
-            else:
-                return self.contents_accessor(store_document)
+            try:
+                store_document = documents_store.get(document_id)
+                if self.contents_accessor is None:
+                    return store_document.text
+                elif isinstance(self.contents_accessor, str):
+                    return getattr(store_document, self.contents_accessor)
+                else:
+                    return self.contents_accessor(store_document)
+            except KeyError:
+                # Document not found. Assume empty content.
+                return ""
 
         if (
                 self.contents_accessor is None or

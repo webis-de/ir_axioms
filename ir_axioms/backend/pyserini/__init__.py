@@ -93,13 +93,17 @@ class PyseriniIndexContext(IndexContext):
         # Shortcut when ir_dataset is specified.
         if self._dataset is not None:
             documents_store: Docstore = self._dataset.docs_store()
-            document = documents_store.get(document.id)
-            if self.contents_accessor is None:
-                return document.text
-            elif isinstance(self.contents_accessor, str):
-                return getattr(document, self.contents_accessor)
-            else:
-                return self.contents_accessor(document)
+            try:
+                document = documents_store.get(document.id)
+                if self.contents_accessor is None:
+                    return document.text
+                elif isinstance(self.contents_accessor, str):
+                    return getattr(document, self.contents_accessor)
+                else:
+                    return self.contents_accessor(document)
+            except KeyError:
+                # Document not found. Assume empty content.
+                return ""
 
         document = self._searcher.doc(document.id)
         json_document = loads(document.raw())
