@@ -13,7 +13,7 @@ from pandas.core.groupby import DataFrameGroupBy
 from tqdm.auto import tqdm
 
 from ir_axioms import logger
-from ir_axioms.axiom import AxiomLike, to_axiom
+from ir_axioms.axiom import AxiomLike, to_axiom, to_axioms
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.backend.pyterrier import TerrierIndexContext, ContentsAccessor
 from ir_axioms.backend.pyterrier.safe import TransformerBase
@@ -143,38 +143,8 @@ class AxiomTransformer(PerGroupTransformer, ABC):
         pass
 
 
-class SingleAxiomTransformer(AxiomTransformer, ABC):
-    axiom: AxiomLike
-    index: Union[Path, IndexRef, Index]
-    dataset: Optional[Union[Dataset, str]] = None
-    contents_accessor: Optional[ContentsAccessor] = "text"
-    tokeniser: Optional[Tokeniser] = None
-    cache_dir: Optional[Path] = None
-    verbose: bool = False
-    description: Optional[str] = None
-
-    @cached_property
-    def _axiom(self) -> Axiom:
-        return to_axiom(self.axiom)
-
-
-class MultiAxiomTransformer(AxiomTransformer, ABC):
-    axioms: Sequence[AxiomLike]
-    index: Union[Path, IndexRef, Index]
-    dataset: Optional[Union[Dataset, str]] = None
-    contents_accessor: Optional[ContentsAccessor] = "text"
-    tokeniser: Optional[Tokeniser] = None
-    cache_dir: Optional[Path] = None
-    verbose: bool = False
-    description: Optional[str] = None
-
-    @cached_property
-    def _axioms(self) -> Sequence[Axiom]:
-        return [to_axiom(axiom) for axiom in self.axioms]
-
-
 @dataclass(frozen=True)
-class AxiomaticReranker(SingleAxiomTransformer):
+class AxiomaticReranker(AxiomTransformer):
     name = "AxiomaticReranker"
     description = "Reranking query axiomatically"
 
@@ -186,6 +156,10 @@ class AxiomaticReranker(SingleAxiomTransformer):
     cache_dir: Optional[Path] = None
     verbose: bool = False
 
+    @cached_property
+    def _axiom(self) -> Axiom:
+        return to_axiom(self.axiom)
+
     def transform_query_ranking(
             self,
             query: Query,
@@ -193,7 +167,7 @@ class AxiomaticReranker(SingleAxiomTransformer):
             topics_or_res: DataFrame,
     ) -> DataFrame:
         # Rerank documents.
-        reranked_documents = self.axiom.rerank(
+        reranked_documents = self._axiom.rerank(
             self._context, query, documents
         )
 
@@ -215,7 +189,7 @@ class AxiomaticReranker(SingleAxiomTransformer):
 
 
 @dataclass(frozen=True)
-class AggregatedAxiomaticPreference(MultiAxiomTransformer):
+class AggregatedAxiomaticPreference(AxiomTransformer):
     name = "AggregatedAxiomaticPreference"
     description = "Aggregating query axiom preferences"
 
@@ -228,13 +202,17 @@ class AggregatedAxiomaticPreference(MultiAxiomTransformer):
     cache_dir: Optional[Path] = None
     verbose: bool = False
 
+    @cached_property
+    def _axioms(self) -> Sequence[Axiom]:
+        return to_axioms(self.axioms)
+
     def transform_query_ranking(
             self,
             query: Query,
             documents: Sequence[RankedDocument],
             topics_or_res: DataFrame,
     ) -> DataFrame:
-        axioms = self.axioms
+        axioms = self._axioms
         context = self._context
         aggregation = self.aggregation
 
@@ -256,7 +234,7 @@ class AggregatedAxiomaticPreference(MultiAxiomTransformer):
 
 
 @dataclass(frozen=True)
-class AxiomaticPreferences(MultiAxiomTransformer):
+class AxiomaticPreferences(AxiomTransformer):
     name = "AxiomaticPreferences"
     description = "Computing query axiom preferences"
 
@@ -268,6 +246,10 @@ class AxiomaticPreferences(MultiAxiomTransformer):
     tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None
     verbose: bool = False
+
+    @cached_property
+    def _axioms(self) -> Sequence[Axiom]:
+        return to_axioms(self.axioms)
 
     def transform_query_ranking(
             self,
@@ -284,7 +266,7 @@ class AxiomaticPreferences(MultiAxiomTransformer):
 
         # Compute axiom preferences.
         context = self._context
-        axioms = self.axioms
+        axioms = self._axioms
         if self.verbose and 0 < logger.level <= DEBUG:
             axioms = tqdm(
                 axioms,
