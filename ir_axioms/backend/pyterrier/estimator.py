@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Sequence, Union, Optional, Tuple, Iterable
+from typing import Sequence, Union, Optional
 
 from ir_datasets import Dataset
 from pandas import DataFrame
@@ -20,7 +20,7 @@ from ir_axioms.backend.pyterrier.transformer_utils import (
 )
 from ir_axioms.backend.pyterrier.transformers import AxiomaticReranker
 from ir_axioms.model import IndexContext
-from ir_axioms.model.base import Query, RankedDocument, JudgedRankedDocument
+from ir_axioms.model.base import RankedDocument, JudgedRankedDocument
 
 
 @dataclass(frozen=True)
@@ -89,16 +89,16 @@ class EstimatorKwikSortReranker(EstimatorBase):
             raise ValueError("No results to fit to")
 
         queries = load_queries(results_train)
-        documents: Sequence[RankedDocument] = load_documents(results_train,
-                                                             self.contents_accessor)
+        documents: Sequence[RankedDocument] = load_documents(
+            results_train,
+            self.contents_accessor
+        )
 
         # Because we joined with qrels before, it is safe to assume
         # that each document is judged.
         documents: Sequence[JudgedRankedDocument]
 
-        query_document_pairs: Iterable[Tuple[Query, JudgedRankedDocument]] = (
-            zip(queries, documents)
-        )
+        query_document_pairs = list(zip(queries, documents))
 
         self._estimator_axiom.fit_oracle(self._context, query_document_pairs)
 
