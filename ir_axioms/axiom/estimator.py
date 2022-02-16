@@ -146,7 +146,6 @@ class ScikitLearnEstimatorAxiom(EstimatorAxiom, ABC):
             # If estimator is classifier, normalize target preferences.
             # This will generate the classes: -1, 0, 1
             target = target.normalized()
-        target = target.cached()
 
         preferences_y = array([
             target.preference(
