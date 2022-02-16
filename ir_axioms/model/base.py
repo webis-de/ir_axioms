@@ -25,3 +25,13 @@ class RankedDocument(Document):
 @dataclass(frozen=True)
 class RankedTextDocument(TextDocument, RankedDocument):
     pass
+
+
+@dataclass(frozen=True)
+class JudgedRankedDocument(RankedDocument):
+    relevance: int
+
+
+@dataclass(frozen=True)
+class JudgedRankedTextDocument(TextDocument, JudgedRankedDocument):
+    pass
