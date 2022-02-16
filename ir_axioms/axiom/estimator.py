@@ -24,9 +24,10 @@ from sklearn.tree import (
     DecisionTreeClassifier, DecisionTreeRegressor, ExtraTreeClassifier,
     ExtraTreeRegressor
 )
+from tqdm.auto import tqdm
 
-from ir_axioms.axiom import ORACLE
 from ir_axioms.axiom.base import Axiom
+from ir_axioms.axiom.simple import ORACLE
 from ir_axioms.model import RankedDocument, Query, IndexContext, \
     JudgedRankedDocument
 
@@ -112,6 +113,7 @@ ScikitEstimatorType = Union[
 class ScikitLearnEstimatorAxiom(EstimatorAxiom, ABC):
     axioms: Sequence[Axiom]
     estimator: ScikitEstimatorType = RandomForestClassifier
+    verbose: bool = False
 
     def fit(
             self,
@@ -120,6 +122,13 @@ class ScikitLearnEstimatorAxiom(EstimatorAxiom, ABC):
             query_documents: Iterable[Tuple[Query, RankedDocument]],
     ) -> None:
         query_documents_pairs = _query_documents_pairs(query_documents)
+        axioms = self.axioms
+        if self.verbose:
+            query_documents_pairs = tqdm(
+                query_documents_pairs,
+                desc="Collecting axiom preferences",
+                unit="document pair",
+            )
         preferences_x = array([
             [
                 axiom.cached().preference(
@@ -128,7 +137,7 @@ class ScikitLearnEstimatorAxiom(EstimatorAxiom, ABC):
                     document1,
                     document2,
                 )
-                for axiom in self.axioms
+                for axiom in axioms
             ]
             for query, document1, document2 in query_documents_pairs
         ])
