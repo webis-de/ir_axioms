@@ -7,9 +7,8 @@ from ir_datasets import Dataset
 from pandas import DataFrame, concat
 from tqdm.auto import tqdm
 
-from ir_axioms.axiom import Axiom, OriginalAxiom
+from ir_axioms.axiom import Axiom, OriginalAxiom, OracleAxiom
 from ir_axioms.backend.pyterrier import ContentsAccessor
-from ir_axioms.backend.pyterrier.axiom import OracleAxiom
 from ir_axioms.backend.pyterrier.safe import Transformer
 from ir_axioms.backend.pyterrier.transformer_utils import (
     FilterTopicsTransformer, FilterQrelsTransformer, JoinQrelsTransformer
@@ -44,7 +43,7 @@ class AxiomaticExperiment:
     def _axioms(self) -> Sequence[Axiom]:
         return [
             OriginalAxiom(),
-            OracleAxiom(self.topics, self.qrels),
+            OracleAxiom(),
             *self.axioms,
         ]
 
