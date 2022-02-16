@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from functools import cached_property
+from typing import Sequence
 
 from ir_axioms import registry
 from ir_axioms.axiom.arithmetic import UniformAxiom
@@ -16,6 +17,10 @@ def to_axiom(axiom_like: AxiomLike) -> Axiom:
         return registry[axiom_like]
     else:
         raise ValueError(f"Cannot convert to axiom: {axiom_like}")
+
+
+def to_axioms(axiom_likes: Sequence[AxiomLike]) -> Sequence[Axiom]:
+    return [to_axiom(axiom_like) for axiom_like in axiom_likes]
 
 
 @dataclass(frozen=True)

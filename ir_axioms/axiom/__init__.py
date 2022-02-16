@@ -32,6 +32,7 @@ AxiomLike = base.AxiomLike
 CachedAxiom = cache.CachedAxiom
 
 to_axiom = conversion.to_axiom
+to_axioms = conversion.to_axioms
 AutoAxiom = conversion.AutoAxiom
 
 EstimatorAxiom = estimator.EstimatorAxiom
