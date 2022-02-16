@@ -12,7 +12,7 @@ from ir_axioms.backend.pyterrier import ContentsAccessor
 from ir_axioms.backend.pyterrier.axiom import OracleAxiom
 from ir_axioms.backend.pyterrier.safe import Transformer
 from ir_axioms.backend.pyterrier.transformer_utils import (
-    FilterTopicsTransformer, FilterQrelsTransformer
+    FilterTopicsTransformer, FilterQrelsTransformer, JoinQrelsTransformer
 )
 from ir_axioms.backend.pyterrier.transformers import AxiomaticPreferences
 from ir_axioms.backend.pyterrier.util import IndexRef, Index, Tokeniser
@@ -67,6 +67,10 @@ class AxiomaticExperiment:
     def _filter_qrels(self) -> Transformer:
         return FilterQrelsTransformer(self.qrels)
 
+    @cached_property
+    def _join_qrels(self) -> Transformer:
+        return JoinQrelsTransformer(self.qrels)
+
     def _pipeline(self, system: Transformer) -> Transformer:
         pipeline = system
         if self.depth is not None:
@@ -76,6 +80,7 @@ class AxiomaticExperiment:
             pipeline = pipeline >> self._filter_topics
         if self.filter_by_qrels:
             pipeline = pipeline >> self._filter_qrels
+        pipeline = pipeline >> self._join_qrels
         return pipeline
 
     @cached_property
