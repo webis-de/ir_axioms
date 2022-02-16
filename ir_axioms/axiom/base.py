@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from inspect import isabstract
-from typing import final, Union, Callable, Sequence
+from math import nan
+from typing import final, Union, Callable, Sequence, Optional
 
 from numpy import array, ndarray
 
@@ -225,11 +226,16 @@ class Axiom(ABC):
             context: IndexContext,
             query: Query,
             ranking: Sequence[RankedDocument],
+            filter_pairs: Optional[Callable[
+                [RankedDocument, RankedDocument],
+                bool
+            ]] = None,
     ) -> Sequence[Sequence[float]]:
         return [
             [
                 self.preference(context, query, document1, document2)
                 for document2 in ranking
+                if filter_pairs is None or filter_pairs(document1, document2)
             ]
             for document1 in ranking
         ]
@@ -240,8 +246,20 @@ class Axiom(ABC):
             context: IndexContext,
             query: Query,
             ranking: Sequence[RankedDocument],
+            filter_pairs: Optional[Callable[
+                [RankedDocument, RankedDocument],
+                bool
+            ]] = None,
     ) -> ndarray:
-        return array(self.preferences(context, query, ranking))
+        return array([
+            [
+                self.preference(context, query, document1, document2)
+                if filter_pairs is None or filter_pairs(document1, document2)
+                else nan
+                for document2 in ranking
+            ]
+            for document1 in ranking
+        ])
 
     @final
     def aggregated_preference(
@@ -249,11 +267,20 @@ class Axiom(ABC):
             context: IndexContext,
             query: Query,
             ranking: Sequence[RankedDocument],
-            aggregation: Callable[[Sequence[float]], float]
+            aggregation: Callable[[Sequence[float]], float],
+            filter_pairs: Optional[Callable[
+                [RankedDocument, RankedDocument],
+                bool
+            ]] = None,
     ) -> Sequence[float]:
         return [
             aggregation(preferences)
-            for preferences in self.preferences(context, query, ranking)
+            for preferences in self.preferences(
+                context,
+                query,
+                ranking,
+                filter_pairs,
+            )
         ]
 
 
