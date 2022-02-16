@@ -128,5 +128,5 @@ class JoinQrelsTransformer(TransformerBase):
         return ranking.merge(
             self.qrels,
             on=["qid", "docno"],
-            validate="many_to_one"
+            how="left"
         )
