@@ -1,5 +1,6 @@
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
+from itertools import groupby
 from typing import Tuple, Iterable, Sequence, Union
 
 from numpy import array
@@ -24,8 +25,10 @@ from sklearn.tree import (
     ExtraTreeRegressor
 )
 
+from ir_axioms.axiom import ORACLE
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.model import RankedDocument, Query, IndexContext
+from ir_axioms.model import RankedDocument, Query, IndexContext, \
+    JudgedRankedDocument
 
 
 class EstimatorAxiom(Axiom, ABC):
@@ -35,23 +38,36 @@ class EstimatorAxiom(Axiom, ABC):
             self,
             target: Axiom,
             context: IndexContext,
-            query_documents: Iterable[Tuple[Query, Sequence[RankedDocument]]],
+            query_documents: Iterable[Tuple[Query, RankedDocument]],
     ) -> None:
         pass
 
+    def fit_oracle(
+            self,
+            context: IndexContext,
+            query_documents: Iterable[Tuple[Query, JudgedRankedDocument]],
+    ) -> None:
+        return self.fit(ORACLE(), context, query_documents)
 
-def _query_document_pairs(
-        query_rankings: Iterable[Tuple[Query, Sequence[RankedDocument]]]
+
+def _query(query_document_pair: Tuple[Query, RankedDocument]) -> Query:
+    query, _ = query_document_pair
+    return query
+
+
+def _query_documents_pairs(
+        query_document_pairs: Iterable[Tuple[Query, RankedDocument]]
 ) -> Iterable[Tuple[
     Query,
     RankedDocument,
     RankedDocument,
 ]]:
+    queries = groupby(query_document_pairs, key=_query)
     return (
         (query, document1, document2)
-        for query, ranking in query_rankings
-        for document1 in ranking
-        for document2 in ranking
+        for query, query_documents in queries
+        for _, document1 in query_documents
+        for _, document2 in query_documents
     )
 
 
@@ -101,9 +117,9 @@ class ScikitLearnEstimatorAxiom(EstimatorAxiom, ABC):
             self,
             target: Axiom,
             context: IndexContext,
-            query_rankings: Iterable[Tuple[Query, Sequence[RankedDocument]]]
+            query_documents: Iterable[Tuple[Query, RankedDocument]],
     ) -> None:
-        query_document_pairs = _query_document_pairs(query_rankings)
+        query_documents_pairs = _query_documents_pairs(query_documents)
         preferences_x = array([
             [
                 axiom.cached().preference(
@@ -114,7 +130,7 @@ class ScikitLearnEstimatorAxiom(EstimatorAxiom, ABC):
                 )
                 for axiom in self.axioms
             ]
-            for query, document1, document2 in query_document_pairs
+            for query, document1, document2 in query_documents_pairs
         ])
 
         if is_classifier(self.estimator):
@@ -130,7 +146,7 @@ class ScikitLearnEstimatorAxiom(EstimatorAxiom, ABC):
                 document1,
                 document2,
             )
-            for query, document1, document2 in query_document_pairs
+            for query, document1, document2 in query_documents_pairs
         ])
 
         self.estimator.fit(preferences_x, preferences_y)
