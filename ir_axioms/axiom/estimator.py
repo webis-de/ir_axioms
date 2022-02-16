@@ -58,18 +58,18 @@ def _query(query_document_pair: Tuple[Query, RankedDocument]) -> Query:
 
 def _query_documents_pairs(
         query_document_pairs: Iterable[Tuple[Query, RankedDocument]]
-) -> Iterable[Tuple[
+) -> Sequence[Tuple[
     Query,
     RankedDocument,
     RankedDocument,
 ]]:
     queries = groupby(query_document_pairs, key=_query)
-    return (
+    return [
         (query, document1, document2)
         for query, query_documents in queries
         for _, document1 in query_documents
         for _, document2 in query_documents
-    )
+    ]
 
 
 ScikitEstimatorType = Union[
