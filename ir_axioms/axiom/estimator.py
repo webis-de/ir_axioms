@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from itertools import groupby
-from typing import Tuple, Iterable, Sequence, Union
+from typing import Tuple, Iterable, Sequence, Union, Optional, Callable
 
 from numpy import array
 from sklearn.base import is_classifier
@@ -40,6 +40,10 @@ class EstimatorAxiom(Axiom, ABC):
             target: Axiom,
             context: IndexContext,
             query_documents: Iterable[Tuple[Query, RankedDocument]],
+            filter_pairs: Optional[Callable[
+                [RankedDocument, RankedDocument],
+                bool
+            ]] = None,
     ) -> None:
         pass
 
@@ -47,8 +51,12 @@ class EstimatorAxiom(Axiom, ABC):
             self,
             context: IndexContext,
             query_documents: Iterable[Tuple[Query, JudgedRankedDocument]],
+            filter_pairs: Optional[Callable[
+                [JudgedRankedDocument, JudgedRankedDocument],
+                bool
+            ]] = None,
     ) -> None:
-        return self.fit(ORACLE(), context, query_documents)
+        return self.fit(ORACLE(), context, query_documents, filter_pairs)
 
 
 def _query(query_document_pair: Tuple[Query, RankedDocument]) -> Query:
@@ -120,9 +128,21 @@ class ScikitLearnEstimatorAxiom(EstimatorAxiom, ABC):
             target: Axiom,
             context: IndexContext,
             query_documents: Iterable[Tuple[Query, RankedDocument]],
+            filter_pairs: Optional[Callable[
+                [RankedDocument, RankedDocument],
+                bool
+            ]] = None,
     ) -> None:
-        query_documents_pairs = _query_documents_pairs(query_documents)
         axioms = self.axioms
+
+        query_documents_pairs = _query_documents_pairs(query_documents)
+        if filter_pairs is not None:
+            query_documents_pairs = [
+                (query, document1, document2)
+                for query, document1, document2 in query_documents_pairs
+                if filter_pairs(document1, document2)
+            ]
+
         if self.verbose:
             query_documents_pairs = tqdm(
                 query_documents_pairs,
