@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Sequence, Optional, Union
+from typing import Sequence, Optional, Union, Callable
 
 from ir_datasets import Dataset
 from pandas import DataFrame, concat
@@ -16,6 +16,7 @@ from ir_axioms.backend.pyterrier.transformer_utils import (
 )
 from ir_axioms.backend.pyterrier.transformers import AxiomaticPreferences
 from ir_axioms.backend.pyterrier.util import IndexRef, Index, Tokeniser
+from ir_axioms.model import JudgedRankedDocument
 
 
 @dataclass(frozen=True)
@@ -29,6 +30,10 @@ class AxiomaticExperiment:
     depth: Optional[int] = 10
     filter_by_qrels: bool = True
     filter_by_topics: bool = False
+    filter_pairs: Optional[Callable[
+        [JudgedRankedDocument, JudgedRankedDocument],
+        bool
+    ]] = None
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Optional[Tokeniser] = None
@@ -91,6 +96,7 @@ class AxiomaticExperiment:
             index=self.index,
             dataset=self.dataset,
             contents_accessor=self.contents_accessor,
+            filter_pairs=self.filter_pairs,
             tokeniser=self.tokeniser,
             cache_dir=self.cache_dir,
             verbose=self.verbose,
