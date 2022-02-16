@@ -42,7 +42,11 @@ class EstimatorKwikSortReranker(EstimatorBase):
 
     @cached_property
     def _estimator_axiom(self) -> EstimatorAxiom:
-        return ScikitLearnEstimatorAxiom(self._axioms, self.estimator)
+        return ScikitLearnEstimatorAxiom(
+            self._axioms,
+            self.estimator,
+            verbose=self.verbose
+        )
 
     @cached_property
     def _context(self) -> IndexContext:
