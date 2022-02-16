@@ -236,6 +236,10 @@ class AggregatedAxiomaticPreference(AxiomTransformer):
     aggregation: Callable[[Sequence[float]], float] = sum
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
+    filter_pairs: Optional[Callable[
+        [RankedDocument, RankedDocument],
+        bool
+    ]] = None
     tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None
     verbose: bool = False
@@ -253,13 +257,15 @@ class AggregatedAxiomaticPreference(AxiomTransformer):
         axioms = self._axioms
         context = self._context
         aggregation = self.aggregation
+        filter_pairs = self.filter_pairs
 
         aggregated_preferences = [
             axiom.aggregated_preference(
                 context,
                 query,
                 documents,
-                aggregation
+                aggregation,
+                filter_pairs,
             )
             for axiom in axioms
         ]
@@ -281,6 +287,10 @@ class AxiomaticPreferences(AxiomTransformer):
     axiom_names: Optional[Sequence[str]] = None
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
+    filter_pairs: Optional[Callable[
+        [RankedDocument, RankedDocument],
+        bool
+    ]] = None
     tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None
     verbose: bool = False
@@ -295,16 +305,30 @@ class AxiomaticPreferences(AxiomTransformer):
             documents: Sequence[RankedDocument],
             topics_or_res: DataFrame,
     ) -> DataFrame:
+        context = self._context
+        axioms = self._axioms
+        filter_pairs = self.filter_pairs
+
         # Cross product.
+        document_pairs = list(product(documents, documents))
         pairs = topics_or_res.merge(
             topics_or_res,
             on=list(self._all_group_columns(topics_or_res)),
             suffixes=("_a", "_b"),
         )
 
+        filter_mask = [
+            filter_pairs is None or filter_pairs(document1, document2)
+            for document1, document2 in document_pairs
+        ]
+        document_pairs = [
+            document
+            for include, document in zip(filter_mask, document_pairs)
+            if include
+        ]
+        pairs = pairs.where(filter_mask)
+
         # Compute axiom preferences.
-        context = self._context
-        axioms = self._axioms
         if self.verbose and 0 < logger.level <= DEBUG:
             axioms = tqdm(
                 axioms,
@@ -320,8 +344,6 @@ class AxiomaticPreferences(AxiomTransformer):
             names = self.axiom_names
         else:
             names = [str(axiom) for axiom in axioms]
-
-        document_pairs = list(product(documents, documents))
 
         for name, axiom in zip(names, axioms):
             if self.verbose and 0 < logger.level <= DEBUG:
