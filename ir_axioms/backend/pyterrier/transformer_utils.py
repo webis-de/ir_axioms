@@ -47,3 +47,21 @@ class FilterQrelsTransformer(TransformerBase):
             ranking["qid"].isin(self.qrels["qid"]) &
             ranking["docno"].isin(self.qrels["docno"])
             ]
+
+
+@dataclass(frozen=True)
+class JoinQrelsTransformer(TransformerBase):
+    """
+    Join query-document pairs with their relevance labels.
+    """
+
+    qrels: DataFrame
+
+    def transform(self, ranking: DataFrame) -> DataFrame:
+        qrels = self.qrels
+        assert {"qid", "docno", "label"} == set(qrels.columns)
+        return ranking.merge(
+            self.qrels,
+            on=["qid", "docno"],
+            validate="many_to_one"
+        )
