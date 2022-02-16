@@ -77,9 +77,11 @@ RS = retrieval_score.RS
 
 NopAxiom = simple.NopAxiom
 OriginalAxiom = simple.OriginalAxiom
+OracleAxiom = simple.OracleAxiom
 RandomAxiom = simple.RandomAxiom
 NOP = simple.NOP
 ORIG = simple.ORIG
+ORACLE = simple.ORACLE
 RANDOM = simple.RANDOM
 
 TFC1 = term_frequency.TFC1
