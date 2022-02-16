@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from ir_datasets import load
 from pyterrier import started, init
 from tqdm import tqdm
 
@@ -20,7 +19,6 @@ from pyterrier import Transformer
 from pyterrier.datasets import get_dataset
 from pyterrier.index import IterDictIndexer
 from pyterrier.io import read_results
-from pyterrier.text import get_text
 from ir_axioms.backend.pyterrier.experiment import AxiomaticExperiment
 
 
@@ -33,32 +31,36 @@ class Track:
 
 
 tracks = [
-    Track(
-        edition=28,
-        track="deep.documents",
-        dataset="msmarco-document/trec-dl-2019/judged",
-        contents_field="body",
-    ),
-    Track(
-        edition=28,
-        track="deep.passages",
-        dataset="msmarco-passage/trec-dl-2019/judged",
-        contents_field="text",
-    ),
+    # Track(
+    #     edition=28,
+    #     track="deep.documents",
+    #     dataset="msmarco-document/trec-dl-2019/judged",
+    #     contents_field="body",
+    # ),
+    # Track(
+    #     edition=28,
+    #     track="deep.passages",
+    #     dataset="msmarco-passage/trec-dl-2019/judged",
+    #     contents_field="text",
+    # ),
     Track(
         edition=29,
         track="deep.documents",
         dataset="msmarco-document/trec-dl-2020/judged",
         contents_field="body",
     ),
-    Track(
-        edition=29,
-        track="deep.passages",
-        dataset="msmarco-passage/trec-dl-2020/judged",
-        contents_field="text",
-    ),
+    # Track(
+    #     edition=29,
+    #     track="deep.passages",
+    #     dataset="msmarco-passage/trec-dl-2020/judged",
+    #     contents_field="text",
+    # ),
 ]
-depths = [10, 20, 50]
+depths = [
+    10,
+    20,
+    # 50,
+]
 configurations = [
     (track, depth)
     for depth in depths
@@ -122,9 +124,8 @@ print(f"Storing indices in {indices_dir.absolute()}")
 
 for track, depth in configurations:
     dataset = get_dataset(f"irds:{track.dataset}")
-    ir_dataset = load(track.dataset)
 
-    index_dir = indices_dir / track.dataset.replace("/", "-")
+    index_dir = indices_dir / track.dataset.split("/")[0]
     runs_dir = runs_base_dir / f"trec{track.edition}" / track.track
     run_files = list(runs_dir.iterdir())
 
@@ -136,8 +137,7 @@ for track, depth in configurations:
         )
 
     run = [
-        Transformer.from_df(read_results(result_file)) >>
-        get_text(dataset, track.contents_field)
+        Transformer.from_df(read_results(result_file))
         for result_file in tqdm(run_files, desc="Load runs")
     ]
     run_name = [
@@ -153,6 +153,7 @@ for track, depth in configurations:
         topics=dataset.get_topics(),
         qrels=dataset.get_qrels(),
         index=index_dir,
+        dataset=track.dataset,
         contents_accessor=track.contents_field,
         axioms=axioms,
         axiom_names=axiom_names,
