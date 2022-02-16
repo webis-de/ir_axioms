@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Sequence, Union, Optional
+from typing import Sequence, Union, Optional, Callable
 
 from ir_datasets import Dataset
 from pandas import DataFrame
@@ -16,7 +16,7 @@ from ir_axioms.backend.pyterrier import (
 )
 from ir_axioms.backend.pyterrier.safe import Transformer
 from ir_axioms.backend.pyterrier.transformer_utils import (
-    require_columns, JoinQrelsTransformer, load_documents, load_queries
+    require_columns, load_documents, load_queries
 )
 from ir_axioms.backend.pyterrier.transformers import AxiomaticReranker
 from ir_axioms.model import IndexContext
@@ -32,6 +32,10 @@ class EstimatorKwikSortReranker(EstimatorBase):
     index: Union[Path, IndexRef, Index]
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
+    filter_pairs: Optional[Callable[
+        [JudgedRankedDocument, JudgedRankedDocument],
+        bool
+    ]] = None
     tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None
     verbose: bool = False
@@ -86,8 +90,11 @@ class EstimatorKwikSortReranker(EstimatorBase):
         )
         require_columns(qrels_train, {"qid", "docno", "label"})
 
-        join_qrels = JoinQrelsTransformer(qrels_train)
-        results_train = join_qrels.transform(results_train)
+        results_train = results_train.merge(
+            qrels_train,
+            on=["qid", "docno"],
+            how="inner"
+        )
 
         if len(results_train.index) == 0:
             raise ValueError("No results to fit to")
@@ -104,7 +111,11 @@ class EstimatorKwikSortReranker(EstimatorBase):
 
         query_document_pairs = list(zip(queries, documents))
 
-        self._estimator_axiom.fit_oracle(self._context, query_document_pairs)
+        self._estimator_axiom.fit_oracle(
+            self._context,
+            query_document_pairs,
+            self.filter_pairs
+        )
 
         return self
 
