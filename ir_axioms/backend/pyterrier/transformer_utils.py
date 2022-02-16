@@ -3,11 +3,10 @@ from typing import Set
 
 from pandas import DataFrame
 
-from ir_axioms.backend.pyterrier.safe import Transformer, TransformerBase
+from ir_axioms.backend.pyterrier.safe import TransformerBase
 
 
-def _require_columns(
-        transformer: Transformer,
+def require_columns(
         ranking: DataFrame,
         expected_columns: Set[str],
 ) -> None:
@@ -15,7 +14,7 @@ def _require_columns(
     missing_columns: Set[str] = expected_columns - columns
     if len(missing_columns) > 0:
         raise ValueError(
-            f"{transformer.name} expected columns "
+            f"Expected columns "
             f"{', '.join(expected_columns)} but got columns "
             f"{', '.join(columns)} (missing columns "
             f"{', '.join(missing_columns)})."

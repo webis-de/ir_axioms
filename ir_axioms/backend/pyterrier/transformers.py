@@ -17,7 +17,7 @@ from ir_axioms.axiom import AxiomLike, to_axiom, to_axioms
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.backend.pyterrier import TerrierIndexContext, ContentsAccessor
 from ir_axioms.backend.pyterrier.safe import TransformerBase
-from ir_axioms.backend.pyterrier.transformer_utils import _require_columns
+from ir_axioms.backend.pyterrier.transformer_utils import require_columns
 from ir_axioms.backend.pyterrier.util import IndexRef, Index, Tokeniser
 from ir_axioms.model import (
     Query, RankedDocument, RankedTextDocument, IndexContext,
@@ -44,7 +44,7 @@ class PerGroupTransformer(TransformerBase, ABC):
 
     @final
     def transform(self, topics_or_res: DataFrame) -> DataFrame:
-        _require_columns(self, topics_or_res, self.group_columns)
+        require_columns(topics_or_res, self.group_columns)
 
         query_rankings: DataFrameGroupBy = topics_or_res.groupby(
             by=list(self._all_group_columns(topics_or_res)),
@@ -148,11 +148,7 @@ class AxiomTransformer(PerGroupTransformer, ABC):
 
     @final
     def transform_group(self, topics_or_res: DataFrame) -> DataFrame:
-        _require_columns(
-            self,
-            topics_or_res,
-            {"query", "docno", "rank", "score"}
-        )
+        require_columns(topics_or_res, {"query", "docno", "rank", "score"})
 
         if len(topics_or_res.index) == 0:
             # Empty ranking, skip reranking.
