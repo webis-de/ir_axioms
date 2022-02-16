@@ -6,7 +6,6 @@ from typing import Sequence, Union, Optional, Tuple, Iterable
 from ir_datasets import Dataset
 from pandas import DataFrame
 from pyterrier.transformer import EstimatorBase
-from sklearn.ensemble import RandomForestClassifier
 
 from ir_axioms.axiom import Axiom, AxiomLike, EstimatorAxiom, to_axioms
 from ir_axioms.axiom.estimator import (
@@ -29,8 +28,8 @@ class EstimatorKwikSortReranker(EstimatorBase):
     name = "EstimatorKwikSortReranker"
 
     axioms: Sequence[AxiomLike]
+    estimator: ScikitEstimatorType
     index: Union[Path, IndexRef, Index]
-    estimator: ScikitEstimatorType = RandomForestClassifier
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Optional[Tokeniser] = None

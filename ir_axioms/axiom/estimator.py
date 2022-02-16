@@ -112,7 +112,7 @@ ScikitEstimatorType = Union[
 @dataclass
 class ScikitLearnEstimatorAxiom(EstimatorAxiom, ABC):
     axioms: Sequence[Axiom]
-    estimator: ScikitEstimatorType = RandomForestClassifier
+    estimator: ScikitEstimatorType
     verbose: bool = False
 
     def fit(
