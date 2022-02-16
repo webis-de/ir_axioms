@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cached_property
 from itertools import product
 from logging import DEBUG
@@ -167,7 +167,9 @@ class AggregatedAxiomaticPreference(AxiomTransformer):
 
     axioms: Sequence[AxiomLike]
     index: Union[Path, IndexRef, Index]
-    aggregation: Callable[[Sequence[float]], float] = sum
+    aggregations: Sequence[Callable[[Sequence[float]], float]] = field(
+        default_factory=lambda: [sum]
+    )
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     filter_pairs: Optional[Callable[
@@ -190,10 +192,10 @@ class AggregatedAxiomaticPreference(AxiomTransformer):
     ) -> DataFrame:
         axioms = self._axioms
         context = self._context
-        aggregation = self.aggregation
+        aggregations = self.aggregations
         filter_pairs = self.filter_pairs
 
-        aggregated_preferences = [
+        aggregated_preferences = (
             axiom.aggregated_preference(
                 context,
                 query,
@@ -202,7 +204,8 @@ class AggregatedAxiomaticPreference(AxiomTransformer):
                 filter_pairs,
             )
             for axiom in axioms
-        ]
+            for aggregation in aggregations
+        )
 
         transposed = list(map(array, zip(*aggregated_preferences)))
 
