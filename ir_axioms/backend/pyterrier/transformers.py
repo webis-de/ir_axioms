@@ -4,11 +4,11 @@ from functools import cached_property
 from itertools import product
 from logging import DEBUG
 from pathlib import Path
-from typing import Union, Optional, Set, Sequence, final, Callable
+from typing import Union, Optional, Set, Sequence, final, Callable, Iterable
 
 from ir_datasets import Dataset
 from numpy import array
-from pandas import DataFrame
+from pandas import DataFrame, Series
 from pandas.core.groupby import DataFrameGroupBy
 from tqdm.auto import tqdm
 
@@ -20,7 +20,8 @@ from ir_axioms.backend.pyterrier.safe import TransformerBase
 from ir_axioms.backend.pyterrier.transformer_utils import _require_columns
 from ir_axioms.backend.pyterrier.util import IndexRef, Index, Tokeniser
 from ir_axioms.model import (
-    Query, RankedDocument, RankedTextDocument, IndexContext
+    Query, RankedDocument, RankedTextDocument, IndexContext,
+    JudgedRankedDocument, JudgedRankedTextDocument
 )
 
 
@@ -87,6 +88,64 @@ class AxiomTransformer(PerGroupTransformer, ABC):
             cache_dir=self.cache_dir,
         )
 
+    def _load_documents(
+            self,
+            columns: Sequence[str],
+            rows: Iterable[Series],
+    ) -> Sequence[RankedDocument]:
+        if "label" in columns:
+            if (
+                    self.contents_accessor is not None and
+                    isinstance(self.contents_accessor, str) and
+                    self.contents_accessor in columns
+            ):
+                # Load contents from dataframe column.
+                return [
+                    JudgedRankedTextDocument(
+                        id=str(row["docno"]),
+                        contents=str(row[self.contents_accessor]),
+                        score=float(row["score"]),
+                        rank=int(row["rank"]),
+                        relevance=int(row["label"]),
+                    )
+                    for row in rows
+                ]
+            else:
+                return [
+                    JudgedRankedDocument(
+                        id=str(row["docno"]),
+                        score=float(row["score"]),
+                        rank=int(row["rank"]),
+                        relevance=int(row["label"]),
+                    )
+                    for row in rows
+                ]
+        else:
+            if (
+                    self.contents_accessor is not None and
+                    isinstance(self.contents_accessor, str) and
+                    self.contents_accessor in columns
+            ):
+                # Load contents from dataframe column.
+                return [
+                    RankedTextDocument(
+                        id=str(row["docno"]),
+                        contents=str(row[self.contents_accessor]),
+                        score=float(row["score"]),
+                        rank=int(row["rank"]),
+                    )
+                    for row in rows
+                ]
+            else:
+                return [
+                    RankedDocument(
+                        id=str(row["docno"]),
+                        score=float(row["score"]),
+                        rank=int(row["rank"]),
+                    )
+                    for row in rows
+                ]
+
     @final
     def transform_group(self, topics_or_res: DataFrame) -> DataFrame:
         _require_columns(
@@ -105,31 +164,10 @@ class AxiomTransformer(PerGroupTransformer, ABC):
         query = Query(topics_or_res.iloc[0]["query"])
 
         # Load document list.
-        documents: Sequence[RankedDocument]
-        if (
-                self.contents_accessor is not None and
-                isinstance(self.contents_accessor, str) and
-                self.contents_accessor in topics_or_res.columns
-        ):
-            # Load contents from dataframe column.
-            documents = [
-                RankedTextDocument(
-                    id=str(row["docno"]),
-                    contents=str(row[self.contents_accessor]),
-                    score=float(row["score"]),
-                    rank=int(row["rank"]),
-                )
-                for index, row in topics_or_res.iterrows()
-            ]
-        else:
-            documents = [
-                RankedDocument(
-                    id=str(row["docno"]),
-                    score=float(row["score"]),
-                    rank=int(row["rank"]),
-                )
-                for index, row in topics_or_res.iterrows()
-            ]
+        documents = self._load_documents(
+            topics_or_res.columns,
+            (row for _, row in topics_or_res.iterrows())
+        )
 
         return self.transform_query_ranking(query, documents, topics_or_res)
 
