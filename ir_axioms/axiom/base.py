@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
 from inspect import isabstract
-from itertools import chain
 from math import nan
 from typing import final, Union, Callable, Sequence, Optional
 
-from numpy import ndarray, fromiter
+from numpy import ndarray, array, stack
 
 from ir_axioms import registry
 from ir_axioms.model import Query, RankedDocument, IndexContext
@@ -252,8 +251,8 @@ class Axiom(ABC):
                 bool
             ]] = None,
     ) -> ndarray:
-        preferences_1d = chain.from_iterable(
-            (
+        return stack(
+            array(
                 self.preference(context, query, document1, document2)
                 if filter_pairs is None or filter_pairs(document1, document2)
                 else nan
@@ -261,10 +260,6 @@ class Axiom(ABC):
             )
             for document1 in ranking
         )
-        return fromiter(
-            preferences_1d,
-            dtype=float
-        ).reshape(len(ranking), len(ranking))
 
     @final
     def aggregated_preference(
