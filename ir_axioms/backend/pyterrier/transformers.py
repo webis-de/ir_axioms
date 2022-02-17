@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Union, Optional, Set, Sequence, final, Callable
 
 from ir_datasets import Dataset
-from numpy import array
+from numpy import apply_along_axis, stack
 from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
 from tqdm.auto import tqdm
@@ -195,23 +195,31 @@ class AggregatedAxiomaticPreference(AxiomTransformer):
         aggregations = self.aggregations
         filter_pairs = self.filter_pairs
 
-        aggregated_preferences = (
-            axiom.aggregated_preference(
-                context,
-                query,
-                documents,
-                aggregation,
-                filter_pairs,
-            )
-            for axiom in axioms
-            for aggregation in aggregations
-        )
+        features = stack(
+            (
+                stack(
+                    (
+                        apply_along_axis(
+                            aggregation,
+                            0,
+                            axiom.preference_matrix(
+                                context,
+                                query,
+                                documents,
+                                filter_pairs,
+                            )
+                        )  # Shape: |documents|
+                        for aggregation in aggregations
+                    ),
+                    axis=1,
+                )  # Shape: |documents| x |aggregations|
+                for axiom in axioms
+            ),
+            axis=1,
+        )  # Shape: |documents| x |axioms| x |aggregations|
 
-        transposed = list(map(array, zip(*aggregated_preferences)))
-
-        features = topics_or_res
-        features["features"] = transposed
-        return features
+        # Shape: (|documents| * |axioms| * |aggregations|)
+        return features.reshape(1)
 
 
 @dataclass(frozen=True)
