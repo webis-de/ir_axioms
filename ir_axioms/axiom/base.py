@@ -261,49 +261,5 @@ class Axiom(ABC):
             for document1 in ranking
         )
 
-    @final
-    def aggregated_preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            ranking: Sequence[RankedDocument],
-            aggregation: Callable[[Sequence[float]], float],
-            filter_pairs: Optional[Callable[
-                [RankedDocument, RankedDocument],
-                bool
-            ]] = None,
-    ) -> Sequence[float]:
-        return [
-            aggregation(preferences)
-            for preferences in self.preferences(
-                context,
-                query,
-                ranking,
-                filter_pairs,
-            )
-        ]
-
-    @final
-    def multi_aggregated_preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            ranking: Sequence[RankedDocument],
-            aggregations: Sequence[Callable[[Sequence[float]], float]],
-            filter_pairs: Optional[Callable[
-                [RankedDocument, RankedDocument],
-                bool
-            ]] = None,
-    ) -> Sequence[Sequence[float]]:
-        return [
-            [aggregation(preferences) for aggregation in aggregations]
-            for preferences in self.preferences(
-                context,
-                query,
-                ranking,
-                filter_pairs,
-            )
-        ]
-
 
 AxiomLike = Union[Axiom, str, int, float]
