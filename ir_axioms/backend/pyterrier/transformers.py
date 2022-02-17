@@ -267,11 +267,11 @@ class AxiomaticPreferences(AxiomTransformer):
             for document1, document2 in document_pairs
         ]
         document_pairs = [
-            document
-            for include, document in zip(filter_mask, document_pairs)
+            document_pair
+            for include, document_pair in zip(filter_mask, document_pairs)
             if include
         ]
-        pairs = pairs.where(filter_mask)
+        pairs = pairs.loc[filter_mask]
 
         # Compute axiom preferences.
         if self.verbose and 0 < logger.level <= DEBUG:
