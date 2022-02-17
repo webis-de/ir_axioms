@@ -208,15 +208,15 @@ class Axiom(ABC):
         return CachedAxiom(self)
 
     @final
-    def rerank(
+    def rerank_kwiksort(
             self,
             context: IndexContext,
             query: Query,
             ranking: Sequence[RankedDocument],
     ) -> Sequence[RankedDocument]:
-        from ir_axioms.modules.ranking import kwik_sort, reset_score
+        from ir_axioms.modules.ranking import kwiksort, reset_score
 
-        ranking = kwik_sort(self, query, context, ranking)
+        ranking = kwiksort(self, query, context, ranking)
         ranking = reset_score(ranking)
         return ranking
 

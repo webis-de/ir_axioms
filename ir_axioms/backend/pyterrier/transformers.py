@@ -139,7 +139,7 @@ class AxiomaticReranker(AxiomTransformer):
             topics_or_res: DataFrame,
     ) -> DataFrame:
         # Rerank documents.
-        reranked_documents = self._axiom.rerank(
+        reranked_documents = self._axiom.rerank_kwiksort(
             self._context, query, documents
         )
 

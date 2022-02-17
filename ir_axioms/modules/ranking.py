@@ -75,7 +75,7 @@ class MiddlePivotSelection(PivotSelection):
         return vertices[(len(vertices) - 1) // 2]
 
 
-def kwik_sort(
+def kwiksort(
         axiom: Axiom,
         query: Query,
         context: IndexContext,
@@ -112,13 +112,13 @@ def kwik_sort(
                 f"and rank as pivot document {pivot}."
             )
 
-    vertices_left = kwik_sort(
+    vertices_left = kwiksort(
         axiom,
         query,
         context,
         vertices_left
     )
-    vertices_right = kwik_sort(
+    vertices_right = kwiksort(
         axiom,
         query,
         context,
