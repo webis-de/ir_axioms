@@ -221,26 +221,6 @@ class Axiom(ABC):
         return ranking
 
     @final
-    def preferences(
-            self,
-            context: IndexContext,
-            query: Query,
-            ranking: Sequence[RankedDocument],
-            filter_pairs: Optional[Callable[
-                [RankedDocument, RankedDocument],
-                bool
-            ]] = None,
-    ) -> Sequence[Sequence[float]]:
-        return [
-            [
-                self.preference(context, query, document1, document2)
-                for document2 in ranking
-                if filter_pairs is None or filter_pairs(document1, document2)
-            ]
-            for document1 in ranking
-        ]
-
-    @final
     def preference_matrix(
             self,
             context: IndexContext,
