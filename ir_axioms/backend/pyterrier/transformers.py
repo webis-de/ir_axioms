@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from dataclasses import dataclass, field
 from functools import cached_property
-from itertools import product
+from itertools import product, compress
 from logging import DEBUG
 from pathlib import Path
 from typing import Union, Optional, Set, Sequence, final, Callable
@@ -248,30 +248,30 @@ class AxiomaticPreferences(AxiomTransformer):
             self,
             query: Query,
             documents: Sequence[RankedDocument],
-            topics_or_res: DataFrame,
+            results: DataFrame,
     ) -> DataFrame:
         context = self._context
         axioms = self._axioms
         filter_pairs = self.filter_pairs
 
-        # Cross product.
-        document_pairs = list(product(documents, documents))
-        pairs = topics_or_res.merge(
-            topics_or_res,
-            on=list(self._all_group_columns(topics_or_res)),
+        # Result cross product.
+        results_pairs = results.merge(
+            results,
+            on=list(self._all_group_columns(results)),
             suffixes=("_a", "_b"),
         )
 
-        filter_mask = [
-            filter_pairs is None or filter_pairs(document1, document2)
-            for document1, document2 in document_pairs
-        ]
-        document_pairs = [
-            document_pair
-            for include, document_pair in zip(filter_mask, document_pairs)
-            if include
-        ]
-        pairs = pairs.loc[filter_mask]
+        # Document pairs.
+        document_pairs = list(product(documents, documents))
+
+        # Filter document pairs.
+        if filter_pairs is not None:
+            filter_mask = [
+                filter_pairs(document1, document2)
+                for document1, document2 in document_pairs
+            ]
+            results_pairs = results_pairs.loc[filter_mask]
+            document_pairs = list(compress(document_pairs, filter_mask))
 
         # Compute axiom preferences.
         if self.verbose and 0 < logger.level <= DEBUG:
@@ -290,7 +290,9 @@ class AxiomaticPreferences(AxiomTransformer):
         else:
             names = [str(axiom) for axiom in axioms]
 
-        for name, axiom in zip(names, axioms):
+        columns = [f"{name}_preference" for name in names]
+
+        for column, axiom in zip(columns, axioms):
             if self.verbose and 0 < logger.level <= DEBUG:
                 # Very verbose progress bars.
                 document_pairs = tqdm(
@@ -298,9 +300,9 @@ class AxiomaticPreferences(AxiomTransformer):
                     desc="Computing axiom preference",
                     unit="pair",
                 )
-            pairs[f"{name}_preference"] = [
+            results_pairs[column] = [
                 axiom.preference(context, query, document1, document2)
                 for document1, document2 in document_pairs
             ]
 
-        return pairs
+        return results_pairs
