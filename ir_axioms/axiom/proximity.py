@@ -321,3 +321,8 @@ class PROX5(Axiom):
         smallest_span2 = _average_smallest_span(query_terms, document2_terms)
 
         return strictly_less(smallest_span1, smallest_span2)
+
+# TODO: QPHRA axiom:
+#  For queries with highlighted phrases (e.g., via double quotes),
+#  prefer documents containing all the query phrases over
+#  documents not containing all phrases. [hagen:2016d]
