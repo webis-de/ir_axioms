@@ -231,15 +231,15 @@ class Axiom(ABC):
                 bool
             ]] = None,
     ) -> ndarray:
-        return stack(
-            array(
+        return stack(tuple(
+            array(tuple(
                 self.preference(context, query, document1, document2)
                 if filter_pairs is None or filter_pairs(document1, document2)
                 else nan
                 for document2 in ranking
-            )
+            ))
             for document1 in ranking
-        )
+        ))
 
 
 AxiomLike = Union[Axiom, str, int, float]
