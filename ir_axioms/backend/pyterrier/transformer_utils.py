@@ -47,7 +47,7 @@ def load_documents(
                     contents=str(row[contents_accessor]),
                     score=float(row["score"]),
                     rank=int(row["rank"]),
-                    relevance=int(row["label"]),
+                    relevance=float(row["label"]),
                 )
         else:
             def parser(row: Series) -> RankedDocument:
@@ -55,7 +55,7 @@ def load_documents(
                     id=str(row["docno"]),
                     score=float(row["score"]),
                     rank=int(row["rank"]),
-                    relevance=int(row["label"]),
+                    relevance=float(row["label"]),
                 )
     else:
         if has_contents_accessor:

@@ -29,7 +29,7 @@ class RankedTextDocument(TextDocument, RankedDocument):
 
 @dataclass(frozen=True)
 class JudgedRankedDocument(RankedDocument):
-    relevance: int
+    relevance: float
 
 
 @dataclass(frozen=True)
