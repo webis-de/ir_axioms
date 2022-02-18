@@ -195,30 +195,29 @@ class AggregatedAxiomaticPreference(AxiomTransformer):
         aggregations = self.aggregations
         filter_pairs = self.filter_pairs
 
+        # Shape: |documents| x |documents| x |axioms|
         features: ndarray = stack(tuple(
-            stack(tuple(
-                apply_along_axis(
-                    aggregation,
-                    0,
-                    axiom.preference_matrix(
-                        context,
-                        query,
-                        documents,
-                        filter_pairs,
-                    )
-                )  # Shape: |documents|
-                for aggregation in aggregations
-            ), axis=1)  # Shape: |documents| x |aggregations|
+            # Shape: |documents| x |documents|
+            axiom.preference_matrix(
+                context,
+                query,
+                documents,
+                filter_pairs,
+            )
             for axiom in axioms
-        ), axis=1)  # Shape: |documents| x |axioms| x |aggregations|
+        ), -1)
 
-        # Shape: |documents| x (|axioms| * |aggregations|)
-        features = features.reshape(
-            len(documents),
-            len(axioms) * len(aggregations)
-        )
+        # Shape: |documents| x |axioms| x |aggregations|
+        features = stack(tuple(
+            # Shape: |documents| x |axioms|
+            apply_along_axis(aggregation, 0, features)
+            for aggregation in aggregations
+        ), -1)
+
+        # Shape: |documents| x (|aggregations| * |axioms|)
+        features = features.reshape((features.shape[0], -1))
+
         topics_or_res["features"] = list(map(array, features))
-
         return topics_or_res
 
 
