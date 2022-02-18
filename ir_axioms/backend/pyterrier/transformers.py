@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Union, Optional, Set, Sequence, final, Callable
 
 from ir_datasets import Dataset
-from numpy import apply_along_axis, stack
+from numpy import apply_along_axis, stack, ndarray, array
 from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
 from tqdm.auto import tqdm
@@ -195,31 +195,31 @@ class AggregatedAxiomaticPreference(AxiomTransformer):
         aggregations = self.aggregations
         filter_pairs = self.filter_pairs
 
-        features = stack(
-            (
-                stack(
-                    (
-                        apply_along_axis(
-                            aggregation,
-                            0,
-                            axiom.preference_matrix(
-                                context,
-                                query,
-                                documents,
-                                filter_pairs,
-                            )
-                        )  # Shape: |documents|
-                        for aggregation in aggregations
-                    ),
-                    axis=1,
-                )  # Shape: |documents| x |aggregations|
-                for axiom in axioms
-            ),
-            axis=1,
-        )  # Shape: |documents| x |axioms| x |aggregations|
+        features: ndarray = stack(tuple(
+            stack(tuple(
+                apply_along_axis(
+                    aggregation,
+                    0,
+                    axiom.preference_matrix(
+                        context,
+                        query,
+                        documents,
+                        filter_pairs,
+                    )
+                )  # Shape: |documents|
+                for aggregation in aggregations
+            ), axis=1)  # Shape: |documents| x |aggregations|
+            for axiom in axioms
+        ), axis=1)  # Shape: |documents| x |axioms| x |aggregations|
 
-        # Shape: (|documents| * |axioms| * |aggregations|)
-        return features.reshape(1)
+        # Shape: |documents| x (|axioms| * |aggregations|)
+        features = features.reshape(
+            len(documents),
+            len(axioms) * len(aggregations)
+        )
+        topics_or_res["features"] = list(map(array, features))
+
+        return topics_or_res
 
 
 @dataclass(frozen=True)
