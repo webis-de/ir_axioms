@@ -210,7 +210,11 @@ class AggregatedAxiomaticPreference(AxiomTransformer):
         # Shape: |documents| x |axioms| x |aggregations|
         features = stack(tuple(
             # Shape: |documents| x |axioms|
-            apply_along_axis(aggregation, 0, features)
+            apply_along_axis(
+                lambda preferences: aggregation(preferences.tolist()),
+                0,
+                features
+            )
             for aggregation in aggregations
         ), -1)
 
