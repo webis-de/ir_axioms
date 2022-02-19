@@ -7,6 +7,7 @@ from numpy import ndarray, array, stack
 
 from ir_axioms import registry
 from ir_axioms.model import Query, RankedDocument, IndexContext
+from ir_axioms.modules.pivot import PivotSelection, RandomPivotSelection
 
 
 class Axiom(ABC):
@@ -213,10 +214,11 @@ class Axiom(ABC):
             context: IndexContext,
             query: Query,
             ranking: Sequence[RankedDocument],
+            pivot_selection: PivotSelection = RandomPivotSelection(),
     ) -> Sequence[RankedDocument]:
         from ir_axioms.modules.ranking import kwiksort, reset_score
 
-        ranking = kwiksort(self, query, context, ranking)
+        ranking = kwiksort(self, query, context, ranking, pivot_selection)
         ranking = reset_score(ranking)
         return ranking
 

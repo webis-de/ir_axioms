@@ -21,6 +21,7 @@ from ir_axioms.backend.pyterrier.transformer_utils import (
 from ir_axioms.backend.pyterrier.transformers import AxiomaticReranker
 from ir_axioms.model import IndexContext
 from ir_axioms.model.base import RankedDocument, JudgedRankedDocument
+from ir_axioms.modules.ranking import PivotSelection, RandomPivotSelection
 
 
 @dataclass(frozen=True)
@@ -32,6 +33,7 @@ class EstimatorKwikSortReranker(EstimatorBase):
     index: Union[Path, IndexRef, Index]
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
+    pivot_selection: PivotSelection = RandomPivotSelection(),
     filter_pairs: Optional[Callable[
         [JudgedRankedDocument, JudgedRankedDocument],
         bool
@@ -69,6 +71,7 @@ class EstimatorKwikSortReranker(EstimatorBase):
             index=self.index,
             dataset=self.dataset,
             contents_accessor=self.contents_accessor,
+            pivot_selection=self.pivot_selection,
             tokeniser=self.tokeniser,
             cache_dir=self.cache_dir,
             verbose=self.verbose,

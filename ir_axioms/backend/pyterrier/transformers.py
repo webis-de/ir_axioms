@@ -22,6 +22,7 @@ from ir_axioms.backend.pyterrier.transformer_utils import (
 )
 from ir_axioms.backend.pyterrier.util import IndexRef, Index, Tokeniser
 from ir_axioms.model import Query, RankedDocument, IndexContext
+from ir_axioms.modules.ranking import PivotSelection, RandomPivotSelection
 
 
 class PerGroupTransformer(TransformerBase, ABC):
@@ -124,6 +125,7 @@ class AxiomaticReranker(AxiomTransformer):
     index: Union[Path, IndexRef, Index]
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
+    pivot_selection: PivotSelection = RandomPivotSelection(),
     tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None
     verbose: bool = False
@@ -140,7 +142,7 @@ class AxiomaticReranker(AxiomTransformer):
     ) -> DataFrame:
         # Rerank documents.
         reranked_documents = self._axiom.rerank_kwiksort(
-            self._context, query, documents
+            self._context, query, documents, self.pivot_selection
         )
 
         # Convert reranked documents back to data frame.
