@@ -1,43 +1,84 @@
- [![CI/CD status](https://git.webis.de/code-research/web-search/ir_axioms/badges/main/pipeline.svg?style=flat-square)](https://git.webis.de/code-research/web-search/ir_axioms/-/pipelines?ref=main)
-[![Test coverage](https://git.webis.de/code-research/web-search/ir_axioms/badges/main/coverage.svg?style=flat-square)](https://git.webis.de/code-research/web-search/ir_axioms/-/pipelines?ref=main)
+[![PyPi](https://img.shields.io/pypi/v/ir_axioms?style=flat-square)](https://pypi.org/project/ir_axioms/)
+[![CI](https://img.shields.io/github/workflow/status/webis-de/ir_axioms/CI?style=flat-square)](https://github.com/webis-de/ir_axioms/actions?query=workflow%3A"CI")
+[![Code coverage](https://img.shields.io/codecov/c/github/webis-de/ir_axioms?style=flat-square)](https://codecov.io/github/webis-de/ir_axioms/)
+[![Python](https://img.shields.io/pypi/pyversions/ir_axioms?style=flat-square)](https://pypi.org/project/ir_axioms/)
+[![Issues](https://img.shields.io/github/issues/webis-de/ir_axioms?style=flat-square)](https://github.com/webis-de/ir_axioms/issues)
+[![Commit activity](https://img.shields.io/github/commit-activity/m/webis-de/ir_axioms?style=flat-square)](https://github.com/webis-de/ir_axioms/commits)
+[![Downloads](https://img.shields.io/pypi/dm/ir_axioms?style=flat-square)](https://pypi.org/project/ir_axioms/)
+[![License](https://img.shields.io/github/license/webis-de/ir_axioms?style=flat-square)](LICENSE)
 
 # ↕️ ir_axioms
 
-`ir_axioms` is a python package that provides a common, intuitive interface to many IR axioms.
-The package helps you to rerank and evaluate runs from various information retrieval frameworks 
-such as [PyTerrier](https://github.com/terrier-org/pyterrier) or [Pyserini](https://github.com/castorini/pyserini).
+Intuitive axiomatic retrieval experimentation.
+
+`ir_axioms` is a Python framework for experimenting with axioms in information retrieval in a declarative way. 
+It includes reference implementations of many commonly used retrieval axioms and is well integrated with the [PyTerrier](https://github.com/terrier-org/pyterrier) and [Pyserini](https://github.com/castorini/pyserini) frameworks.
+Re-rank your search results today with `ir_axioms` and understand your retrieval systems better by analyzing
+axiomatic preferences!
 
 ## Usage
 
+### Example Notebooks
+
+We include several example notebooks to demonstrate re-ranking and preference evaluation in [PyTerrier](https://github.com/terrier-org/pyterrier) using `ir_axioms`.
+You can find all examples in the [`examples/` directory](examples).
+
+- [Re-ranking top-20 results using KwikSort](examples/pyterrier_kwiksort.ipynb)
+  [![Open in Colab](https://img.shields.io/badge/notebook-open%20in%20colab-informational?style=flat-square)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/pyterrier_kwiksort.ipynb)
+
 ### Backends
 
-### Example Notebooks
-We include several example notebooks which demonstrate reranking and evaluating preferences in [PyTerrier](https://github.com/terrier-org/pyterrier).
-You can find the examples in the [`examples/` directory](examples/).
+TODO
 
-[![Open in Colab](https://img.shields.io/badge/notebook-open%20in%20colab-informational)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/pyterrier.ipynb)
+### Slurm
+
+If you want to play around with `ir_axioms` in Jupyter Lab, you can use this command to provision a server via Slurm:
+
+```shell
+scripts/slurm-start-jupyter-lab.sh
+```
+
+## Citation
+
+If you use this package or its components in your research, please cite the following paper describing the `ir_axioms`
+framework and its use-cases:
+
+> TODO
+
+You can use the following BibTeX entry for citation:
+
+```bibtex
+@InProceedings{TODO,
+}
+```
 
 ## Development
 
-To build and develop this package you need to install the `build`, and `setuptools` and `wheel` packages:
+To build `ir_axioms` and contribute to its development you need to install the `build`, and `setuptools` and `wheel` packages:
+
 ```shell
 pip install build setuptools wheel
 ```
-(On most systems, these packages are already installed.)
+
+(On most systems, these packages are already pre-installed.)
 
 ### Installation
 
 Install dependencies for developing the `ir_axioms` package:
+
 ```shell
 pip install -e .
 ```
 
 If you want to develop the [Pyserini](https://github.com/castorini/pyserini) backend, install dependencies like this:
+
 ```shell
 pip install -e .[pyserini]
 ```
 
-If you want to develop the [PyTerrier](https://github.com/terrier-org/pyterrier) backend, install dependencies like this:
+If you want to develop the [PyTerrier](https://github.com/terrier-org/pyterrier) backend, install dependencies like
+this:
+
 ```shell
 pip install -e .[pyterrier]
 ```
@@ -45,11 +86,13 @@ pip install -e .[pyterrier]
 ### Testing
 
 Install test dependencies:
+
 ```shell
 pip install -e .[test]
 ```
 
 Verify your changes against our test suite to verify.
+
 ```shell
 flake8 ir_axioms tests
 pylint -E ir_axioms tests.unit --ignore-paths=^ir_axioms.backend
@@ -61,11 +104,13 @@ Please also add tests for the axioms or integrations you've added.
 #### Testing backend integrations
 
 Install test dependencies (replace `<BACKEND>` with either `pyserini` or `pyterrier`):
+
 ```shell
 pip install -e .[<BACKEND>]
 ```
 
 Verify your changes against our test suite to verify.
+
 ```shell
 pylint -E ir_axioms.backend.<BACKEND> tests.integration.<BACKEND>
 pytest tests/integration/<BACKEND>/
@@ -73,14 +118,13 @@ pytest tests/integration/<BACKEND>/
 
 ### Build wheel
 
-A wheel for this package can be built by:
+A wheel for this package can be built by running:
+
 ```shell
 python -m build
 ```
 
-### Slurm
+## License
 
-If you want to play around with ir_axioms in Jupyter Lab, you can use this command to provision a server via Slurm:
-```shell
-scripts/slurm-start-jupyter-lab.sh
-```
+This repository is released under the [MIT license](LICENSE). If you use `ir_axioms` in your research, we'd be glad if
+you'd [cite us](#citation).
