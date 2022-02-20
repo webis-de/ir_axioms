@@ -66,7 +66,7 @@ jobs:
           pip install .
           pip install .[test]
       - name: "🔍 Check Python code format"
-        run: flake8 ir_axioms/ tests/ examples/
+        run: flake8 ir_axioms/ tests/
   lint:
     name: "🔍 Python Lint"
     needs:
@@ -96,7 +96,7 @@ jobs:
           pip install .
           pip install .[test]
       - name: "🔍 Lint Python code"
-        run: pylint -E ir_axioms tests.unit examples --ignore-paths=^ir_axioms.backend
+        run: pylint -E ir_axioms tests.unit --ignore-paths=^ir_axioms.backend
   lint-backend:
     name: "🔍 Python Lint backend"
     needs:
@@ -165,7 +165,7 @@ jobs:
           pip install .
           pip install .[test]
       - name: "🧪 Test Python code"
-        run: pytest ir_axioms/ tests/unit/ examples/ --ignore=ir_axioms/backend/
+        run: pytest ir_axioms/ tests/unit/ --ignore=ir_axioms/backend/
   integration-tests:
     name: "🧪 Python integration tests"
     needs:
