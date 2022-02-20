@@ -149,23 +149,23 @@ def test_contents_document2(
 
 
 def test_terms_query(context: IndexContext, query: Query):
-    assert context.terms(query) == ["solv", "linear", "equat"]
+    assert context.terms(query) == ("solv", "linear", "equat")
 
 
 def test_terms_document1(context: IndexContext, document1: Document):
-    assert context.terms(document1) == [
+    assert context.terms(document1) == (
         "compact", "memori", "have", "flexibl", "capac", "digit", "data",
         "storag", "system", "capac", "up", "bit", "random", "sequenti",
         "access", "describ"
-    ]
+    )
 
 
 def test_terms_document2(context: IndexContext, document2: Document):
-    assert context.terms(document2) == [
+    assert context.terms(document2) == (
         "electron", "analogu", "comput", "solv", "system", "linear",
         "equat", "mathemat", "deriv", "oper", "principl", "stabil",
         "condit", "comput", "consist", "amplifi"
-    ]
+    )
 
 
 def test_term_set_query(context: IndexContext, query: Query):
