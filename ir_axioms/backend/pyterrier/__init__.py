@@ -214,8 +214,8 @@ class TerrierIndexContext(IndexContext):
 
         for pipeline in self._term_pipelines:
             terms = tuple(
-                str(pipeline.pipelineTerm(term))
-                for term in terms
+                str(term)
+                for term in map(pipeline.pipelineTerm, terms)
                 if term is not None
             )
         return terms
