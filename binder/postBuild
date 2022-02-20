@@ -2,4 +2,5 @@
 
 set -ex
 
-pip install -e ".[pyterrier,examples]"
+pip install cython
+pip install --editable ".[pyterrier,examples]"
