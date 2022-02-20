@@ -10,7 +10,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
+          #- macos-latest
           - windows-latest
         python:
           - 3.8
@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           cache: pip
-          cache-dependency-path: requirements.txt
+          cache-dependency-path: setup.cfg
       - name: "🧰 Install dependencies"
         run: |
           python -m pip install --upgrade pip build twine
@@ -45,6 +45,8 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
+          #- macos-latest
+          #- windows-latest
         python:
           - 3.8
           - 3.9
@@ -57,9 +59,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           cache: pip
-          cache-dependency-path: |
-            requirements.txt
-            requirements-test.txt
+          cache-dependency-path: setup.cfg
       - name: "🧰 Install dependencies"
         run: |
           python -m pip install --upgrade pip
@@ -75,6 +75,8 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
+          #- macos-latest
+          #- windows-latest
         python:
           - 3.8
           - 3.9
@@ -87,9 +89,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           cache: pip
-          cache-dependency-path: |
-            requirements.txt
-            requirements-test.txt
+          cache-dependency-path: setup.cfg
       - name: "🧰 Install dependencies"
         run: |
           python -m pip install --upgrade pip
@@ -105,6 +105,8 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
+          #- macos-latest
+          #- windows-latest
         python:
           - 3.8
           - 3.9
@@ -120,9 +122,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           cache: pip
-          cache-dependency-path: |
-            requirements.txt
-            requirements-test.txt
+          cache-dependency-path: setup.cfg
       - name: "🧰 Install dependencies"
         run: |
           python -m pip install --upgrade pip
@@ -144,6 +144,8 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
+          #- macos-latest
+          #- windows-latest
         python:
           - 3.8
           - 3.9
@@ -156,9 +158,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           cache: pip
-          cache-dependency-path: |
-            requirements.txt
-            requirements-test.txt
+          cache-dependency-path: setup.cfg
       - name: "🧰 Install dependencies"
         run: |
           python -m pip install --upgrade pip
@@ -174,6 +174,8 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
+          #- macos-latest
+          #- windows-latest
         python:
           - 3.8
           - 3.9
@@ -189,9 +191,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           cache: pip
-          cache-dependency-path: |
-            requirements.txt
-            requirements-test.txt
+          cache-dependency-path: setup.cfg
       - name: "🧰 Install dependencies"
         run: |
           python -m pip install --upgrade pip
@@ -224,7 +224,7 @@ jobs:
         with:
           python-version: 3.9
           cache: pip
-          cache-dependency-path: requirements.txt
+          cache-dependency-path: setup.cfg
       - name: "🧰 Install dependencies"
         run: |
           python -m pip install --upgrade pip build
@@ -246,16 +246,19 @@ jobs:
       - lint-backend
       - unit-tests
       - integration-tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: "📥 Check-out"
         uses: actions/checkout@v2
+      - name: "🏷️ Get version tag"
+        id: get-version
+        run: echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
       - name: "🧰 Install Python"
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
           cache: pip
-          cache-dependency-path: requirements.txt
+          cache-dependency-path: setup.cfg
       - name: "🧰 Install dependencies"
         run: |
           python -m pip install --upgrade pip build
