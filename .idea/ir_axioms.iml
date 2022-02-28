@@ -19,11 +19,13 @@
       <excludeFolder url="file://$MODULE_DIR$/examples/cache" />
       <excludeFolder url="file://$MODULE_DIR$/examples/trec-system-runs" />
       <excludeFolder url="file://$MODULE_DIR$/examples/pyterrier" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/data" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/results" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
-    <option name="requirementsPath" value="$MODULE_DIR$/requirements.txt" />
+    <option name="requirementsPath" value="$MODULE_DIR$/setup.cfg" />
   </component>
 </module>

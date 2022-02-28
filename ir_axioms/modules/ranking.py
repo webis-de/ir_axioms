@@ -1,18 +1,18 @@
-from random import randint
-from typing import List
+from typing import Sequence
 
 from ir_axioms import logger
-from ir_axioms.axiom.base import Axiom
-from ir_axioms.model import Query, RankedDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.axiom import Axiom
+from ir_axioms.model import Query, RankedDocument, IndexContext
+from ir_axioms.modules.pivot import RandomPivotSelection, PivotSelection
 
 
-def _kwiksort(
+def kwiksort(
         axiom: Axiom,
         query: Query,
-        context: RerankingContext,
-        vertices: List[RankedDocument]
-) -> List[RankedDocument]:
+        context: IndexContext,
+        vertices: Sequence[RankedDocument],
+        pivot_selection: PivotSelection = RandomPivotSelection(),
+) -> Sequence[RankedDocument]:
     if len(vertices) == 0:
         return []
 
@@ -21,7 +21,7 @@ def _kwiksort(
 
     # Select random pivot.
     logger.debug("Selecting reranking pivot.")
-    pivot = vertices[randint(0, len(vertices) - 1)]
+    pivot = pivot_selection.select_pivot(query, context, vertices)
 
     for vertex in vertices:
         if vertex is pivot:
@@ -43,13 +43,13 @@ def _kwiksort(
                 f"and rank as pivot document {pivot}."
             )
 
-    vertices_left = _kwiksort(
+    vertices_left = kwiksort(
         axiom,
         query,
         context,
         vertices_left
     )
-    vertices_right = _kwiksort(
+    vertices_right = kwiksort(
         axiom,
         query,
         context,
@@ -59,7 +59,7 @@ def _kwiksort(
     return [*vertices_left, pivot, *vertices_right]
 
 
-def _reset_score(ranking: List[RankedDocument]) -> List[RankedDocument]:
+def reset_score(ranking: Sequence[RankedDocument]) -> Sequence[RankedDocument]:
     length = len(ranking)
     return [
         RankedDocument(

@@ -1,26 +1,19 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from diskcache import Cache
 
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.model import RankedDocument, Query
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import RankedDocument, Query, IndexContext
 
 
 @dataclass(frozen=True)
 class CachedAxiom(Axiom):
     axiom: Axiom
-
-    @staticmethod
-    def _cache(context: RerankingContext) -> Optional[Cache]:
-        if context.cache_dir is None:
-            return None
-        return Cache(str(context.cache_dir.absolute()))
+    disk: bool = False
 
     def _key(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -32,38 +25,37 @@ class CachedAxiom(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
     ) -> float:
-        cache = self._cache(context)
+        cache: Cache = context.cache
 
         if cache is None:
             return self.axiom.preference(context, query, document1, document2)
 
         key = self._key(context, query, document1, document2)
-        preference: float
 
         if key in cache:
             # Cache hit.
-            preference = cache[key]
-        else:
-            symmetric_key = self._key(context, query, document2, document1)
-            if symmetric_key in cache:
-                # Cache hit for symmetric key.
-                inverse_preference = cache[symmetric_key]
-                preference = -inverse_preference
-            else:
-                # Cache miss.
-                preference = self.axiom.preference(
-                    context,
-                    query,
-                    document1,
-                    document2
-                )
+            return cache[key]
+
+        symmetric_key = self._key(context, query, document2, document1)
+        if symmetric_key in cache:
+            # Cache hit for symmetric key.
+            preference = -cache[symmetric_key]
             cache[key] = preference
-        cache.close()
+            return preference
+
+        # Cache miss.
+        preference = self.axiom.preference(
+            context,
+            query,
+            document1,
+            document2
+        )
+        cache[key] = preference
         return preference
 
     def cached(self) -> Axiom:

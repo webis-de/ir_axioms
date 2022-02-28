@@ -1,22 +1,28 @@
 from abc import abstractmethod, ABC
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cached_property
+from itertools import product, compress
+from logging import DEBUG
 from pathlib import Path
-from typing import Union, Optional, List, Set, Sequence, final
+from typing import Union, Optional, Set, Sequence, final, Callable
 
 from ir_datasets import Dataset
+from numpy import apply_along_axis, stack, ndarray, array
 from pandas import DataFrame
 from pandas.core.groupby import DataFrameGroupBy
 from tqdm.auto import tqdm
 
-from ir_axioms.axiom import AxiomLike, to_axiom
+from ir_axioms import logger
+from ir_axioms.axiom import AxiomLike, to_axiom, to_axioms
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.backend.pyterrier import IndexRerankingContext, ContentsAccessor
+from ir_axioms.backend.pyterrier import TerrierIndexContext, ContentsAccessor
 from ir_axioms.backend.pyterrier.safe import TransformerBase
-from ir_axioms.backend.pyterrier.transformer_utils import _require_columns
+from ir_axioms.backend.pyterrier.transformer_utils import (
+    require_columns, load_documents
+)
 from ir_axioms.backend.pyterrier.util import IndexRef, Index, Tokeniser
-from ir_axioms.model import Query, RankedDocument, RankedTextDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import Query, RankedDocument, IndexContext
+from ir_axioms.modules.ranking import PivotSelection, RandomPivotSelection
 
 
 class PerGroupTransformer(TransformerBase, ABC):
@@ -24,7 +30,7 @@ class PerGroupTransformer(TransformerBase, ABC):
     optional_group_columns: Set[str] = {}
     verbose: bool = False
     description: Optional[str] = None
-    unit: Optional[str] = None
+    unit: str = "it"
 
     @abstractmethod
     def transform_group(self, topics_or_res: DataFrame) -> DataFrame:
@@ -38,7 +44,7 @@ class PerGroupTransformer(TransformerBase, ABC):
 
     @final
     def transform(self, topics_or_res: DataFrame) -> DataFrame:
-        _require_columns(self, topics_or_res, self.group_columns)
+        require_columns(topics_or_res, self.group_columns)
 
         query_rankings: DataFrameGroupBy = topics_or_res.groupby(
             by=list(self._all_group_columns(topics_or_res)),
@@ -72,9 +78,9 @@ class AxiomTransformer(PerGroupTransformer, ABC):
     optional_group_columns = {"qid", "name"}
     unit = "query"
 
-    @property
-    def _context(self) -> RerankingContext:
-        return IndexRerankingContext(
+    @cached_property
+    def _context(self) -> IndexContext:
+        return TerrierIndexContext(
             index_location=self.index,
             dataset=self.dataset,
             contents_accessor=self.contents_accessor,
@@ -84,11 +90,7 @@ class AxiomTransformer(PerGroupTransformer, ABC):
 
     @final
     def transform_group(self, topics_or_res: DataFrame) -> DataFrame:
-        _require_columns(
-            self,
-            topics_or_res,
-            {"query", "docno", "rank", "score"}
-        )
+        require_columns(topics_or_res, {"query", "docno", "rank", "score"})
 
         if len(topics_or_res.index) == 0:
             # Empty ranking, skip reranking.
@@ -100,31 +102,7 @@ class AxiomTransformer(PerGroupTransformer, ABC):
         query = Query(topics_or_res.iloc[0]["query"])
 
         # Load document list.
-        documents: List[RankedDocument]
-        if (
-                self.contents_accessor is not None and
-                isinstance(self.contents_accessor, str) and
-                self.contents_accessor in topics_or_res.columns
-        ):
-            # Load contents from dataframe column.
-            documents = [
-                RankedTextDocument(
-                    id=row["docno"],
-                    contents=row[self.contents_accessor],
-                    score=row["score"],
-                    rank=row["rank"],
-                )
-                for index, row in topics_or_res.iterrows()
-            ]
-        else:
-            documents = [
-                RankedDocument(
-                    id=row["docno"],
-                    score=row["score"],
-                    rank=row["rank"],
-                )
-                for index, row in topics_or_res.iterrows()
-            ]
+        documents = load_documents(topics_or_res)
 
         return self.transform_query_ranking(query, documents, topics_or_res)
 
@@ -132,64 +110,39 @@ class AxiomTransformer(PerGroupTransformer, ABC):
     def transform_query_ranking(
             self,
             query: Query,
-            documents: List[RankedDocument],
+            documents: Sequence[RankedDocument],
             topics_or_res: DataFrame,
     ) -> DataFrame:
         pass
 
 
-class SingleAxiomTransformer(AxiomTransformer, ABC):
+@dataclass(frozen=True)
+class AxiomaticReranker(AxiomTransformer):
+    name = "AxiomaticReranker"
+    description = "Reranking query axiomatically"
+
     axiom: AxiomLike
     index: Union[Path, IndexRef, Index]
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
+    pivot_selection: PivotSelection = RandomPivotSelection(),
     tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None
     verbose: bool = False
-    description: Optional[str] = None
 
     @cached_property
     def _axiom(self) -> Axiom:
         return to_axiom(self.axiom)
 
-
-class MultiAxiomTransformer(AxiomTransformer, ABC):
-    axioms: Sequence[AxiomLike]
-    index: Union[Path, IndexRef, Index]
-    dataset: Optional[Union[Dataset, str]] = None
-    contents_accessor: Optional[ContentsAccessor] = "text"
-    tokeniser: Optional[Tokeniser] = None
-    cache_dir: Optional[Path] = None
-    verbose: bool = False
-    description: Optional[str] = None
-
-    @cached_property
-    def _axioms(self) -> Sequence[Axiom]:
-        return [to_axiom(axiom) for axiom in self.axioms]
-
-
-@dataclass(frozen=True)
-class AxiomaticReranker(SingleAxiomTransformer):
-    name = "AxiomaticReranker"
-    description = "Reranking axiomatically"
-
-    axiom: AxiomLike
-    index: Union[Path, IndexRef, Index]
-    dataset: Optional[Union[Dataset, str]] = None
-    contents_accessor: Optional[ContentsAccessor] = "text"
-    tokeniser: Optional[Tokeniser] = None
-    cache_dir: Optional[Path] = None
-    verbose: bool = False
-
     def transform_query_ranking(
             self,
             query: Query,
-            documents: List[RankedDocument],
+            documents: Sequence[RankedDocument],
             topics_or_res: DataFrame,
     ) -> DataFrame:
         # Rerank documents.
-        reranked_documents = self.axiom.cached().rerank(
-            self._context, query, documents
+        reranked_documents = self._axiom.rerank_kwiksort(
+            self._context, query, documents, self.pivot_selection
         )
 
         # Convert reranked documents back to data frame.
@@ -210,45 +163,151 @@ class AxiomaticReranker(SingleAxiomTransformer):
 
 
 @dataclass(frozen=True)
-class AxiomaticPreferences(MultiAxiomTransformer):
+class AggregatedAxiomaticPreference(AxiomTransformer):
+    name = "AggregatedAxiomaticPreference"
+    description = "Aggregating query axiom preferences"
+
+    axioms: Sequence[AxiomLike]
+    index: Union[Path, IndexRef, Index]
+    aggregations: Sequence[Callable[[Sequence[float]], float]] = field(
+        default_factory=lambda: [sum]
+    )
+    dataset: Optional[Union[Dataset, str]] = None
+    contents_accessor: Optional[ContentsAccessor] = "text"
+    filter_pairs: Optional[Callable[
+        [RankedDocument, RankedDocument],
+        bool
+    ]] = None
+    tokeniser: Optional[Tokeniser] = None
+    cache_dir: Optional[Path] = None
+    verbose: bool = False
+
+    @cached_property
+    def _axioms(self) -> Sequence[Axiom]:
+        return to_axioms(self.axioms)
+
+    def transform_query_ranking(
+            self,
+            query: Query,
+            documents: Sequence[RankedDocument],
+            topics_or_res: DataFrame,
+    ) -> DataFrame:
+        axioms = self._axioms
+        context = self._context
+        aggregations = self.aggregations
+        filter_pairs = self.filter_pairs
+
+        # Shape: |documents| x |documents| x |axioms|
+        features: ndarray = stack(tuple(
+            # Shape: |documents| x |documents|
+            axiom.preference_matrix(
+                context,
+                query,
+                documents,
+                filter_pairs,
+            )
+            for axiom in axioms
+        ), -1)
+
+        # Shape: |documents| x |axioms| x |aggregations|
+        features = stack(tuple(
+            # Shape: |documents| x |axioms|
+            apply_along_axis(
+                lambda preferences: aggregation(preferences.tolist()),
+                0,
+                features
+            )
+            for aggregation in aggregations
+        ), -1)
+
+        # Shape: |documents| x (|aggregations| * |axioms|)
+        features = features.reshape((features.shape[0], -1))
+
+        topics_or_res["features"] = list(map(array, features))
+        return topics_or_res
+
+
+@dataclass(frozen=True)
+class AxiomaticPreferences(AxiomTransformer):
     name = "AxiomaticPreferences"
     description = "Computing query axiom preferences"
 
     axioms: Sequence[AxiomLike]
     index: Union[Path, IndexRef, Index]
+    axiom_names: Optional[Sequence[str]] = None
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
+    filter_pairs: Optional[Callable[
+        [RankedDocument, RankedDocument],
+        bool
+    ]] = None
     tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None
     verbose: bool = False
 
+    @cached_property
+    def _axioms(self) -> Sequence[Axiom]:
+        return to_axioms(self.axioms)
+
     def transform_query_ranking(
             self,
             query: Query,
-            documents: List[RankedDocument],
-            topics_or_res: DataFrame,
+            documents: Sequence[RankedDocument],
+            results: DataFrame,
     ) -> DataFrame:
-        # Cross product.
-        pairs = topics_or_res.merge(
-            topics_or_res,
-            on=list(self._all_group_columns(topics_or_res)),
+        context = self._context
+        axioms = self._axioms
+        filter_pairs = self.filter_pairs
+
+        # Result cross product.
+        results_pairs = results.merge(
+            results,
+            on=list(self._all_group_columns(results)),
             suffixes=("_a", "_b"),
         )
 
+        # Document pairs.
+        document_pairs = list(product(documents, documents))
+
+        # Filter document pairs.
+        if filter_pairs is not None:
+            filter_mask = [
+                filter_pairs(document1, document2)
+                for document1, document2 in document_pairs
+            ]
+            results_pairs = results_pairs.loc[filter_mask]
+            document_pairs = list(compress(document_pairs, filter_mask))
+
         # Compute axiom preferences.
-        context = self._context
-        axioms = self.axioms
-        if self.verbose:
+        if self.verbose and 0 < logger.level <= DEBUG:
             axioms = tqdm(
                 axioms,
                 desc="Computing axiom preferences",
                 unit="axiom",
             )
-        for axiom in axioms:
-            pairs[f"{axiom.name}_preference"] = [
-                axiom.cached().preference(context, query, document1, document2)
-                for document1 in documents
-                for document2 in documents
+
+        names: Sequence[str]
+        if (
+                self.axiom_names is not None and
+                len(self.axiom_names) == len(axioms)
+        ):
+            names = self.axiom_names
+        else:
+            names = [str(axiom) for axiom in axioms]
+
+        columns = [f"{name}_preference" for name in names]
+
+        for column, axiom in zip(columns, axioms):
+            if self.verbose and 0 < logger.level <= DEBUG:
+                # Very verbose progress bars.
+                document_pairs = tqdm(
+                    document_pairs,
+                    desc="Computing axiom preference",
+                    unit="pair",
+                )
+            results_pairs[column] = [
+                axiom.preference(context, query, document1, document2)
+                for document1, document2 in document_pairs
             ]
 
-        return pairs
+        return results_pairs

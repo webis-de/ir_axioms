@@ -1,12 +1,17 @@
+from pyterrier import started, init
+
+if not started():
+    init(tqdm="auto")
+
 from pathlib import Path
 
 from ir_datasets import load, Dataset
 from pytest import fixture, approx
 
-from ir_axioms.backend.pyterrier import IndexRerankingContext
+from ir_axioms.backend.pyterrier import TerrierIndexContext
 from ir_axioms.backend.pyterrier.safe import IterDictIndexer
 from ir_axioms.model import Query, Document
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model.context import IndexContext
 from ir_axioms.model.retrieval_model import Tf, TfIdf, BM25, PL2, QL
 
 
@@ -35,12 +40,12 @@ def index_dir(tmp_path: Path, dataset: Dataset) -> Path:
 
 
 @fixture
-def reranking_context(index_dir: Path) -> RerankingContext:
-    return IndexRerankingContext(index_dir)
+def reranking_context(index_dir: Path) -> IndexContext:
+    return TerrierIndexContext(index_dir)
 
 
 @fixture
-def context(reranking_context: RerankingContext) -> RerankingContext:
+def context(reranking_context: IndexContext) -> IndexContext:
     return reranking_context
 
 
@@ -73,15 +78,15 @@ def test_document2(document2: Document):
     assert document2.id == "2"
 
 
-def test_cache_dir(context: RerankingContext):
+def test_cache_dir(context: IndexContext):
     assert context.cache_dir is None or isinstance(context.cache_dir, Path)
 
 
-def test_document_count(context: RerankingContext):
+def test_document_count(context: IndexContext):
     assert context.document_count == 11429
 
 
-def test_document_frequency(context: RerankingContext):
+def test_document_frequency(context: IndexContext):
     assert context.document_frequency("computer") == 0
     assert context.document_frequency("comput") == 532
     assert context.document_frequency("linear") == 398
@@ -89,7 +94,7 @@ def test_document_frequency(context: RerankingContext):
     assert context.document_frequency("digit") == 241
 
 
-def test_inverse_document_frequency(context: RerankingContext):
+def test_inverse_document_frequency(context: IndexContext):
     assert context.inverse_document_frequency("computer") == 0
     assert context.inverse_document_frequency("comput") == approx(3.067266)
     assert context.inverse_document_frequency("linear") == approx(3.357457)
@@ -98,14 +103,14 @@ def test_inverse_document_frequency(context: RerankingContext):
 
 
 def test_contents_query(
-        context: RerankingContext,
+        context: IndexContext,
         query: Query
 ):
     assert context.contents(query) == "solving linear equations"
 
 
 def test_contents_document1(
-        context: RerankingContext,
+        context: IndexContext,
         document1: Document
 ):
     assert context.contents(document1) == (
@@ -116,7 +121,7 @@ def test_contents_document1(
 
 
 def test_contents_document2(
-        context: RerankingContext,
+        context: IndexContext,
         document2: Document
 ):
     assert context.contents(document2) == (
@@ -127,31 +132,31 @@ def test_contents_document2(
     )
 
 
-def test_terms_query(context: RerankingContext, query: Query):
-    assert context.terms(query) == ["solv", "linear", "equat"]
+def test_terms_query(context: IndexContext, query: Query):
+    assert context.terms(query) == ("solv", "linear", "equat")
 
 
-def test_terms_document1(context: RerankingContext, document1: Document):
-    assert context.terms(document1) == [
+def test_terms_document1(context: IndexContext, document1: Document):
+    assert context.terms(document1) == (
         "compact", "memori", "flexibl", "capac", "digit", "data", "storag",
         "system", "capac", "bit", "random", "sequenti", "access"
-    ]
+    )
 
 
-def test_terms_document2(context: RerankingContext, document2: Document):
-    assert context.terms(document2) == [
+def test_terms_document2(context: IndexContext, document2: Document):
+    assert context.terms(document2) == (
         "electron", "analogu", "comput", "solv", "system", "linear",
         "equat", "mathemat", "deriv", "oper", "principl", "stabil",
         "condit", "comput", "consist", "amplifi"
-    ]
+    )
 
 
-def test_term_set_query(context: RerankingContext, query: Query):
+def test_term_set_query(context: IndexContext, query: Query):
     assert context.term_set(query) == {"solv", "linear", "equat"}
 
 
 def test_term_set_document1(
-        context: RerankingContext,
+        context: IndexContext,
         document1: Document
 ):
     assert context.term_set(document1) == {
@@ -161,7 +166,7 @@ def test_term_set_document1(
 
 
 def test_term_set_document2(
-        context: RerankingContext,
+        context: IndexContext,
         document2: Document
 ):
     assert context.term_set(document2) == {
@@ -171,14 +176,14 @@ def test_term_set_document2(
     }
 
 
-def test_term_frequency_query(context: RerankingContext, query: Query):
+def test_term_frequency_query(context: IndexContext, query: Query):
     assert context.term_frequency(query, "solv") == approx(1 / 3)
     assert context.term_frequency(query, "linear") == approx(1 / 3)
     assert context.term_frequency(query, "tree") == approx(0 / 3)
 
 
 def test_term_frequency_document1(
-        context: RerankingContext,
+        context: IndexContext,
         document1: Document
 ):
     assert context.term_frequency(document1, "compact") == approx(1 / 13)
@@ -187,7 +192,7 @@ def test_term_frequency_document1(
 
 
 def test_term_frequency_document2(
-        context: RerankingContext,
+        context: IndexContext,
         document2: Document
 ):
     assert context.term_frequency(document2, "electron") == approx(1 / 16)
@@ -196,7 +201,7 @@ def test_term_frequency_document2(
 
 
 def test_document1_retrieval_score(
-        context: RerankingContext,
+        context: IndexContext,
         query: Query,
         document1: Document
 ):
@@ -209,7 +214,7 @@ def test_document1_retrieval_score(
 
 
 def test_document2_retrieval_score(
-        context: RerankingContext,
+        context: IndexContext,
         query: Query,
         document2: Document
 ):

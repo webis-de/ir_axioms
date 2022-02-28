@@ -1,6 +1,6 @@
 from ir_axioms.axiom import STMC1, STMC2
 from ir_axioms.model import Query, RankedTextDocument
-from tests.unit.util import MemoryRerankingContext
+from tests.unit.util import MemoryIndexContext
 
 
 def test_stmc1():
@@ -13,7 +13,7 @@ def test_stmc1():
         "d2", 1, 2,
         "red airplane flies in the sky"
     )
-    context = MemoryRerankingContext({document1, document2})
+    context = MemoryIndexContext({document1, document2})
 
     axiom = STMC1()
 
@@ -26,7 +26,7 @@ def test_stmc2():
     q = Query("q")
     document1 = RankedTextDocument("d1", 2, 1, "q")
     document2 = RankedTextDocument("d2", 1, 2, "t t t t")
-    context = MemoryRerankingContext({document1, document2})
+    context = MemoryIndexContext({document1, document2})
 
     axiom = STMC2()
 
@@ -49,7 +49,7 @@ def test_stmc2_equal():
         "d3", 1, 3,
         "dog animal time key"
     )
-    context = MemoryRerankingContext({document1, document2, document3})
+    context = MemoryIndexContext({document1, document2, document3})
 
     axiom = STMC2()
 

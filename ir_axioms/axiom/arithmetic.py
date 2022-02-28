@@ -3,8 +3,7 @@ from math import isclose, prod
 from typing import Iterable, Union
 
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.model import Query, RankedDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import Query, RankedDocument, IndexContext
 
 
 @dataclass(frozen=True)
@@ -13,7 +12,7 @@ class UniformAxiom(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -27,7 +26,7 @@ class SumAxiom(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -50,7 +49,7 @@ class ProductAxiom(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -74,7 +73,7 @@ class MultiplicativeInverseAxiom(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -86,19 +85,15 @@ class MultiplicativeInverseAxiom(Axiom):
             document2
         )
 
-    def _multiplicative_inverse(self) -> Axiom:
-        # The inverse of the wrapped, inverted axiom
-        # is the original, wrapped axiom.
-        return self.axiom
-
 
 @dataclass(frozen=True)
 class AndAxiom(Axiom):
+    # TODO: And is a special case of majority vote with a majority of 1.0
     axioms: Iterable[Axiom]
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -123,7 +118,7 @@ class AndAxiom(Axiom):
 
 
 @dataclass(frozen=True)
-class MajorityVoteAxiom(Axiom):
+class VoteAxiom(Axiom):
     axioms: Iterable[Axiom]
     minimum_votes: float = 0.5
     """
@@ -135,7 +130,7 @@ class MajorityVoteAxiom(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -167,9 +162,39 @@ class MajorityVoteAxiom(Axiom):
         if isinstance(other, Axiom) and isclose(self.minimum_votes, 0.5):
             # Avoid chaining operators
             # if this vote has the default minimum vote proportion.
-            return MajorityVoteAxiom([*self.axioms, other])
+            return VoteAxiom([*self.axioms, other])
         else:
             return super().__mod__(other)
+
+
+@dataclass(frozen=True)
+class CascadeAxiom(Axiom):
+    axioms: Iterable[Axiom]
+
+    def preference(
+            self,
+            context: IndexContext,
+            query: Query,
+            document1: RankedDocument,
+            document2: RankedDocument
+    ) -> float:
+        preferences = (
+            axiom.preference(context, query, document1, document2)
+            for axiom in self.axioms
+        )
+        decisive_preferences = (
+            preference
+            for preference in preferences
+            if preference != 0
+        )
+        return next(decisive_preferences, 0)
+
+    def __or__(self, other: Union[Axiom, float, int]) -> Axiom:
+        if isinstance(other, Axiom):
+            # Avoid chaining operators.
+            return CascadeAxiom([*self.axioms, other])
+        else:
+            return super().__or__(other)
 
 
 @dataclass(frozen=True)
@@ -178,7 +203,7 @@ class NormalizedAxiom(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument

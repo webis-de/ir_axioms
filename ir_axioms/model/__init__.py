@@ -1,27 +1,12 @@
-from dataclasses import dataclass
+from ir_axioms.model import base, context
 
+# Re-export sub-modules.
+Query = base.Query
+Document = base.Document
+TextDocument = base.TextDocument
+RankedDocument = base.RankedDocument
+RankedTextDocument = base.RankedTextDocument
+JudgedRankedDocument = base.JudgedRankedDocument
+JudgedRankedTextDocument = base.JudgedRankedTextDocument
 
-@dataclass(frozen=True, unsafe_hash=True)
-class Query:
-    title: str
-
-
-@dataclass(frozen=True, unsafe_hash=True)
-class Document:
-    id: str
-
-
-@dataclass(frozen=True, unsafe_hash=True)
-class TextDocument(Document):
-    contents: str
-
-
-@dataclass(frozen=True, unsafe_hash=True)
-class RankedDocument(Document):
-    score: float
-    rank: int
-
-
-@dataclass(frozen=True, unsafe_hash=True)
-class RankedTextDocument(TextDocument, RankedDocument):
-    pass
+IndexContext = context.IndexContext

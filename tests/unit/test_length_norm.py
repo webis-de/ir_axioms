@@ -1,13 +1,13 @@
 from ir_axioms.axiom import LNC1, TF_LNC
 from ir_axioms.model import Query, RankedTextDocument
-from tests.unit.util import MemoryRerankingContext
+from tests.unit.util import MemoryIndexContext
 
 
 def test_lnc1():
     query = Query("q1 q2 q3")
     document1 = RankedTextDocument("d1", 2, 1, "q1 q2 q3 w w w w w w w")
     document2 = RankedTextDocument("d2", 1, 2, "q1 q2 q3 w w w w w w w w")
-    context = MemoryRerankingContext({document1, document2})
+    context = MemoryIndexContext({document1, document2})
 
     axiom = LNC1()
 
@@ -22,7 +22,7 @@ def test_tf_lnc():
     document1 = RankedTextDocument("d1", 3, 1, "q1 q1 q2 x y")
     document2 = RankedTextDocument("d2", 2, 2, "q1 q2 x y")
     document3 = RankedTextDocument("d3", 1, 3, "q1 q1 q1 x y")
-    context = MemoryRerankingContext({document1, document2, document3})
+    context = MemoryIndexContext({document1, document2, document3})
 
     axiom = TF_LNC()
 

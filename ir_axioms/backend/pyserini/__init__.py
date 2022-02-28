@@ -3,27 +3,51 @@ from functools import cached_property, lru_cache
 from json import loads
 from logging import warning
 from pathlib import Path
-from typing import List, Optional, Union, Callable, NamedTuple
+from typing import Optional, Union, Callable, NamedTuple, Sequence
 
 from ir_datasets import load, Dataset
 from ir_datasets.indices import Docstore
 
-from ir_axioms.backend.pyserini.safe import (
-    IndexReader, SimpleSearcher
-)
+from ir_axioms.backend.pyserini.safe import IndexReader, SimpleSearcher
 from ir_axioms.backend.pyserini.util import (
     Similarity, ClassicSimilarity, BM25Similarity, DFRSimilarity,
     BasicModelIn, AfterEffectL, NormalizationH2, LMDirichletSimilarity
 )
-from ir_axioms.model import Query, Document, TextDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import Query, Document, TextDocument, IndexContext
 from ir_axioms.model.retrieval_model import (
     RetrievalModel, TfIdf, BM25, DirichletLM, PL2
 )
 
 
-@dataclass(unsafe_hash=True, frozen=True)
-class IndexRerankingContext(RerankingContext):
+@lru_cache(None)
+def _similarity(model: RetrievalModel) -> Similarity:
+    if isinstance(model, TfIdf):
+        return ClassicSimilarity()
+    elif isinstance(model, BM25):
+        if model.k_3 != 8:
+            warning(
+                "The Pyserini backend doesn't support setting "
+                "the k_3 parameter for the BM25 retrieval model. "
+                "It will be ignored."
+            )
+        return BM25Similarity(model.k_1, model.b)
+    elif isinstance(model, PL2):
+        return DFRSimilarity(
+            BasicModelIn(),
+            AfterEffectL(),
+            NormalizationH2(model.c)
+        )
+    elif isinstance(model, DirichletLM):
+        return LMDirichletSimilarity(model.mu)
+    else:
+        raise NotImplementedError(
+            f"The Pyserini backend doesn't support "
+            f"the {type(model)} retrieval model."
+        )
+
+
+@dataclass(frozen=True)
+class PyseriniIndexContext(IndexContext):
     index_dir: Path
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[Union[
@@ -49,7 +73,7 @@ class IndexRerankingContext(RerankingContext):
     def document_count(self) -> int:
         return self._index_reader.stats()["documents"]
 
-    # @lru_cache(maxsize=4096)
+    @lru_cache(None)
     def document_frequency(self, term: str) -> int:
         return self._index_reader.object.getDF(
             self._index_reader.reader,
@@ -69,13 +93,17 @@ class IndexRerankingContext(RerankingContext):
         # Shortcut when ir_dataset is specified.
         if self._dataset is not None:
             documents_store: Docstore = self._dataset.docs_store()
-            document = documents_store.get(document.id)
-            if self.contents_accessor is None:
-                return document.text
-            elif isinstance(self.contents_accessor, str):
-                return getattr(document, self.contents_accessor)
-            else:
-                return self.contents_accessor(document)
+            try:
+                document = documents_store.get(document.id)
+                if self.contents_accessor is None:
+                    return document.text
+                elif isinstance(self.contents_accessor, str):
+                    return getattr(document, self.contents_accessor)
+                else:
+                    return self.contents_accessor(document)
+            except KeyError:
+                # Document not found. Assume empty content.
+                return ""
 
         document = self._searcher.doc(document.id)
         json_document = loads(document.raw())
@@ -85,36 +113,9 @@ class IndexRerankingContext(RerankingContext):
     def terms(
             self,
             query_or_document: Union[Query, Document]
-    ) -> List[str]:
+    ) -> Sequence[str]:
         text = self.contents(query_or_document)
-        return self._index_reader.analyze(text)
-
-    @staticmethod
-    @lru_cache(None)
-    def _similarity(model: RetrievalModel) -> Similarity:
-        if isinstance(model, TfIdf):
-            return ClassicSimilarity()
-        elif isinstance(model, BM25):
-            if model.k_3 != 8:
-                warning(
-                    "The Pyserini backend doesn't support setting "
-                    "the k_3 parameter for the BM25 retrieval model. "
-                    "It will be ignored."
-                )
-            return BM25Similarity(model.k_1, model.b)
-        elif isinstance(model, PL2):
-            return DFRSimilarity(
-                BasicModelIn(),
-                AfterEffectL(),
-                NormalizationH2(model.c)
-            )
-        elif isinstance(model, DirichletLM):
-            return LMDirichletSimilarity(model.mu)
-        else:
-            raise NotImplementedError(
-                f"The Pyserini backend doesn't support "
-                f"the {type(model)} retrieval model."
-            )
+        return tuple(str(term) for term in self._index_reader.analyze(text))
 
     @lru_cache(None)
     def retrieval_score(
@@ -126,5 +127,5 @@ class IndexRerankingContext(RerankingContext):
         return self._index_reader.compute_query_document_score(
             document.id,
             query.title,
-            self._similarity(model)
+            _similarity(model)
         )

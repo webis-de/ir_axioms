@@ -1,52 +1,39 @@
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Iterable, Union, Type, TypeVar
+from typing import Sequence
 
 from ir_axioms import registry
-from ir_axioms.axiom.arithmetic import SumAxiom, ProductAxiom, \
-    MajorityVoteAxiom, AndAxiom, UniformAxiom
-from ir_axioms.axiom.base import Axiom
-from ir_axioms.model import Query, RankedDocument
-from ir_axioms.model.context import RerankingContext
-
-AxiomLike = Union[str, Axiom, int, float, Iterable["AxiomLike"]]
-
-AggregationAxiom = TypeVar(
-    "AggregationAxiom",
-    SumAxiom,
-    ProductAxiom,
-    AndAxiom,
-    MajorityVoteAxiom,
-)
+from ir_axioms.axiom.arithmetic import UniformAxiom
+from ir_axioms.axiom.base import Axiom, AxiomLike
+from ir_axioms.model import Query, RankedDocument, IndexContext
 
 
-def to_axiom(
-        axiom_like: AxiomLike,
-        aggregation: Type[AggregationAxiom] = SumAxiom
-) -> Axiom:
-    if isinstance(axiom_like, str):
-        return registry[axiom_like]
+def to_axiom(axiom_like: AxiomLike) -> Axiom:
+    if isinstance(axiom_like, Axiom):
+        return axiom_like
     elif isinstance(axiom_like, (float, int)):
         return UniformAxiom(axiom_like)
-    elif isinstance(axiom_like, Iterable):
-        return aggregation([to_axiom(item) for item in axiom_like])
+    elif isinstance(axiom_like, str):
+        return registry[axiom_like]
     else:
-        assert isinstance(axiom_like, Axiom)
-        return axiom_like
+        raise ValueError(f"Cannot convert to axiom: {axiom_like}")
+
+
+def to_axioms(axiom_likes: Sequence[AxiomLike]) -> Sequence[Axiom]:
+    return [to_axiom(axiom_like) for axiom_like in axiom_likes]
 
 
 @dataclass(frozen=True)
 class AutoAxiom(Axiom):
     axiom_like: AxiomLike
-    aggregation: Type[AggregationAxiom] = SumAxiom
 
     @cached_property
     def _axiom(self) -> Axiom:
-        return to_axiom(self.axiom_like, self.aggregation)
+        return to_axiom(self.axiom_like)
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument,

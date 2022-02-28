@@ -1,66 +1,22 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass
-from functools import lru_cache, cached_property
-from itertools import product
 from math import nan
-from statistics import mean
-from typing import Set, Tuple
-
-from pymagnitude import Magnitude
 
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.axiom.utils import synonym_set_similarity, strictly_greater, \
-    approximately_equal
-from ir_axioms.model import Query, RankedDocument
-from ir_axioms.model.context import RerankingContext
-
-
-class _TermSimilarity(ABC):
-    @abstractmethod
-    def similarity(self, term1: str, term2: str) -> float:
-        pass
-
-
-class _WordNetTermSimilarity(_TermSimilarity):
-    @lru_cache(maxsize=4096)
-    def similarity(self, term1: str, term2: str) -> float:
-        return synonym_set_similarity(term1, term2)
-
-
-class _WordEmbeddingTermSimilarity(_TermSimilarity, ABC):
-    embeddings_path: str
-
-    @property
-    @abstractmethod
-    def embeddings_path(self) -> str:
-        pass
-
-    @cached_property
-    def _embeddings(self):
-        return Magnitude(self.embeddings_path, stream=True)
-
-    @lru_cache(maxsize=4096)
-    def similarity(self, term1: str, term2: str):
-        return self._embeddings.similarity(term1, term2)
-
-
-class _FastTextWikiNewsTermSimilarity(_WordEmbeddingTermSimilarity):
-    embeddings_path = "fasttext/medium/wiki-news-300d-1M.magnitude"
+from ir_axioms.axiom.utils import strictly_greater, approximately_equal
+from ir_axioms.model import Query, RankedDocument, IndexContext
+from ir_axioms.modules.similarity import (
+    TermSimilarityMixin, WordNetSynonymSetTermSimilarityMixin,
+    FastTextWikiNewsTermSimilarityMixin
+)
 
 
 @dataclass(frozen=True)
-class _STMC1(Axiom, _TermSimilarity, ABC):
-
-    def _average_similarity(self, terms1: Set[str], terms2: Set[str]) -> float:
-        return mean(
-            self.similarity(term1, term2)
-            for term1 in terms1
-            for term2 in terms2
-        )
+class _STMC1(Axiom, TermSimilarityMixin, ABC):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -70,41 +26,27 @@ class _STMC1(Axiom, _TermSimilarity, ABC):
         query_terms = context.term_set(query)
 
         return strictly_greater(
-            self._average_similarity(document1_terms, query_terms),
-            self._average_similarity(document2_terms, query_terms)
+            self.average_similarity(document1_terms, query_terms),
+            self.average_similarity(document2_terms, query_terms)
         )
 
 
 @dataclass(frozen=True)
-class STMC1(_STMC1, _WordNetTermSimilarity):
+class STMC1(_STMC1, WordNetSynonymSetTermSimilarityMixin):
     name = "STMC1"
 
 
 @dataclass(frozen=True)
-class STMC1_f(_STMC1, _FastTextWikiNewsTermSimilarity):
+class STMC1_fastText(_STMC1, FastTextWikiNewsTermSimilarityMixin):
     name = "STMC1-fastText"
 
 
 @dataclass(frozen=True)
-class _STMC2(Axiom, _TermSimilarity, ABC):
-
-    def _tuple_similarity(self, terms: Tuple[str, str]) -> float:
-        term1, term2 = terms
-        return self.similarity(term1, term2)
-
-    def _most_similar_terms(
-            self,
-            terms1: Set[str],
-            terms2: Set[str]
-    ) -> Tuple[str, str]:
-        return max(
-            product(terms1, terms2),
-            key=self._tuple_similarity
-        )
+class _STMC2(Axiom, TermSimilarityMixin, ABC):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -127,8 +69,15 @@ class _STMC2(Axiom, _TermSimilarity, ABC):
         query_terms = context.term_set(query)
         non_query_terms = document_terms - query_terms
 
+        most_similar_terms = self.most_similar_pair(
+            query_terms,
+            non_query_terms,
+        )
+        if most_similar_terms is None:
+            return 0
+
         most_similar_query_term, most_similar_non_query_term = (
-            self._most_similar_terms(query_terms, non_query_terms)
+            most_similar_terms
         )
 
         def term_frequency_ratio(
@@ -147,16 +96,22 @@ class _STMC2(Axiom, _TermSimilarity, ABC):
                 return nan
             return tf_most_similar_non_query_term / tf_most_similar_query_term
 
-        if approximately_equal(
-                len(document2_terms) / len(document1_terms),
-                term_frequency_ratio(document2, document1),
-                margin_fraction=0.2
+        if (
+                len(document1_terms) > 0 and
+                approximately_equal(
+                    len(document2_terms) / len(document1_terms),
+                    term_frequency_ratio(document2, document1),
+                    margin_fraction=0.2
+                )
         ):
             return 1
-        elif approximately_equal(
-                len(document1_terms) / len(document2_terms),
-                term_frequency_ratio(document1, document2),
-                margin_fraction=0.2
+        elif (
+                len(document2_terms) > 0 and
+                approximately_equal(
+                    len(document1_terms) / len(document2_terms),
+                    term_frequency_ratio(document1, document2),
+                    margin_fraction=0.2
+                )
         ):
             return -1
 
@@ -164,10 +119,15 @@ class _STMC2(Axiom, _TermSimilarity, ABC):
 
 
 @dataclass(frozen=True)
-class STMC2(_STMC2, _WordNetTermSimilarity):
+class STMC2(_STMC2, WordNetSynonymSetTermSimilarityMixin):
     name = "STMC2"
 
 
 @dataclass(frozen=True)
-class STMC2_f(_STMC2, _FastTextWikiNewsTermSimilarity):
+class STMC2_fastText(_STMC2, FastTextWikiNewsTermSimilarityMixin):
     name = "STMC2-fastText"
+
+
+# Shorthand names:
+STMC1_f = STMC1_fastText
+STMC2_f = STMC2_fastText

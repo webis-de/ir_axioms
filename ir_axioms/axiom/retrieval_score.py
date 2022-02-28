@@ -2,8 +2,7 @@ from dataclasses import dataclass
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_greater
-from ir_axioms.model import Query, RankedDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import Query, RankedDocument, IndexContext
 from ir_axioms.model.retrieval_model import (
     RetrievalModel, Tf, TfIdf, BM25, PL2, QL
 )
@@ -17,7 +16,7 @@ class RetrievalScoreAxiom(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -34,7 +33,7 @@ class RS_TF(Axiom, Tf):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -51,7 +50,7 @@ class RS_TF_IDF(Axiom, TfIdf):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -68,7 +67,7 @@ class RS_BM25(Axiom, BM25):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -85,7 +84,7 @@ class RS_PL2(Axiom, PL2):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -102,7 +101,7 @@ class RS_QL(Axiom, QL):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument

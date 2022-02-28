@@ -1,15 +1,23 @@
 from abc import abstractmethod, ABC
-from functools import lru_cache
+from functools import lru_cache, cached_property
 from math import log
 from pathlib import Path
-from typing import Set, List, Optional, Union
+from typing import Optional, Union, FrozenSet, Sequence
 
-from ir_axioms.model import Query, Document
+from diskcache import Cache
+
+from ir_axioms.model.base import Query, Document
 from ir_axioms.model.retrieval_model import RetrievalModel
 
 
-class RerankingContext(ABC):
+class IndexContext(ABC):
     cache_dir: Optional[Path] = None
+
+    @cached_property
+    def cache(self) -> Optional[Cache]:
+        if self.cache_dir is None:
+            return None
+        return Cache(str(self.cache_dir.absolute()))
 
     @property
     @abstractmethod
@@ -43,11 +51,17 @@ class RerankingContext(ABC):
             )
 
     @abstractmethod
-    def terms(self, query_or_document: Union[Query, Document]) -> List[str]:
+    def terms(
+            self,
+            query_or_document: Union[Query, Document]
+    ) -> Sequence[str]:
         pass
 
-    def term_set(self, query_or_document: Union[Query, Document]) -> Set[str]:
-        return set(self.terms(query_or_document))
+    def term_set(
+            self,
+            query_or_document: Union[Query, Document]
+    ) -> FrozenSet[str]:
+        return frozenset(self.terms(query_or_document))
 
     @lru_cache(None)
     def term_frequency(

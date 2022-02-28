@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
 from functools import lru_cache
+from math import nan
+from pathlib import Path
 from statistics import mean
-from typing import List, Set, Dict, Optional
+from typing import Set, Dict, Optional
 
 from nltk import WordNetLemmatizer, sent_tokenize, word_tokenize
 from targer_api import (
@@ -10,15 +12,13 @@ from targer_api import (
 from targer_api.constants import DEFAULT_TARGER_MODELS, DEFAULT_TARGER_API_URL
 
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.axiom.utils import approximately_same_length
-from ir_axioms.model import Query, RankedDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.axiom.preconditions import LEN_Mixin
+from ir_axioms.model import Query, RankedDocument, IndexContext
 from ir_axioms.utils.nltk import download_nltk_dependencies
 
 
-@lru_cache(maxsize=4096)
+@lru_cache(None)
 def _normalize(word: str):
-    download_nltk_dependencies("wordnet")
     _word_net_lemmatizer = WordNetLemmatizer()
     return _word_net_lemmatizer.lemmatize(word).lower()
 
@@ -28,12 +28,12 @@ def _count_argumentative_units(sentences: ArgumentSentences) -> int:
 
 
 def _count_premises(sentences: ArgumentSentences) -> int:
-    count: int = 0
-    for sentence in sentences:
-        for tag in sentence:
-            if tag.label == ArgumentLabel.P_B and tag.probability > 0.5:
-                count += 1
-    return count
+    return sum(
+        1
+        for sentence in sentences
+        for tag in sentence
+        if tag.label == ArgumentLabel.P_B and tag.probability > 0.5
+    )
 
 
 def _count_claims(sentences: ArgumentSentences) -> int:
@@ -82,7 +82,7 @@ def _is_claim_or_premise(tag: ArgumentTag) -> bool:
 
 
 def _count_query_terms(
-        context: RerankingContext,
+        context: IndexContext,
         sentences: ArgumentSentences,
         query: Query,
         normalize: bool = True,
@@ -104,13 +104,13 @@ def _count_query_terms(
 
 
 def _query_term_position_in_argument(
-        context: RerankingContext,
+        context: IndexContext,
         sentences: ArgumentSentences,
         query: Query,
         penalty: int,
         normalize: bool = True,
 ) -> float:
-    term_arg_pos: List[int] = []
+    term_argument_position = []
     tags = [tag for sentence in sentences for tag in sentence]
     for term in context.terms(query):
         normalized_term = _normalize(term) if normalize else term
@@ -124,22 +124,27 @@ def _query_term_position_in_argument(
                     tag.label != ArgumentLabel.O and
                     tag.probability > 0.5
             ):
-                term_arg_pos.append(position)
+                term_argument_position.append(position)
                 found = True
                 break
         if not found:
-            term_arg_pos.append(penalty)
-    return mean(term_arg_pos)
+            term_argument_position.append(penalty)
+    if len(term_argument_position) == 0:
+        return penalty
+    return mean(term_argument_position)
 
 
+@lru_cache(None)
 def _sentence_length(
-        context: RerankingContext,
+        context: IndexContext,
         document: RankedDocument,
 ) -> float:
     download_nltk_dependencies("punkt")
     sentences = sent_tokenize(context.contents(document))
+    if len(sentences) == 0:
+        return nan
     return mean(
-        len(word_tokenize(sentence))
+        len(word_tokenize(sentence, preserve_line=True))
         for sentence in sentences
     )
 
@@ -149,20 +154,31 @@ class _TargerMixin:
     models: Set[str] = field(default_factory=lambda: DEFAULT_TARGER_MODELS)
     api_url: str = DEFAULT_TARGER_API_URL
 
-    def fetch_arguments(
+    @lru_cache(None)
+    def _analyze_text(
             self,
-            context: RerankingContext,
-            document: RankedDocument,
+            contents: str,
+            cache_dir: Optional[Path],
     ) -> Dict[str, ArgumentSentences]:
         return analyze_text(
-            context.contents(document),
+            contents,
             model_or_models=self.models,
             api_url=self.api_url,
             cache_dir=(
-                context.cache_dir / "targer"
-                if context.cache_dir is not None
+                cache_dir / "targer"
+                if cache_dir is not None
                 else None
             )
+        )
+
+    def analyze_text(
+            self,
+            context: IndexContext,
+            document: RankedDocument,
+    ) -> Dict[str, ArgumentSentences]:
+        return self._analyze_text(
+            context.contents(document),
+            context.cache_dir
         )
 
 
@@ -171,20 +187,16 @@ class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom):
     """
     Favor documents with more argumentative units.
     """
-    name = "ArgUC"
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        if not approximately_same_length(context, document1, document2):
-            return 0
-
-        arguments1 = self.fetch_arguments(context, document1)
-        arguments2 = self.fetch_arguments(context, document2)
+        arguments1 = self.analyze_text(context, document1)
+        arguments2 = self.analyze_text(context, document2)
 
         count1 = sum(
             _count_argumentative_units(sentences)
@@ -204,11 +216,15 @@ class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom):
 
 
 @dataclass(frozen=True)
+class ArgUC(LEN_Mixin, ArgumentativeUnitsCountAxiom):
+    name = "ArgUC"
+
+
+@dataclass(frozen=True)
 class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
     """
     Favor documents with more query terms in argumentative units.
     """
-    name = "QTArg"
 
     normalize: bool = True
     """
@@ -216,25 +232,26 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
     using the WordNet lemmatizer.
     """
 
+    # noinspection PyMethodMayBeStatic
+    def __post_init__(self):
+        download_nltk_dependencies("wordnet", "omw-1.4")
+
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        if not approximately_same_length(context, document1, document2):
-            return 0
-
-        arguments1 = self.fetch_arguments(context, document1)
-        arguments2 = self.fetch_arguments(context, document2)
+        arguments1 = self.analyze_text(context, document1)
+        arguments2 = self.analyze_text(context, document2)
 
         count1 = sum(
-            _count_query_terms(context, sentences, query)
+            _count_query_terms(context, sentences, query, self.normalize)
             for _, sentences in arguments1.items()
         )
         count2 = sum(
-            _count_query_terms(context, sentences, query)
+            _count_query_terms(context, sentences, query, self.normalize)
             for _, sentences in arguments2.items()
         )
 
@@ -244,6 +261,11 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
             return -1
         else:
             return 0
+
+
+@dataclass(frozen=True)
+class QTArg(LEN_Mixin, QueryTermOccurrenceInArgumentativeUnitsAxiom):
+    name = "QTArg"
 
 
 @dataclass(frozen=True)
@@ -262,7 +284,6 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
             Distributed Representations of Text for Web Search. In: Proceedings
             of WWW 2017. pp. 1291–1299. ACM.
     """
-    name = "QTPArg"
 
     normalize: bool = True
     """
@@ -276,18 +297,22 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
     Set to None to use the maximum length of the two compared documents.
     """
 
+    # noinspection PyMethodMayBeStatic
+    def __post_init__(self):
+        download_nltk_dependencies("wordnet", "omw-1.4")
+
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        if not approximately_same_length(context, document1, document2):
-            return 0
+        arguments1 = self.analyze_text(context, document1)
+        arguments2 = self.analyze_text(context, document2)
 
-        arguments1 = self.fetch_arguments(context, document1)
-        arguments2 = self.fetch_arguments(context, document2)
+        if len(arguments1) == 0 or len(arguments2) == 0:
+            return 0
 
         penalty = self.penalty
         if penalty is None:
@@ -296,24 +321,26 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
                 len(context.terms(document2)),
             ) + 1
 
-        position1 = mean(list(
+        position1 = mean(
             _query_term_position_in_argument(
                 context,
                 sentences,
                 query,
-                penalty
+                penalty,
+                self.normalize
             )
             for _, sentences in arguments1.items()
-        ))
-        position2 = mean(list(
+        )
+        position2 = mean(
             _query_term_position_in_argument(
                 context,
                 sentences,
                 query,
-                penalty
+                penalty,
+                self.normalize
             )
             for _, sentences in arguments2.items()
-        ))
+        )
 
         if position1 < position2:
             return 1
@@ -321,6 +348,11 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
             return -1
         else:
             return 0
+
+
+@dataclass(frozen=True)
+class QTPArg(LEN_Mixin, QueryTermPositionInArgumentativeUnitsAxiom):
+    name = "QTPArg"
 
 
 @dataclass(frozen=True)
@@ -336,49 +368,34 @@ class AverageSentenceLengthAxiom(Axiom):
         Markel, M.: Technical Communication. 9th ed. Bedford/St Martin’s (2010)
         Newell, C.: Editing Tip: Sentence Length (2014)
     """
-    name = "aSL"
 
     min_sentence_length: int = 12
     max_sentence_length: int = 20
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        if not approximately_same_length(context, document1, document2):
-            return 0
-
         sentence_length1 = _sentence_length(context, document1)
         sentence_length2 = _sentence_length(context, document2)
 
         min_length = self.min_sentence_length
         max_length = self.max_sentence_length
 
-        if (
-                min_length <= sentence_length1 <= max_length and
-                (
-                        sentence_length2 < min_length or
-                        sentence_length2 > max_length
-                )
-        ):
+        length_in_range1 = min_length <= sentence_length1 <= max_length
+        length_in_range2 = min_length <= sentence_length2 <= max_length
+
+        if length_in_range1 and not length_in_range2:
             return 1
-        elif (
-                min_length <= sentence_length2 <= max_length and
-                (
-                        sentence_length1 < min_length or
-                        sentence_length1 > max_length
-                )
-        ):
+        elif length_in_range2 and not length_in_range1:
             return -1
         else:
             return 0
 
 
-# Aliases for shorter names:
-ArgUC = ArgumentativeUnitsCountAxiom
-QTArg = QueryTermOccurrenceInArgumentativeUnitsAxiom
-QTPArg = QueryTermPositionInArgumentativeUnitsAxiom
-aSL = AverageSentenceLengthAxiom
+@dataclass(frozen=True)
+class aSL(LEN_Mixin, AverageSentenceLengthAxiom):
+    name = "aSL"

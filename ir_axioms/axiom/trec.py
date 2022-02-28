@@ -4,16 +4,14 @@ from functools import lru_cache
 from numpy import integer
 from trectools import TrecQrel, TrecTopics
 
-from ir_axioms import logger
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_greater
-from ir_axioms.model import Query, RankedDocument
-from ir_axioms.model.context import RerankingContext
+from ir_axioms.model import Query, RankedDocument, IndexContext
 
 
 @dataclass(frozen=True)
 class TrecOracleAxiom(Axiom):
-    name = "TREC-oracle"
+    name = "TREC-ORACLE"
 
     topics: TrecTopics
     qrels: TrecQrel
@@ -29,8 +27,8 @@ class TrecOracleAxiom(Axiom):
             raise RuntimeError(
                 f"Could not find topic for query '{query_title}'."
             )
-        elif len(topics) > 1:
-            logger.warning(
+        if len(topics) > 1:
+            raise RuntimeError(
                 f"Found multiple topics for query '{query_title}': {topics}"
             )
         return topics[0]
@@ -50,7 +48,7 @@ class TrecOracleAxiom(Axiom):
 
     def preference(
             self,
-            context: RerankingContext,
+            context: IndexContext,
             query: Query,
             document1: RankedDocument,
             document2: RankedDocument
@@ -58,3 +56,7 @@ class TrecOracleAxiom(Axiom):
         judgement1 = self._judgement(query.title, document1.id)
         judgement2 = self._judgement(query.title, document2.id)
         return strictly_greater(judgement1, judgement2)
+
+
+# Aliases for shorter names:
+TREC = TrecOracleAxiom
