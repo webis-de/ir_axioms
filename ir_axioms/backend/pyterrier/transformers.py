@@ -26,7 +26,7 @@ from ir_axioms.modules.ranking import PivotSelection, RandomPivotSelection
 
 
 class PerGroupTransformer(TransformerBase, ABC):
-    group_columns: Set[str] = NotImplemented
+    group_columns: Set[str]
     optional_group_columns: Set[str] = {}
     verbose: bool = False
     description: Optional[str] = None
@@ -66,7 +66,7 @@ class PerGroupTransformer(TransformerBase, ABC):
 
 
 class AxiomTransformer(PerGroupTransformer, ABC):
-    index: Union[Path, IndexRef, Index] = NotImplemented
+    index: Union[Path, IndexRef, Index]
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Optional[Tokeniser] = None
@@ -163,8 +163,8 @@ class KwikSortReranker(AxiomTransformer):
 
 
 @dataclass(frozen=True)
-class AggregatedAxiomaticPreference(AxiomTransformer):
-    name = "AggregatedAxiomaticPreference"
+class AggregatedAxiomaticPreferences(AxiomTransformer):
+    name = "AggregatedAxiomaticPreferences"
     description = "Aggregating query axiom preferences"
 
     axioms: Sequence[AxiomLike]
