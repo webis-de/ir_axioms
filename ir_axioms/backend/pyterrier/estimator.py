@@ -18,7 +18,7 @@ from ir_axioms.backend.pyterrier.safe import Transformer
 from ir_axioms.backend.pyterrier.transformer_utils import (
     require_columns, load_documents, load_queries
 )
-from ir_axioms.backend.pyterrier.transformers import AxiomaticReranker
+from ir_axioms.backend.pyterrier.transformers import KwikSortReranker
 from ir_axioms.model import IndexContext
 from ir_axioms.model.base import RankedDocument, JudgedRankedDocument
 from ir_axioms.modules.ranking import PivotSelection, RandomPivotSelection
@@ -66,7 +66,7 @@ class EstimatorKwikSortReranker(EstimatorBase):
 
     @cached_property
     def _reranker(self) -> Transformer:
-        return AxiomaticReranker(
+        return KwikSortReranker(
             axiom=self._estimator_axiom,
             index=self.index,
             dataset=self.dataset,

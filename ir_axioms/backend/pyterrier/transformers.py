@@ -117,8 +117,8 @@ class AxiomTransformer(PerGroupTransformer, ABC):
 
 
 @dataclass(frozen=True)
-class AxiomaticReranker(AxiomTransformer):
-    name = "AxiomaticReranker"
+class KwikSortReranker(AxiomTransformer):
+    name = "KwikSortReranker"
     description = "Reranking query axiomatically"
 
     axiom: AxiomLike
