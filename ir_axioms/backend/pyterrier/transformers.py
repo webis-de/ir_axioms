@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import cached_property
 from itertools import product, compress
 from logging import DEBUG
@@ -169,9 +169,7 @@ class AggregatedAxiomaticPreference(AxiomTransformer):
 
     axioms: Sequence[AxiomLike]
     index: Union[Path, IndexRef, Index]
-    aggregations: Sequence[Callable[[Sequence[float]], float]] = field(
-        default_factory=lambda: [sum]
-    )
+    aggregations: Sequence[Callable[[Sequence[float]], float]]
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     filter_pairs: Optional[Callable[
