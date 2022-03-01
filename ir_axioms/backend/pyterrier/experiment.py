@@ -143,3 +143,30 @@ class AxiomaticExperiment:
             pipeline.transform(self.topics)
             for pipeline in pipelines
         ])
+
+    @cached_property
+    def preference_distribution(self) -> DataFrame:
+        pref = self.preferences.copy()
+        distributions = [
+            {
+                "axiom": axiom_name,
+                "axiom == 0": len(
+                    pref[
+                        (pref["ORIG_preference"] > 0) &
+                        (pref[f"{axiom_name}_preference"] == 0)
+                        ]
+                ),
+                "axiom != ORIG": len(
+                    pref[
+                        (pref["ORIG_preference"] > 0) &
+                        (pref[f"{axiom_name}_preference"] < 0)
+                        ]),
+                "axiom == ORIG": len(
+                    pref[
+                        (pref["ORIG_preference"] > 0) &
+                        (pref[f"{axiom_name}_preference"] > 0)
+                        ]),
+            }
+            for axiom_name in self.axiom_names
+        ]
+        return DataFrame(distributions)
