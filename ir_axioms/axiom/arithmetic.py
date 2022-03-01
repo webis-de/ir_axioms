@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from math import isclose, prod
+from math import isclose, prod, ceil
 from typing import Iterable, Union
 
 from ir_axioms.axiom.base import Axiom
@@ -89,6 +89,7 @@ class MultiplicativeInverseAxiom(Axiom):
 @dataclass(frozen=True)
 class AndAxiom(Axiom):
     # TODO: And is a special case of majority vote with a majority of 1.0
+    #   We might want to merge both classes eventually.
     axioms: Iterable[Axiom]
 
     def preference(
@@ -135,23 +136,42 @@ class VoteAxiom(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ) -> float:
-        preferences = [
+        axioms = tuple(self.axioms)
+        preferences = (
             axiom.preference(context, query, document1, document2)
-            for axiom in self.axioms
-        ]
-        count = len(preferences)
-        positive_count = sum(1 for preference in preferences if preference > 0)
-        negative_count = sum(1 for preference in preferences if preference < 0)
-        positive_proportion = positive_count / count
-        negative_proportion = negative_count / count
+            for axiom in axioms
+        )
+
+        # Total count of possible votes.
+        count: int = len(axioms)
+
+        # Minimum (absolute) number of votes to reach a majority.
+        minimum_count: int = ceil(self.minimum_votes * count)
+
+        # Number of observed positive votes.
+        positive_votes: int = 0
+        # Number of observed negative votes.
+        negative_votes: int = 0
+        # Number of observed neutral votes.
+        neutral_votes: int = 0
+
+        for preference in preferences:
+            if preference > 0:
+                positive_votes += 1
+            elif preference < 0:
+                negative_votes += 1
+            else:
+                neutral_votes += 1
+        # TODO: Optimize by comparing majorities with "open" votes.
+
         if (
-                positive_proportion > negative_proportion and
-                positive_proportion >= self.minimum_votes
+                positive_votes > negative_votes and
+                positive_votes >= self.minimum_votes
         ):
             return 1
         elif (
-                negative_proportion > positive_proportion and
-                negative_proportion >= self.minimum_votes
+                negative_votes > positive_votes and
+                negative_votes >= self.minimum_votes
         ):
             return -1
         else:
