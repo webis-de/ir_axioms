@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from functools import cached_property
+from math import nan
 from pathlib import Path
 from typing import Sequence, Optional, Union, Callable
 
@@ -111,6 +112,7 @@ class AxiomaticExperiment:
         """
         Return a dataframe with each axiom's preference for each
         document pair, query and retrieval system.
+
         The returned dataframe has the following columns:
         - name: Retrieval system name
         - qid: Query ID
@@ -146,27 +148,81 @@ class AxiomaticExperiment:
 
     @cached_property
     def preference_distribution(self) -> DataFrame:
+        """
+        Return a dataframe with each axiom's preference distribution
+        across all documents, queries and retrieval systems.
+
+        The returned dataframe has the following columns:
+        - axiom: Axiom name
+        - axiom == 0: Absolute number of preferences equal to 0.
+        - axiom == ORIG: Absolute number of preferences equal to
+            the original ranking preference.
+        - axiom != ORIG: Absolute number of preferences opposing
+            the original ranking preference.
+        """
+
         pref = self.preferences.copy()
+        pref = pref[pref["ORIG_preference"] > 0]
         distributions = [
             {
                 "axiom": axiom_name,
                 "axiom == 0": len(
-                    pref[
-                        (pref["ORIG_preference"] > 0) &
-                        (pref[f"{axiom_name}_preference"] == 0)
-                        ]
+                    pref[pref[f"{axiom_name}_preference"] == 0]
+                ),
+                "axiom == ORIG": len(
+                    pref[pref[f"{axiom_name}_preference"] > 0]
                 ),
                 "axiom != ORIG": len(
-                    pref[
-                        (pref["ORIG_preference"] > 0) &
-                        (pref[f"{axiom_name}_preference"] < 0)
-                        ]),
-                "axiom == ORIG": len(
-                    pref[
-                        (pref["ORIG_preference"] > 0) &
-                        (pref[f"{axiom_name}_preference"] > 0)
-                        ]),
+                    pref[pref[f"{axiom_name}_preference"] < 0]
+                ),
             }
             for axiom_name in self.axiom_names
         ]
         return DataFrame(distributions)
+
+    @staticmethod
+    def _consistency(reference: DataFrame, axiom_name: str) -> float:
+        non_zero = len(reference[reference[f"{axiom_name}_preference"] != 0])
+        consistent = len(reference[reference[f"{axiom_name}_preference"] > 0])
+        if non_zero == 0:
+            return nan
+        else:
+            return consistent / non_zero
+
+    @cached_property
+    def preference_consistency(self) -> DataFrame:
+        """
+        Return a dataframe with each axiom's consistency
+        with the original ranking preferences and oracle preferences
+        across all documents, queries and retrieval systems.
+
+        The returned dataframe has the following columns:
+        - axiom: Axiom name
+        - ORIG_consistency: Relative consistency of non-zero preferences
+            with ORIG preferences.
+        - ORACLE_consistency: Relative consistency of non-zero preferences
+            with ORACLE preferences.
+        """
+
+        pref = self.preferences.copy()
+        pref_orig = pref[pref["ORIG_preference"] > 0]
+        pref_oracle = pref[pref["ORACLE_preference"] > 0]
+        consistencies = [
+            {
+                "axiom": axiom_name,
+                "ORIG_consistency": self._consistency(
+                    pref_orig,
+                    axiom_name,
+                ),
+                "ORACLE_consistency": self._consistency(
+                    pref_oracle,
+                    axiom_name,
+                ),
+            }
+            for axiom_name in self.axiom_names
+        ]
+        return DataFrame(consistencies)
+
+    @cached_property
+    def inconsistent_pairs(self) -> DataFrame:
+        raise NotImplementedError()
