@@ -146,7 +146,7 @@ class VoteAxiom(Axiom):
         count: int = len(axioms)
 
         # Minimum (absolute) number of votes to reach a majority.
-        minimum_count: int = ceil(self.minimum_votes * count)
+        minimum_votes: int = ceil(self.minimum_votes * count)
 
         # Number of observed positive votes.
         positive_votes: int = 0
@@ -166,12 +166,12 @@ class VoteAxiom(Axiom):
 
         if (
                 positive_votes > negative_votes and
-                positive_votes >= self.minimum_votes
+                positive_votes >= minimum_votes
         ):
             return 1
         elif (
                 negative_votes > positive_votes and
-                negative_votes >= self.minimum_votes
+                negative_votes >= minimum_votes
         ):
             return -1
         else:
