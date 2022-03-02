@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from functools import cached_property
+from functools import cached_property, reduce
 from math import nan
+from operator import or_
 from pathlib import Path
 from typing import Sequence, Optional, Union, Callable
 
@@ -207,7 +208,7 @@ class AxiomaticExperiment:
         pref = self.preferences.copy()
         pref_orig = pref[pref["ORIG_preference"] > 0]
         pref_oracle = pref[pref["ORACLE_preference"] > 0]
-        consistencies = [
+        distributions = [
             {
                 "axiom": axiom_name,
                 "ORIG_consistency": self._consistency(
@@ -221,8 +222,23 @@ class AxiomaticExperiment:
             }
             for axiom_name in self.axiom_names
         ]
-        return DataFrame(consistencies)
+        return DataFrame(distributions)
 
     @cached_property
     def inconsistent_pairs(self) -> DataFrame:
-        raise NotImplementedError()
+        pref = self.preferences.copy()
+        # Preferences that are ranked wrong.
+        ranked_wrong = (
+                (pref["ORACLE_preference"] > 0) &
+                (pref["ORIG_preference"] < 0)
+        )
+        pref = pref[ranked_wrong]
+        # Preferences that have at least one correct axiom preference.
+        axiom_hint = [
+            pref[f"{axiom_name}_preference"] > 0
+            for axiom_name in self.axiom_names
+        ]
+        axiom_hinted = reduce(or_, axiom_hint)
+        pref = pref[axiom_hinted]
+
+        return pref
