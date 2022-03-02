@@ -29,6 +29,8 @@ You can find all examples in the [`examples/` directory](examples).
   [![Launch Binder](https://img.shields.io/badge/launch-binder-informational?style=flat-square)](https://mybinder.org/v2/gh/webis-de/ir_axioms/main?labpath=examples/pyterrier_kwiksort_learned.ipynb)
 - [Re-ranking top-20 results using LambdaMART with axiomatic preference features](examples/pyterrier_ltr_features.ipynb)
   [![Launch Binder](https://img.shields.io/badge/launch-binder-informational?style=flat-square)](https://mybinder.org/v2/gh/webis-de/ir_axioms/main?labpath=examples/pyterrier_ltr_features.ipynb)
+- [Post-Hoc Analysis of Rankings and
+Relevance Judgments](examples/pyterrier_post_hoc_analysis_of_runs_and_qrels.ipynb)[![Launch Binder](https://img.shields.io/badge/launch-binder-informational?style=flat-square)](https://mybinder.org/v2/gh/webis-de/ir_axioms/main?labpath=examples/pyterrier_post_hoc_analysis_of_runs_and_qrels.ipynb)
 - [Axiomatic prefernces for TREC Deep Learning 2019 runs (passages)](examples/trec_28_deep_passages_preferences_depth_10.ipynb)
   [![Launch Binder](https://img.shields.io/badge/launch-binder-informational?style=flat-square)](https://mybinder.org/v2/gh/webis-de/ir_axioms/main?labpath=examples/trec_28_deep_passages_preferences_depth_10.ipynb)
 - [Axiomatic prefernces for TREC Deep Learning 2019 runs (documents)](examples/trec_28_deep_documents_preferences_depth_10.ipynb)
