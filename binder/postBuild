@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -ex
+
+pip install cython
+pip install --editable ".[pyterrier,examples]"

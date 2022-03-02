@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import cached_property
 from itertools import product, compress
 from logging import DEBUG
@@ -26,7 +26,7 @@ from ir_axioms.modules.ranking import PivotSelection, RandomPivotSelection
 
 
 class PerGroupTransformer(TransformerBase, ABC):
-    group_columns: Set[str] = NotImplemented
+    group_columns: Set[str]
     optional_group_columns: Set[str] = {}
     verbose: bool = False
     description: Optional[str] = None
@@ -66,7 +66,7 @@ class PerGroupTransformer(TransformerBase, ABC):
 
 
 class AxiomTransformer(PerGroupTransformer, ABC):
-    index: Union[Path, IndexRef, Index] = NotImplemented
+    index: Union[Path, IndexRef, Index]
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Optional[Tokeniser] = None
@@ -117,8 +117,8 @@ class AxiomTransformer(PerGroupTransformer, ABC):
 
 
 @dataclass(frozen=True)
-class AxiomaticReranker(AxiomTransformer):
-    name = "AxiomaticReranker"
+class KwikSortReranker(AxiomTransformer):
+    name = "KwikSortReranker"
     description = "Reranking query axiomatically"
 
     axiom: AxiomLike
@@ -163,15 +163,13 @@ class AxiomaticReranker(AxiomTransformer):
 
 
 @dataclass(frozen=True)
-class AggregatedAxiomaticPreference(AxiomTransformer):
-    name = "AggregatedAxiomaticPreference"
+class AggregatedAxiomaticPreferences(AxiomTransformer):
+    name = "AggregatedAxiomaticPreferences"
     description = "Aggregating query axiom preferences"
 
     axioms: Sequence[AxiomLike]
     index: Union[Path, IndexRef, Index]
-    aggregations: Sequence[Callable[[Sequence[float]], float]] = field(
-        default_factory=lambda: [sum]
-    )
+    aggregations: Sequence[Callable[[Sequence[float]], float]]
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     filter_pairs: Optional[Callable[
