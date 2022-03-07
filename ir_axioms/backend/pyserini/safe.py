@@ -1,6 +1,7 @@
 # Check if Pyserini is installed.
 try:
-    import pyserini  # noqa: F401
+    import pyserini
+    assert pyserini
 except ImportError as error:
     raise ImportError(
         "The Pyserini backend requires that 'pyserini' is installed."

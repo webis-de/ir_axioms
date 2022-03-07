@@ -1,6 +1,7 @@
 # Check if PyTerrier is installed.
 try:
-    import pyterrier  # noqa: F401
+    import pyterrier
+    assert pyterrier
     # Ensure that the Terrier JVM has started.
     from pyterrier import started
 
