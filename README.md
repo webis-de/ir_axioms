@@ -58,12 +58,19 @@ scripts/slurm-start-jupyter-lab.sh
 If you use this package or its components in your research, please cite the following paper describing the `ir_axioms`
 framework and its use-cases:
 
-> TODO
+> Alexander Bondarenko, Maik Fröbe, Jan Heinrich Reimer, Benno Stein, Michael Völske, and Matthias Hagen. [Axiomatic Retrieval Experimentation with `ir_axioms`](https://webis.de/publications.html?q=ir_axioms#bondarenko_2022d). In _45th International ACM Conference on Research and Development in Information Retrieval (SIGIR 2022)_, July 2022. ACM.
 
 You can use the following BibTeX entry for citation:
 
 ```bibtex
-@InProceedings{TODO,
+@InProceedings{bondarenko:2022d
+  author =                {Alexander Bondarenko and Maik Fr{\"o}be and {Jan Heinrich} Reimer and Benno Stein and Michael V{\"o}lske and Matthias Hagen},
+  booktitle =             {45th International ACM Conference on Research and Development in Information Retrieval (SIGIR 2022)},
+  month =                 jul,
+  publisher =             {ACM},
+  title =                 {{Axiomatic Retrieval Experimentation with ir_axioms}},
+  todo =                  {pages, doi, url, editor, videourl, slides, volume},
+  year =                  2022,
 }
 ```
 
