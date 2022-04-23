@@ -13,7 +13,7 @@
 Intuitive axiomatic retrieval experimentation.
 
 `ir_axioms` is a Python framework for experimenting with axioms in information retrieval in a declarative way. 
-It includes reference implementations of many commonly used retrieval axioms and is well integrated with the [PyTerrier](https://github.com/terrier-org/pyterrier) and [Pyserini](https://github.com/castorini/pyserini) frameworks.
+It includes reference implementations of many commonly used retrieval axioms and is well integrated with the [PyTerrier](https://github.com/terrier-org/pyterrier) framework and the [Pyserini](https://github.com/castorini/pyserini) toolkit.
 Re-rank your search results today with `ir_axioms` and understand your retrieval systems better by analyzing
 axiomatic preferences!
 
