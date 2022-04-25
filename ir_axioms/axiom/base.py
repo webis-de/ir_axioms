@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from inspect import isabstract
 from math import nan
-from typing import final, Union, Callable, Sequence, Optional
+from typing import Union, Callable, Sequence, Optional
+from typing_extensions import final
 
 from numpy import ndarray, array, stack
 

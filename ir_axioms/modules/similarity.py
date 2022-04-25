@@ -2,9 +2,8 @@ from abc import ABC, abstractmethod
 from functools import lru_cache, cached_property
 from itertools import product, combinations
 from statistics import mean
-from typing import (
-    final, Final, Iterable, Dict, Collection, Optional, Tuple, Sequence
-)
+from typing import Iterable, Dict, Collection, Optional, Tuple, Sequence
+from typing_extensions import final, Final
 
 from nltk.corpus import wordnet
 from pymagnitude import Magnitude
