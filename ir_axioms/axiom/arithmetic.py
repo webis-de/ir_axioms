@@ -193,6 +193,9 @@ class VoteAxiom(Axiom):
             return super().__mod__(other)
 
 
+MajorityVoteAxiom = VoteAxiom
+
+
 @dataclass(frozen=True)
 class CascadeAxiom(Axiom):
     axioms: Iterable[Axiom]

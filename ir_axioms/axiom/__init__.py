@@ -25,6 +25,7 @@ ProductAxiom = arithmetic.ProductAxiom
 MultiplicativeInverseAxiom = arithmetic.MultiplicativeInverseAxiom
 AndAxiom = arithmetic.AndAxiom
 VoteAxiom = arithmetic.VoteAxiom
+MajorityVoteAxiom = arithmetic.MajorityVoteAxiom
 NormalizedAxiom = arithmetic.NormalizedAxiom
 
 Axiom = base.Axiom
