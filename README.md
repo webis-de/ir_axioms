@@ -13,7 +13,7 @@
 Intuitive axiomatic retrieval experimentation.
 
 `ir_axioms` is a Python framework for experimenting with axioms in information retrieval in a declarative way. 
-It includes reference implementations of many commonly used retrieval axioms and is well integrated with the [PyTerrier](https://github.com/terrier-org/pyterrier) and [Pyserini](https://github.com/castorini/pyserini) frameworks.
+It includes reference implementations of many commonly used retrieval axioms and is well integrated with the [PyTerrier](https://github.com/terrier-org/pyterrier) framework and the [Pyserini](https://github.com/castorini/pyserini) toolkit.
 Re-rank your search results today with `ir_axioms` and understand your retrieval systems better by analyzing
 axiomatic preferences!
 
@@ -58,12 +58,19 @@ scripts/slurm-start-jupyter-lab.sh
 If you use this package or its components in your research, please cite the following paper describing the `ir_axioms`
 framework and its use-cases:
 
-> TODO
+> Alexander Bondarenko, Maik Fröbe, Jan Heinrich Reimer, Benno Stein, Michael Völske, and Matthias Hagen. [Axiomatic Retrieval Experimentation with `ir_axioms`](https://webis.de/publications.html?q=ir_axioms#bondarenko_2022d). In _45th International ACM Conference on Research and Development in Information Retrieval (SIGIR 2022)_, July 2022. ACM.
 
 You can use the following BibTeX entry for citation:
 
 ```bibtex
-@InProceedings{TODO,
+@InProceedings{bondarenko:2022d,
+  author =                {Alexander Bondarenko and Maik Fr{\"o}be and {Jan Heinrich} Reimer and Benno Stein and Michael V{\"o}lske and Matthias Hagen},
+  booktitle =             {45th International ACM Conference on Research and Development in Information Retrieval (SIGIR 2022)},
+  month =                 jul,
+  publisher =             {ACM},
+  site =                  {Madrid, Spain},
+  title =                 {{Axiomatic Retrieval Experimentation with ir_axioms}},
+  year =                  2022
 }
 ```
 
