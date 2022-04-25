@@ -397,5 +397,10 @@ class AverageSentenceLengthAxiom(Axiom):
 
 
 @dataclass(frozen=True)
+class aSLDoc(LEN_Mixin, AverageSentenceLengthAxiom):
+    name = "aSLDoc"
+
+
+@dataclass(frozen=True)
 class aSL(LEN_Mixin, AverageSentenceLengthAxiom):
     name = "aSL"
