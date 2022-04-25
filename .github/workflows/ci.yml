@@ -35,7 +35,7 @@ jobs:
         run: twine check dist/*
       - name: "📤 Upload Python wheel"
         uses: actions/upload-artifact@v3
-        if: matrix.python == "3.9" && matrix.os == "ubuntu-latest"
+        if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
         with:
           name: wheel
           path: dist/*
@@ -174,7 +174,7 @@ jobs:
         run: pytest --cov=./ --cov-report=xml ir_axioms/ tests/unit/ --ignore=ir_axioms/backend/
       - name: "📤 Upload coverage to Codecov"
         uses: codecov/codecov-action@v2
-        if: matrix.python == "3.9" && matrix.os == "ubuntu-latest"
+        if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -220,7 +220,7 @@ jobs:
         run: pytest --cov=./ --cov-report=xml tests/integration/${{ matrix.backend }}/
       - name: "📤 Upload coverage to Codecov"
         uses: codecov/codecov-action@v2
-        if: matrix.python == "3.9" && matrix.os == "ubuntu-latest"
+        if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
