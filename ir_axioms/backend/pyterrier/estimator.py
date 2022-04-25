@@ -33,7 +33,7 @@ class EstimatorKwikSortReranker(EstimatorBase):
     index: Union[Path, IndexRef, Index]
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
-    pivot_selection: PivotSelection = RandomPivotSelection(),
+    pivot_selection: PivotSelection = RandomPivotSelection()
     filter_pairs: Optional[Callable[
         [JudgedRankedDocument, JudgedRankedDocument],
         bool
