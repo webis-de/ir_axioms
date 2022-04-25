@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from functools import cached_property
 from random import Random
 from typing import Optional, Any, Sequence
+
+from cached_property import cached_property
 
 from ir_axioms.model import Query, RankedDocument, IndexContext
 
