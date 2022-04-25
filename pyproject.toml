@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=50", "wheel"]
+requires = ["setuptools>=50", "setuptools_scm[toml]>=6.2", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
@@ -7,3 +7,5 @@ log_cli = "True"
 filterwarnings = [
     'ignore::DeprecationWarning',
 ]
+
+[tool.setuptools_scm]
