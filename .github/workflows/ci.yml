@@ -34,10 +34,11 @@ jobs:
       - name: "🧪 Check package bundles"
         run: twine check dist/*
       - name: "📤 Upload Python wheel"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
+        if: matrix.python == "3.9" && matrix.os == "ubuntu-latest"
         with:
+          name: wheel
           path: dist/*
-          name: Wheels (${{ matrix.python }}, ${{ matrix.os }})
   code-format:
     name: "🔍 Python code format"
     needs:
@@ -171,11 +172,16 @@ jobs:
           pip install .[test]
       - name: "🧪 Test Python code"
         run: pytest --cov=./ --cov-report=xml ir_axioms/ tests/unit/ --ignore=ir_axioms/backend/
+      - name: "📤 Upload coverage to Codecov"
+        uses: codecov/codecov-action@v2
+        if: matrix.python == "3.9" && matrix.os == "ubuntu-latest"
+        with:
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
   integration-tests:
     name: "🧪 Python integration tests"
     needs:
       - build-wheel
-      - unit-tests
     strategy:
       matrix:
         os:
@@ -211,16 +217,10 @@ jobs:
           distribution: temurin
           java-version: 11
       - name: "🧪 Test Python code"
-        run: pytest --cov=./ --cov-report=xml --cov-append tests/integration/${{ matrix.backend }}/
-  coverage:
-    name: "📤 Publish test coverage"
-    needs:
-      - unit-tests
-      - integration-tests
-    runs-on: ubuntu-latest
-    steps:
+        run: pytest --cov=./ --cov-report=xml tests/integration/${{ matrix.backend }}/
       - name: "📤 Upload coverage to Codecov"
         uses: codecov/codecov-action@v2
+        if: matrix.python == "3.9" && matrix.os == "ubuntu-latest"
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -238,18 +238,11 @@ jobs:
     steps:
       - name: "📥 Check-out"
         uses: actions/checkout@v2
-      - name: "🧰 Install Python"
-        uses: actions/setup-python@v2
+      - name: "📥 Download Python wheel"
+        uses: actions/upload-artifact@v3
         with:
-          python-version: 3.9
-          cache: pip
-          cache-dependency-path: setup.cfg
-      - name: "🧰 Install dependencies"
-        run: |
-          python -m pip install --upgrade pip build
-          pip install -e .
-      - name: "🏗️ Build Python wheel"
-        run: python -m build
+          name: wheel
+          path: dist/*
       - name: "🚀 Publish Python package"
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
@@ -272,18 +265,11 @@ jobs:
       - name: "🏷️ Get version tag"
         id: get-version
         run: echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
-      - name: "🧰 Install Python"
-        uses: actions/setup-python@v2
+      - name: "📥 Download Python wheel"
+        uses: actions/upload-artifact@v3
         with:
-          python-version: 3.9
-          cache: pip
-          cache-dependency-path: setup.cfg
-      - name: "🧰 Install dependencies"
-        run: |
-          python -m pip install --upgrade pip build
-          pip install -e .
-      - name: "🏗️ Build Python wheel"
-        run: python -m build
+          name: wheel
+          path: dist/*
       - name: "🚀 Create GitHub release"
         uses: softprops/action-gh-release@v1
         with:
