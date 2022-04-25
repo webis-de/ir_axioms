@@ -1,11 +1,10 @@
 from dataclasses import dataclass
-from functools import cached_property
 from pathlib import Path
 from typing import Sequence, Union, Optional, Callable
 
+from cached_property import cached_property
 from ir_datasets import Dataset
 from pandas import DataFrame
-from pyterrier.transformer import EstimatorBase
 
 from ir_axioms.axiom import Axiom, AxiomLike, EstimatorAxiom, to_axioms
 from ir_axioms.axiom.estimator import (
@@ -14,7 +13,7 @@ from ir_axioms.axiom.estimator import (
 from ir_axioms.backend.pyterrier import (
     IndexRef, Index, ContentsAccessor, Tokeniser, TerrierIndexContext
 )
-from ir_axioms.backend.pyterrier.safe import Transformer
+from ir_axioms.backend.pyterrier.safe import Transformer, EstimatorBase
 from ir_axioms.backend.pyterrier.transformer_utils import (
     require_columns, load_documents, load_queries
 )

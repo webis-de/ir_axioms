@@ -1,10 +1,11 @@
 from dataclasses import dataclass
-from functools import cached_property, reduce
+from functools import reduce
 from math import nan
 from operator import or_
 from pathlib import Path
 from typing import Sequence, Optional, Union, Callable
 
+from cached_property import cached_property
 from ir_datasets import Dataset
 from pandas import DataFrame, concat
 from tqdm.auto import tqdm

@@ -1,10 +1,12 @@
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
-from functools import cached_property
 from itertools import product, compress
 from logging import DEBUG
 from pathlib import Path
-from typing import Union, Optional, Set, Sequence, final, Callable
+from typing import Union, Optional, Set, Sequence, Callable
+
+from cached_property import cached_property
+from typing_extensions import final
 
 from ir_datasets import Dataset
 from numpy import apply_along_axis, stack, ndarray, array
