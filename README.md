@@ -147,6 +147,16 @@ A wheel for this package can be built by running:
 python -m build
 ```
 
+## Support
+
+If you hit any problems using `ir_axioms` or reproducing our experiments, please file an [issue](https://github.com/webis-de/ir_axioms/issues) or mail us:
+
+- [jan.reimer@student.uni-halle.de](mailto:jan.reimer@student.uni-halle.de)
+- [maik.froebe@informatik.uni-halle.de](mailto:maik.froebe@informatik.uni-halle.de)
+- [alexander.bondarenko@informatik.uni-halle.de](mailto:alexander.bondarenko@informatik.uni-halle.de)
+
+We're happy to help!
+
 ## License
 
 This repository is released under the [MIT license](LICENSE). If you use `ir_axioms` in your research, we'd be glad if
