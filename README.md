@@ -1,3 +1,4 @@
+[![DOI](https://img.shields.io/badge/DOI-10.1145%2F3477495.3531743-blue?style=flat-square)](https://doi.org/10.1145/3477495.3531743)
 [![PyPi](https://img.shields.io/pypi/v/ir_axioms?style=flat-square)](https://pypi.org/project/ir_axioms/)
 [![LGTM](https://img.shields.io/lgtm/grade/python/github/webis-de/ir_axioms.svg?style=flat-square)](https://lgtm.com/projects/g/webis-de/ir_axioms)
 [![CI](https://img.shields.io/github/workflow/status/webis-de/ir_axioms/CI?style=flat-square)](https://github.com/webis-de/ir_axioms/actions?query=workflow%3A"CI")
