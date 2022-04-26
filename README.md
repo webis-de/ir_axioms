@@ -65,13 +65,19 @@ You can use the following BibTeX entry for citation:
 
 ```bibtex
 @InProceedings{bondarenko:2022d,
-  author =                {Alexander Bondarenko and Maik Fr{\"o}be and {Jan Heinrich} Reimer and Benno Stein and Michael V{\"o}lske and Matthias Hagen},
-  booktitle =             {45th International ACM Conference on Research and Development in Information Retrieval (SIGIR 2022)},
-  month =                 jul,
-  publisher =             {ACM},
-  site =                  {Madrid, Spain},
-  title =                 {{Axiomatic Retrieval Experimentation with ir_axioms}},
-  year =                  2022
+  author =    {Alexander Bondarenko and
+               Maik Fr{\"o}be and
+               {Jan Heinrich} Reimer and
+               Benno Stein and
+               Michael V{\"o}lske and
+               Matthias Hagen},
+  booktitle = {45th International ACM Conference on Research and Development
+               in Information Retrieval (SIGIR 2022)},
+  month =     jul,
+  publisher = {ACM},
+  site =      {Madrid, Spain},
+  title =     {{Axiomatic Retrieval Experimentation with ir_axioms}},
+  year =      2022
 }
 ```
 
