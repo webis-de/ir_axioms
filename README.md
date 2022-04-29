@@ -1,3 +1,4 @@
+[![DOI](https://img.shields.io/badge/DOI-10.1145%2F3477495.3531743-blue?style=flat-square)](https://doi.org/10.1145/3477495.3531743)
 [![PyPi](https://img.shields.io/pypi/v/ir_axioms?style=flat-square)](https://pypi.org/project/ir_axioms/)
 [![LGTM](https://img.shields.io/lgtm/grade/python/github/webis-de/ir_axioms.svg?style=flat-square)](https://lgtm.com/projects/g/webis-de/ir_axioms)
 [![CI](https://img.shields.io/github/workflow/status/webis-de/ir_axioms/CI?style=flat-square)](https://github.com/webis-de/ir_axioms/actions?query=workflow%3A"CI")
@@ -31,7 +32,7 @@ You can find all examples in the [`examples/` directory](examples).
 - [Re-ranking top-20 results using LambdaMART with axiomatic preference features](examples/pyterrier_ltr_features.ipynb)
   [![Launch Binder](https://img.shields.io/badge/open%20in-colab-informational?style=flat-square)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/pyterrier_ltr_features.ipynb)
 - [Post-Hoc Analysis of Rankings and Relevance Judgments](examples/pyterrier_post_hoc_analysis_of_runs_and_qrels.ipynb)
-- [![Launch Binder](https://img.shields.io/badge/open%20in-colab-informational?style=flat-square)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/pyterrier_post_hoc_analysis_of_runs_and_qrels.ipynb)
+  [![Launch Binder](https://img.shields.io/badge/open%20in-colab-informational?style=flat-square)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/pyterrier_post_hoc_analysis_of_runs_and_qrels.ipynb)
 - [Axiomatic prefernces for TREC Deep Learning 2019 runs (passages)](examples/trec_28_deep_passages_preferences_depth_10.ipynb)
   [![Launch Binder](https://img.shields.io/badge/open%20in-colab-informational?style=flat-square)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/trec_28_deep_passages_preferences_depth_10.ipynb)
 - [Axiomatic prefernces for TREC Deep Learning 2019 runs (documents)](examples/trec_28_deep_documents_preferences_depth_10.ipynb)
@@ -64,13 +65,19 @@ You can use the following BibTeX entry for citation:
 
 ```bibtex
 @InProceedings{bondarenko:2022d,
-  author =                {Alexander Bondarenko and Maik Fr{\"o}be and {Jan Heinrich} Reimer and Benno Stein and Michael V{\"o}lske and Matthias Hagen},
-  booktitle =             {45th International ACM Conference on Research and Development in Information Retrieval (SIGIR 2022)},
-  month =                 jul,
-  publisher =             {ACM},
-  site =                  {Madrid, Spain},
-  title =                 {{Axiomatic Retrieval Experimentation with ir_axioms}},
-  year =                  2022
+  author =    {Alexander Bondarenko and
+               Maik Fr{\"o}be and
+               {Jan Heinrich} Reimer and
+               Benno Stein and
+               Michael V{\"o}lske and
+               Matthias Hagen},
+  booktitle = {45th International ACM Conference on Research and Development
+               in Information Retrieval (SIGIR 2022)},
+  month =     jul,
+  publisher = {ACM},
+  site =      {Madrid, Spain},
+  title =     {{Axiomatic Retrieval Experimentation with ir_axioms}},
+  year =      2022
 }
 ```
 
@@ -146,7 +153,20 @@ A wheel for this package can be built by running:
 python -m build
 ```
 
+## Support
+
+If you hit any problems using `ir_axioms` or reproducing our experiments, please file an [issue](https://github.com/webis-de/ir_axioms/issues) or mail us:
+
+- [jan.reimer@student.uni-halle.de](mailto:jan.reimer@student.uni-halle.de)
+- [maik.froebe@informatik.uni-halle.de](mailto:maik.froebe@informatik.uni-halle.de)
+- [alexander.bondarenko@informatik.uni-halle.de](mailto:alexander.bondarenko@informatik.uni-halle.de)
+
+We're happy to help!
+
 ## License
 
 This repository is released under the [MIT license](LICENSE). If you use `ir_axioms` in your research, we'd be glad if
 you'd [cite us](#citation).
+
+## Abstract
+Axiomatic approaches to information retrieval have played a key role in determining basic constraints that characterize good retrieval models. Beyond their importance in retrieval theory, axioms have been operationalized to improve an initial ranking, to “guide” retrieval, or to explain some model’s rankings. However, recent open-source retrieval frameworks like PyTerrier and Pyserini, which made it easy to experiment with sparse and dense retrieval models, have not included any retrieval axiom support so far. To fill this gap, we propose `ir_axioms`, an open-source Python framework that integrates retrieval axioms with common retrieval frameworks. We include reference implementations for 25 retrieval axioms, as well as components for preference aggregation, re-ranking, and evaluation. New axioms can easily be defined by implementing an abstract data type or by intuitively combining existing axioms with Python operators or regression. Integration with PyTerrier and `ir_datasets` makes standard retrieval models, corpora, topics, and relevance judgments—including those used at TREC—immediately accessible for axiomatic experimentation. Our experiments on the TREC Deep Learning tracks showcase some potential research questions that ir_axioms can help to address.
