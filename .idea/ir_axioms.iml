@@ -21,6 +21,7 @@
       <excludeFolder url="file://$MODULE_DIR$/examples/pyterrier" />
       <excludeFolder url="file://$MODULE_DIR$/examples/data" />
       <excludeFolder url="file://$MODULE_DIR$/examples/results" />
+      <excludeFolder url="file://$MODULE_DIR$/venv-3.7" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
