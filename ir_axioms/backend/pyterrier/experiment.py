@@ -182,14 +182,39 @@ class AxiomaticExperiment:
         ]
         return DataFrame(distributions)
 
-    @staticmethod
-    def _consistency(reference: DataFrame, axiom_name: str) -> float:
-        non_zero = len(reference[reference[f"{axiom_name}_preference"] != 0])
-        consistent = len(reference[reference[f"{axiom_name}_preference"] > 0])
-        if non_zero == 0:
+    def _oracle_consistency(
+            self,
+            axiom_name: str,
+    ) -> float:
+        preferences = self.preferences.copy()
+        # Non-zero axiom preferences.
+        preferences = preferences[preferences[f"{axiom_name}_preference"] > 0]
+        # Preferences are 'consistent' in the following cases:
+        # > (same as axiom) and == (order doesn't matter)
+        consistent = preferences[preferences["ORACLE_preference"] >= 0]
+        if len(preferences) == 0:
+            # Can't compute consistency if we compare against an empty set.
             return nan
-        else:
-            return consistent / non_zero
+        return len(consistent) / len(preferences)
+
+    def _orig_consistency(
+            self,
+            axiom_name: str,
+            system: Optional[str] = None,
+    ) -> float:
+        preferences = self.preferences.copy()
+        # Non-zero axiom preferences.
+        preferences = preferences[preferences[f"{axiom_name}_preference"] > 0]
+        # Only preferences of a specific system.
+        if system is not None:
+            preferences = preferences[preferences["name"] == system]
+        # Preferences are 'consistent' in the following cases:
+        # > (same as axiom) and == (order doesn't matter)
+        consistent = preferences[preferences["ORIG_preference"] >= 0]
+        if len(preferences) == 0:
+            # Can't compute consistency if we compare against an empty set.
+            return nan
+        return len(consistent) / len(preferences)
 
     @cached_property
     def preference_consistency(self) -> DataFrame:
@@ -204,22 +229,25 @@ class AxiomaticExperiment:
             with ORIG preferences.
         - ORACLE_consistency: Relative consistency of non-zero preferences
             with ORACLE preferences.
+        - <system>_consistency: Relative consistency of non-zero preferences
+            with ORIG preferences from system <system>
         """
 
-        pref = self.preferences.copy()
-        pref_orig = pref[pref["ORIG_preference"] > 0]
-        pref_oracle = pref[pref["ORACLE_preference"] > 0]
+        systems = self.preferences["name"].unique().tolist()
         distributions = [
             {
-                "axiom": axiom_name,
-                "ORIG_consistency": self._consistency(
-                    pref_orig,
-                    axiom_name,
-                ),
-                "ORACLE_consistency": self._consistency(
-                    pref_oracle,
-                    axiom_name,
-                ),
+                **{
+                    "axiom": axiom_name,
+                    "ORIG_consistency": self._orig_consistency(axiom_name),
+                    "ORACLE_consistency": self._oracle_consistency(axiom_name),
+                },
+                **{
+                    f"{system}_consistency": self._orig_consistency(
+                        axiom_name=axiom_name,
+                        system=system
+                    )
+                    for system in systems
+                }
             }
             for axiom_name in self.axiom_names
         ]
