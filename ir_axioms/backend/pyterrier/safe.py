@@ -15,6 +15,7 @@ except ImportError as error:
 from jnius import autoclass as _autoclass
 from pyterrier.apply import generic as _generic
 from pyterrier.index import IterDictIndexer as _IterDictIndexer
+from pyterrier.datasets import IRDSDataset as _IRDSDataset
 from pyterrier.transformer import (
     Transformer as _Transformer, TransformerBase as _TransformerBase,
     IdentityTransformer as _IdentityTransformer,
@@ -23,6 +24,7 @@ from pyterrier.transformer import (
 
 # Re-export modules.
 IterDictIndexer = _IterDictIndexer
+IRDSDataset = _IRDSDataset
 Transformer = _Transformer
 TransformerBase = _TransformerBase
 IdentityTransformer = _IdentityTransformer

@@ -18,7 +18,7 @@ from ir_axioms import logger
 from ir_axioms.axiom import AxiomLike, to_axiom, to_axioms
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.backend.pyterrier import TerrierIndexContext, ContentsAccessor
-from ir_axioms.backend.pyterrier.safe import TransformerBase
+from ir_axioms.backend.pyterrier.safe import TransformerBase, IRDSDataset
 from ir_axioms.backend.pyterrier.transformer_utils import (
     require_columns, load_documents
 )
@@ -69,7 +69,7 @@ class PerGroupTransformer(TransformerBase, ABC):
 
 class AxiomTransformer(PerGroupTransformer, ABC):
     index: Union[Path, IndexRef, Index]
-    dataset: Optional[Union[Dataset, str]] = None
+    dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None
@@ -125,7 +125,7 @@ class KwikSortReranker(AxiomTransformer):
 
     axiom: AxiomLike
     index: Union[Path, IndexRef, Index]
-    dataset: Optional[Union[Dataset, str]] = None
+    dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     pivot_selection: PivotSelection = RandomPivotSelection()
     tokeniser: Optional[Tokeniser] = None
@@ -172,7 +172,7 @@ class AggregatedAxiomaticPreferences(AxiomTransformer):
     axioms: Sequence[AxiomLike]
     index: Union[Path, IndexRef, Index]
     aggregations: Sequence[Callable[[Sequence[float]], float]]
-    dataset: Optional[Union[Dataset, str]] = None
+    dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     filter_pairs: Optional[Callable[
         [RankedDocument, RankedDocument],
@@ -235,7 +235,7 @@ class AxiomaticPreferences(AxiomTransformer):
     axioms: Sequence[AxiomLike]
     index: Union[Path, IndexRef, Index]
     axiom_names: Optional[Sequence[str]] = None
-    dataset: Optional[Union[Dataset, str]] = None
+    dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     filter_pairs: Optional[Callable[
         [RankedDocument, RankedDocument],

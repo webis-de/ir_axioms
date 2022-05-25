@@ -12,7 +12,7 @@ from tqdm.auto import tqdm
 
 from ir_axioms.axiom import Axiom, OriginalAxiom, OracleAxiom
 from ir_axioms.backend.pyterrier import ContentsAccessor
-from ir_axioms.backend.pyterrier.safe import Transformer
+from ir_axioms.backend.pyterrier.safe import Transformer, IRDSDataset
 from ir_axioms.backend.pyterrier.transformer_utils import (
     FilterTopicsTransformer, FilterQrelsTransformer, JoinQrelsTransformer
 )
@@ -36,7 +36,7 @@ class AxiomaticExperiment:
         [JudgedRankedDocument, JudgedRankedDocument],
         bool
     ]] = None
-    dataset: Optional[Union[Dataset, str]] = None
+    dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None

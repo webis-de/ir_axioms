@@ -13,7 +13,9 @@ from ir_axioms.axiom.estimator import (
 from ir_axioms.backend.pyterrier import (
     IndexRef, Index, ContentsAccessor, Tokeniser, TerrierIndexContext
 )
-from ir_axioms.backend.pyterrier.safe import Transformer, EstimatorBase
+from ir_axioms.backend.pyterrier.safe import (
+    Transformer, EstimatorBase, IRDSDataset
+)
 from ir_axioms.backend.pyterrier.transformer_utils import (
     require_columns, load_documents, load_queries
 )
@@ -30,7 +32,7 @@ class EstimatorKwikSortReranker(EstimatorBase):
     axioms: Sequence[AxiomLike]
     estimator: ScikitEstimatorType
     index: Union[Path, IndexRef, Index]
-    dataset: Optional[Union[Dataset, str]] = None
+    dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     pivot_selection: PivotSelection = RandomPivotSelection()
     filter_pairs: Optional[Callable[
