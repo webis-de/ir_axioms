@@ -116,7 +116,7 @@ class AxiomaticExperiment:
         document pair, query and retrieval system.
 
         The returned dataframe has the following columns:
-        - name: Retrieval system name
+        - name: Retrieval system name (if found in source)
         - qid: Query ID
         - query: Query text
         - docno_a: Document A ID
@@ -230,10 +230,13 @@ class AxiomaticExperiment:
         - ORACLE_consistency: Relative consistency of non-zero preferences
             with ORACLE preferences.
         - <system>_consistency: Relative consistency of non-zero preferences
-            with ORIG preferences from system <system>
+            with ORIG preferences from system <system> (if found in source)
         """
 
-        systems = self.preferences["name"].unique().tolist()
+        if "name" in self.preferences.columns:
+            systems = self.preferences["name"].unique().tolist()
+        else:
+            systems = []
         distributions = [
             {
                 **{
