@@ -22,6 +22,8 @@
       <excludeFolder url="file://$MODULE_DIR$/examples/data" />
       <excludeFolder url="file://$MODULE_DIR$/examples/results" />
       <excludeFolder url="file://$MODULE_DIR$/venv-3.7" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/.ipynb_checkpoints" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/msmarco-index" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
