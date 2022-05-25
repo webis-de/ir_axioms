@@ -31,7 +31,7 @@ class EstimatorKwikSortReranker(EstimatorBase):
 
     axioms: Sequence[AxiomLike]
     estimator: ScikitEstimatorType
-    index: Union[Path, IndexRef, Index]
+    index: Union[Index, IndexRef, Path, str]
     dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     pivot_selection: PivotSelection = RandomPivotSelection()

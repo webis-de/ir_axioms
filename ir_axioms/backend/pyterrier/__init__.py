@@ -66,7 +66,7 @@ ContentsAccessor = Union[str, Callable[[NamedTuple], str]]
 
 @dataclass(frozen=True)
 class TerrierIndexContext(IndexContext):
-    index_location: Union[Path, IndexRef, Index]
+    index_location: Union[Index, IndexRef, Path, str]
     dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Optional[Tokeniser] = None
@@ -77,6 +77,8 @@ class TerrierIndexContext(IndexContext):
         if isinstance(self.index_location, Index):
             return self.index_location
         elif isinstance(self.index_location, IndexRef):
+            return IndexFactory.of(self.index_location)
+        elif isinstance(self.index_location, str):
             return IndexFactory.of(self.index_location)
         elif isinstance(self.index_location, Path):
             return IndexFactory.of(str(self.index_location.absolute()))

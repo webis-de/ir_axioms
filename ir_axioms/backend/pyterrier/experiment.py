@@ -26,7 +26,7 @@ class AxiomaticExperiment:
     retrieval_systems: Sequence[Transformer]
     topics: DataFrame
     qrels: DataFrame
-    index: Union[Path, IndexRef, Index]
+    index: Union[Index, IndexRef, Path, str]
     axioms: Sequence[Axiom]
     axiom_names: Optional[Sequence[str]] = None
     depth: Optional[int] = 10

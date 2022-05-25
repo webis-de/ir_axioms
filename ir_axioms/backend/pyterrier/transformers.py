@@ -68,7 +68,7 @@ class PerGroupTransformer(TransformerBase, ABC):
 
 
 class AxiomTransformer(PerGroupTransformer, ABC):
-    index: Union[Path, IndexRef, Index]
+    index: Union[Index, IndexRef, Path, str]
     dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Optional[Tokeniser] = None
@@ -124,7 +124,7 @@ class KwikSortReranker(AxiomTransformer):
     description = "Reranking query axiomatically"
 
     axiom: AxiomLike
-    index: Union[Path, IndexRef, Index]
+    index: Union[Index, IndexRef, Path, str]
     dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     pivot_selection: PivotSelection = RandomPivotSelection()
@@ -170,7 +170,7 @@ class AggregatedAxiomaticPreferences(AxiomTransformer):
     description = "Aggregating query axiom preferences"
 
     axioms: Sequence[AxiomLike]
-    index: Union[Path, IndexRef, Index]
+    index: Union[Index, IndexRef, Path, str]
     aggregations: Sequence[Callable[[Sequence[float]], float]]
     dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
@@ -233,7 +233,7 @@ class AxiomaticPreferences(AxiomTransformer):
     description = "Computing query axiom preferences"
 
     axioms: Sequence[AxiomLike]
-    index: Union[Path, IndexRef, Index]
+    index: Union[Index, IndexRef, Path, str]
     axiom_names: Optional[Sequence[str]] = None
     dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
