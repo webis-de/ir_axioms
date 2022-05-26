@@ -5,7 +5,7 @@ from subprocess import run
 from ir_datasets import load, Dataset
 from pytest import fixture, approx
 
-from ir_axioms.backend.pyserini import PyseriniIndexContext
+from ir_axioms.backend.pyserini import AnseriniIndexContext
 from ir_axioms.model import Query, Document
 from ir_axioms.model.context import IndexContext
 from ir_axioms.model.retrieval_model import TfIdf, BM25, PL2, QL
@@ -57,7 +57,7 @@ def index_dir(tmp_path: Path, dataset_dir: Path) -> Path:
 
 @fixture
 def reranking_context(index_dir: Path) -> IndexContext:
-    return PyseriniIndexContext(index_dir)
+    return AnseriniIndexContext(index_dir)
 
 
 @fixture
