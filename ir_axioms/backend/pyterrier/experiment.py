@@ -14,9 +14,10 @@ from ir_axioms.axiom import (
     Axiom, OriginalAxiom, OracleAxiom, AxiomLike, to_axioms
 )
 from ir_axioms.backend.pyterrier import ContentsAccessor
-from ir_axioms.backend.pyterrier.safe import Transformer, IRDSDataset, generic
+from ir_axioms.backend.pyterrier.safe import Transformer, IRDSDataset
 from ir_axioms.backend.pyterrier.transformer_utils import (
-    FilterTopicsTransformer, FilterQrelsTransformer, JoinQrelsTransformer
+    FilterTopicsTransformer, FilterQrelsTransformer, JoinQrelsTransformer,
+    AddNameTransformer
 )
 from ir_axioms.backend.pyterrier.transformers import AxiomaticPreferences
 from ir_axioms.backend.pyterrier.util import IndexRef, Index, Tokeniser
@@ -99,20 +100,12 @@ class AxiomaticExperiment:
     def _join_qrels(self) -> Transformer:
         return JoinQrelsTransformer(self.qrels)
 
-    @staticmethod
-    def _add_retrieval_system_name(res: DataFrame, name: str) -> DataFrame:
-        res["name"] = name
-        return res
-
     def _pipeline(
             self,
             system: Transformer,
             name: str,
     ) -> Transformer:
-        pipeline = system
-        pipeline = pipeline >> generic(
-            lambda res: self._add_retrieval_system_name(res, name)
-        )
+        pipeline = system >> AddNameTransformer(name)
         if self.depth is not None:
             # noinspection PyTypeChecker
             pipeline = pipeline % self.depth
