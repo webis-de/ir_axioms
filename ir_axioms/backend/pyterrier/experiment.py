@@ -3,7 +3,8 @@ from functools import reduce
 from math import nan
 from operator import or_
 from pathlib import Path
-from typing import Sequence, Optional, Union, Callable, Literal
+from typing import Sequence, Optional, Union, Callable
+from typing_extensions import Literal
 
 from cached_property import cached_property
 from ir_datasets import Dataset
