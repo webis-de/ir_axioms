@@ -3,7 +3,7 @@ from functools import reduce
 from math import nan
 from operator import or_
 from pathlib import Path
-from typing import Sequence, Optional, Union, Callable
+from typing import Sequence, Optional, Union, Callable, Literal
 
 from cached_property import cached_property
 from ir_datasets import Dataset
@@ -44,6 +44,8 @@ class AxiomaticExperiment:
     contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None
+    parallel_jobs: int = 1
+    parallel_backend: Literal["joblib", "ray"] = "joblib"
     verbose: bool = False
 
     @cached_property
@@ -121,6 +123,12 @@ class AxiomaticExperiment:
             cache_dir=self.cache_dir,
             verbose=self.verbose,
         )
+        # Parallelize computation.
+        if self.parallel_jobs != 1:
+            pipeline = pipeline.parallel(
+                self.parallel_jobs,
+                self.parallel_backend,
+            )
         return pipeline
 
     @cached_property
