@@ -88,37 +88,29 @@ class AxiomaticExperiment:
             names = [str(system) for system in self.retrieval_systems]
         return names
 
-    @cached_property
-    def _filter_topics(self) -> Transformer:
-        return FilterTopicsTransformer(self.topics)
-
-    @cached_property
-    def _filter_qrels(self) -> Transformer:
-        return FilterQrelsTransformer(self.qrels)
-
-    @cached_property
-    def _join_qrels(self) -> Transformer:
-        return JoinQrelsTransformer(self.qrels)
-
-    def _pipeline(
+    def _preferences_pipeline(
             self,
             system: Transformer,
             name: str,
     ) -> Transformer:
-        pipeline = system >> AddNameTransformer(name)
+        # Load original retrieval system.
+        pipeline = system
+        # Cutoff at rank k
         if self.depth is not None:
             # noinspection PyTypeChecker
             pipeline = pipeline % self.depth
+        # Remove results with unknown topics.
         if self.filter_by_topics:
-            pipeline = pipeline >> self._filter_topics
+            pipeline = pipeline >> FilterTopicsTransformer(self.topics)
+        # Remove results without judgments.
         if self.filter_by_qrels:
-            pipeline = pipeline >> self._filter_qrels
-        pipeline = pipeline >> self._join_qrels
-        return pipeline
-
-    @cached_property
-    def _preferences_transformer(self) -> Transformer:
-        return AxiomaticPreferences(
+            pipeline = pipeline >> FilterQrelsTransformer(self.qrels)
+        # Add relevance labels.
+        pipeline = pipeline >> JoinQrelsTransformer(self.qrels)
+        # Add system name.
+        pipeline = pipeline >> AddNameTransformer(name)
+        # Compute preferences
+        pipeline = pipeline >> AxiomaticPreferences(
             axioms=self._all_axioms,
             axiom_names=self._all_axiom_names,
             index=self.index,
@@ -129,14 +121,6 @@ class AxiomaticExperiment:
             cache_dir=self.cache_dir,
             verbose=self.verbose,
         )
-
-    def _preferences_pipeline(
-            self,
-            system: Transformer,
-            name: str,
-    ) -> Transformer:
-        pipeline = self._pipeline(system, name)
-        pipeline = pipeline >> self._preferences_transformer
         return pipeline
 
     @cached_property
