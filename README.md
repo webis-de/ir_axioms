@@ -18,9 +18,9 @@ It includes reference implementations of many commonly used retrieval axioms and
 Re-rank your search results today with `ir_axioms` and understand your retrieval systems better by analyzing
 axiomatic preferences!
 
-|            [Presentation video on YouTube](https://youtu.be/hZtWw805TBg)             |
-|:------------------------------------------------------------------------------------:|
-| [![Presentation video](documentation/video-cover.png)](https://youtu.be/hZtWw805TBg) |
+|            [Presentation video on YouTube](https://youtu.be/hZtWw805TBg)             | [Poster](https://webis.de/downloads/publications/posters/bondarenko_2022d.pdf)                                    |
+|:------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------:|
+| [![Presentation video](documentation/video-cover.png)](https://youtu.be/hZtWw805TBg) | [![Poster](documentation/poster-cover.png)](https://webis.de/downloads/publications/posters/bondarenko_2022d.pdf) |
 
 ## Usage
 
