@@ -33,15 +33,17 @@ We include several example notebooks to demonstrate re-ranking and preference ev
 You can find all examples in the [`examples/` directory](examples).
 
 - [Re-ranking top-20 results using KwikSort](examples/pyterrier_kwiksort.ipynb)
-  [![Launch Binder](https://img.shields.io/badge/open%20in-colab-informational?style=flat-square)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/pyterrier_kwiksort.ipynb)
+  [![Launch in Google Colab](https://img.shields.io/badge/open%20in-colab-informational?style=flat-square)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/pyterrier_kwiksort.ipynb)
 - [Re-ranking top-20 results using KwikSort learned from ORACLE preferences](examples/pyterrier_kwiksort_learned.ipynb)
-  [![Launch Binder](https://img.shields.io/badge/open%20in-colab-informational?style=flat-square)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/pyterrier_kwiksort_learned.ipynb)
+  [![Launch in Google Colab](https://img.shields.io/badge/open%20in-colab-informational?style=flat-square)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/pyterrier_kwiksort_learned.ipynb)
 - [Re-ranking top-20 results using LambdaMART with axiomatic preference features](examples/pyterrier_ltr_features.ipynb)
-  [![Launch Binder](https://img.shields.io/badge/open%20in-colab-informational?style=flat-square)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/pyterrier_ltr_features.ipynb)
+  [![Launch in Google Colab](https://img.shields.io/badge/open%20in-colab-informational?style=flat-square)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/pyterrier_ltr_features.ipynb)
 - [Post-Hoc analysis of rankings and relevance judgments](examples/pyterrier_post_hoc_analysis_of_runs_and_qrels.ipynb)
-  [![Launch Binder](https://img.shields.io/badge/open%20in-colab-informational?style=flat-square)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/pyterrier_post_hoc_analysis_of_runs_and_qrels.ipynb)
+  [![Launch in Google Colab](https://img.shields.io/badge/open%20in-colab-informational?style=flat-square)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/pyterrier_post_hoc_analysis_of_runs_and_qrels.ipynb)
 - [Computing axiom preferences for top-20 results of TREC 2022 Deep Learning (passage) runs in parallel](examples/pyterrier_preferences_parallel.ipynb)
-  [![Launch Binder](https://img.shields.io/badge/open%20in-colab-informational?style=flat-square)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/pyterrier_preferences_parallel.ipynb)
+  [![Launch in Google Colab](https://img.shields.io/badge/open%20in-colab-informational?style=flat-square)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/pyterrier_preferences_parallel.ipynb)
+- [SIGIR 2022 showcase](examples/sigir2022_showcase.ipynb) for step-by-step explanations with our [presentation video](https://youtu.be/hZtWw805TBg)
+  [![Launch in Google Colab](https://img.shields.io/badge/open%20in-colab-informational?style=flat-square)](https://colab.research.google.com/github/webis-de/ir_axioms/blob/main/examples/sigir2022_showcase.ipynb)
 
 ### Backends
 
