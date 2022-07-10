@@ -24,6 +24,9 @@ axiomatic preferences!
 
 ## Usage
 
+The `ir_axioms` framework is easy to use. Below, we've prepared some notebooks showcasing the main features.
+If you have questions or need assistance, please [contatct us](#support).
+
 ### Example Notebooks
 
 We include several example notebooks to demonstrate re-ranking and preference evaluation in [PyTerrier](https://github.com/terrier-org/pyterrier) using `ir_axioms`.
@@ -42,14 +45,36 @@ You can find all examples in the [`examples/` directory](examples).
 
 ### Backends
 
-TODO
+You can experiment with `ir_axioms` in PyTerrier and Pyserini.
+However, we recommend PyTerrier as not all features are implemented for the Pyserini backend.
 
-### Slurm
+#### PyTerrier (Terrier index)
 
-If you want to play around with `ir_axioms` in Jupyter Lab, you can use this command to provision a server via Slurm:
+To use `ir_axioms` with a Terrier index, please use our PyTerrier transformers (modules):
+| Transformer Class           | Type       | Description                                                  |
+|:----------------------------|:-----------|:-------------------------------------------------------------|
+| `AggregatedPreferences`     | 𝑅 → 𝑅𝑓     | Aggregate axiom preferences for each document                |
+| `EstimatorKwikSortReranker` | 𝑅 → 𝑅′     | Train estimator for ORACLE, use it to re-rank with KwikSort. |
+| `KwikSortReranker`          | 𝑅 → 𝑅′     | Re-rank using axiom preferences aggregated by KwikSort.      |
+| `PreferenceMatrix`          | 𝑅 → (𝑅×𝑅)𝑓 | Compute an axiom’s preference matrix.                        |
 
-```shell
-scripts/slurm-start-jupyter-lab.sh
+You can also directly instantiate a index context object from a Terrier index if you want to build custom axiomatic modules:
+
+```python
+from ir_axioms.backend.pyterrier import TerrierIndexContext
+context = TerrierIndexContext("/path/to/index/dir")
+axiom.preference(context, query, doc1, doc2)
+```
+
+#### Pyserini (Anserini index)
+
+We don't have modules for Pyserini to re-rank or analyze results out of the box.
+However, you can still comute axiom preferences to integrate retrieval axioms into your search pipeline:
+
+```python
+from ir_axioms.backend.pyserini import AnseriniIndexContext
+context = AnseriniIndexContext("/path/to/index/dir")
+axiom.preference(context, query, doc1, doc2)
 ```
 
 ## Citation
@@ -153,7 +178,7 @@ python -m build
 
 ## Support
 
-If you hit any problems using `ir_axioms` or reproducing our experiments, please file an [issue](https://github.com/webis-de/ir_axioms/issues) or mail us:
+If you hit any problems using `ir_axioms` or reproducing our experiments, please write us an email or file an [issue](https://github.com/webis-de/ir_axioms/issues):
 
 - [jan.reimer@student.uni-halle.de](mailto:jan.reimer@student.uni-halle.de)
 - [maik.froebe@informatik.uni-halle.de](mailto:maik.froebe@informatik.uni-halle.de)
