@@ -41,6 +41,8 @@ Relevance Judgments](examples/pyterrier_post_hoc_analysis_of_runs_and_qrels.ipyn
 - [Axiomatic prefernces for TREC Deep Learning 2020 runs (documents)](examples/trec_29_deep_documents_preferences_depth_10.ipynb)
   [![Launch Binder](https://img.shields.io/badge/launch-binder-informational?style=flat-square)](https://mybinder.org/v2/gh/webis-de/ir_axioms/main?labpath=examples/trec_29_deep_documents_preferences_depth_10.ipynb)
 
+### Usage with Docker
+
 ### Backends
 
 TODO
@@ -58,12 +60,19 @@ scripts/slurm-start-jupyter-lab.sh
 If you use this package or its components in your research, please cite the following paper describing the `ir_axioms`
 framework and its use-cases:
 
-> TODO
-
-You can use the following BibTeX entry for citation:
-
 ```bibtex
-@InProceedings{TODO,
+@InProceedings{bondarenko:2022d,
+  author =                   {Alexander Bondarenko and Maik Fr{\"o}be and {Jan Heinrich} Reimer and Benno Stein and Michael V{\"o}lske and Matthias Hagen},
+  booktitle =                {45th International ACM Conference on Research and Development in Information Retrieval (SIGIR 2022)},
+  doi =                      {10.1145/3477495.3531743},
+  editor =                   {Enrique Amig{\'{o}} and Pablo Castells and Julio Gonzalo and Ben Carterette and J. Shane Culpepper and Gabriella Kazai},
+  month =                    jul,
+  pages =                    {3131-3140},
+  publisher =                {ACM},
+  site =                     {Madrid, Spain},
+  title =                    {{Axiomatic Retrieval Experimentation with ir{\_}axioms}},
+  url =                      {https://dl.acm.org/doi/10.1145/3477495.3531743},
+  year =                     2022
 }
 ```
 
@@ -76,6 +85,15 @@ pip install build setuptools wheel
 ```
 
 (On most systems, these packages are already pre-installed.)
+
+Build Docker image via:
+
+```
+docker build -t webis/ir-axioms:1.0.0 .
+docker push webis/ir-axioms:1.0.0
+```
+
+`docker run --rm -ti -p 8888:8888 -v ${PWD}:/workspace -w /workspace -v /home/maik/.tira:/root/.tira/ --entrypoint jupyter webis/ir-axioms:1.0.0 notebook --ip 0.0.0.0 --allow-root`
 
 ### Installation
 

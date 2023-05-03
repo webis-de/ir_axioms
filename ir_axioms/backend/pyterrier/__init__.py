@@ -140,6 +140,9 @@ class TerrierIndexContext(IndexContext):
     @lru_cache(None)
     def _document_contents(self, document_id: str) -> str:
         # Shortcut when ir_dataset is specified.
+        if not self.contents_accessor:
+            raise ValueError('No content accessor is given. Please set "contents_accessor".')
+        
         documents_store = self._dataset_doc_store
         if documents_store is not None:
             try:
@@ -193,9 +196,15 @@ class TerrierIndexContext(IndexContext):
 
     @cached_property
     def _term_pipelines(self) -> Sequence[TermPipelineAccessor]:
+        default_termpipelines = "Stopwords,PorterStemmer"
+        if self._index:
+            from jnius import cast
+            default_termpipelines = cast('org.terrier.structures.PropertiesIndex', index).getProperties().get('termpipelines')
+            print('I will use the termpipelines "{default_termpipelines}" as configured in the PyTerrier index as default (can be overridden in ApplicationSetup')
+        
         term_pipelines = str(ApplicationSetup.getProperty(
             "termpipelines",
-            "Stopwords,PorterStemmer"
+            default_termpipelines
         ))
         return tuple(
             BaseTermPipelineAccessor(pipeline)
@@ -224,6 +233,7 @@ class TerrierIndexContext(IndexContext):
             self,
             query_or_document: Union[Query, Document]
     ) -> Sequence[str]:
+        
         text = self.contents(query_or_document)
         return self._terms(text)
 
@@ -313,3 +323,21 @@ class TerrierIndexContext(IndexContext):
             document.id,
             _weighting_model(model)
         )
+
+
+@dataclass(frozen=True)
+class TerrierIndexOnlyContext(TerrierIndexContext):
+    index_location: Union[Path, IndexRef, Index]
+    tokeniser: Optional[Tokeniser] = None
+    cache_dir: Optional[Path] = None
+
+    def terms(
+            self,
+            query_or_document: Union[Query, Document]
+    ) -> Sequence[str]:
+        raise ValueError('Not Possible')
+
+    def document_contents(self, document: Document) -> str:
+        raise ValueError('Not Possible')
+
+
