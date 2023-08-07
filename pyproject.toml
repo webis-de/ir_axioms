@@ -76,7 +76,7 @@ pyterrier =[
 "Bug Tracker" = "https://github.com/webis-de/ir_axioms/issues"
 
 [project.scripts]
-ir_axioms = "ir_axioms:cli"
+ir_axioms = "ir_axioms:__main__"
 
 [build-system]
 requires = ["setuptools>=50", "setuptools_scm[toml]>=6.2", "wheel"]

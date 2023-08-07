@@ -1,30 +1,23 @@
-from argparse import ArgumentParser, Namespace
+from typing import Any
+
+from click import Context, Parameter, echo, group, option
 
 from ir_axioms import __version__
 
 
-def _prepare_parser(parser: ArgumentParser) -> ArgumentParser:
-    parser.add_argument(
-        "-v", "--version",
-        dest="print_version",
-        default=False,
-        action="store_true",
-        help="show version number and exit"
-    )
-    return parser
-
-
-def main():
-    parser: ArgumentParser = ArgumentParser(
-        "ir_axioms",
-        description="Intuitive interface to many IR axioms.",
-    )
-    _prepare_parser(parser)
-    args: Namespace = parser.parse_args()
-    print_version: bool = args.print_version
-
-    if print_version:
-        print(__version__)
+def print_version(
+        context: Context,
+        _parameter: Parameter,
+        value: Any,
+) -> None:
+    if not value or context.resilient_parsing:
         return
+    echo(__version__)
+    context.exit()
 
-    parser.print_help()
+
+@group(help="Intuitive interface to many IR axioms.")
+@option("-V", "--version", is_flag=True, callback=print_version,
+        expose_value=False, is_eager=True)
+def cli() -> None:
+    pass
