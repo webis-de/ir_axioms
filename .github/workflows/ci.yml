@@ -10,7 +10,7 @@ jobs:
       matrix:
         os:
         - ubuntu-latest
-        #- windows-latest
+        - windows-latest
         python:
         - "3.7"
         - "3.8"
@@ -159,7 +159,7 @@ jobs:
       matrix:
         os:
         - ubuntu-latest
-        #- windows-latest
+        - windows-latest
         python:
         - "3.7"
         - "3.8"
@@ -195,7 +195,7 @@ jobs:
       matrix:
         os:
         - ubuntu-latest
-        #- windows-latest
+        - windows-latest
         python:
         - "3.7"
         - "3.8"
