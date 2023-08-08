@@ -22,7 +22,7 @@ jobs:
     - name: "📥 Check-out"
       uses: actions/checkout@v3
     - name: "🧰 Install Python"
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python }}
         cache: pip
@@ -53,7 +53,7 @@ jobs:
     - name: "🧰 Set up Docker Buildx"
       uses: docker/setup-buildx-action@v2
     - name: "🚀 Build image"
-      uses: docker/build-push-action@v1
+      uses: docker/build-push-action@v4
       with:
         context: .
         push: false
@@ -76,7 +76,7 @@ jobs:
     - name: "📥 Check-out"
       uses: actions/checkout@v3
     - name: "🧰 Install Python"
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python }}
         cache: pip
@@ -107,7 +107,7 @@ jobs:
     - name: "📥 Check-out"
       uses: actions/checkout@v3
     - name: "🧰 Install Python"
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python }}
         cache: pip
@@ -118,7 +118,7 @@ jobs:
         pip install .
         pip install .[test]
     - name: "🔍 Lint Python code"
-      run: pylint -E ir_axioms tests.unit --ignore-paths=^ir_axioms.backend --ignore-paths=^ir_axioms.cli
+      run: pylint -E ir_axioms tests.unit --ignore-paths=^ir_axioms.backend|^ir_axioms.cli
   lint-backend:
     name: "🔍 Python Lint backend"
     needs:
@@ -141,7 +141,7 @@ jobs:
     - name: "📥 Check-out"
       uses: actions/checkout@v3
     - name: "🧰 Install Python"
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python }}
         cache: pip
@@ -153,7 +153,7 @@ jobs:
         pip install .[test]
         pip install .[${{ matrix.backend }}]
     - name: "🧰 Install Java"
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with:
         distribution: temurin
         java-version: 11
@@ -179,7 +179,7 @@ jobs:
     - name: "📥 Check-out"
       uses: actions/checkout@v3
     - name: "🧰 Install Python"
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python }}
         cache: pip
@@ -192,7 +192,7 @@ jobs:
     - name: "🧪 Test Python code"
       run: pytest --cov=./ --cov-report=xml ir_axioms/ tests/unit/ --ignore=ir_axioms/backend/ --ignore=ir_axioms/cli.py
     - name: "📤 Upload coverage to Codecov"
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v3
       if: matrix.python == '3.11' && matrix.os == 'ubuntu-latest'
       with:
         fail_ci_if_error: true
@@ -220,7 +220,7 @@ jobs:
     - name: "📥 Check-out"
       uses: actions/checkout@v3
     - name: "🧰 Install Python"
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python }}
         cache: pip
@@ -232,7 +232,7 @@ jobs:
         pip install .[test]
         pip install .[${{ matrix.backend }}]
     - name: "🧰 Install Java"
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with:
         distribution: temurin
         java-version: 11
@@ -265,7 +265,7 @@ jobs:
         name: wheel
         path: dist/*
     - name: "🚀 Publish Python package"
-      uses: pypa/gh-action-pypi-publish@release/v1
+      uses: pypa/gh-action-pypi-publish@v1
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
@@ -299,7 +299,7 @@ jobs:
       with:
         images: ghcr.io/${{ github.repository }}
     - name: "🚀 Build and push image"
-      uses: docker/build-push-action@v1
+      uses: docker/build-push-action@v4
       with:
         context: .
         push: true
