@@ -118,7 +118,7 @@ jobs:
         pip install .
         pip install .[test]
     - name: "🔍 Lint Python code"
-      run: pylint -E ir_axioms tests.unit --ignore-paths=^ir_axioms.backend|^ir_axioms.cli
+      run: pylint -E ir_axioms tests.unit --ignore-paths="^ir_axioms.backend|^ir_axioms.cli"
   lint-backend:
     name: "🔍 Python Lint backend"
     needs:
