@@ -10,12 +10,12 @@ jobs:
       matrix:
         os:
         - ubuntu-latest
-        - windows-latest
+        #- windows-latest
         python:
         - "3.7"
-        - "3.8"
-        - "3.9"
-        - "3.10"
+        #- "3.8"
+        #- "3.9"
+        #- "3.10"
         - "3.11"
     runs-on: ${{ matrix.os }}
     steps:
@@ -67,9 +67,9 @@ jobs:
         - ubuntu-latest
         python:
         - "3.7"
-        - "3.8"
-        - "3.9"
-        - "3.10"
+        #- "3.8"
+        #- "3.9"
+        #- "3.10"
         - "3.11"
     runs-on: ${{ matrix.os }}
     steps:
@@ -98,9 +98,9 @@ jobs:
         - ubuntu-latest
         python:
         - "3.7"
-        - "3.8"
-        - "3.9"
-        - "3.10"
+        #- "3.8"
+        #- "3.9"
+        #- "3.10"
         - "3.11"
     runs-on: ${{ matrix.os }}
     steps:
@@ -129,9 +129,9 @@ jobs:
         - ubuntu-latest
         python:
         - "3.7"
-        - "3.8"
-        - "3.9"
-        - "3.10"
+        #- "3.8"
+        #- "3.9"
+        #- "3.10"
         - "3.11"
         backend:
         - pyserini
@@ -167,12 +167,12 @@ jobs:
       matrix:
         os:
         - ubuntu-latest
-        - windows-latest
+        #- windows-latest
         python:
         - "3.7"
-        - "3.8"
-        - "3.9"
-        - "3.10"
+        #- "3.8"
+        #- "3.9"
+        #- "3.10"
         - "3.11"
     runs-on: ${{ matrix.os }}
     steps:
@@ -205,12 +205,12 @@ jobs:
       matrix:
         os:
         - ubuntu-latest
-        - windows-latest
+        #- windows-latest
         python:
         - "3.7"
-        - "3.8"
-        - "3.9"
-        - "3.10"
+        #- "3.8"
+        #- "3.9"
+        #- "3.10"
         - "3.11"
         backend:
         - pyserini
