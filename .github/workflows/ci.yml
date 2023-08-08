@@ -245,12 +245,12 @@ jobs:
     - name: "📥 Check-out"
       uses: actions/checkout@v3
     - name: "📥 Download Python wheel"
-      uses: actions/upload-artifact@v3
+      uses: actions/download-artifact@v3
       with:
         name: wheel
         path: dist/*
     - name: "🚀 Publish Python package"
-      uses: pypa/gh-action-pypi-publish@v1
+      uses: pypa/gh-action-pypi-publish@release/v1
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
@@ -291,7 +291,7 @@ jobs:
       uses: docker/metadata-action@v4
       with:
         images: |
-          webis/ir_axioms
+#          webis/ir_axioms
           ghcr.io/${{ github.repository }}
     - name: "🚀 Build and push image"
       uses: docker/build-push-action@v4
@@ -319,7 +319,7 @@ jobs:
       id: get-version
       run: echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
     - name: "📥 Download Python wheel"
-      uses: actions/upload-artifact@v3
+      uses: actions/download-artifact@v3
       with:
         name: wheel
         path: dist/*
