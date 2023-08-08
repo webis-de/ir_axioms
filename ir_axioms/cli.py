@@ -73,7 +73,8 @@ def preferences(run_path: Path, run_format: Literal["trec", "letor", "jsonl"],
     echo(f"Load axioms: {', '.join(axiom_names)}")
     axioms: Dict[str, Axiom] = {name: to_axiom(name) for name in axiom_names}
 
-    echo(f"Create axiomatic preference transformer using index from: {index_path}")
+    echo(f"Create axiomatic preference transformer using index "
+         f"from: {index_path}")
     from ir_axioms.backend.pyterrier.transformers import AxiomaticPreferences
     pipeline = AxiomaticPreferences(
         axioms=list(axioms.values()),

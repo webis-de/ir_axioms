@@ -10,12 +10,13 @@ jobs:
       matrix:
         os:
         - ubuntu-latest
-        #- macos-latest
         - windows-latest
         python:
         - 3.7
         - 3.8
         - 3.9
+        - 3.10
+        - 3.11
     runs-on: ${{ matrix.os }}
     steps:
     - name: "📥 Check-out"
@@ -35,7 +36,7 @@ jobs:
       run: twine check dist/*
     - name: "📤 Upload Python wheel"
       uses: actions/upload-artifact@v3
-      if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
+      if: matrix.python == '3.11' && matrix.os == 'ubuntu-latest'
       with:
         name: wheel
         path: dist/*
@@ -64,12 +65,12 @@ jobs:
       matrix:
         os:
         - ubuntu-latest
-        #- macos-latest
-        #- windows-latest
         python:
         - 3.7
         - 3.8
         - 3.9
+        - 3.10
+        - 3.11
     runs-on: ${{ matrix.os }}
     steps:
     - name: "📥 Check-out"
@@ -95,12 +96,12 @@ jobs:
       matrix:
         os:
         - ubuntu-latest
-        #- macos-latest
-        #- windows-latest
         python:
         - 3.7
         - 3.8
         - 3.9
+        - 3.10
+        - 3.11
     runs-on: ${{ matrix.os }}
     steps:
     - name: "📥 Check-out"
@@ -117,7 +118,7 @@ jobs:
         pip install .
         pip install .[test]
     - name: "🔍 Lint Python code"
-      run: pylint -E ir_axioms tests.unit --ignore-paths=^ir_axioms.backend
+      run: pylint -E ir_axioms tests.unit --ignore-paths=^ir_axioms.backend --ignore-paths=^ir_axioms.cli
   lint-backend:
     name: "🔍 Python Lint backend"
     needs:
@@ -126,12 +127,12 @@ jobs:
       matrix:
         os:
         - ubuntu-latest
-        #- macos-latest
-        #- windows-latest
         python:
         - 3.7
         - 3.8
         - 3.9
+        - 3.10
+        - 3.11
         backend:
         - pyserini
         - pyterrier
@@ -157,7 +158,7 @@ jobs:
         distribution: temurin
         java-version: 11
     - name: "🔍 Lint Python code"
-      run: pylint -E ir_axioms.backend.${{ matrix.backend }} tests.integration.${{ matrix.backend }}
+      run: pylint -E ir_axioms.backend.${{ matrix.backend }} tests.integration.${{ matrix.backend }} ${{ matrix.backend == 'pyterrier' && 'ir_axioms.cli' }}
   unit-tests:
     name: "🧪 Python unit tests"
     needs:
@@ -166,12 +167,13 @@ jobs:
       matrix:
         os:
         - ubuntu-latest
-        #- macos-latest
-        #- windows-latest
+        - windows-latest
         python:
         - 3.7
         - 3.8
         - 3.9
+        - 3.10
+        - 3.11
     runs-on: ${{ matrix.os }}
     steps:
     - name: "📥 Check-out"
@@ -188,10 +190,10 @@ jobs:
         pip install .
         pip install .[test]
     - name: "🧪 Test Python code"
-      run: pytest --cov=./ --cov-report=xml ir_axioms/ tests/unit/ --ignore=ir_axioms/backend/
+      run: pytest --cov=./ --cov-report=xml ir_axioms/ tests/unit/ --ignore=ir_axioms/backend/ --ignore=ir_axioms/cli.py
     - name: "📤 Upload coverage to Codecov"
       uses: codecov/codecov-action@v2
-      if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
+      if: matrix.python == '3.11' && matrix.os == 'ubuntu-latest'
       with:
         fail_ci_if_error: true
         token: ${{ secrets.CODECOV_TOKEN }}
@@ -203,12 +205,13 @@ jobs:
       matrix:
         os:
         - ubuntu-latest
-        #- macos-latest
-        #- windows-latest
+        - windows-latest
         python:
         - 3.7
         - 3.8
         - 3.9
+        - 3.10
+        - 3.11
         backend:
         - pyserini
         - pyterrier
@@ -234,10 +237,10 @@ jobs:
         distribution: temurin
         java-version: 11
     - name: "🧪 Test Python code"
-      run: pytest --cov=./ --cov-report=xml tests/integration/${{ matrix.backend }}/
+      run: pytest --cov=./ --cov-report=xml tests/integration/${{ matrix.backend }}/ ${{ matrix.backend == 'pyterrier' && 'ir_axioms/cli.py' }}
     - name: "📤 Upload coverage to Codecov"
       uses: codecov/codecov-action@v2
-      if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
+      if: matrix.python == '3.11' && matrix.os == 'ubuntu-latest'
       with:
         fail_ci_if_error: true
         token: ${{ secrets.CODECOV_TOKEN }}
