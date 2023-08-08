@@ -290,8 +290,10 @@ jobs:
       id: meta
       uses: docker/metadata-action@v4
       with:
+        #images: |
+        #  webis/ir_axioms
+        #  ghcr.io/${{ github.repository }}
         images: |
-#          webis/ir_axioms
           ghcr.io/${{ github.repository }}
     - name: "🚀 Build and push image"
       uses: docker/build-push-action@v4
