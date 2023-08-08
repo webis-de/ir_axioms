@@ -13,10 +13,8 @@ jobs:
         #- windows-latest
         python:
         - "3.7"
-        #- "3.8"
-        #- "3.9"
-        #- "3.10"
-        - "3.11"
+        - "3.8"
+        - "3.9"
     runs-on: ${{ matrix.os }}
     steps:
     - name: "📥 Check-out"
@@ -36,7 +34,7 @@ jobs:
       run: twine check dist/*
     - name: "📤 Upload Python wheel"
       uses: actions/upload-artifact@v3
-      if: matrix.python == '3.11' && matrix.os == 'ubuntu-latest'
+      if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
       with:
         name: wheel
         path: dist/*
@@ -67,10 +65,8 @@ jobs:
         - ubuntu-latest
         python:
         - "3.7"
-        #- "3.8"
-        #- "3.9"
-        #- "3.10"
-        - "3.11"
+        - "3.8"
+        - "3.9"
     runs-on: ${{ matrix.os }}
     steps:
     - name: "📥 Check-out"
@@ -98,10 +94,8 @@ jobs:
         - ubuntu-latest
         python:
         - "3.7"
-        #- "3.8"
-        #- "3.9"
-        #- "3.10"
-        - "3.11"
+        - "3.8"
+        - "3.9"
     runs-on: ${{ matrix.os }}
     steps:
     - name: "📥 Check-out"
@@ -129,10 +123,8 @@ jobs:
         - ubuntu-latest
         python:
         - "3.7"
-        #- "3.8"
-        #- "3.9"
-        #- "3.10"
-        - "3.11"
+        - "3.8"
+        - "3.9"
         backend:
         - pyserini
         - pyterrier
@@ -170,10 +162,8 @@ jobs:
         #- windows-latest
         python:
         - "3.7"
-        #- "3.8"
-        #- "3.9"
-        #- "3.10"
-        - "3.11"
+        - "3.8"
+        - "3.9"
     runs-on: ${{ matrix.os }}
     steps:
     - name: "📥 Check-out"
@@ -193,7 +183,7 @@ jobs:
       run: pytest --cov=./ --cov-report=xml ir_axioms/ tests/unit/ --ignore=ir_axioms/backend/ --ignore=ir_axioms/cli.py
     - name: "📤 Upload coverage to Codecov"
       uses: codecov/codecov-action@v3
-      if: matrix.python == '3.11' && matrix.os == 'ubuntu-latest'
+      if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
       with:
         fail_ci_if_error: true
         token: ${{ secrets.CODECOV_TOKEN }}
@@ -208,10 +198,8 @@ jobs:
         #- windows-latest
         python:
         - "3.7"
-        #- "3.8"
-        #- "3.9"
-        #- "3.10"
-        - "3.11"
+        - "3.8"
+        - "3.9"
         backend:
         - pyserini
         - pyterrier
@@ -240,7 +228,7 @@ jobs:
       run: pytest --cov=./ --cov-report=xml tests/integration/${{ matrix.backend }}/ ${{ matrix.backend == 'pyterrier' && 'ir_axioms/cli.py' }}
     - name: "📤 Upload coverage to Codecov"
       uses: codecov/codecov-action@v2
-      if: matrix.python == '3.11' && matrix.os == 'ubuntu-latest'
+      if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
       with:
         fail_ci_if_error: true
         token: ${{ secrets.CODECOV_TOKEN }}
