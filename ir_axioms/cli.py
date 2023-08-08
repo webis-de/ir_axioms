@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Any, Literal, Dict, Sequence
+from typing import Any, Dict, Sequence
+from typing_extensions import Literal
 
 from click import Context, Parameter, echo, group, option, Path as PathType, \
     Choice, argument
