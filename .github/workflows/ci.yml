@@ -150,7 +150,7 @@ jobs:
         distribution: temurin
         java-version: 11
     - name: "🔍 Lint Python code"
-      run: pylint -E ir_axioms.backend.${{ matrix.backend }} tests.integration.${{ matrix.backend }} ${{ matrix.backend == 'pyterrier' && 'ir_axioms.cli' }}
+      run: pylint -E ir_axioms.backend.${{ matrix.backend }} tests.integration.${{ matrix.backend }} ${{ matrix.backend == 'pyterrier' && 'ir_axioms.cli' || '' }}
   unit-tests:
     name: "🧪 Python unit tests"
     needs:
@@ -225,7 +225,7 @@ jobs:
         distribution: temurin
         java-version: 11
     - name: "🧪 Test Python code"
-      run: pytest --cov=./ --cov-report=xml tests/integration/${{ matrix.backend }}/ ${{ matrix.backend == 'pyterrier' && 'ir_axioms/cli.py' }}
+      run: pytest --cov=./ --cov-report=xml tests/integration/${{ matrix.backend }}/ ${{ matrix.backend == 'pyterrier' && 'ir_axioms/cli.py' || '' }}
     - name: "📤 Upload coverage to Codecov"
       uses: codecov/codecov-action@v2
       if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
