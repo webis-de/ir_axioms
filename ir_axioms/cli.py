@@ -77,7 +77,7 @@ def preferences(cli_options: CliOptions, run_path: Path,
     if not started():
         suffix = ""
         if cli_options.offline is not None:
-            suffix += f" (offline)"
+            suffix += " (offline)"
         echo(f"Initialize PyTerrier{suffix}.")
         init(
             version=cli_options.terrier_version,
