@@ -1,4 +1,5 @@
 from ir_axioms.cli import cli
 
 if __name__ == "__main__":
+    # noqa: E1120
     cli()
