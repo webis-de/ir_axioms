@@ -145,23 +145,10 @@ pip install build setuptools wheel
 
 ### Installation
 
-Install dependencies for developing the `ir_axioms` package:
+Install package and test dependencies:
 
 ```shell
-pip install -e .
-```
-
-If you want to develop the [Pyserini](https://github.com/castorini/pyserini) backend, install dependencies like this:
-
-```shell
-pip install -e .[pyserini]
-```
-
-If you want to develop the [PyTerrier](https://github.com/terrier-org/pyterrier) backend, install dependencies like
-this:
-
-```shell
-pip install -e .[pyterrier]
+pip install -e .[test]
 ```
 
 ### Testing
@@ -172,34 +159,21 @@ Install test dependencies:
 pip install -e .[test]
 ```
 
-Verify your changes against our test suite to verify.
-
-```shell
-flake8 ir_axioms tests
-pylint -E ir_axioms tests.unit --ignore-paths=^ir_axioms.backend
-pytest ir_axioms/ tests/unit/ --ignore=ir_axioms/backend/
-```
-
-Please also add tests for the axioms or integrations you've added.
-
-#### Testing backend integrations
-
-Install test dependencies (replace `<BACKEND>` with either `pyserini` or `pyterrier`):
-
-```shell
-pip install -e .[<BACKEND>]
-```
+### Testing
 
 Verify your changes against our test suite to verify.
 
 ```shell
-pylint -E ir_axioms.backend.<BACKEND> tests.integration.<BACKEND>
-pytest tests/integration/<BACKEND>/
+flake8 ir_axioms tests examples
+pylint -E ir_axioms tests examples
+pytest ir_axioms tests examples
 ```
 
-### Build wheel
+Please also add tests for your newly developed code.
 
-A wheel for this package can be built by running:
+### Build wheels
+
+Wheels for this package can be built with:
 
 ```shell
 python -m build
@@ -207,11 +181,11 @@ python -m build
 
 ## Support
 
-If you hit any problems using `ir_axioms` or reproducing our experiments, please write us an email or file an [issue](https://github.com/webis-de/ir_axioms/issues):
+If you hit any problems using `ir_axioms` or reproducing our experiments, please write us an email or file an [issue](https://github.com/webis-de/ir_axioms/issues/new):
 
-- [jan.reimer@student.uni-halle.de](mailto:jan.reimer@student.uni-halle.de)
-- [maik.froebe@informatik.uni-halle.de](mailto:maik.froebe@informatik.uni-halle.de)
-- [alexander.bondarenko@informatik.uni-halle.de](mailto:alexander.bondarenko@informatik.uni-halle.de)
+- [heinrich.reimer@uni-jena.de](mailto:heinrich.reimer@uni-jena.de)
+- [maik.froebe@uni-jena.de](mailto:maik.froebe@uni-jena.de)
+- [alexander.bondarenko@uni-jena.de](mailto:alexander.bondarenko@uni-jena.de)
 
 We're happy to help!
 
