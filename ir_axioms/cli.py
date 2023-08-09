@@ -28,6 +28,7 @@ def print_version(
 class CliOptions:
     terrier_version: Optional[str]
     terrier_helper_version: Optional[str]
+    offline: bool
 
 
 @group(help="Intuitive interface to many IR axioms.")
@@ -35,12 +36,14 @@ class CliOptions:
         expose_value=False, is_eager=True)
 @option("--terrier-version", type=str)
 @option("--terrier-helper-version", type=str)
+@option("--offline/--online", default=False)
 @pass_context
 def cli(context: Context, terrier_version: Optional[str],
-        terrier_helper_version: Optional[str]) -> None:
+        terrier_helper_version: Optional[str], offline: bool) -> None:
     context.obj = CliOptions(
         terrier_version=terrier_version,
         terrier_helper_version=terrier_helper_version,
+        offline=offline,
     )
     pass
 
@@ -72,10 +75,14 @@ def preferences(cli_options: CliOptions, run_path: Path,
     axiom_names = axiom
 
     if not started():
-        echo("Initialize PyTerrier.")
+        suffix = ""
+        if cli_options.offline is not None:
+            suffix += f" (offline)"
+        echo(f"Initialize PyTerrier{suffix}.")
         init(
             version=cli_options.terrier_version,
             helper_version=cli_options.terrier_helper_version,
+            no_download=cli_options.offline,
             tqdm="auto",
         )
 
