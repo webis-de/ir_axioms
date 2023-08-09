@@ -6,10 +6,10 @@ from typing_extensions import Literal
 from click import Context, Parameter, echo, group, option, Path as PathType, \
     Choice, argument, pass_obj, pass_context
 from pandas import read_json, DataFrame
-from pyterrier import started, init
+from pyterrier import started, init, __version__ as pyterrier_version
 from pyterrier.io import read_results
 
-from ir_axioms import __version__
+from ir_axioms import __version__ as version
 from ir_axioms.axiom import to_axiom, Axiom
 
 
@@ -20,7 +20,7 @@ def print_version(
 ) -> None:
     if not value or context.resilient_parsing:
         return
-    echo(__version__)
+    echo(f"{version} (PyTerrier {pyterrier_version})")
     context.exit()
 
 
