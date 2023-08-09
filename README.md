@@ -1,11 +1,17 @@
-[![DOI](https://img.shields.io/badge/DOI-10.1145%2F3477495.3531743-blue?style=flat-square)](https://doi.org/10.1145/3477495.3531743)
-[![PyPi](https://img.shields.io/pypi/v/ir_axioms?style=flat-square)](https://pypi.org/project/ir_axioms/)
-[![CI](https://img.shields.io/github/actions/workflow/status/webis-de/ir_axioms/ci.yml?branch=main&style=flat-square)](https://github.com/webis-de/ir_axioms/actions/workflows/ci.yml)
+[![Paper DOI](https://img.shields.io/badge/DOI-10.1145%2F3477495.3531743-blue?style=flat-square)](https://doi.org/10.1145/3477495.3531743)
+[![CI status](https://img.shields.io/github/actions/workflow/status/webis-de/ir_axioms/ci.yml?branch=main&style=flat-square)](https://github.com/webis-de/ir_axioms/actions/workflows/ci.yml)
 [![Code coverage](https://img.shields.io/codecov/c/github/webis-de/ir_axioms?style=flat-square)](https://codecov.io/github/webis-de/ir_axioms/)
-[![Python](https://img.shields.io/pypi/pyversions/ir_axioms?style=flat-square)](https://pypi.org/project/ir_axioms/)
+[![Maintenance](https://img.shields.io/maintenance/yes/2023?style=flat-square)](https://github.com/webis-de/ir_axioms/graphs/contributors)  
+[![PyPI version](https://img.shields.io/pypi/v/ir_axioms?style=flat-square)](https://pypi.org/project/ir_axioms/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/ir_axioms?style=flat-square)](https://pypi.org/project/ir_axioms/)
+[![Python versions](https://img.shields.io/pypi/pyversions/ir_axioms?style=flat-square)](https://pypi.org/project/ir_axioms/)  
+[![Docker version](https://img.shields.io/docker/v/webis/ir_axioms?style=flat-square&label=docker
+)](https://hub.docker.com/repository/docker/webis/ir_axioms)
+[![Docker pulls](https://img.shields.io/docker/pulls/webis/ir_axioms?style=flat-square&label=pulls)](https://hub.docker.com/repository/docker/webis/ir_axioms)
+[![Docker image size](https://img.shields.io/docker/image-size/webis/ir_axioms?style=flat-square)](https://hub.docker.com/repository/docker/webis/ir_axioms)  
 [![Issues](https://img.shields.io/github/issues/webis-de/ir_axioms?style=flat-square)](https://github.com/webis-de/ir_axioms/issues)
+[![Pull requests](https://img.shields.io/github/issues-pr/webis-de/ir_axioms?style=flat-square)](https://github.com/webis-de/ir_axioms/pulls)
 [![Commit activity](https://img.shields.io/github/commit-activity/m/webis-de/ir_axioms?style=flat-square)](https://github.com/webis-de/ir_axioms/commits)
-[![Downloads](https://img.shields.io/pypi/dm/ir_axioms?style=flat-square)](https://pypi.org/project/ir_axioms/)
 [![License](https://img.shields.io/github/license/webis-de/ir_axioms?style=flat-square)](LICENSE)
 
 # ↕️ ir_axioms
@@ -17,7 +23,7 @@ It includes reference implementations of many commonly used retrieval axioms and
 Re-rank your search results today with `ir_axioms` and understand your retrieval systems better by analyzing
 axiomatic preferences!
 
-|            [Presentation video on YouTube](https://youtu.be/hZtWw805TBg)             | [Poster](https://webis.de/downloads/publications/posters/bondarenko_2022d.pdf)                                    |
+|            [Presentation video on YouTube](https://youtu.be/hZtWw805TBg)             |                  [Poster](https://webis.de/downloads/publications/posters/bondarenko_2022d.pdf)                   |
 |:------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------------:|
 | [![Presentation video](documentation/video-cover.png)](https://youtu.be/hZtWw805TBg) | [![Poster](documentation/poster-cover.png)](https://webis.de/downloads/publications/posters/bondarenko_2022d.pdf) |
 
@@ -52,12 +58,13 @@ However, we recommend PyTerrier as not all features are implemented for the Pyse
 #### PyTerrier (Terrier index)
 
 To use `ir_axioms` with a Terrier index, please use our PyTerrier transformers (modules):
-| Transformer Class           | Type       | Description                                                  |
-|:----------------------------|:-----------|:-------------------------------------------------------------|
-| `AggregatedPreferences`     | 𝑅 → 𝑅𝑓     | Aggregate axiom preferences for each document                |
-| `EstimatorKwikSortReranker` | 𝑅 → 𝑅′     | Train estimator for ORACLE, use it to re-rank with KwikSort. |
-| `KwikSortReranker`          | 𝑅 → 𝑅′     | Re-rank using axiom preferences aggregated by KwikSort.      |
-| `PreferenceMatrix`          | 𝑅 → (𝑅×𝑅)𝑓 | Compute an axiom’s preference matrix.                        |
+
+| Transformer Class           | Type                      | Description                                                  |
+|:----------------------------|:--------------------------|:-------------------------------------------------------------|
+| `AggregatedPreferences`     | 𝑅 → 𝑅<sub>𝑓</sub>      | Aggregate axiom preferences for each document                |
+| `EstimatorKwikSortReranker` | 𝑅 → 𝑅′                  | Train estimator for ORACLE, use it to re-rank with KwikSort. |
+| `KwikSortReranker`          | 𝑅 → 𝑅′                  | Re-rank using axiom preferences aggregated by KwikSort.      |
+| `PreferenceMatrix`          | 𝑅 → (𝑅×𝑅)<sub>𝑓</sub> | Compute an axiom’s preference matrix.                        |
 
 You can also directly instantiate a index context object from a Terrier index if you want to build custom axiomatic modules:
 
