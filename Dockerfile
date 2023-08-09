@@ -18,7 +18,7 @@ ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
 RUN \
     --mount=type=cache,target=/root/.cache/pip \
     ([ -d /venv ] || python3.9 -m venv /venv) && \
-    /venv/bin/pip3 install --upgrade pip
+    /venv/bin/pip install --upgrade pip
 
 WORKDIR /workspace/
 ADD .git/ .git/
@@ -26,8 +26,12 @@ ADD pyproject.toml pyproject.toml
 
 RUN \
     --mount=type=cache,target=/root/.cache/pip \
-    /venv/bin/pip3 install /workspace[pyterrier]
+    /venv/bin/pip install /workspace[pyterrier]
+
+ENV TERRIER_VERSION="5.7"
+ENV TERRIER_HELPER_VERSION="0.0.7"
+RUN /venv/bin/python -c "from pyterrier import init; init(version='${TERRIER_VERSION}', helper_version='${TERRIER_HELPER_VERSION}')"
 
 ADD . .
 
-ENTRYPOINT ["/venv/bin/python3.9", "-m", "ir_axioms"]
+ENTRYPOINT ["/venv/bin/python", "-m", "ir_axioms", "--terrier-version", "${TERRIER_VERSION}", "--terrier-helper-version", "${TERRIER_HELPER_VERSION}", "--offline"]
