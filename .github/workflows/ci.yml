@@ -36,7 +36,7 @@ jobs:
       if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
       with:
         name: wheel
-        path: dist/*
+        path: dist
   build-image:
     name: "🏗️ Docker image"
     needs:
@@ -224,7 +224,7 @@ jobs:
     - name: "🧪 Test Python code"
       run: pytest --cov=./ --cov-report=xml tests/integration/${{ matrix.backend }}/ ${{ matrix.backend == 'pyterrier' && 'ir_axioms/cli.py' || '' }}
     - name: "📤 Upload coverage to Codecov"
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v3
       if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
       with:
         fail_ci_if_error: true
@@ -241,6 +241,8 @@ jobs:
     - unit-tests
     - integration-tests
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
     - name: "📥 Check-out"
       uses: actions/checkout@v3
@@ -248,12 +250,9 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: wheel
-        path: dist/*
+        path: dist
     - name: "🚀 Publish Python package"
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
   push-image:
     name: "🚀 Publish Docker image"
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
@@ -317,19 +316,16 @@ jobs:
     steps:
     - name: "📥 Check-out"
       uses: actions/checkout@v3
-    - name: "🏷️ Get version tag"
-      id: get-version
-      run: echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
     - name: "📥 Download Python wheel"
       uses: actions/download-artifact@v3
       with:
         name: wheel
-        path: dist/*
+        path: dist
     - name: "🚀 Create GitHub release"
       uses: softprops/action-gh-release@v1
       with:
-        name: Release ${{ steps.get-version.outputs.tag }}
-        files: dist/*
+        name: Release ${{ github.ref_name }}
+        files: dist
         fail_on_unmatched_files: true
         draft: false
         prerelease: false
