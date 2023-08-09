@@ -34,7 +34,7 @@ jobs:
     - name: "ℹ️ List Python wheels"
       if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
       run: ls -R
-      working-directory: wheel
+      working-directory: dist
     - name: "📤 Upload Python wheel"
       uses: actions/upload-artifact@v3
       if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
@@ -257,7 +257,7 @@ jobs:
         path: dist
     - name: "ℹ️ List Python wheels"
       run: ls -R
-      working-directory: wheel
+      working-directory: dist
     - name: "🚀 Publish Python wheels"
       uses: pypa/gh-action-pypi-publish@release/v1
   push-image:
@@ -328,7 +328,7 @@ jobs:
         path: dist
     - name: "ℹ️ List Python wheels"
       run: ls -R
-      working-directory: wheel
+      working-directory: dist
     - name: "🚀 Create GitHub release"
       uses: softprops/action-gh-release@v1
       with:
