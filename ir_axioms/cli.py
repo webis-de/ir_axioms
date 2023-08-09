@@ -1,9 +1,10 @@
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Sequence
+from typing import Any, Dict, Sequence, Optional
 from typing_extensions import Literal
 
 from click import Context, Parameter, echo, group, option, Path as PathType, \
-    Choice, argument
+    Choice, argument, pass_obj, pass_context
 from pandas import read_json, DataFrame
 from pyterrier import started, init
 from pyterrier.io import read_results
@@ -23,10 +24,24 @@ def print_version(
     context.exit()
 
 
+@dataclass(frozen=True)
+class CliOptions:
+    terrier_version: Optional[str]
+    terrier_helper_version: Optional[str]
+
+
 @group(help="Intuitive interface to many IR axioms.")
 @option("-V", "--version", is_flag=True, callback=print_version,
         expose_value=False, is_eager=True)
-def cli() -> None:
+@option("--terrier-version", type=str)
+@option("--terrier-helper-version", type=str)
+@pass_context
+def cli(context: Context, terrier_version: Optional[str],
+        terrier_helper_version: Optional[str]) -> None:
+    context.obj = CliOptions(
+        terrier_version=terrier_version,
+        terrier_helper_version=terrier_helper_version,
+    )
     pass
 
 
@@ -49,14 +64,20 @@ def cli() -> None:
                       resolve_path=True, allow_dash=False),
         required=True)
 @argument("axiom", nargs=-1, required=True)
-def preferences(run_path: Path, run_format: Literal["trec", "letor", "jsonl"],
+@pass_obj
+def preferences(cli_options: CliOptions, run_path: Path,
+                run_format: Literal["trec", "letor", "jsonl"],
                 index_path: Path, output_path: Path, axiom: Sequence[str]
                 ) -> None:
     axiom_names = axiom
 
     if not started():
         echo("Initialize PyTerrier.")
-        init()
+        init(
+            version=cli_options.terrier_version,
+            helper_version=cli_options.terrier_helper_version,
+            tqdm="auto",
+        )
 
     echo(f"Read run from: {run_path}")
     run: DataFrame
