@@ -85,6 +85,27 @@ context = AnseriniIndexContext("/path/to/index/dir")
 axiom.preference(context, query, doc1, doc2)
 ```
 
+### TIRA
+
+Here's an example how `ir_axioms` can be used to get axiomatic preferences for a run in TIRA:
+
+```shell
+tira-run \
+  --input-directory data/tira/input \
+  --output-directory data/tira/output \
+  --image webis/ir_axioms \
+  --command '/venv/bin/python -m ir_axioms \
+    --terrier-version 5.7 \
+    --terrier-helper-version 0.0.7 \
+    --offline \
+    preferences \
+    --run-file $inputDataset/run.jsonl \
+    --run-format jsonl \
+    --index-dir $inputDataset/index \
+    --output-dir $outputDir \
+    TFC1'
+```
+
 ## Citation
 
 If you use this package or its components in your research, please cite the following paper describing the `ir_axioms`
