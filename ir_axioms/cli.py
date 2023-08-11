@@ -9,7 +9,7 @@ from pandas import read_json, DataFrame
 from pyterrier import started, init, __version__ as pyterrier_version
 from pyterrier.io import read_results
 
-from ir_axioms import __version__ as version
+from ir_axioms import __version__ as version, registry
 from ir_axioms.axiom import to_axiom, Axiom
 
 
@@ -46,6 +46,11 @@ def cli(context: Context, terrier_version: Optional[str],
         offline=offline,
     )
     pass
+
+@cli.command()
+def list_axioms() -> None:
+    for axiom in registry:
+        echo(axiom)
 
 
 @cli.command()
