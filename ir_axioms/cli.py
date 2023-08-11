@@ -9,7 +9,7 @@ from pyterrier import started, init, __version__ as pyterrier_version
 from pyterrier.io import read_results
 from typing_extensions import Literal
 
-from ir_axioms import __version__ as version
+from ir_axioms import __version__ as ir_axioms_version
 from ir_axioms.axiom import to_axiom, Axiom
 
 
@@ -36,15 +36,14 @@ def cli(context: Context, terrier_version: Optional[str],
 
 @cli.command()
 @pass_obj
-@pass_context
-def version(context: Context, cli_options: CliOptions) -> None:
+def version(cli_options: CliOptions) -> None:
     other_versions = [f"PyTerrier {pyterrier_version}"]
     if cli_options.terrier_version is not None:
         other_versions.append(f"Terrier {cli_options.terrier_version}")
     if cli_options.terrier_helper_version is not None:
         other_versions.append(f"Terrier Helper "
                               f"{cli_options.terrier_helper_version}")
-    echo(f"{context.parent.info_name} ({', '.join(other_versions)})")
+    echo(f"{ir_axioms_version} ({', '.join(other_versions)})")
 
 
 @cli.command()
