@@ -91,8 +91,9 @@ Here's an example how `ir_axioms` can be used to get axiomatic preferences for a
 
 ```shell
 tira-run \
-  --input-directory data/tira/input \
-  --output-directory data/tira/output \
+  --input-directory ${PWD}/data/tira/input-of-re-ranker \
+  --input-run ${PWD}/data/tira/output-of-indexer \
+  --output-directory ${PWD}/data/tira/output \
   --image webis/ir_axioms \
   --command '/venv/bin/python -m ir_axioms \
     --terrier-version 5.7 \
@@ -101,9 +102,9 @@ tira-run \
     preferences \
     --run-file $inputDataset/run.jsonl \
     --run-format jsonl \
-    --index-dir $inputDataset/index \
+    --index-dir $inputRun/index \
     --output-dir $outputDir \
-    TFC1'
+    TF-LNC TFC1 TFC3'
 ```
 
 ## Citation
