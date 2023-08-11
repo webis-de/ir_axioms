@@ -65,11 +65,14 @@ def version(context: Context, cli_options: CliOptions) -> None:
                       dir_okay=True, readable=False, writable=True,
                       resolve_path=True, allow_dash=False),
         required=True)
+@option("--output-minimal","--minimal",  is_flag=True , default=False)
+@option("--output-compress","--compress", type=Choice(["gzip"]), default=None)
 @argument("axiom", nargs=-1, required=True)
 @pass_obj
 def preferences(cli_options: CliOptions, run_path: Path,
                 run_format: Literal["trec", "letor", "jsonl"],
-                index_path: Path, output_path: Path, axiom: Sequence[str]
+                index_path: Path, output_path: Path, axiom: Sequence[str],
+                minimal: bool,  compress: Literal["gzip", None]
                 ) -> None:
     axiom_names = axiom
 
@@ -96,6 +99,8 @@ def preferences(cli_options: CliOptions, run_path: Path,
                 del run[col]
     else:
         raise ValueError(f"Unknown run format: {run_format}")
+    if minimal:
+        run = run[["qid", "docno", "rank", "score"]]
     original_columns = set(run.columns)
 
     echo(f"Load axioms: {', '.join(axiom_names)}")
@@ -125,7 +130,12 @@ def preferences(cli_options: CliOptions, run_path: Path,
         axiom_columns = select_columns | {axiom_column}
         preferences: DataFrame = all_preferences[list(axiom_columns)].copy()
         preferences.rename(columns={axiom_column: "preference"}, inplace=True)
-        preferences.to_json(output_path / f"{name}.jsonl", orient="records",
+        output_name =  f"{name}.jsonl"
+        if compress == "gzip":
+            output_name += ".gz"
+        else:
+            assert compress is None
+        preferences.to_json(output_path / output_name, orient="records",
                             lines=True)
 
     echo("Done.")
