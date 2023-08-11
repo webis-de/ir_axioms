@@ -1,27 +1,16 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Sequence, Optional
-from typing_extensions import Literal
+from typing import Dict, Sequence, Optional
 
-from click import Context, Parameter, echo, group, option, Path as PathType, \
+from click import Context, echo, group, option, Path as PathType, \
     Choice, argument, pass_obj, pass_context
 from pandas import read_json, DataFrame
 from pyterrier import started, init, __version__ as pyterrier_version
 from pyterrier.io import read_results
+from typing_extensions import Literal
 
 from ir_axioms import __version__ as version
 from ir_axioms.axiom import to_axiom, Axiom
-
-
-def print_version(
-        context: Context,
-        _parameter: Parameter,
-        value: Any,
-) -> None:
-    if not value or context.resilient_parsing:
-        return
-    echo(f"{version} (PyTerrier {pyterrier_version})")
-    context.exit()
 
 
 @dataclass(frozen=True)
@@ -32,11 +21,9 @@ class CliOptions:
 
 
 @group(help="Intuitive interface to many IR axioms.")
-@option("-V", "--version", is_flag=True, callback=print_version,
-        expose_value=False, is_eager=True)
-@option("--terrier-version", type=str)
-@option("--terrier-helper-version", type=str)
-@option("--offline/--online", default=False)
+@option("--terrier-version", type=str, envvar="TERRIER_VERSION")
+@option("--terrier-helper-version", type=str, envvar="TERRIER_HELPER_VERSION")
+@option("--offline/--online", default=False, envvar="IR_AXIOMS_OFFLINE")
 @pass_context
 def cli(context: Context, terrier_version: Optional[str],
         terrier_helper_version: Optional[str], offline: bool) -> None:
@@ -45,7 +32,19 @@ def cli(context: Context, terrier_version: Optional[str],
         terrier_helper_version=terrier_helper_version,
         offline=offline,
     )
-    pass
+
+
+@cli.command()
+@pass_obj
+@pass_context
+def version(context: Context, cli_options: CliOptions) -> None:
+    other_versions = [f"PyTerrier {pyterrier_version}"]
+    if cli_options.terrier_version is not None:
+        other_versions.append(f"Terrier {cli_options.terrier_version}")
+    if cli_options.terrier_helper_version is not None:
+        other_versions.append(f"Terrier Helper "
+                              f"{cli_options.terrier_helper_version}")
+    echo(f"{context.parent.info_name} ({', '.join(other_versions)})")
 
 
 @cli.command()
