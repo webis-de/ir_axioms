@@ -64,14 +64,14 @@ def version(cli_options: CliOptions) -> None:
                       dir_okay=True, readable=False, writable=True,
                       resolve_path=True, allow_dash=False),
         required=True)
-@option("--output-minimal","--minimal",  is_flag=True , default=False)
-@option("--output-compress","--compress", type=Choice(["gzip"]), default=None)
+@option("--output-minimal", is_flag=True, default=True)
+@option("--output-compress", type=Choice(["gzip", None]), default="gzip")
 @argument("axiom", nargs=-1, required=True)
 @pass_obj
 def preferences(cli_options: CliOptions, run_path: Path,
                 run_format: Literal["trec", "letor", "jsonl"],
                 index_path: Path, output_path: Path, axiom: Sequence[str],
-                minimal: bool,  compress: Literal["gzip", None]
+                output_minimal: bool,  output_compress: Literal["gzip", None]
                 ) -> None:
     axiom_names = axiom
 
@@ -98,8 +98,6 @@ def preferences(cli_options: CliOptions, run_path: Path,
                 del run[col]
     else:
         raise ValueError(f"Unknown run format: {run_format}")
-    if minimal:
-        run = run[["qid", "docno", "rank", "score"]]
     original_columns = set(run.columns)
 
     echo(f"Load axioms: {', '.join(axiom_names)}")
@@ -117,24 +115,19 @@ def preferences(cli_options: CliOptions, run_path: Path,
     echo("Compute axiomatic preferences.")
     all_preferences = pipeline.transform(run)
 
-    echo(f"Save axiomatic preferences to: {output_path}")
     output_path.mkdir(exist_ok=True)
+    output_path = output_path / ('preferences.jsonl' + ('.gz' if output_compress == 'gzip' else ''))
+    echo(f"Save axiomatic preferences to: {output_path}")
     shared_columns = set(all_preferences.columns) & original_columns
     non_shared_columns = original_columns - shared_columns
     select_columns = (shared_columns |
                       {f"{col}_a" for col in non_shared_columns} |
                       {f"{col}_b" for col in non_shared_columns})
-    for name, axiom in axioms.items():
-        axiom_column = f"{axiom}_preference"
-        axiom_columns = select_columns | {axiom_column}
-        preferences: DataFrame = all_preferences[list(axiom_columns)].copy()
-        preferences.rename(columns={axiom_column: "preference"}, inplace=True)
-        output_name =  f"{name}.jsonl"
-        if compress == "gzip":
-            output_name += ".gz"
-        else:
-            assert compress is None
-        preferences.to_json(output_path / output_name, orient="records",
-                            lines=True)
+
+    if output_minimal:
+        for i in ['query', 'text_a', 'score_a', 'text_b', 'score_b']:
+            del all_preferences[i]
+
+    all_preferences.to_json(output_path, orient="records", lines=True)
 
     echo("Done.")
