@@ -86,6 +86,8 @@ def preferences(cli_options: CliOptions, run_path: Path,
             no_download=cli_options.offline,
             tqdm="auto",
         )
+        import ir_axioms.utils.nltk
+        ir_axioms.utils.nltk.offline = cli_options.offline
 
     echo(f"Read run from: {run_path}")
     run: DataFrame

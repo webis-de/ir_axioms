@@ -94,17 +94,8 @@ tira-run \
   --input-directory ${PWD}/data/tira/input-of-re-ranker \
   --input-run ${PWD}/data/tira/output-of-indexer \
   --output-directory ${PWD}/data/tira/output \
-  --image webis/ir_axioms \
-  --command '/venv/bin/python -m ir_axioms \
-    --terrier-version 5.7 \
-    --terrier-helper-version 0.0.7 \
-    --offline \
-    preferences \
-    --run-file $inputDataset/run.jsonl \
-    --run-format jsonl \
-    --index-dir $inputRun/index \
-    --output-dir $outputDir \
-    TF-LNC TFC1 TFC3'
+  --image webis/ir_axioms:0.2.13 \
+  --command '/venv/bin/python -m ir_axioms --offline preferences --run-file $inputDataset/run.jsonl --run-format jsonl --index-dir $inputRun/index --output-dir $outputDir AND ANTI-REG ASPECT-REG DIV LB1 LNC1 LEN-AND LEN-DIV LEN-M-AND LEN-M-TDC LNC1 M-AND M-TDC PROX1 PROX2 PROX3 PROX4 PROX5 REG STMC1 STMC2 TF-LNC TFC1 TFC3'
 ```
 
 ## Citation

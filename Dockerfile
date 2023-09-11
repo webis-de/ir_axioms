@@ -30,7 +30,8 @@ RUN \
 
 ENV TERRIER_VERSION="5.7"
 ENV TERRIER_HELPER_VERSION="0.0.7"
-RUN /venv/bin/python -c "from pyterrier import init; init(version='${TERRIER_VERSION}', helper_version='${TERRIER_HELPER_VERSION}')"
+RUN /venv/bin/python -c "from pyterrier import init; init(version='${TERRIER_VERSION}', helper_version='${TERRIER_HELPER_VERSION}')" \
+	&& /venv/bin/python -m ir_axioms preferences --run-file data/tira/input-of-re-ranker/run.jsonl --run-format jsonl --index-dir data/tira/output-of-indexer/index --output-dir data/tira/output AND ANTI-REG ASPECT-REG DIV LB1 LNC1 LEN-AND LEN-DIV LEN-M-AND LEN-M-TDC LNC1 M-AND M-TDC PROX1 PROX2 PROX3 PROX4 PROX5 REG STMC1 STMC2 TF-LNC TFC1 TFC3
 
 ADD . .
 
