@@ -3,7 +3,7 @@ from logging import info
 from nltk.downloader import Downloader
 
 _downloader = Downloader()
-offline=False
+offline = False
 
 
 def download_nltk_dependencies(*dependencies: str) -> None:
