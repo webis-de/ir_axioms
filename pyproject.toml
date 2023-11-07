@@ -60,7 +60,7 @@ examples =[
     "jupyter~=1.0",
     "jupyterlab~=3.2",
     "lightgbm~=3.3",
-    "xgboost~=1.5",
+    "xgboost>=1.5,<3.0",
 ]
 pyserini =[
     "pyserini~=0.14.0",
