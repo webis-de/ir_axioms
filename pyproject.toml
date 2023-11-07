@@ -51,7 +51,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 test =[
-    "flake8~=5.0",
+    "flake8>=5,<7",
     "pylint~=2.12",
     "pytest~=7.2",
     "pytest-cov~=4.0",
