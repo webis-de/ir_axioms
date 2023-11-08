@@ -1,6 +1,7 @@
 venv
 ir_axioms.egg-info
 dist
+data
 build
 .pytest_cache
 .idea

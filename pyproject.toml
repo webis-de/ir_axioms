@@ -10,11 +10,10 @@ authors = [
 ]
 description = "Intuitive interface to many IR axioms."
 readme = "README.md"
-requires-python = ">=3.7,<3.10"
+requires-python = ">=3.8,<3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "License :: OSI Approved :: MIT License",
@@ -30,7 +29,7 @@ dependencies = [
     "diskcache~=5.4",
     "fasteners~=0.17.3",
     "h5py~=3.6",
-    "importlib-metadata~=4.0",
+    "importlib-metadata>=4,<7",
     "ir-datasets~=0.4",
     "joblib~=1.0",
     "lz4~=4.0",

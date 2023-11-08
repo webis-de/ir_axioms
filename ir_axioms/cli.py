@@ -100,7 +100,6 @@ def preferences(cli_options: CliOptions, run_path: Path,
                 del run[col]
     else:
         raise ValueError(f"Unknown run format: {run_format}")
-    original_columns = set(run.columns)
 
     echo(f"Load axioms: {', '.join(axiom_names)}")
     axioms: Dict[str, Axiom] = {name: to_axiom(name) for name in axiom_names}
@@ -118,13 +117,9 @@ def preferences(cli_options: CliOptions, run_path: Path,
     all_preferences = pipeline.transform(run)
 
     output_path.mkdir(exist_ok=True)
-    output_path = output_path / ('preferences.jsonl' + ('.gz' if output_compress == 'gzip' else ''))
+    output_path = output_path / (
+        'preferences.jsonl' + ('.gz' if output_compress == 'gzip' else ''))
     echo(f"Save axiomatic preferences to: {output_path}")
-    shared_columns = set(all_preferences.columns) & original_columns
-    non_shared_columns = original_columns - shared_columns
-    select_columns = (shared_columns |
-                      {f"{col}_a" for col in non_shared_columns} |
-                      {f"{col}_b" for col in non_shared_columns})
 
     if output_minimal:
         for i in ['query', 'text_a', 'score_a', 'text_b', 'score_b']:
