@@ -40,8 +40,6 @@ jobs:
         path: dist
   docker-build:
     name: "🏗️ Docker image"
-    needs:
-    - build-wheel
     runs-on: ubuntu-latest
     steps:
     - name: "📥 Check-out"
