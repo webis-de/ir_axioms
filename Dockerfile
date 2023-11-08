@@ -34,4 +34,4 @@ RUN /venv/bin/python -c "from pyterrier import init; init(version='${TERRIER_VER
 
 ADD . .
 
-ENTRYPOINT ["/venv/bin/python", "-m", "ir_axioms", "--terrier-version", "${TERRIER_VERSION}", "--terrier-helper-version", "${TERRIER_HELPER_VERSION}", "--offline"]
+ENTRYPOINT ["/venv/bin/python", "-m", "ir_axioms", "--offline"]

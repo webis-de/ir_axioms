@@ -9,7 +9,6 @@ jobs:
     strategy:
       matrix:
         python:
-        - "3.7"
         - "3.8"
         - "3.9"
     runs-on: ubuntu-latest
@@ -39,7 +38,6 @@ jobs:
     strategy:
       matrix:
         python:
-        - "3.7"
         - "3.8"
         - "3.9"
     runs-on: ubuntu-latest
@@ -61,7 +59,6 @@ jobs:
     strategy:
       matrix:
         python:
-        - "3.7"
         - "3.8"
         - "3.9"
     runs-on: ubuntu-latest
@@ -78,12 +75,11 @@ jobs:
       run: pip install .[test]
     - name: "🔍 Lint Python code"
       run: pylint -E ir_axioms tests examples
-  python-test:
+  python-tests:
     name: "🧪 Test Python code"
     strategy:
       matrix:
         python:
-        - "3.7"
         - "3.8"
         - "3.9"
     runs-on: ubuntu-latest
@@ -104,7 +100,6 @@ jobs:
       uses: codecov/codecov-action@v3
       if: matrix.python == '3.9'
       with:
-        fail_ci_if_error: true
         token: ${{ secrets.CODECOV_TOKEN }}
   docker-build:
     name: "🏗️ Build Docker image"
@@ -123,12 +118,12 @@ jobs:
         push: false
   python-publish:
     name: "🚀 Publish Python wheels"
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags') && endsWith(github.event.base_ref, 'main')
     needs:
     - python-build
     - python-code-format
     - python-lint
-    - python-test
+    - python-tests
     - docker-build
     runs-on: ubuntu-latest
     permissions:
@@ -145,14 +140,14 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
   docker-publish:
     name: "🚀 Publish Docker image"
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags') && endsWith(github.event.base_ref, 'main')
     permissions:
       packages: write
     needs:
     - python-build
     - python-code-format
     - python-lint
-    - python-test
+    - python-tests
     - docker-build
     runs-on: ubuntu-latest
     steps:
@@ -189,12 +184,12 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
   github-release:
     name: "🚀 Create GitHub release"
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags') && endsWith(github.event.base_ref, 'main')
     needs:
     - python-build
     - python-code-format
     - python-lint
-    - python-test
+    - python-tests
     - docker-build
     runs-on: ubuntu-latest
     steps:

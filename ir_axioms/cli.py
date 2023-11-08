@@ -1,27 +1,16 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Sequence, Optional
-from typing_extensions import Literal
+from typing import Dict, Sequence, Optional
 
-from click import Context, Parameter, echo, group, option, Path as PathType, \
+from click import Context, echo, group, option, Path as PathType, \
     Choice, argument, pass_obj, pass_context
 from pandas import read_json, DataFrame
 from pyterrier import started, init, __version__ as pyterrier_version
 from pyterrier.io import read_results
+from typing_extensions import Literal
 
-from ir_axioms import __version__ as version, registry
+from ir_axioms import __version__ as ir_axioms_version, registry
 from ir_axioms.axiom import to_axiom, Axiom
-
-
-def print_version(
-        context: Context,
-        _parameter: Parameter,
-        value: Any,
-) -> None:
-    if not value or context.resilient_parsing:
-        return
-    echo(f"{version} (PyTerrier {pyterrier_version})")
-    context.exit()
 
 
 @dataclass(frozen=True)
@@ -32,11 +21,9 @@ class CliOptions:
 
 
 @group(help="Intuitive interface to many IR axioms.")
-@option("-V", "--version", is_flag=True, callback=print_version,
-        expose_value=False, is_eager=True)
-@option("--terrier-version", type=str)
-@option("--terrier-helper-version", type=str)
-@option("--offline/--online", default=False)
+@option("--terrier-version", type=str, envvar="TERRIER_VERSION")
+@option("--terrier-helper-version", type=str, envvar="TERRIER_HELPER_VERSION")
+@option("--offline/--online", default=False, envvar="IR_AXIOMS_OFFLINE")
 @pass_context
 def cli(context: Context, terrier_version: Optional[str],
         terrier_helper_version: Optional[str], offline: bool) -> None:
@@ -45,7 +32,18 @@ def cli(context: Context, terrier_version: Optional[str],
         terrier_helper_version=terrier_helper_version,
         offline=offline,
     )
-    pass
+
+
+@cli.command()
+@pass_obj
+def version(cli_options: CliOptions) -> None:
+    other_versions = [f"PyTerrier {pyterrier_version}"]
+    if cli_options.terrier_version is not None:
+        other_versions.append(f"Terrier {cli_options.terrier_version}")
+    if cli_options.terrier_helper_version is not None:
+        other_versions.append(f"Terrier Helper "
+                              f"{cli_options.terrier_helper_version}")
+    echo(f"{ir_axioms_version} ({', '.join(other_versions)})")
 
 @cli.command()
 def list_axioms() -> None:
@@ -71,11 +69,14 @@ def list_axioms() -> None:
                       dir_okay=True, readable=False, writable=True,
                       resolve_path=True, allow_dash=False),
         required=True)
+@option("--output-minimal", is_flag=True, default=True)
+@option("--output-compress", type=Choice(["gzip", None]), default="gzip")
 @argument("axiom", nargs=-1, required=True)
 @pass_obj
 def preferences(cli_options: CliOptions, run_path: Path,
                 run_format: Literal["trec", "letor", "jsonl"],
-                index_path: Path, output_path: Path, axiom: Sequence[str]
+                index_path: Path, output_path: Path, axiom: Sequence[str],
+                output_minimal: bool,  output_compress: Literal["gzip", None]
                 ) -> None:
     axiom_names = axiom
 
@@ -90,6 +91,8 @@ def preferences(cli_options: CliOptions, run_path: Path,
             no_download=cli_options.offline,
             tqdm="auto",
         )
+        import ir_axioms.utils.nltk
+        ir_axioms.utils.nltk.offline = cli_options.offline
 
     echo(f"Read run from: {run_path}")
     run: DataFrame
@@ -102,7 +105,6 @@ def preferences(cli_options: CliOptions, run_path: Path,
                 del run[col]
     else:
         raise ValueError(f"Unknown run format: {run_format}")
-    original_columns = set(run.columns)
 
     echo(f"Load axioms: {', '.join(axiom_names)}")
     axioms: Dict[str, Axiom] = {name: to_axiom(name) for name in axiom_names}
@@ -119,19 +121,15 @@ def preferences(cli_options: CliOptions, run_path: Path,
     echo("Compute axiomatic preferences.")
     all_preferences = pipeline.transform(run)
 
-    echo(f"Save axiomatic preferences to: {output_path}")
     output_path.mkdir(exist_ok=True)
-    shared_columns = set(all_preferences.columns) & original_columns
-    non_shared_columns = original_columns - shared_columns
-    select_columns = (shared_columns |
-                      {f"{col}_a" for col in non_shared_columns} |
-                      {f"{col}_b" for col in non_shared_columns})
-    for name, axiom in axioms.items():
-        axiom_column = f"{axiom}_preference"
-        axiom_columns = select_columns | {axiom_column}
-        preferences: DataFrame = all_preferences[list(axiom_columns)].copy()
-        preferences.rename(columns={axiom_column: "preference"}, inplace=True)
-        preferences.to_json(output_path / f"{name}.jsonl", orient="records",
-                            lines=True)
+    output_path = output_path / (
+        'preferences.jsonl' + ('.gz' if output_compress == 'gzip' else ''))
+    echo(f"Save axiomatic preferences to: {output_path}")
+
+    if output_minimal:
+        for i in ['query', 'text_a', 'score_a', 'text_b', 'score_b']:
+            del all_preferences[i]
+
+    all_preferences.to_json(output_path, orient="records", lines=True)
 
     echo("Done.")

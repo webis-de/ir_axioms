@@ -10,11 +10,10 @@ authors = [
 ]
 description = "Intuitive interface to many IR axioms."
 readme = "README.md"
-requires-python = ">=3.7,<3.10"
+requires-python = ">=3.8,<3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "License :: OSI Approved :: MIT License",
@@ -30,7 +29,7 @@ dependencies = [
     "diskcache~=5.4",
 #    "fasteners~=0.17.3",
 #    "h5py~=3.6",
-    "importlib-metadata~=4.0",
+    "importlib-metadata~=6.8",
     "ir-datasets~=0.4",
     "joblib~=1.0",
 #    "lz4~=4.0",
@@ -52,7 +51,7 @@ dynamic = ["version"]
 [project.optional-dependencies]
 test =[
     "faiss-cpu~=1.7",
-    "flake8~=5.0",
+    "flake8~=6.1",
     "pylint~=2.12",
     "pyserini~=0.21.0",
     "pytest~=7.2",
@@ -63,10 +62,10 @@ test =[
 examples =[
     "faiss-cpu~=1.7",
     "jupyter~=1.0",
-    "jupyterlab~=3.2",
+    "jupyterlab~=4.0",
     "lightgbm~=3.3",
     "pyserini~=0.21.0",
-    "python-terrier~=0.9.2",
+    "python-terrier~=0.10.0",
     "pyjnius~=1.4",
     "xgboost~=1.5",
 ]
