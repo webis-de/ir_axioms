@@ -1,10 +1,11 @@
 from dataclasses import dataclass
-from functools import cached_property, lru_cache
+from functools import lru_cache
 from logging import warning
 from pathlib import Path
 from re import split
 from typing import Optional, Union, Callable, NamedTuple, Sequence
 
+from cached_property import cached_property
 from ir_datasets import Dataset, load
 from ir_datasets.indices import Docstore
 
@@ -18,6 +19,7 @@ from ir_axioms.backend.pyterrier.util import (
     ScoredDocList, ScoredDoc, RequestContextMatching, MetaIndex, IndexRef,
     Tokeniser, IndexFactory, ApplicationSetup, StringReader
 )
+from ir_axioms.backend.pyterrier.safe import IRDSDataset
 from ir_axioms.model import Query, Document, TextDocument, IndexContext
 from ir_axioms.model.retrieval_model import (
     RetrievalModel, Tf, TfIdf, BM25, PL2, DirichletLM
@@ -64,8 +66,8 @@ ContentsAccessor = Union[str, Callable[[NamedTuple], str]]
 
 @dataclass(frozen=True)
 class TerrierIndexContext(IndexContext):
-    index_location: Union[Path, IndexRef, Index]
-    dataset: Optional[Union[Dataset, str]] = None
+    index_location: Union[Index, IndexRef, Path, str]
+    dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None
@@ -75,6 +77,8 @@ class TerrierIndexContext(IndexContext):
         if isinstance(self.index_location, Index):
             return self.index_location
         elif isinstance(self.index_location, IndexRef):
+            return IndexFactory.of(self.index_location)
+        elif isinstance(self.index_location, str):
             return IndexFactory.of(self.index_location)
         elif isinstance(self.index_location, Path):
             return IndexFactory.of(str(self.index_location.absolute()))
@@ -112,6 +116,8 @@ class TerrierIndexContext(IndexContext):
             return self.dataset
         elif isinstance(self.dataset, str):
             return load(self.dataset)
+        elif isinstance(self.dataset, IRDSDataset):
+            return self.dataset.irds_ref()
         else:
             raise ValueError(f"Cannot load dataset {self.dataset}.")
 

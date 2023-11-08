@@ -1,10 +1,12 @@
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
-from functools import cached_property
 from itertools import product, compress
 from logging import DEBUG
 from pathlib import Path
-from typing import Union, Optional, Set, Sequence, final, Callable
+from typing import Union, Optional, Set, Sequence, Callable
+
+from cached_property import cached_property
+from typing_extensions import final
 
 from ir_datasets import Dataset
 from numpy import apply_along_axis, stack, ndarray, array
@@ -16,7 +18,7 @@ from ir_axioms import logger
 from ir_axioms.axiom import AxiomLike, to_axiom, to_axioms
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.backend.pyterrier import TerrierIndexContext, ContentsAccessor
-from ir_axioms.backend.pyterrier.safe import TransformerBase
+from ir_axioms.backend.pyterrier.safe import TransformerBase, IRDSDataset
 from ir_axioms.backend.pyterrier.transformer_utils import (
     require_columns, load_documents
 )
@@ -66,8 +68,8 @@ class PerGroupTransformer(TransformerBase, ABC):
 
 
 class AxiomTransformer(PerGroupTransformer, ABC):
-    index: Union[Path, IndexRef, Index]
-    dataset: Optional[Union[Dataset, str]] = None
+    index: Union[Index, IndexRef, Path, str]
+    dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None
@@ -122,10 +124,10 @@ class KwikSortReranker(AxiomTransformer):
     description = "Reranking query axiomatically"
 
     axiom: AxiomLike
-    index: Union[Path, IndexRef, Index]
-    dataset: Optional[Union[Dataset, str]] = None
+    index: Union[Index, IndexRef, Path, str]
+    dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
-    pivot_selection: PivotSelection = RandomPivotSelection(),
+    pivot_selection: PivotSelection = RandomPivotSelection()
     tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None
     verbose: bool = False
@@ -168,9 +170,9 @@ class AggregatedAxiomaticPreferences(AxiomTransformer):
     description = "Aggregating query axiom preferences"
 
     axioms: Sequence[AxiomLike]
-    index: Union[Path, IndexRef, Index]
+    index: Union[Index, IndexRef, Path, str]
     aggregations: Sequence[Callable[[Sequence[float]], float]]
-    dataset: Optional[Union[Dataset, str]] = None
+    dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     filter_pairs: Optional[Callable[
         [RankedDocument, RankedDocument],
@@ -231,9 +233,9 @@ class AxiomaticPreferences(AxiomTransformer):
     description = "Computing query axiom preferences"
 
     axioms: Sequence[AxiomLike]
-    index: Union[Path, IndexRef, Index]
+    index: Union[Index, IndexRef, Path, str]
     axiom_names: Optional[Sequence[str]] = None
-    dataset: Optional[Union[Dataset, str]] = None
+    dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     filter_pairs: Optional[Callable[
         [RankedDocument, RankedDocument],

@@ -1,19 +1,24 @@
 from dataclasses import dataclass
-from functools import cached_property, reduce
+from functools import reduce
 from math import nan
 from operator import or_
 from pathlib import Path
 from typing import Sequence, Optional, Union, Callable
+from typing_extensions import Literal
 
+from cached_property import cached_property
 from ir_datasets import Dataset
 from pandas import DataFrame, concat
 from tqdm.auto import tqdm
 
-from ir_axioms.axiom import Axiom, OriginalAxiom, OracleAxiom
+from ir_axioms.axiom import (
+    Axiom, OriginalAxiom, OracleAxiom, AxiomLike, to_axioms
+)
 from ir_axioms.backend.pyterrier import ContentsAccessor
-from ir_axioms.backend.pyterrier.safe import Transformer
+from ir_axioms.backend.pyterrier.safe import Transformer, IRDSDataset
 from ir_axioms.backend.pyterrier.transformer_utils import (
-    FilterTopicsTransformer, FilterQrelsTransformer, JoinQrelsTransformer
+    FilterTopicsTransformer, FilterQrelsTransformer, JoinQrelsTransformer,
+    AddNameTransformer
 )
 from ir_axioms.backend.pyterrier.transformers import AxiomaticPreferences
 from ir_axioms.backend.pyterrier.util import IndexRef, Index, Tokeniser
@@ -25,8 +30,9 @@ class AxiomaticExperiment:
     retrieval_systems: Sequence[Transformer]
     topics: DataFrame
     qrels: DataFrame
-    index: Union[Path, IndexRef, Index]
-    axioms: Sequence[Axiom]
+    index: Union[Index, IndexRef, Path, str]
+    axioms: Sequence[AxiomLike]
+    names: Optional[Sequence[str]] = None
     axiom_names: Optional[Sequence[str]] = None
     depth: Optional[int] = 10
     filter_by_qrels: bool = True
@@ -35,65 +41,81 @@ class AxiomaticExperiment:
         [JudgedRankedDocument, JudgedRankedDocument],
         bool
     ]] = None
-    dataset: Optional[Union[Dataset, str]] = None
+    dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None
+    parallel_jobs: int = 1
+    parallel_backend: Literal["joblib", "ray"] = "joblib"
     verbose: bool = False
 
     @cached_property
-    def _axioms(self) -> Sequence[Axiom]:
+    def _all_axioms(self) -> Sequence[Axiom]:
         return [
             OriginalAxiom(),
             OracleAxiom(),
-            *self.axioms,
+            *to_axioms(self.axioms),
         ]
 
     @cached_property
     def _axiom_names(self) -> Sequence[str]:
         names: Sequence[str]
-        if (
-                self.axiom_names is not None and
-                len(self.axiom_names) == len(self.axioms)
-        ):
+        if self.axiom_names is not None:
+            assert len(self.axiom_names) == len(self.axioms)
             names = self.axiom_names
         else:
-            names = [str(axiom) for axiom in self.axioms]
+            names = [
+                axiom.name if (
+                        hasattr(axiom, "name") and
+                        axiom.name is not NotImplemented
+                ) else str(axiom)
+                for axiom in self.axioms
+            ]
+        return names
+
+    @cached_property
+    def _all_axiom_names(self) -> Sequence[str]:
         return [
             OriginalAxiom.name,
             OracleAxiom.name,
-            *names,
+            *self._axiom_names,
         ]
 
     @cached_property
-    def _filter_topics(self) -> Transformer:
-        return FilterTopicsTransformer(self.topics)
+    def _retrieval_system_names(self) -> Sequence[str]:
+        names: Sequence[str]
+        if self.names is not None:
+            assert len(self.names) == len(self.retrieval_systems)
+            names = self.names
+        else:
+            names = [str(system) for system in self.retrieval_systems]
+        return names
 
-    @cached_property
-    def _filter_qrels(self) -> Transformer:
-        return FilterQrelsTransformer(self.qrels)
-
-    @cached_property
-    def _join_qrels(self) -> Transformer:
-        return JoinQrelsTransformer(self.qrels)
-
-    def _pipeline(self, system: Transformer) -> Transformer:
+    def _preferences_pipeline(
+            self,
+            system: Transformer,
+            name: str,
+    ) -> Transformer:
+        # Load original retrieval system.
         pipeline = system
+        # Cutoff at rank k
         if self.depth is not None:
             # noinspection PyTypeChecker
             pipeline = pipeline % self.depth
+        # Remove results with unknown topics.
         if self.filter_by_topics:
-            pipeline = pipeline >> self._filter_topics
+            pipeline = pipeline >> FilterTopicsTransformer(self.topics)
+        # Remove results without judgments.
         if self.filter_by_qrels:
-            pipeline = pipeline >> self._filter_qrels
-        pipeline = pipeline >> self._join_qrels
-        return pipeline
-
-    @cached_property
-    def _preferences_transformer(self) -> Transformer:
-        return AxiomaticPreferences(
-            axioms=self._axioms,
-            axiom_names=self._axiom_names,
+            pipeline = pipeline >> FilterQrelsTransformer(self.qrels)
+        # Add relevance labels.
+        pipeline = pipeline >> JoinQrelsTransformer(self.qrels)
+        # Add system name.
+        pipeline = pipeline >> AddNameTransformer(name)
+        # Compute preferences
+        pipeline = pipeline >> AxiomaticPreferences(
+            axioms=self._all_axioms,
+            axiom_names=self._all_axiom_names,
             index=self.index,
             dataset=self.dataset,
             contents_accessor=self.contents_accessor,
@@ -102,10 +124,12 @@ class AxiomaticExperiment:
             cache_dir=self.cache_dir,
             verbose=self.verbose,
         )
-
-    def _preferences_pipeline(self, system: Transformer) -> Transformer:
-        pipeline = self._pipeline(system)
-        pipeline = pipeline >> self._preferences_transformer
+        # Parallelize computation.
+        if self.parallel_jobs != 1:
+            pipeline = pipeline.parallel(
+                self.parallel_jobs,
+                self.parallel_backend,
+            )
         return pipeline
 
     @cached_property
@@ -115,7 +139,7 @@ class AxiomaticExperiment:
         document pair, query and retrieval system.
 
         The returned dataframe has the following columns:
-        - name: Retrieval system name
+        - name: Retrieval system name (if found in source)
         - qid: Query ID
         - query: Query text
         - docno_a: Document A ID
@@ -131,10 +155,11 @@ class AxiomaticExperiment:
         - <axiom>_preference: Preference from each axiom <axiom>
         """
         systems = self.retrieval_systems
+        names = self._retrieval_system_names
         # noinspection PyTypeChecker
         pipelines = [
-            self._preferences_pipeline(system)
-            for system in systems
+            self._preferences_pipeline(system, name)
+            for system, name in zip(systems, names)
         ]
         if self.verbose:
             pipelines = tqdm(
@@ -177,18 +202,43 @@ class AxiomaticExperiment:
                     pref[pref[f"{axiom_name}_preference"] < 0]
                 ),
             }
-            for axiom_name in self.axiom_names
+            for axiom_name in self._all_axiom_names
         ]
         return DataFrame(distributions)
 
-    @staticmethod
-    def _consistency(reference: DataFrame, axiom_name: str) -> float:
-        non_zero = len(reference[reference[f"{axiom_name}_preference"] != 0])
-        consistent = len(reference[reference[f"{axiom_name}_preference"] > 0])
-        if non_zero == 0:
+    def _oracle_consistency(
+            self,
+            axiom_name: str,
+    ) -> float:
+        preferences = self.preferences.copy()
+        # Non-zero axiom preferences.
+        preferences = preferences[preferences[f"{axiom_name}_preference"] > 0]
+        if len(preferences) == 0:
+            # Can't compute consistency if we compare against an empty set.
             return nan
-        else:
-            return consistent / non_zero
+        # Preferences are 'consistent' in the following cases:
+        # > (same as axiom) and == (order doesn't matter)
+        consistent = preferences[preferences["ORACLE_preference"] >= 0]
+        return len(consistent) / len(preferences)
+
+    def _orig_consistency(
+            self,
+            axiom_name: str,
+            system: Optional[str] = None,
+    ) -> float:
+        preferences = self.preferences.copy()
+        # Non-zero axiom preferences.
+        preferences = preferences[preferences[f"{axiom_name}_preference"] > 0]
+        # Only preferences of a specific system.
+        if system is not None:
+            preferences = preferences[preferences["name"] == system]
+        # Preferences are 'consistent' in the following cases:
+        # > (same as axiom) and == (order doesn't matter)
+        consistent = preferences[preferences["ORIG_preference"] >= 0]
+        if len(preferences) == 0:
+            # Can't compute consistency if we compare against an empty set.
+            return nan
+        return len(consistent) / len(preferences)
 
     @cached_property
     def preference_consistency(self) -> DataFrame:
@@ -203,24 +253,30 @@ class AxiomaticExperiment:
             with ORIG preferences.
         - ORACLE_consistency: Relative consistency of non-zero preferences
             with ORACLE preferences.
+        - <system>_consistency: Relative consistency of non-zero preferences
+            with ORIG preferences from system <system> (if found in source)
         """
 
-        pref = self.preferences.copy()
-        pref_orig = pref[pref["ORIG_preference"] > 0]
-        pref_oracle = pref[pref["ORACLE_preference"] > 0]
+        if "name" in self.preferences.columns:
+            systems = self.preferences["name"].unique().tolist()
+        else:
+            systems = []
         distributions = [
             {
-                "axiom": axiom_name,
-                "ORIG_consistency": self._consistency(
-                    pref_orig,
-                    axiom_name,
-                ),
-                "ORACLE_consistency": self._consistency(
-                    pref_oracle,
-                    axiom_name,
-                ),
+                **{
+                    "axiom": axiom_name,
+                    "ORIG_consistency": self._orig_consistency(axiom_name),
+                    "ORACLE_consistency": self._oracle_consistency(axiom_name),
+                },
+                **{
+                    f"{system}_consistency": self._orig_consistency(
+                        axiom_name=axiom_name,
+                        system=system
+                    )
+                    for system in systems
+                }
             }
-            for axiom_name in self.axiom_names
+            for axiom_name in self._all_axiom_names
         ]
         return DataFrame(distributions)
 
@@ -236,7 +292,7 @@ class AxiomaticExperiment:
         # Preferences that have at least one correct axiom preference.
         axiom_hint = [
             pref[f"{axiom_name}_preference"] > 0
-            for axiom_name in self.axiom_names
+            for axiom_name in self._all_axiom_names
         ]
         axiom_hinted = reduce(or_, axiom_hint)
         pref = pref[axiom_hinted]

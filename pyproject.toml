@@ -1,9 +1,101 @@
+[project]
+name = "ir_axioms"
+authors = [
+    {name = "Alexander Bondarenko", email = "alexander.bondarenko@uni-jena.de"},
+    {name = "Maik Fröbe", email = "maik.froebe@uni-jena.de"},
+    {name = "Jan Heinrich Reimer", email = "heinrich.reimer@uni-jena.de"},
+    {name = "Benno Stein", email = "benno.stein@uni-weimar.de"},
+    {name = "Michael Völske", email = "michael.voelske@uni-weimar.de"},
+    {name = "Matthias Hagen", email = "matthias.hagen@uni-jena.de"},
+]
+description = "Intuitive interface to many IR axioms."
+readme = "README.md"
+requires-python = ">=3.8,<3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "annoy~=1.17",
+    "cached-property~=1.5",
+    "class-registry~=2.1",
+    "click~=8.1",
+    "diskcache~=5.4",
+    "fasteners~=0.17.3",
+    "h5py~=3.6",
+    "importlib-metadata>=4,<7",
+    "ir-datasets~=0.4",
+    "joblib~=1.0",
+    "lz4~=4.0",
+    "nltk~=3.6",
+    "numpy~=1.21",
+    "pandas~=1.3",
+    "pymagnitude~=0.1.143",
+    "requests~=2.26",
+    "scikit-learn~=1.0",
+    "targer-api~=1.0",
+    "torch~=1.10",
+    "tqdm~=4.8",
+    "trectools~=0.0.44",
+    "typing-extensions~=4.0",
+    "xxhash~=3.0",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+test =[
+    "flake8~=6.1",
+    "pylint~=2.12",
+    "pytest~=7.2",
+    "pytest-cov~=4.0",
+]
+examples =[
+    "jupyter~=1.0",
+    "jupyterlab~=4.0",
+    "lightgbm~=3.3",
+    "xgboost~=2.0",
+]
+pyserini =[
+    "pyserini~=0.14.0",
+    "pyjnius~=1.4",
+    "faiss-cpu~=1.7",
+]
+pyterrier =[
+    "python-terrier~=0.10.0",
+    "pyjnius~=1.4",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/webis-de/ir_axioms"
+"Bug Tracker" = "https://github.com/webis-de/ir_axioms/issues"
+
+[project.scripts]
+ir_axioms = "ir_axioms:__main__"
+
 [build-system]
-requires = ["setuptools>=50", "wheel"]
+requires = ["setuptools>=50", "setuptools_scm[toml]>=6.2", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["ir_axioms"]
+namespaces = false
+
+[tool.setuptools.package-data]
+mypkg = ["*.txt", "*.md", "*.rst"]
 
 [tool.pytest.ini_options]
 log_cli = "True"
 filterwarnings = [
     'ignore::DeprecationWarning',
 ]
+
+[tool.setuptools_scm]

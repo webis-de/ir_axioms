@@ -16,6 +16,7 @@ AverageSentenceLengthAxiom = argumentative.AverageSentenceLengthAxiom
 ArgUC = argumentative.ArgUC
 QTArg = argumentative.QTArg
 QTPArg = argumentative.QTPArg
+aSLDoc = argumentative.aSLDoc
 aSL = argumentative.aSL
 
 UniformAxiom = arithmetic.UniformAxiom
@@ -24,6 +25,7 @@ ProductAxiom = arithmetic.ProductAxiom
 MultiplicativeInverseAxiom = arithmetic.MultiplicativeInverseAxiom
 AndAxiom = arithmetic.AndAxiom
 VoteAxiom = arithmetic.VoteAxiom
+MajorityVoteAxiom = arithmetic.MajorityVoteAxiom
 NormalizedAxiom = arithmetic.NormalizedAxiom
 
 Axiom = base.Axiom

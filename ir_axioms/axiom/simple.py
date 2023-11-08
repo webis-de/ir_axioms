@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from functools import cached_property
 from random import Random
 from typing import Any, Optional
+
+from cached_property import cached_property
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_less, strictly_greater

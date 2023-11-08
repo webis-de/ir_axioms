@@ -1,10 +1,11 @@
 from dataclasses import dataclass
-from functools import cached_property, lru_cache
+from functools import lru_cache
 from json import loads
 from logging import warning
 from pathlib import Path
 from typing import Optional, Union, Callable, NamedTuple, Sequence
 
+from cached_property import cached_property
 from ir_datasets import load, Dataset
 from ir_datasets.indices import Docstore
 
@@ -47,8 +48,8 @@ def _similarity(model: RetrievalModel) -> Similarity:
 
 
 @dataclass(frozen=True)
-class PyseriniIndexContext(IndexContext):
-    index_dir: Path
+class AnseriniIndexContext(IndexContext):
+    index_dir: Union[Path, str]
     dataset: Optional[Union[Dataset, str]] = None
     contents_accessor: Optional[Union[
         str,
@@ -58,7 +59,14 @@ class PyseriniIndexContext(IndexContext):
 
     @cached_property
     def _index_reader(self) -> IndexReader:
-        return IndexReader(str(self.index_dir.absolute()))
+        if isinstance(self.index_dir, Path):
+            return IndexReader(str(self.index_dir.absolute()))
+        elif isinstance(self.index_dir, str):
+            return IndexReader(self.index_dir)
+        else:
+            raise ValueError(
+                f"Cannot load index from location {self.index_dir}."
+            )
 
     @cached_property
     def _dataset(self) -> Optional[Dataset]:
@@ -82,7 +90,14 @@ class PyseriniIndexContext(IndexContext):
 
     @cached_property
     def _searcher(self) -> SimpleSearcher:
-        return SimpleSearcher(str(self.index_dir.absolute()))
+        if isinstance(self.index_dir, Path):
+            return SimpleSearcher(str(self.index_dir.absolute()))
+        elif isinstance(self.index_dir, str):
+            return SimpleSearcher(self.index_dir)
+        else:
+            raise ValueError(
+                f"Cannot load index from location {self.index_dir}."
+            )
 
     @lru_cache(None)
     def document_contents(self, document: Document) -> str:
