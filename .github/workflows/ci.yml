@@ -4,16 +4,14 @@ on:
   push:
 
 jobs:
-  build-wheel:
+  python-wheel:
     name: "🏗️ Python wheel"
     strategy:
       matrix:
-        os:
-        - ubuntu-latest
         python:
         - "3.8"
         - "3.9"
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
     - name: "📥 Check-out"
       uses: actions/checkout@v3
@@ -40,7 +38,7 @@ jobs:
       with:
         name: wheel
         path: dist
-  build-image:
+  docker-build:
     name: "🏗️ Docker image"
     needs:
     - build-wheel
@@ -57,18 +55,14 @@ jobs:
       with:
         context: .
         push: false
-  code-format:
+  python-code-format:
     name: "🔍 Python code format"
-    needs:
-    - build-wheel
     strategy:
       matrix:
-        os:
-        - ubuntu-latest
         python:
         - "3.8"
         - "3.9"
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
     - name: "📥 Check-out"
       uses: actions/checkout@v3
@@ -85,18 +79,14 @@ jobs:
         pip install .[test]
     - name: "🔍 Check Python code format"
       run: flake8 ir_axioms/ tests/
-  lint:
+  python-lint:
     name: "🔍 Python Lint"
-    needs:
-    - build-wheel
     strategy:
       matrix:
-        os:
-        - ubuntu-latest
         python:
         - "3.8"
         - "3.9"
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
     - name: "📥 Check-out"
       uses: actions/checkout@v3
@@ -113,21 +103,17 @@ jobs:
         pip install .[test]
     - name: "🔍 Lint Python code"
       run: pylint -E ir_axioms tests.unit --ignore-paths="^ir_axioms.backend|^ir_axioms.cli"
-  lint-backend:
+  python-lint-backend:
     name: "🔍 Python Lint backend"
-    needs:
-    - build-wheel
     strategy:
       matrix:
-        os:
-        - ubuntu-latest
         python:
         - "3.8"
         - "3.9"
         backend:
         - pyserini
         - pyterrier
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
     - name: "📥 Check-out"
       uses: actions/checkout@v3
@@ -150,18 +136,14 @@ jobs:
         java-version: 11
     - name: "🔍 Lint Python code"
       run: pylint -E ir_axioms.backend.${{ matrix.backend }} tests.integration.${{ matrix.backend }} ${{ matrix.backend == 'pyterrier' && 'ir_axioms.cli' || '' }}
-  unit-tests:
+  python-unit-tests:
     name: "🧪 Python unit tests"
-    needs:
-    - build-wheel
     strategy:
       matrix:
-        os:
-        - ubuntu-latest
         python:
         - "3.8"
         - "3.9"
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
     - name: "📥 Check-out"
       uses: actions/checkout@v3
@@ -184,21 +166,17 @@ jobs:
       with:
         fail_ci_if_error: true
         token: ${{ secrets.CODECOV_TOKEN }}
-  integration-tests:
+  python-integration-tests:
     name: "🧪 Python integration tests"
-    needs:
-    - build-wheel
     strategy:
       matrix:
-        os:
-        - ubuntu-latest
         python:
         - "3.8"
         - "3.9"
         backend:
         - pyserini
         - pyterrier
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
     - name: "📥 Check-out"
       uses: actions/checkout@v3
@@ -229,15 +207,15 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
   publish-package:
     name: "🚀 Publish Python wheels"
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags') && endsWith(github.event.base_ref, 'main')
     needs:
-    - build-wheel
-    - build-image
-    - code-format
-    - lint
-    - lint-backend
-    - unit-tests
-    - integration-tests
+    - python-wheel
+    - docker-build
+    - python-code-format
+    - python-lint
+    - python-lint-backend
+    - python-unit-tests
+    - python-integration-tests
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -254,19 +232,19 @@ jobs:
       working-directory: dist
     - name: "🚀 Publish Python wheels"
       uses: pypa/gh-action-pypi-publish@release/v1
-  push-image:
+  docker-push:
     name: "🚀 Publish Docker image"
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags') && endsWith(github.event.base_ref, 'main')
     permissions:
       packages: write
     needs:
-    - build-wheel
-    - build-image
-    - code-format
-    - lint
-    - lint-backend
-    - unit-tests
-    - integration-tests
+    - python-wheel
+    - docker-build
+    - python-code-format
+    - python-lint
+    - python-lint-backend
+    - python-unit-tests
+    - python-integration-tests
     runs-on: ubuntu-latest
     steps:
     - name: "📥 Check-out"
@@ -302,15 +280,15 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
   github-release:
     name: "🚀 Create GitHub release"
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags') && endsWith(github.event.base_ref, 'main')
     needs:
-    - build-wheel
-    - build-image
-    - code-format
-    - lint
-    - lint-backend
-    - unit-tests
-    - integration-tests
+    - python-wheel
+    - docker-build
+    - python-code-format
+    - python-lint
+    - python-lint-backend
+    - python-unit-tests
+    - python-integration-tests
     runs-on: ubuntu-latest
     steps:
     - name: "📥 Check-out"
