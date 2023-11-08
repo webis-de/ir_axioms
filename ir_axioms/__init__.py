@@ -1,11 +1,12 @@
 from logging import basicConfig, Logger, getLogger
 
 from class_registry import SortedClassRegistry
+from importlib_metadata import version
 
-__version__ = "0.1.1"
+__version__ = version("ir_axioms")
 
 basicConfig()
-logger: Logger = getLogger(__name__)
+logger: Logger = getLogger("ir_axioms")
 
 registry = SortedClassRegistry(
     unique=True,

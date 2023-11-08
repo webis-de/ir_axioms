@@ -130,3 +130,16 @@ class JoinQrelsTransformer(TransformerBase):
             on=["qid", "docno"],
             how="left"
         )
+
+
+@dataclass(frozen=True)
+class AddNameTransformer(TransformerBase):
+    """
+    Add a colum containing the system's name.
+    """
+
+    system_name: str
+
+    def transform(self, res: DataFrame) -> DataFrame:
+        res["name"] = self.system_name
+        return res

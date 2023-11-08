@@ -1,9 +1,10 @@
 from abc import abstractmethod, ABC
-from functools import lru_cache, cached_property
+from functools import lru_cache
 from math import log
 from pathlib import Path
 from typing import Optional, Union, FrozenSet, Sequence
 
+from cached_property import cached_property
 from diskcache import Cache
 
 from ir_axioms.model.base import Query, Document

@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from math import isclose, prod, ceil
+from functools import reduce
+from math import isclose, ceil
+from operator import mul
 from typing import Iterable, Union
 
 from ir_axioms.axiom.base import Axiom
@@ -54,9 +56,13 @@ class ProductAxiom(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ) -> float:
-        return prod(
-            axiom.preference(context, query, document1, document2)
-            for axiom in self.axioms
+        return reduce(
+            mul,
+            (
+                axiom.preference(context, query, document1, document2)
+                for axiom in self.axioms
+            ),
+            1
         )
 
     def __mul__(self, other: Union[Axiom, float, int]) -> Axiom:
@@ -146,7 +152,7 @@ class VoteAxiom(Axiom):
         count: int = len(axioms)
 
         # Minimum (absolute) number of votes to reach a majority.
-        minimum_count: int = ceil(self.minimum_votes * count)
+        minimum_votes: int = ceil(self.minimum_votes * count)
 
         # Number of observed positive votes.
         positive_votes: int = 0
@@ -166,12 +172,12 @@ class VoteAxiom(Axiom):
 
         if (
                 positive_votes > negative_votes and
-                positive_votes >= self.minimum_votes
+                positive_votes >= minimum_votes
         ):
             return 1
         elif (
                 negative_votes > positive_votes and
-                negative_votes >= self.minimum_votes
+                negative_votes >= minimum_votes
         ):
             return -1
         else:
@@ -185,6 +191,9 @@ class VoteAxiom(Axiom):
             return VoteAxiom([*self.axioms, other])
         else:
             return super().__mod__(other)
+
+
+MajorityVoteAxiom = VoteAxiom
 
 
 @dataclass(frozen=True)

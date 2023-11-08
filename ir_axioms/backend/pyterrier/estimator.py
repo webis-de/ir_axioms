@@ -1,11 +1,10 @@
 from dataclasses import dataclass
-from functools import cached_property
 from pathlib import Path
 from typing import Sequence, Union, Optional, Callable
 
+from cached_property import cached_property
 from ir_datasets import Dataset
 from pandas import DataFrame
-from pyterrier.transformer import EstimatorBase
 
 from ir_axioms.axiom import Axiom, AxiomLike, EstimatorAxiom, to_axioms
 from ir_axioms.axiom.estimator import (
@@ -14,7 +13,9 @@ from ir_axioms.axiom.estimator import (
 from ir_axioms.backend.pyterrier import (
     IndexRef, Index, ContentsAccessor, Tokeniser, TerrierIndexContext
 )
-from ir_axioms.backend.pyterrier.safe import Transformer
+from ir_axioms.backend.pyterrier.safe import (
+    Transformer, EstimatorBase, IRDSDataset
+)
 from ir_axioms.backend.pyterrier.transformer_utils import (
     require_columns, load_documents, load_queries
 )
@@ -30,10 +31,10 @@ class EstimatorKwikSortReranker(EstimatorBase):
 
     axioms: Sequence[AxiomLike]
     estimator: ScikitEstimatorType
-    index: Union[Path, IndexRef, Index]
-    dataset: Optional[Union[Dataset, str]] = None
+    index: Union[Index, IndexRef, Path, str]
+    dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
-    pivot_selection: PivotSelection = RandomPivotSelection(),
+    pivot_selection: PivotSelection = RandomPivotSelection()
     filter_pairs: Optional[Callable[
         [JudgedRankedDocument, JudgedRankedDocument],
         bool

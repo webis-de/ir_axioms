@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 from inspect import isabstract
 from math import nan
-from typing import final, Union, Callable, Sequence, Optional
+from typing import Union, Callable, Sequence, Optional
 
+from joblib import delayed, Parallel
 from numpy import ndarray, array, stack
+from typing_extensions import final
 
 from ir_axioms import registry
 from ir_axioms.model import Query, RankedDocument, IndexContext
@@ -222,6 +224,62 @@ class Axiom(ABC):
         ranking = reset_score(ranking)
         return ranking
 
+    def _filtered_preference(
+            self,
+            context: IndexContext,
+            query: Query,
+            document1: RankedDocument,
+            document2: RankedDocument,
+            filter_pairs: Optional[Callable[
+                [RankedDocument, RankedDocument],
+                bool
+            ]]
+    ) -> float:
+        """
+        Return the axiom's preference if there is no filter or
+        the filter matches the pair.
+        """
+        if filter_pairs is None or filter_pairs(document1, document2):
+            return self.preference(context, query, document1, document2)
+        else:
+            return nan
+
+    def _parallel_preference_matrix(
+            self,
+            n_jobs: int,
+            context: IndexContext,
+            query: Query,
+            ranking: Sequence[RankedDocument],
+            filter_pairs: Optional[Callable[
+                [RankedDocument, RankedDocument],
+                bool
+            ]] = None
+    ) -> ndarray:
+        @delayed
+        def document_preference(
+                document1: RankedDocument,
+                document2: RankedDocument
+        ) -> float:
+            return self._filtered_preference(
+                context,
+                query,
+                document1,
+                document2,
+                filter_pairs,
+            )
+
+        with Parallel(n_jobs=n_jobs) as parallel:
+            preferences: Sequence[float] = parallel(
+                document_preference(document1, document2)
+                for document1 in ranking
+                for document2 in ranking
+            )
+
+        return array(preferences).reshape(
+            len(ranking),
+            len(ranking)
+        )
+
     @final
     def preference_matrix(
             self,
@@ -232,7 +290,16 @@ class Axiom(ABC):
                 [RankedDocument, RankedDocument],
                 bool
             ]] = None,
+            parallel_jobs: int = 1,
     ) -> ndarray:
+        if parallel_jobs != 1:
+            return self._parallel_preference_matrix(
+                parallel_jobs,
+                context,
+                query,
+                ranking,
+                filter_pairs
+            )
         return stack(tuple(
             array(tuple(
                 self.preference(context, query, document1, document2)

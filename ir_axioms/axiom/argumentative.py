@@ -13,6 +13,7 @@ from targer_api.constants import DEFAULT_TARGER_MODELS, DEFAULT_TARGER_API_URL
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.preconditions import LEN_Mixin
+from ir_axioms.axiom.utils import strictly_greater, strictly_less
 from ir_axioms.model import Query, RankedDocument, IndexContext
 from ir_axioms.utils.nltk import download_nltk_dependencies
 
@@ -207,12 +208,7 @@ class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom):
             for _, sentences in arguments2.items()
         )
 
-        if count1 > count2:
-            return 1
-        elif count1 < count2:
-            return -1
-        else:
-            return 0
+        return strictly_greater(count1, count2)
 
 
 @dataclass(frozen=True)
@@ -255,12 +251,7 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
             for _, sentences in arguments2.items()
         )
 
-        if count1 > count2:
-            return 1
-        elif count1 < count2:
-            return -1
-        else:
-            return 0
+        return strictly_greater(count1, count2)
 
 
 @dataclass(frozen=True)
@@ -342,12 +333,7 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
             for _, sentences in arguments2.items()
         )
 
-        if position1 < position2:
-            return 1
-        elif position1 > position2:
-            return -1
-        else:
-            return 0
+        return strictly_less(position1, position2)
 
 
 @dataclass(frozen=True)
@@ -394,6 +380,11 @@ class AverageSentenceLengthAxiom(Axiom):
             return -1
         else:
             return 0
+
+
+@dataclass(frozen=True)
+class aSLDoc(LEN_Mixin, AverageSentenceLengthAxiom):
+    name = "aSLDoc"
 
 
 @dataclass(frozen=True)
