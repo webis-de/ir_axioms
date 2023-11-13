@@ -62,7 +62,7 @@ examples =[
     "xgboost~=2.0",
 ]
 pyserini =[
-    "pyserini~=0.14.0",
+    "pyserini~=0.22",
     "pyjnius~=1.4",
     "faiss-cpu~=1.7",
 ]
