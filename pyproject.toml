@@ -58,7 +58,7 @@ test =[
 examples =[
     "jupyter~=1.0",
     "jupyterlab~=4.0",
-    "lightgbm~=3.3",
+    "lightgbm>=3.3,<5.0",
     "xgboost~=2.0",
 ]
 pyserini =[
