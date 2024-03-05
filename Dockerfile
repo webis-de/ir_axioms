@@ -1,32 +1,29 @@
-FROM ubuntu:22.04
+FROM openjdk:11-slim as openjdk-11
 
-ENV DEBIAN_FRONTEND=noninteractive
-RUN \
-    --mount=type=cache,target=/var/cache/apt \
+FROM python:3.9-slim as python
+
+COPY --from=openjdk-11 /usr/local/openjdk-11 /usr/local/openjdk
+ENV JAVA_HOME /usr/local/openjdk
+RUN update-alternatives --install /usr/bin/java java /usr/local/openjdk/bin/java 1
+
+RUN --mount=type=cache,target=/var/cache/apt \
     apt-get update -y && \
-    apt-get upgrade -y
-RUN \
-    --mount=type=cache,target=/var/cache/apt \
-    apt-get install -y software-properties-common && \
-    add-apt-repository -y ppa:deadsnakes/ppa
-RUN \
-    --mount=type=cache,target=/var/cache/apt \
-    apt-get install -y python3.9 python3.9-dev python3.9-venv python3-pip python-is-python3 openjdk-11-jdk git
+    apt-get install -y git
 
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
-
-RUN \
-    --mount=type=cache,target=/root/.cache/pip \
+RUN --mount=type=cache,target=/root/.cache/pip \
     ([ -d /venv ] || python3.9 -m venv /venv) && \
     /venv/bin/pip install --upgrade pip
 
 WORKDIR /workspace/
-ADD .git/ .git/
-ADD pyproject.toml pyproject.toml
 
-RUN \
+ADD pyproject.toml pyproject.toml
+ARG PSEUDO_VERSION=1
+RUN --mount=type=cache,target=/root/.cache/pip \
+    SETUPTOOLS_SCM_PRETEND_VERSION=${PSEUDO_VERSION} \
+    /venv/bin/pip install -e .[pyterrier]
+RUN --mount=source=.git,target=.git,type=bind \
     --mount=type=cache,target=/root/.cache/pip \
-    /venv/bin/pip install /workspace[pyterrier]
+    /venv/bin/pip install -e .[pyterrier]
 
 ENV TERRIER_VERSION="5.7"
 ENV TERRIER_HELPER_VERSION="0.0.7"
