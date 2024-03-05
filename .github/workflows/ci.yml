@@ -11,8 +11,6 @@ jobs:
         python:
         - '3.8'
         - '3.9'
-        - '3.10'
-        - '3.11'
     runs-on: ubuntu-latest
     steps:
     - name: 📥 Check-out
@@ -64,8 +62,6 @@ jobs:
         python:
         - '3.8'
         - '3.9'
-        - '3.10'
-        - '3.11'
     runs-on: ubuntu-latest
     steps:
     - name: 📥 Check-out
@@ -90,8 +86,6 @@ jobs:
         python:
         - '3.8'
         - '3.9'
-        - '3.10'
-        - '3.11'
     runs-on: ubuntu-latest
     steps:
     - name: 📥 Check-out
@@ -116,8 +110,6 @@ jobs:
         python:
         - '3.8'
         - '3.9'
-        - '3.10'
-        - '3.11'
         backend:
         - pyserini
         - pyterrier
@@ -151,8 +143,6 @@ jobs:
         python:
         - '3.8'
         - '3.9'
-        - '3.10'
-        - '3.11'
     runs-on: ubuntu-latest
     steps:
     - name: 📥 Check-out
@@ -182,8 +172,6 @@ jobs:
         python:
         - '3.8'
         - '3.9'
-        - '3.10'
-        - '3.11'
         backend:
         - pyserini
         - pyterrier
