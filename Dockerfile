@@ -8,7 +8,7 @@ RUN update-alternatives --install /usr/bin/java java /usr/local/openjdk/bin/java
 
 RUN --mount=type=cache,target=/var/cache/apt \
     apt-get update -y && \
-    apt-get install -y git
+    apt-get install -y git build-essential
 
 RUN --mount=type=cache,target=/root/.cache/pip \
     ([ -d /venv ] || python3.9 -m venv /venv) && \
