@@ -5,206 +5,218 @@ on:
 
 jobs:
   python-wheel:
-    name: "🏗️ Python wheel"
+    name: 🏗️ Python wheel
     strategy:
       matrix:
         python:
-        - "3.8"
-        - "3.9"
+        - '3.8'
+        - '3.9'
+        - '3.10'
+        - '3.11'
     runs-on: ubuntu-latest
     steps:
-    - name: "📥 Check-out"
+    - name: 📥 Check-out
       uses: actions/checkout@v4
-    - name: "🧰 Install Python"
+    - name: 🧰 Install Python
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python }}
         cache: pip
         cache-dependency-path: pyproject.toml
-    - name: "🧰 Install dependencies"
+    - name: 🧰 Install dependencies
       run: |
         python -m pip install --upgrade pip build twine
-    - name: "🏗️ Build Python wheel"
+    - name: 🏗️ Build Python wheel
       run: python -m build
-    - name: "🧪 Check package bundles"
+    - name: 🧪 Check package bundles
       run: twine check dist/*
-    - name: "ℹ️ List Python wheels"
+    - name: ℹ️ List Python wheels
       if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
       run: ls -R
       working-directory: dist
-    - name: "📤 Upload Python wheel"
+    - name: 📤 Upload Python wheel
       uses: actions/upload-artifact@v4
       if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
       with:
         name: wheel
         path: dist
   docker-build:
-    name: "🏗️ Docker image"
+    name: 🏗️ Docker image
     runs-on: ubuntu-latest
     steps:
-    - name: "📥 Check-out"
+    - name: 📥 Check-out
       uses: actions/checkout@v4
-    - name: "🧰 Set up QEMU"
+    - name: 🧰 Set up QEMU
       uses: docker/setup-qemu-action@v3
-    - name: "🧰 Set up Docker Buildx"
+    - name: 🧰 Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
-    - name: "🚀 Build image"
+    - name: 🚀 Build image
       uses: docker/build-push-action@v5
       with:
         context: .
         push: false
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
   python-code-format:
-    name: "🔍 Python code format"
+    name: 🔍 Python code format
     strategy:
       matrix:
         python:
-        - "3.8"
-        - "3.9"
+        - '3.8'
+        - '3.9'
+        - '3.10'
+        - '3.11'
     runs-on: ubuntu-latest
     steps:
-    - name: "📥 Check-out"
+    - name: 📥 Check-out
       uses: actions/checkout@v4
-    - name: "🧰 Install Python"
+    - name: 🧰 Install Python
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python }}
         cache: pip
         cache-dependency-path: pyproject.toml
-    - name: "🧰 Install dependencies"
+    - name: 🧰 Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install .
         pip install .[test]
-    - name: "🔍 Check Python code format"
+    - name: 🔍 Check Python code format
       run: flake8 ir_axioms/ tests/
   python-lint:
-    name: "🔍 Python Lint"
+    name: 🔍 Python Lint
     strategy:
       matrix:
         python:
-        - "3.8"
-        - "3.9"
+        - '3.8'
+        - '3.9'
+        - '3.10'
+        - '3.11'
     runs-on: ubuntu-latest
     steps:
-    - name: "📥 Check-out"
+    - name: 📥 Check-out
       uses: actions/checkout@v4
-    - name: "🧰 Install Python"
+    - name: 🧰 Install Python
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python }}
         cache: pip
         cache-dependency-path: pyproject.toml
-    - name: "🧰 Install dependencies"
+    - name: 🧰 Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install .
         pip install .[test]
-    - name: "🔍 Lint Python code"
+    - name: 🔍 Lint Python code
       run: pylint -E ir_axioms tests.unit --ignore-paths="^ir_axioms.backend|^ir_axioms.cli"
   python-lint-backend:
-    name: "🔍 Python Lint backend"
+    name: 🔍 Python Lint backend
     strategy:
       matrix:
         python:
-        - "3.8"
-        - "3.9"
+        - '3.8'
+        - '3.9'
+        - '3.10'
+        - '3.11'
         backend:
         - pyserini
         - pyterrier
     runs-on: ubuntu-latest
     steps:
-    - name: "📥 Check-out"
+    - name: 📥 Check-out
       uses: actions/checkout@v4
-    - name: "🧰 Install Python"
+    - name: 🧰 Install Python
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python }}
         cache: pip
         cache-dependency-path: pyproject.toml
-    - name: "🧰 Install dependencies"
+    - name: 🧰 Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install .
         pip install .[test]
         pip install .[${{ matrix.backend }}]
-    - name: "🧰 Install Java"
+    - name: 🧰 Install Java
       uses: actions/setup-java@v3
       with:
         distribution: temurin
         java-version: 11
-    - name: "🔍 Lint Python code"
+    - name: 🔍 Lint Python code
       run: pylint -E ir_axioms.backend.${{ matrix.backend }} tests.integration.${{ matrix.backend }} ${{ matrix.backend == 'pyterrier' && 'ir_axioms.cli' || '' }}
   python-unit-tests:
-    name: "🧪 Python unit tests"
+    name: 🧪 Python unit tests
     strategy:
       matrix:
         python:
-        - "3.8"
-        - "3.9"
+        - '3.8'
+        - '3.9'
+        - '3.10'
+        - '3.11'
     runs-on: ubuntu-latest
     steps:
-    - name: "📥 Check-out"
+    - name: 📥 Check-out
       uses: actions/checkout@v4
-    - name: "🧰 Install Python"
+    - name: 🧰 Install Python
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python }}
         cache: pip
         cache-dependency-path: pyproject.toml
-    - name: "🧰 Install dependencies"
+    - name: 🧰 Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install .
         pip install .[test]
-    - name: "🧪 Test Python code"
+    - name: 🧪 Test Python code
       run: pytest --cov=./ --cov-report=xml ir_axioms/ tests/unit/ --ignore=ir_axioms/backend/ --ignore=ir_axioms/cli.py
-    - name: "📤 Upload coverage to Codecov"
+    - name: 📤 Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
       with:
-        fail_ci_if_error: true
         token: ${{ secrets.CODECOV_TOKEN }}
   python-integration-tests:
-    name: "🧪 Python integration tests"
+    name: 🧪 Python integration tests
     strategy:
       matrix:
         python:
-        - "3.8"
-        - "3.9"
+        - '3.8'
+        - '3.9'
+        - '3.10'
+        - '3.11'
         backend:
         - pyserini
         - pyterrier
     runs-on: ubuntu-latest
     steps:
-    - name: "📥 Check-out"
+    - name: 📥 Check-out
       uses: actions/checkout@v4
-    - name: "🧰 Install Python"
+    - name: 🧰 Install Python
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python }}
         cache: pip
         cache-dependency-path: pyproject.toml
-    - name: "🧰 Install dependencies"
+    - name: 🧰 Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install .
         pip install .[test]
         pip install .[${{ matrix.backend }}]
-    - name: "🧰 Install Java"
+    - name: 🧰 Install Java
       uses: actions/setup-java@v3
       with:
         distribution: temurin
         java-version: 11
-    - name: "🧪 Test Python code"
+    - name: 🧪 Test Python code
       run: pytest --cov=./ --cov-report=xml tests/integration/${{ matrix.backend }}/ ${{ matrix.backend == 'pyterrier' && 'ir_axioms/cli.py' || '' }}
-    - name: "📤 Upload coverage to Codecov"
+    - name: 📤 Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
       with:
-        fail_ci_if_error: true
         token: ${{ secrets.CODECOV_TOKEN }}
   publish-package:
-    name: "🚀 Publish Python wheels"
+    name: 🚀 Publish Python wheels
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags') && endsWith(github.event.base_ref, 'main')
     needs:
     - python-wheel
@@ -218,20 +230,20 @@ jobs:
     permissions:
       id-token: write
     steps:
-    - name: "📥 Check-out"
+    - name: 📥 Check-out
       uses: actions/checkout@v4
-    - name: "📥 Download Python wheels"
+    - name: 📥 Download Python wheels
       uses: actions/download-artifact@v3
       with:
         name: wheel
         path: dist
-    - name: "ℹ️ List Python wheels"
+    - name: ℹ️ List Python wheels
       run: ls -R
       working-directory: dist
-    - name: "🚀 Publish Python wheels"
+    - name: 🚀 Publish Python wheels
       uses: pypa/gh-action-pypi-publish@release/v1
   docker-push:
-    name: "🚀 Publish Docker image"
+    name: 🚀 Publish Docker image
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags') && endsWith(github.event.base_ref, 'main')
     permissions:
       packages: write
@@ -245,39 +257,41 @@ jobs:
     - python-integration-tests
     runs-on: ubuntu-latest
     steps:
-    - name: "📥 Check-out"
+    - name: 📥 Check-out
       uses: actions/checkout@v4
-    - name: "🧰 Set up QEMU"
+    - name: 🧰 Set up QEMU
       uses: docker/setup-qemu-action@v3
-    - name: "🧰 Set up Docker Buildx"
+    - name: 🧰 Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
-    - name: "🔑 Login to Docker Hub"
+    - name: 🔑 Login to Docker Hub
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: "🔑 Login to GitHub Packages"
+    - name: 🔑 Login to GitHub Packages
       uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-    - name: "ℹ️ Extract image metadata"
+    - name: ℹ️ Extract image metadata
       id: meta
       uses: docker/metadata-action@v4
       with:
         images: |
           webis/ir_axioms
           ghcr.io/${{ github.repository }}
-    - name: "🚀 Build and push image"
+    - name: 🚀 Build and push image
       uses: docker/build-push-action@v5
       with:
         context: .
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
   github-release:
-    name: "🚀 Create GitHub release"
+    name: 🚀 Create GitHub release
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags') && endsWith(github.event.base_ref, 'main')
     needs:
     - python-wheel
@@ -289,17 +303,17 @@ jobs:
     - python-integration-tests
     runs-on: ubuntu-latest
     steps:
-    - name: "📥 Check-out"
+    - name: 📥 Check-out
       uses: actions/checkout@v4
-    - name: "📥 Download Python wheels"
+    - name: 📥 Download Python wheels
       uses: actions/download-artifact@v3
       with:
         name: wheel
         path: dist
-    - name: "ℹ️ List Python wheels"
+    - name: ℹ️ List Python wheels
       run: ls -R
       working-directory: dist
-    - name: "🚀 Create GitHub release"
+    - name: 🚀 Create GitHub release
       uses: softprops/action-gh-release@v1
       with:
         name: Release ${{ github.ref_name }}
