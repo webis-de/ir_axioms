@@ -1,4 +1,4 @@
-FROM openjdk:11-slim as openjdk
+FROM openjdk:18-slim as openjdk
 
 FROM python:3.9-slim as python
 
