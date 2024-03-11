@@ -1,8 +1,8 @@
-FROM openjdk:11-slim as openjdk-11
+FROM openjdk:11-slim as openjdk
 
 FROM python:3.9-slim as python
 
-COPY --from=openjdk-11 /usr/local/openjdk-11 /usr/local/openjdk
+COPY --from=openjdk /usr/local/openjdk-* /usr/local/openjdk
 ENV JAVA_HOME /usr/local/openjdk
 RUN update-alternatives --install /usr/bin/java java /usr/local/openjdk/bin/java 1
 
@@ -11,7 +11,7 @@ RUN --mount=type=cache,target=/var/cache/apt \
     apt-get install -y git build-essential
 
 RUN --mount=type=cache,target=/root/.cache/pip \
-    ([ -d /venv ] || python3.9 -m venv /venv) && \
+    ([ -d /venv ] || python -m venv /venv) && \
     /venv/bin/pip install --upgrade pip
 
 WORKDIR /workspace/
