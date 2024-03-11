@@ -1,8 +1,8 @@
-FROM openjdk:11-slim as openjdk-11
+FROM openjdk:18-slim as openjdk
 
 FROM python:3.9-slim as python
 
-COPY --from=openjdk-11 /usr/local/openjdk-11 /usr/local/openjdk
+COPY --from=openjdk /usr/local/openjdk-* /usr/local/openjdk
 ENV JAVA_HOME /usr/local/openjdk
 RUN update-alternatives --install /usr/bin/java java /usr/local/openjdk/bin/java 1
 
