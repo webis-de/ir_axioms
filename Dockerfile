@@ -1,6 +1,6 @@
 FROM openjdk:11-slim as openjdk-11
 
-FROM python:3.9-slim as python
+FROM python:3.12-slim as python
 
 COPY --from=openjdk-11 /usr/local/openjdk-11 /usr/local/openjdk
 ENV JAVA_HOME /usr/local/openjdk
