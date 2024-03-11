@@ -11,7 +11,7 @@ RUN --mount=type=cache,target=/var/cache/apt \
     apt-get install -y git build-essential
 
 RUN --mount=type=cache,target=/root/.cache/pip \
-    ([ -d /venv ] || python3.9 -m venv /venv) && \
+    ([ -d /venv ] || python -m venv /venv) && \
     /venv/bin/pip install --upgrade pip
 
 WORKDIR /workspace/
