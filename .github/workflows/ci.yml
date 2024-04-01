@@ -264,7 +264,7 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: ℹ️ Extract image metadata
       id: meta
-      uses: docker/metadata-action@v4
+      uses: docker/metadata-action@v5
       with:
         images: |
           webis/ir_axioms
