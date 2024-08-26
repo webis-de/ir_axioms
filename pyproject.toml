@@ -67,7 +67,7 @@ pyserini =[
     "faiss-cpu~=1.7",
 ]
 pyterrier =[
-    "python-terrier~=0.10.0",
+    "python-terrier>=0.10,<0.12",
     "pyjnius~=1.4",
 ]
 
