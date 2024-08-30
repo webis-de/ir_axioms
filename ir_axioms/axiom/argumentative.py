@@ -141,6 +141,7 @@ def _sentence_length(
         document: RankedDocument,
 ) -> float:
     download_nltk_dependencies("punkt")
+    download_nltk_dependencies("punkt_tab")
     sentences = sent_tokenize(context.contents(document))
     if len(sentences) == 0:
         return nan
