@@ -1,6 +1,6 @@
-FROM openjdk:18-slim as openjdk
+FROM openjdk:18-slim AS openjdk
 
-FROM python:3.9-slim as python
+FROM python:3.9-slim AS python
 
 COPY --from=openjdk /usr/local/openjdk-* /usr/local/openjdk
 ENV JAVA_HOME /usr/local/openjdk
