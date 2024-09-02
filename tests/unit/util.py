@@ -17,6 +17,7 @@ class MemoryIndexContext(IndexContext):
     # noinspection PyMethodMayBeStatic
     def __post_init__(self):
         download_nltk_dependencies("punkt")
+        download_nltk_dependencies("punkt_tab")
 
     def __hash__(self):
         return reduce(

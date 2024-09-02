@@ -47,13 +47,15 @@ def kwiksort(
         axiom,
         query,
         context,
-        vertices_left
+        vertices_left,
+        pivot_selection
     )
     vertices_right = kwiksort(
         axiom,
         query,
         context,
-        vertices_right
+        vertices_right,
+        pivot_selection
     )
 
     return [*vertices_left, pivot, *vertices_right]
