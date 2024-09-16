@@ -197,10 +197,14 @@ class AND(Axiom):
             document2: RankedDocument
     ):
         query_terms = context.term_set(query)
-        document1_terms = context.term_set(document1)
-        document2_terms = context.term_set(document2)
-        s1 = query_terms.issubset(document1_terms)
-        s2 = query_terms.issubset(document2_terms)
+        s1, s2 = set(), set()
+
+        for query_term in query_terms:
+            if context.term_frequency(document1, query_term) > 0:
+                s1.add(query_term)
+            if context.term_frequency(document2, query_term) > 0:
+                s2.add(query_term)
+
         return strictly_greater(s1, s2)
 
 

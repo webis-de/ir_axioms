@@ -68,9 +68,10 @@ class PerGroupTransformer(TransformerBase, ABC):
 
 
 class AxiomTransformer(PerGroupTransformer, ABC):
-    index: Union[Index, IndexRef, Path, str]
+    index: Optional[Union[Index, IndexRef, Path, str]] = None
     dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
+    context: Optional[IndexContext] = None
     tokeniser: Optional[Tokeniser] = None
     cache_dir: Optional[Path] = None
     verbose: bool = False
@@ -80,15 +81,17 @@ class AxiomTransformer(PerGroupTransformer, ABC):
     optional_group_columns = {"qid", "name"}
     unit = "query"
 
-    @cached_property
+    @property
     def _context(self) -> IndexContext:
-        return TerrierIndexContext(
-            index_location=self.index,
-            dataset=self.dataset,
-            contents_accessor=self.contents_accessor,
-            tokeniser=self.tokeniser,
-            cache_dir=self.cache_dir,
-        )
+        if not self.context:
+            self.context = TerrierIndexContext(
+                index_location=self.index,
+                dataset=self.dataset,
+                contents_accessor=self.contents_accessor,
+                tokeniser=self.tokeniser,
+                cache_dir=self.cache_dir,
+            )
+        return self.context
 
     @final
     def transform_group(self, topics_or_res: DataFrame) -> DataFrame:
@@ -124,8 +127,9 @@ class KwikSortReranker(AxiomTransformer):
     description = "Reranking query axiomatically"
 
     axiom: AxiomLike
-    index: Union[Index, IndexRef, Path, str]
+    index: Optional[Union[Index, IndexRef, Path, str]] = None
     dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
+    context: Optional[IndexContext] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     pivot_selection: PivotSelection = RandomPivotSelection()
     tokeniser: Optional[Tokeniser] = None
@@ -170,8 +174,8 @@ class AggregatedAxiomaticPreferences(AxiomTransformer):
     description = "Aggregating query axiom preferences"
 
     axioms: Sequence[AxiomLike]
-    index: Union[Index, IndexRef, Path, str]
     aggregations: Sequence[Callable[[Sequence[float]], float]]
+    index: Optional[Union[Index, IndexRef, Path, str]] = None
     dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
     filter_pairs: Optional[Callable[

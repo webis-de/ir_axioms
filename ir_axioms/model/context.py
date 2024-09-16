@@ -64,6 +64,9 @@ class IndexContext(ABC):
     ) -> FrozenSet[str]:
         return frozenset(self.terms(query_or_document))
 
+    def document_length(self, document: Document):
+        return len(self.terms(document))
+
     @lru_cache(None)
     def term_frequency(
             self,
