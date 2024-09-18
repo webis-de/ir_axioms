@@ -18,7 +18,7 @@ class IndexContext(ABC):
     def cache(self) -> Optional[Cache]:
         if self.cache_dir is None:
             return None
-        return Cache(str(self.cache_dir.absolute()))
+        return Cache(str(self.cache_dir.absolute()), eviction_policy='none')
 
     @property
     @abstractmethod

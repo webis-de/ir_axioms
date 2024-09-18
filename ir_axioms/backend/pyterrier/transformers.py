@@ -237,7 +237,8 @@ class AxiomaticPreferences(AxiomTransformer):
     description = "Computing query axiom preferences"
 
     axioms: Sequence[AxiomLike]
-    index: Union[Index, IndexRef, Path, str]
+    index: Optional[Union[Index, IndexRef, Path, str]] = None
+    context: Optional[IndexContext] = None
     axiom_names: Optional[Sequence[str]] = None
     dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
     contents_accessor: Optional[ContentsAccessor] = "text"
