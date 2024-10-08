@@ -199,4 +199,5 @@ class MagnitudeTermSimilarityMixin(TermSimilarityMixin, ABC):
 
 
 class FastTextWikiNewsTermSimilarityMixin(MagnitudeTermSimilarityMixin):
-    embeddings_path: Final[str] = "fasttext/medium/wiki-news-300d-1M.magnitude"
+    # wget via: https://files.webis.de/data-in-production/data-research/ir-axioms/wiki-news-300d-1M.magnitude
+    embeddings_path: Final[str] = "/workspaces/ecir25-gpt-axioms/wiki-news-300d-1M.magnitude"
