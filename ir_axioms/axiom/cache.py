@@ -19,7 +19,7 @@ class CachedAxiom(Axiom):
             document2: RankedDocument
     ) -> str:
         return (
-            f"{self.axiom!r},{context!r},"
+            f"{self.axiom!r},{context},"
             f"{query.title},{document1.id},{document2.id}"
         )
 

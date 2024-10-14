@@ -12,8 +12,8 @@ def approximately_same_length(
         margin_fraction: float,
 ) -> bool:
     return approximately_equal(
-        len(context.terms(document1)),
-        len(context.terms(document2)),
+        context.document_length(document1),
+        context.document_length(document2),
         margin_fraction=margin_fraction
     )
 

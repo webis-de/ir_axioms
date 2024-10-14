@@ -18,7 +18,7 @@ class IndexContext(ABC):
     def cache(self) -> Optional[Cache]:
         if self.cache_dir is None:
             return None
-        return Cache(str(self.cache_dir.absolute()))
+        return Cache(str(self.cache_dir.absolute()), eviction_policy='none')
 
     @property
     @abstractmethod
@@ -63,6 +63,9 @@ class IndexContext(ABC):
             query_or_document: Union[Query, Document]
     ) -> FrozenSet[str]:
         return frozenset(self.terms(query_or_document))
+
+    def document_length(self, document: Document):
+        return len(self.terms(document))
 
     @lru_cache(None)
     def term_frequency(

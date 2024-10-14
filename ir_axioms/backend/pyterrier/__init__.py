@@ -87,6 +87,9 @@ class TerrierIndexContext(IndexContext):
                 f"Cannot load index from location {self.index_location}."
             )
 
+    def __str__(self):
+        return f'TerrierIndexContext({str(self.index_location).split("/")[-1].split(" ")[0]})'
+
     @cached_property
     def _meta_index(self) -> MetaIndex:
         meta_index = self._index.getMetaIndex()
