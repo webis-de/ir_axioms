@@ -3,7 +3,7 @@ name = "ir_axioms"
 authors = [
     {name = "Alexander Bondarenko", email = "alexander.bondarenko@uni-jena.de"},
     {name = "Maik Fröbe", email = "maik.froebe@uni-jena.de"},
-    {name = "Jan Heinrich Reimer", email = "heinrich.reimer@uni-jena.de"},
+    {name = "Jan Heinrich Merker", email = "heinrich.merker@uni-jena.de"},
     {name = "Benno Stein", email = "benno.stein@uni-weimar.de"},
     {name = "Michael Völske", email = "michael.voelske@uni-weimar.de"},
     {name = "Matthias Hagen", email = "matthias.hagen@uni-jena.de"},

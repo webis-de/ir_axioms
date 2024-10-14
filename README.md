@@ -201,7 +201,7 @@ python -m build
 
 If you hit any problems using `ir_axioms` or reproducing our experiments, please write us an email or file an [issue](https://github.com/webis-de/ir_axioms/issues):
 
-- [heinrich.reimer@uni-jena.de](mailto:heinrich.reimer@uni-jena.de)
+- [heinrich.merker@uni-jena.de](mailto:heinrich.merker@uni-jena.de)
 - [maik.froebe@uni-jena.de](mailto:maik.froebe@uni-jena.de)
 - [alexander.bondarenko@uni-jena.de](mailto:alexander.bondarenko@uni-jena.de)
 
