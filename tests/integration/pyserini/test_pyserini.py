@@ -5,10 +5,10 @@ from subprocess import run
 from ir_datasets import load, Dataset
 from pytest import fixture, approx
 
-from ir_axioms.backend.pyserini import AnseriniIndexContext
-from ir_axioms.model import Query, Document
-from ir_axioms.model.context import IndexContext
-from ir_axioms.model.retrieval_model import TfIdf, BM25, PL2, QL
+from axioms.backend.pyserini import AnseriniIndexContext
+from axioms.model import Query, Document
+from axioms.model.context import IndexContext
+from axioms.model.retrieval_model import TfIdf, BM25, PL2, QL
 
 
 @fixture

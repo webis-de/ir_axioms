@@ -1,7 +1,7 @@
-from ir_axioms.axiom import (
+from axioms.axiom import (
     LEN_AND, LEN_M_AND, REG, ANTI_REG, AND, M_AND, DIV, LEN_DIV
 )
-from ir_axioms.model import Query, RankedTextDocument
+from axioms.model import Query, RankedTextDocument
 from tests.unit.util import MemoryIndexContext
 
 

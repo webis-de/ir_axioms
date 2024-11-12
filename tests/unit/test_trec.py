@@ -1,8 +1,8 @@
 from pandas import DataFrame
 from trectools import TrecQrel, TrecTopics
 
-from ir_axioms.axiom import TrecOracleAxiom
-from ir_axioms.model import Query, RankedTextDocument
+from axioms.axiom import TrecOracleAxiom
+from axioms.model import Query, RankedTextDocument
 from tests.unit.util import MemoryIndexContext
 
 

@@ -1,5 +1,5 @@
-from ir_axioms.axiom import NopAxiom, OriginalAxiom
-from ir_axioms.model import Query, RankedTextDocument
+from axioms.axiom import NopAxiom, OriginalAxiom
+from axioms.model import Query, RankedTextDocument
 from tests.unit.util import MemoryIndexContext
 
 

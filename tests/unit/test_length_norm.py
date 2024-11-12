@@ -1,5 +1,5 @@
-from ir_axioms.axiom import LNC1, TF_LNC
-from ir_axioms.model import Query, RankedTextDocument
+from axioms.axiom import LNC1, TF_LNC
+from axioms.model import Query, RankedTextDocument
 from tests.unit.util import MemoryIndexContext
 
 

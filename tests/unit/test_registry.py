@@ -1,8 +1,8 @@
 from class_registry import SortedClassRegistry
 
-from ir_axioms import registry
-from ir_axioms.axiom import NopAxiom, OriginalAxiom, Axiom
-from ir_axioms.model import Query, RankedTextDocument
+from axioms import registry
+from axioms.axiom import NopAxiom, OriginalAxiom, Axiom
+from axioms.model import Query, RankedTextDocument
 from tests.unit.util import MemoryIndexContext
 
 

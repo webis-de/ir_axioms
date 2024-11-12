@@ -4,7 +4,7 @@ import pyterrier as pt
 if not pt.started():
     pt.init()
 
-from ir_axioms.backend.pyterrier import TerrierIndexContext
+from axioms.backend.pyterrier import TerrierIndexContext
 
 
 class TestStringRepresentations(unittest.TestCase):

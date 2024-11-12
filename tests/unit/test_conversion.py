@@ -1,7 +1,7 @@
-from ir_axioms.axiom import (
+from axioms.axiom import (
     NopAxiom, OriginalAxiom, AutoAxiom, to_axiom, Axiom, UniformAxiom
 )
-from ir_axioms.model import Query, RankedTextDocument
+from axioms.model import Query, RankedTextDocument
 from tests.unit.util import MemoryIndexContext
 
 

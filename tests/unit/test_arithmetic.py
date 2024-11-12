@@ -1,5 +1,5 @@
-from ir_axioms.axiom import UniformAxiom, VoteAxiom
-from ir_axioms.model import Query, RankedTextDocument
+from axioms.axiom import UniformAxiom, VoteAxiom
+from axioms.model import Query, RankedTextDocument
 from tests.unit.util import MemoryIndexContext
 from pytest import approx
 

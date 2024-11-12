@@ -1,12 +1,12 @@
 from pytest import fixture
 
-from ir_axioms.axiom import (
+from axioms.axiom import (
     Axiom, ArgUC, QTArg, QTPArg, aSL, PROX1, PROX2, PROX3, PROX4, PROX5, TFC1,
     TFC3, AND, LEN_AND, M_AND, LEN_M_AND, DIV, LEN_DIV, M_TDC, LEN_M_TDC,
     STMC1, STMC1_f, STMC2, STMC2_f, LNC1, TF_LNC, LB1, REG, ANTI_REG,
     ASPECT_REG, REG_f, ANTI_REG_f, ASPECT_REG_f
 )
-from ir_axioms.model import Query, RankedTextDocument
+from axioms.model import Query, RankedTextDocument
 from tests.unit.util import MemoryIndexContext
 
 

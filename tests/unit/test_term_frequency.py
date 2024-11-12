@@ -1,5 +1,5 @@
-from ir_axioms.axiom import TFC1, TFC3, LEN_M_TDC, M_TDC
-from ir_axioms.model import Query, RankedTextDocument
+from axioms.axiom import TFC1, TFC3, LEN_M_TDC, M_TDC
+from axioms.model import Query, RankedTextDocument
 from tests.unit.util import MemoryIndexContext
 
 

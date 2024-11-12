@@ -4,10 +4,10 @@ from typing import Union, Set, Sequence
 
 from nltk import word_tokenize
 
-from ir_axioms.model import Query, Document, RankedTextDocument
-from ir_axioms.model.context import IndexContext
-from ir_axioms.model.retrieval_model import RetrievalModel
-from ir_axioms.utils.nltk import download_nltk_dependencies
+from axioms.model import Query, Document, RankedTextDocument
+from axioms.model.context import IndexContext
+from axioms.model.retrieval_model import RetrievalModel
+from axioms.utils.nltk import download_nltk_dependencies
 
 
 @dataclass(frozen=True)
