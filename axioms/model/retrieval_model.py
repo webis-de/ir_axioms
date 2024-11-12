@@ -2,29 +2,29 @@ from dataclasses import dataclass
 from typing import Union
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class Tf:
     pass
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TfIdf:
     pass
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class BM25:
     k_1: float = 1.2
     k_3: float = 8
     b: float = 0.75
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class PL2:
     c: float = 0.1
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class DirichletLM:
     mu: float = 1000
 

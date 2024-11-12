@@ -6,7 +6,7 @@ from axioms.axiom.utils import approximately_equal
 from axioms.model import Query, RankedDocument, IndexContext
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class LB1(Axiom):
     name = "LB1"
 

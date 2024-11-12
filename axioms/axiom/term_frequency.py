@@ -8,7 +8,7 @@ from axioms.axiom.utils import approximately_equal, strictly_greater
 from axioms.model import Query, RankedDocument, IndexContext
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class _TFC1(Axiom):
 
     def preference(
@@ -31,12 +31,12 @@ class _TFC1(Axiom):
         return strictly_greater(term_frequency1, term_frequency2)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TFC1(LEN_Mixin, _TFC1):
     name = "TFC1"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class _TFC3(Axiom):
 
     def preference(
@@ -78,7 +78,7 @@ class _TFC3(Axiom):
         return strictly_greater(sum_document1, sum_document2)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TFC3(LEN_Mixin, _TFC3):
     name = "TFC3"
 
@@ -107,7 +107,7 @@ def _single_different_term_frequency(
     )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class M_TDC(Axiom):
     """
     Modified TDC as in:
@@ -186,6 +186,6 @@ class M_TDC(Axiom):
         return strictly_greater(score1, score2)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class LEN_M_TDC(LEN_Mixin, M_TDC):
     name = "LEN-M-TDC"

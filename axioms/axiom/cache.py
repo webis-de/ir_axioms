@@ -6,7 +6,7 @@ from axioms.axiom.base import Axiom
 from axioms.model import RankedDocument, Query, IndexContext
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class CachedAxiom(Axiom):
     axiom: Axiom
     disk: bool = False

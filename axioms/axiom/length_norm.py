@@ -7,7 +7,7 @@ from axioms.axiom.utils import (
 from axioms.model import Query, RankedDocument, IndexContext
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class LNC1(Axiom):
     name = "LNC1"
 
@@ -34,7 +34,7 @@ class LNC1(Axiom):
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TF_LNC(Axiom):
     name = "TF-LNC"
 

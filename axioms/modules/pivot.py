@@ -18,7 +18,7 @@ class PivotSelection(ABC):
         pass
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class RandomPivotSelection(PivotSelection):
     seed: Optional[Any] = None
 
@@ -35,7 +35,7 @@ class RandomPivotSelection(PivotSelection):
         return vertices[self._random.randint(0, len(vertices) - 1)]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class FirstPivotSelection(PivotSelection):
     def select_pivot(
             self,
@@ -46,7 +46,7 @@ class FirstPivotSelection(PivotSelection):
         return vertices[0]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class LastPivotSelection(PivotSelection):
     def select_pivot(
             self,
@@ -57,7 +57,7 @@ class LastPivotSelection(PivotSelection):
         return vertices[-1]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class MiddlePivotSelection(PivotSelection):
     def select_pivot(
             self,

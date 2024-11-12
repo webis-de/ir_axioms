@@ -63,7 +63,7 @@ def _weighting_model(model: RetrievalModel) -> WeightingModel:
 ContentsAccessor = Union[str, Callable[[NamedTuple], str]]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TerrierIndexContext(IndexContext):
     index_location: Union[Index, IndexRef, Path, str]
     dataset: Optional[Union[Dataset, str, IRDSDataset]] = None

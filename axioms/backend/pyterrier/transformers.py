@@ -119,7 +119,7 @@ class AxiomTransformer(PerGroupTransformer, ABC):
         pass
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class KwikSortReranker(AxiomTransformer):
     name = "KwikSortReranker"
     description = "Reranking query axiomatically"
@@ -166,7 +166,7 @@ class KwikSortReranker(AxiomTransformer):
         return reranked
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class AggregatedAxiomaticPreferences(AxiomTransformer):
     name = "AggregatedAxiomaticPreferences"
     description = "Aggregating query axiom preferences"
@@ -229,7 +229,7 @@ class AggregatedAxiomaticPreferences(AxiomTransformer):
         return topics_or_res
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class AxiomaticPreferences(AxiomTransformer):
     name = "AxiomaticPreferences"
     description = "Computing query axiom preferences"

@@ -18,7 +18,7 @@ def approximately_same_length(
     )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class LEN(Axiom):
     name = "LEN"
 
@@ -44,7 +44,7 @@ class LEN(Axiom):
         return self.axiom.preference(context, query, document1, document2)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class LEN_Mixin(Axiom):
     margin_fraction: float = 0.1
 

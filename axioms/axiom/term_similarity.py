@@ -10,7 +10,7 @@ from axioms.modules.similarity import (
 )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class _STMC1(Axiom, TermSimilarityMixin, ABC):
 
     def preference(
@@ -30,12 +30,12 @@ class _STMC1(Axiom, TermSimilarityMixin, ABC):
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class STMC1(_STMC1, WordNetSynonymSetTermSimilarityMixin):
     name = "STMC1"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class _STMC2(Axiom, TermSimilarityMixin, ABC):
 
     def preference(
@@ -113,6 +113,6 @@ class _STMC2(Axiom, TermSimilarityMixin, ABC):
         return 0
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class STMC2(_STMC2, WordNetSynonymSetTermSimilarityMixin):
     name = "STMC2"

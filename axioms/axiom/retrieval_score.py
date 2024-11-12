@@ -8,7 +8,7 @@ from axioms.model.retrieval_model import (
 )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class RetrievalScoreAxiom(Axiom):
     name = "RetrievalScore"
 
@@ -27,7 +27,7 @@ class RetrievalScoreAxiom(Axiom):
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class RS_TF(Axiom, Tf):
     name = "RS-TF"
 
@@ -44,7 +44,7 @@ class RS_TF(Axiom, Tf):
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class RS_TF_IDF(Axiom, TfIdf):
     name = "RS-TF-IDF"
 
@@ -61,7 +61,7 @@ class RS_TF_IDF(Axiom, TfIdf):
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class RS_BM25(Axiom, BM25):
     name = "RS-BM25"
 
@@ -78,7 +78,7 @@ class RS_BM25(Axiom, BM25):
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class RS_PL2(Axiom, PL2):
     name = "RS-PL2"
 
@@ -95,7 +95,7 @@ class RS_PL2(Axiom, PL2):
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class RS_QL(Axiom, QL):
     name = "RS-QL"
 

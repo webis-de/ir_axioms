@@ -87,7 +87,7 @@ def load_queries(ranking: DataFrame) -> Sequence[Query]:
     ]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class FilterTopicsTransformer(TransformerBase):
     """
     Retain only queries that are contained in the topics.
@@ -99,7 +99,7 @@ class FilterTopicsTransformer(TransformerBase):
         return ranking[ranking["qid"].isin(self.topics["qid"])]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class FilterQrelsTransformer(TransformerBase):
     """
     Retain only query-document pairs that are contained in the qrels.
@@ -114,7 +114,7 @@ class FilterQrelsTransformer(TransformerBase):
             ]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class JoinQrelsTransformer(TransformerBase):
     """
     Join query-document pairs with their relevance labels.
@@ -132,7 +132,7 @@ class JoinQrelsTransformer(TransformerBase):
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class AddNameTransformer(TransformerBase):
     """
     Add a colum containing the system's name.

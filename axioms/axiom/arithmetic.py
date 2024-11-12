@@ -2,13 +2,13 @@ from dataclasses import dataclass
 from functools import reduce
 from math import isclose, ceil
 from operator import mul
-from typing import Iterable, Union
+from typing import Iterable
 
-from axioms.axiom.base import Axiom
+from axioms.axiom.base import Axiom, AxiomLike
 from axioms.model import Query, RankedDocument, IndexContext
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class UniformAxiom(Axiom):
     scalar: float
 
@@ -22,7 +22,7 @@ class UniformAxiom(Axiom):
         return self.scalar
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class SumAxiom(Axiom):
     axioms: Iterable[Axiom]
 
@@ -38,14 +38,14 @@ class SumAxiom(Axiom):
             for axiom in self.axioms
         )
 
-    def __add__(self, other: Union[Axiom, float, int]) -> Axiom:
+    def __add__(self, other: AxiomLike) -> Axiom:
         if isinstance(other, Axiom):
             return SumAxiom([*self.axioms, other])
         else:
             return super().__add__(other)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class ProductAxiom(Axiom):
     axioms: Iterable[Axiom]
 
@@ -65,7 +65,7 @@ class ProductAxiom(Axiom):
             1
         )
 
-    def __mul__(self, other: Union[Axiom, float, int]) -> Axiom:
+    def __mul__(self, other: AxiomLike) -> Axiom:
         if isinstance(other, Axiom):
             # Avoid chaining operators.
             return ProductAxiom([*self.axioms, other])
@@ -73,7 +73,7 @@ class ProductAxiom(Axiom):
             return super().__mul__(other)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class MultiplicativeInverseAxiom(Axiom):
     axiom: Axiom
 
@@ -92,7 +92,7 @@ class MultiplicativeInverseAxiom(Axiom):
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class AndAxiom(Axiom):
     # TODO: And is a special case of majority vote with a majority of 1.0
     #   We might want to merge both classes eventually.
@@ -116,15 +116,15 @@ class AndAxiom(Axiom):
         else:
             return 0
 
-    def __and__(self, other: Union[Axiom, float, int]) -> Axiom:
+    def __and__(self, other: AxiomLike) -> Axiom:
         if isinstance(other, Axiom):
             # Avoid chaining operators.
-            return AndAxiom([*self.axioms, other])
+            return AndAxiom(axioms=[*self.axioms, other])
         else:
             return super().__and__(other)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class VoteAxiom(Axiom):
     axioms: Iterable[Axiom]
     minimum_votes: float = 0.5
@@ -184,11 +184,11 @@ class VoteAxiom(Axiom):
             # Draw.
             return 0
 
-    def __mod__(self, other: Union[Axiom, float, int]) -> Axiom:
+    def __mod__(self, other: AxiomLike) -> Axiom:
         if isinstance(other, Axiom) and isclose(self.minimum_votes, 0.5):
             # Avoid chaining operators
             # if this vote has the default minimum vote proportion.
-            return VoteAxiom([*self.axioms, other])
+            return VoteAxiom(axioms=[*self.axioms, other])
         else:
             return super().__mod__(other)
 
@@ -196,7 +196,7 @@ class VoteAxiom(Axiom):
 MajorityVoteAxiom = VoteAxiom
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class CascadeAxiom(Axiom):
     axioms: Iterable[Axiom]
 
@@ -218,15 +218,15 @@ class CascadeAxiom(Axiom):
         )
         return next(decisive_preferences, 0)
 
-    def __or__(self, other: Union[Axiom, float, int]) -> Axiom:
+    def __or__(self, other: AxiomLike) -> Axiom:
         if isinstance(other, Axiom):
             # Avoid chaining operators.
-            return CascadeAxiom([*self.axioms, other])
+            return CascadeAxiom(axioms=[*self.axioms, other])
         else:
             return super().__or__(other)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class NormalizedAxiom(Axiom):
     axiom: Axiom
 

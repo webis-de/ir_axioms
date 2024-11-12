@@ -25,7 +25,7 @@ from axioms.model.base import RankedDocument, JudgedRankedDocument
 from axioms.modules.ranking import PivotSelection, RandomPivotSelection
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class EstimatorKwikSortReranker(EstimatorBase):
     name = "EstimatorKwikSortReranker"
 

@@ -10,7 +10,7 @@ from axioms.model.retrieval_model import RetrievalModel
 from axioms.utils.nltk import download_nltk_dependencies
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class MemoryIndexContext(IndexContext):
     documents: Set[RankedTextDocument]
 

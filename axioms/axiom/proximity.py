@@ -154,7 +154,7 @@ def _closest_grouping_size_and_count(
     return min_occurrences, min_occurrences_count
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class PROX1(Axiom):
     name = "PROX1"
 
@@ -190,7 +190,7 @@ class PROX1(Axiom):
         return strictly_greater(average2, average1)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class PROX2(Axiom):
     name = "PROX2"
 
@@ -234,7 +234,7 @@ def _find_index(query_terms: Sequence[str], document_terms: Sequence[str]):
     return inf
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class PROX3(Axiom):
     name = "PROX3"
 
@@ -256,7 +256,7 @@ class PROX3(Axiom):
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class PROX4(Axiom):
     name = "PROX4"
 
@@ -294,7 +294,7 @@ class PROX4(Axiom):
             return strictly_greater(count1, count2)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class PROX5(Axiom):
     name = "PROX5"
 

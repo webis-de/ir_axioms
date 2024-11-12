@@ -12,7 +12,7 @@ def to_axiom(axiom_like: AxiomLike) -> Axiom:
     if isinstance(axiom_like, Axiom):
         return axiom_like
     elif isinstance(axiom_like, (float, int)):
-        return UniformAxiom(axiom_like)
+        return UniformAxiom(scalar=axiom_like)
     elif isinstance(axiom_like, str):
         return registry[axiom_like]
     else:
@@ -23,7 +23,7 @@ def to_axioms(axiom_likes: Sequence[AxiomLike]) -> Sequence[Axiom]:
     return [to_axiom(axiom_like) for axiom_like in axiom_likes]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class AutoAxiom(Axiom):
     axiom_like: AxiomLike
 

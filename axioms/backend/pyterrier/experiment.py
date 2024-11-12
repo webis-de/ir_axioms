@@ -23,7 +23,7 @@ from axioms.backend.pyterrier.util import IndexRef, Index, Tokeniser
 from axioms.model import JudgedRankedDocument
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class AxiomaticExperiment:
     retrieval_systems: Sequence[Transformer]
     topics: DataFrame

@@ -26,7 +26,7 @@ def _vocabulary_overlap(vocabulary1: FrozenSet[str],
     )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class _REG(Axiom, TermSimilarityMixin, ABC):
     """
     Reference:
@@ -53,17 +53,17 @@ class _REG(Axiom, TermSimilarityMixin, ABC):
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class REG(_REG, WordNetSynonymSetTermSimilarityMixin):
     name = "REG"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class REG_fastText(_REG, FastTextWikiNewsTermSimilarityMixin):
     name = "REG-fastText"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class _ANTI_REG(Axiom, TermSimilarityMixin, ABC):
     """
     Reference:
@@ -92,17 +92,17 @@ class _ANTI_REG(Axiom, TermSimilarityMixin, ABC):
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class ANTI_REG(_ANTI_REG, WordNetSynonymSetTermSimilarityMixin):
     name = "ANTI-REG"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class ANTI_REG_fastText(_ANTI_REG, FastTextWikiNewsTermSimilarityMixin):
     name = "ANTI-REG-fastText"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class _ASPECT_REG(Axiom, TermSimilarityMixin, ABC):
     """
     Similar to REG but follows the query aspect clustering
@@ -175,17 +175,17 @@ class _ASPECT_REG(Axiom, TermSimilarityMixin, ABC):
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class ASPECT_REG(_ASPECT_REG, WordNetSynonymSetTermSimilarityMixin):
     name = "ASPECT-REG"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class ASPECT_REG_fastText(_ASPECT_REG, FastTextWikiNewsTermSimilarityMixin):
     name = "ASPECT-REG-fastText"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class AND(Axiom):
     name = "AND"
 
@@ -212,12 +212,12 @@ class AND(Axiom):
         return strictly_greater(s1, s2)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class LEN_AND(LEN_Mixin, AND):
     name = "LEN-AND"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class M_AND(Axiom):
     """
     Modified AND:
@@ -241,12 +241,12 @@ class M_AND(Axiom):
         return strictly_greater(len(query_term_count1), len(query_term_count2))
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class LEN_M_AND(LEN_Mixin, M_AND):
     name = "LEN-M-AND"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class DIV(Axiom):
     name = "DIV"
 
@@ -270,7 +270,7 @@ class DIV(Axiom):
         return strictly_greater(overlap2, overlap1)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class LEN_DIV(LEN_Mixin, DIV):
     name = "LEN-DIV"
 

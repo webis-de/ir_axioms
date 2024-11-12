@@ -151,7 +151,7 @@ def _sentence_length(
     )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class _TargerMixin:
     models: Set[str] = field(default_factory=lambda: DEFAULT_TARGER_MODELS)
     api_url: str = DEFAULT_TARGER_API_URL
@@ -184,7 +184,7 @@ class _TargerMixin:
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom):
     """
     Favor documents with more argumentative units.
@@ -212,12 +212,12 @@ class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom):
         return strictly_greater(count1, count2)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class ArgUC(LEN_Mixin, ArgumentativeUnitsCountAxiom):
     name = "ArgUC"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
     """
     Favor documents with more query terms in argumentative units.
@@ -255,12 +255,12 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
         return strictly_greater(count1, count2)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class QTArg(LEN_Mixin, QueryTermOccurrenceInArgumentativeUnitsAxiom):
     name = "QTArg"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
     """
     Favor documents where the first occurrence of a query term
@@ -337,12 +337,12 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
         return strictly_less(position1, position2)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class QTPArg(LEN_Mixin, QueryTermPositionInArgumentativeUnitsAxiom):
     name = "QTPArg"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class AverageSentenceLengthAxiom(Axiom):
     """
     Favor documents with an average sentence length between
@@ -383,11 +383,11 @@ class AverageSentenceLengthAxiom(Axiom):
             return 0
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class aSLDoc(LEN_Mixin, AverageSentenceLengthAxiom):
     name = "aSLDoc"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class aSL(LEN_Mixin, AverageSentenceLengthAxiom):
     name = "aSL"

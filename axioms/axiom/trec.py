@@ -9,7 +9,7 @@ from axioms.axiom.utils import strictly_greater
 from axioms.model import Query, RankedDocument, IndexContext
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class TrecOracleAxiom(Axiom):
     name = "TREC-ORACLE"
 

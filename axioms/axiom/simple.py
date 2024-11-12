@@ -10,7 +10,7 @@ from axioms.model import (
 )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class NopAxiom(Axiom):
     name = "NOP"
 
@@ -24,7 +24,7 @@ class NopAxiom(Axiom):
         return 0
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class OriginalAxiom(Axiom):
     name = "ORIG"
 
@@ -38,7 +38,7 @@ class OriginalAxiom(Axiom):
         return strictly_less(document1.rank, document2.rank)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class OracleAxiom(Axiom):
     name = "ORACLE"
 
@@ -61,7 +61,7 @@ class OracleAxiom(Axiom):
         return strictly_greater(document1.relevance, document2.relevance)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class RandomAxiom(Axiom):
     name = "RANDOM"
 

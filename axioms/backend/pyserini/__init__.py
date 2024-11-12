@@ -46,7 +46,7 @@ def _similarity(model: RetrievalModel) -> Similarity:
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class AnseriniIndexContext(IndexContext):
     index_dir: Union[Path, str]
     dataset: Optional[Union[Dataset, str]] = None
