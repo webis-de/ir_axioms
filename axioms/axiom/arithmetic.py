@@ -40,7 +40,7 @@ class SumAxiom(Axiom):
 
     def __add__(self, other: AxiomLike) -> Axiom:
         if isinstance(other, Axiom):
-            return SumAxiom([*self.axioms, other])
+            return SumAxiom(axioms=[*self.axioms, other])
         else:
             return super().__add__(other)
 
@@ -68,7 +68,7 @@ class ProductAxiom(Axiom):
     def __mul__(self, other: AxiomLike) -> Axiom:
         if isinstance(other, Axiom):
             # Avoid chaining operators.
-            return ProductAxiom([*self.axioms, other])
+            return ProductAxiom(axioms=[*self.axioms, other])
         else:
             return super().__mul__(other)
 
