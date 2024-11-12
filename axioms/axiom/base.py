@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
 from inspect import isabstract
 from math import nan
-from typing import Union, Callable, Sequence, Optional
+from typing import Union, Callable, Sequence, Optional, final
 
 from joblib import delayed, Parallel
 from numpy import ndarray, array, stack
-from typing_extensions import final
 
 from axioms import registry
 from axioms.model import Query, RankedDocument, IndexContext

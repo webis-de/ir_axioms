@@ -1,11 +1,10 @@
 from dataclasses import dataclass
-from functools import lru_cache
+from functools import lru_cache, cached_property
 from json import loads
 from logging import warning
 from pathlib import Path
 from typing import Optional, Union, Callable, NamedTuple, Sequence
 
-from cached_property import cached_property
 from ir_datasets import load, Dataset
 from ir_datasets.indices import Docstore
 

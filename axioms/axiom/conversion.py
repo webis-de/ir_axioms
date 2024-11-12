@@ -1,7 +1,6 @@
 from dataclasses import dataclass
+from functools import cached_property
 from typing import Sequence
-
-from cached_property import cached_property
 
 from axioms import registry
 from axioms.axiom.arithmetic import UniformAxiom

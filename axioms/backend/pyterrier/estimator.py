@@ -1,8 +1,8 @@
 from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 from typing import Sequence, Union, Optional, Callable
 
-from cached_property import cached_property
 from ir_datasets import Dataset
 from pandas import DataFrame
 

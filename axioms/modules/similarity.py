@@ -2,13 +2,9 @@ from abc import ABC, abstractmethod
 from functools import lru_cache
 from itertools import product, combinations
 from statistics import mean
-from typing import Iterable, Dict, Collection, Optional, Tuple, Sequence
-
-from cached_property import cached_property
-from typing_extensions import final, Final
+from typing import Iterable, Dict, Collection, Optional, Tuple, Sequence, final
 
 from nltk.corpus import wordnet
-from pymagnitude import Magnitude
 
 from ir_axioms import logger
 from ir_axioms.utils.nltk import download_nltk_dependencies
@@ -188,30 +184,3 @@ class WordNetSynonymSetTermSimilarityMixin(TermSimilarityMixin):
     def similarity(self, term1: str, term2: str) -> float:
         return synonym_set_similarity(term1, term2, self.smoothing)
 
-
-class MagnitudeTermSimilarityMixin(TermSimilarityMixin, ABC):
-    embeddings_path: str = None
-
-    @cached_property
-    def _embeddings(self):
-        url = 'https://files.webis.de/data-in-production/data-research/ir-axioms/wiki-news-300d-1M.magnitude'  # noqa: E501
-        if (
-             not os.path.isfile(self.embeddings_path)
-             and self.embeddings_path
-             and self.embeddings_path.endswith('wiki-news-300d-1M.magnitude')
-        ):
-            wget.download(url, out=self.embeddings_path)
-
-        return Magnitude(self.embeddings_path)
-
-    @final
-    @lru_cache(None)
-    def similarity(self, term1: str, term2: str):
-        return float(self._embeddings.similarity(term1, term2))
-
-
-class FastTextWikiNewsTermSimilarityMixin(MagnitudeTermSimilarityMixin):
-    embeddings_path: Final[str] = f"{DIR_PATH}/wiki-news-300d-1M.magnitude"
-
-    def __init__(self):
-        super().__init__()

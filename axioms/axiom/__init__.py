@@ -95,8 +95,4 @@ TrecOracleAxiom = trec.TrecOracleAxiom
 TREC = trec.TREC
 
 STMC1 = term_similarity.STMC1
-STMC1_fastText = term_similarity.STMC1_fastText
-STMC1_f = term_similarity.STMC1_f
 STMC2 = term_similarity.STMC2
-STMC2_fastText = term_similarity.STMC2_fastText
-STMC2_f = term_similarity.STMC2_f

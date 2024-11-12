@@ -6,8 +6,7 @@ from axioms.axiom.base import Axiom
 from axioms.axiom.utils import strictly_greater, approximately_equal
 from axioms.model import Query, RankedDocument, IndexContext
 from axioms.modules.similarity import (
-    TermSimilarityMixin, WordNetSynonymSetTermSimilarityMixin,
-    FastTextWikiNewsTermSimilarityMixin
+    TermSimilarityMixin, WordNetSynonymSetTermSimilarityMixin
 )
 
 
@@ -34,11 +33,6 @@ class _STMC1(Axiom, TermSimilarityMixin, ABC):
 @dataclass(frozen=True)
 class STMC1(_STMC1, WordNetSynonymSetTermSimilarityMixin):
     name = "STMC1"
-
-
-@dataclass(frozen=True)
-class STMC1_fastText(_STMC1, FastTextWikiNewsTermSimilarityMixin):
-    name = "STMC1-fastText"
 
 
 @dataclass(frozen=True)
@@ -122,13 +116,3 @@ class _STMC2(Axiom, TermSimilarityMixin, ABC):
 @dataclass(frozen=True)
 class STMC2(_STMC2, WordNetSynonymSetTermSimilarityMixin):
     name = "STMC2"
-
-
-@dataclass(frozen=True)
-class STMC2_fastText(_STMC2, FastTextWikiNewsTermSimilarityMixin):
-    name = "STMC2-fastText"
-
-
-# Shorthand names:
-STMC1_f = STMC1_fastText
-STMC2_f = STMC2_fastText

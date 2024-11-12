@@ -1,13 +1,12 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Sequence, Optional
+from typing import Dict, Sequence, Optional, Literal
 
 from click import Context, echo, group, option, Path as PathType, \
     Choice, argument, pass_obj, pass_context
 from pandas import read_json, DataFrame
 from pyterrier import started, init, __version__ as pyterrier_version
 from pyterrier.io import read_results
-from typing_extensions import Literal
 
 from axioms import __version__ as axioms_version
 from axioms.axiom import to_axiom, Axiom
