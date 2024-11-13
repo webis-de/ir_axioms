@@ -16,16 +16,12 @@ from ir_datasets import Dataset, load
 from ir_datasets.indices import Docstore
 from jnius import autoclass
 from pyterrier.datasets import IRDSDataset
-from pyterrier.java import init
+from pyterrier.java import started
 
 from axioms.model import Query, Document, TextDocument, IndexContext
 
-
-# Ensure that PyTerrier's JVM is started
-init()
-
 # Load Java classes.
-if TYPE_CHECKING:
+if TYPE_CHECKING or not started():
     StringReader: TypeAlias = Any
     Index: TypeAlias = Any
     IndexRef: TypeAlias = Any
