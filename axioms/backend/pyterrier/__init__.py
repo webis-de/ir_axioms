@@ -1,64 +1,60 @@
+# Check if PyTerrier is installed.
+try:
+    import pyterrier # noqa: F401
+except ImportError as error:
+    raise ImportError(
+        "The PyTerrier backend requires that 'python-terrier' is installed."
+    ) from error
+
 from dataclasses import dataclass
 from functools import lru_cache, cached_property
-from logging import warning
 from pathlib import Path
 from re import split
-from typing import Optional, Union, Callable, NamedTuple, Sequence
+from typing import Optional, Union, Callable, NamedTuple, Sequence, TYPE_CHECKING, TypeAlias, Any
 
 from ir_datasets import Dataset, load
 from ir_datasets.indices import Docstore
+from jnius import autoclass
+from pyterrier.datasets import IRDSDataset
+from pyterrier.java import init
 
-from axioms.backend.pyterrier.config import (
-    RETRIEVAL_SCORE_APPLICATION_PROPERTIES
-)
-from axioms.backend.pyterrier.util import (
-    EnglishTokeniser, Lexicon, CollectionStatistics, BaseTermPipelineAccessor,
-    WeightingModel, TfModel, TfIdfModel, BM25Model, PL2Model, DirichletLMModel,
-    Index, TermPipelineAccessor, Manager, ManagerFactory, SearchRequest,
-    ScoredDocList, ScoredDoc, RequestContextMatching, MetaIndex, IndexRef,
-    Tokeniser, IndexFactory, ApplicationSetup, StringReader
-)
-from axioms.backend.pyterrier.safe import IRDSDataset
 from axioms.model import Query, Document, TextDocument, IndexContext
-from axioms.model.retrieval_model import (
-    RetrievalModel, Tf, TfIdf, BM25, PL2, DirichletLM
-)
 
 
-@lru_cache(None)
-def _weighting_model(model: RetrievalModel) -> WeightingModel:
-    if isinstance(model, Tf):
-        return TfModel()
-    if isinstance(model, TfIdf):
-        return TfIdfModel()
-    elif isinstance(model, BM25):
-        if model.k_1 != 1.2:
-            warning(
-                "The PyTerrier backend doesn't support setting "
-                "the k_1 parameter for the BM25 retrieval model. "
-                "It will be ignored."
-            )
-        if model.k_3 != 8:
-            warning(
-                "The Pyserini backend doesn't support setting "
-                "the k_3 parameter for the BM25 retrieval model. "
-                "It will be ignored."
-            )
-        weighting_model = BM25Model()
-        weighting_model.setParameter(model.b)
-        return weighting_model
-    elif isinstance(model, PL2):
-        return PL2Model(model.c)
-    elif isinstance(model, DirichletLM):
-        weighting_model = DirichletLMModel()
-        weighting_model.setParameter(model.mu)
-        return weighting_model
-    else:
-        raise NotImplementedError(
-            f"The Pyserini backend doesn't support "
-            f"the {type(model)} retrieval model."
-        )
+# Ensure that PyTerrier's JVM is started
+init()
 
+# Load Java classes.
+if TYPE_CHECKING:
+    StringReader: TypeAlias = Any
+    Index: TypeAlias = Any
+    IndexRef: TypeAlias = Any
+    IndexFactory: TypeAlias = Any
+    MetaIndex: TypeAlias = Any
+    Lexicon: TypeAlias = Any
+    CollectionStatistics: TypeAlias = Any
+    Tokeniser: TypeAlias = Any
+    EnglishTokeniser: TypeAlias = Any
+    TermPipelineAccessor: TypeAlias = Any
+    BaseTermPipelineAccessor: TypeAlias = Any
+    ApplicationSetup: TypeAlias = Any
+else:
+    StringReader = autoclass("java.io.StringReader")
+    Index = autoclass("org.terrier.structures.Index")
+    IndexRef = autoclass('org.terrier.querying.IndexRef')
+    IndexFactory = autoclass('org.terrier.structures.IndexFactory')
+    MetaIndex = autoclass("org.terrier.structures.MetaIndex")
+    Lexicon = autoclass("org.terrier.structures.Lexicon")
+    CollectionStatistics = autoclass("org.terrier.structures.CollectionStatistics")
+    Tokeniser = autoclass("org.terrier.indexing.tokenisation.Tokeniser")
+    EnglishTokeniser = autoclass(
+        "org.terrier.indexing.tokenisation.EnglishTokeniser"
+    )
+    TermPipelineAccessor = autoclass("org.terrier.terms.TermPipelineAccessor")
+    BaseTermPipelineAccessor = autoclass(
+        "org.terrier.terms.BaseTermPipelineAccessor"
+    )
+    ApplicationSetup = autoclass('org.terrier.utility.ApplicationSetup')
 
 ContentsAccessor = Union[str, Callable[[NamedTuple], str]]
 
@@ -73,9 +69,9 @@ class TerrierIndexContext(IndexContext):
 
     @cached_property
     def _index(self) -> Index:
-        if isinstance(self.index_location, Index):
+        if not TYPE_CHECKING and isinstance(self.index_location, Index):
             return self.index_location
-        elif isinstance(self.index_location, IndexRef):
+        elif not TYPE_CHECKING and isinstance(self.index_location, IndexRef):
             return IndexFactory.of(self.index_location)
         elif isinstance(self.index_location, str):
             return IndexFactory.of(self.index_location)
@@ -236,90 +232,3 @@ class TerrierIndexContext(IndexContext):
     ) -> Sequence[str]:
         text = self.contents(query_or_document)
         return self._terms(text)
-
-    @cached_property
-    def _manager(self) -> Manager:
-        index_ref = self._index.getIndexRef()
-        # noinspection PyProtectedMember
-        manager = ManagerFactory._from_(index_ref)
-        del index_ref
-        return manager
-
-    @lru_cache(None)
-    def _retrieval_score(
-            self,
-            query_title: str,
-            document_id: str,
-            weighting_model: WeightingModel
-    ) -> float:
-        if len(query_title) == 0:
-            return 0
-
-        # Setup retrieval as per BatchRetrieve.
-        for key, value in RETRIEVAL_SCORE_APPLICATION_PROPERTIES.items():
-            ApplicationSetup.setProperty(key, value)
-
-        manager = self._manager
-
-        # Build search request.
-        request: SearchRequest = manager.newSearchRequestFromQuery(
-            query_title
-        )
-
-        # Set weighting model.
-        request.setControl("context_wmodel", "on")
-        request.setContextObject("context_wmodel", weighting_model)
-
-        # Filter documents matching the original ID.
-        matching = RequestContextMatching.of(request)
-        matching.fromDocnos([document_id])
-        matching.build()
-
-        # Return search score from weighting model.
-        request.setControl(
-            "matching",
-            ",".join([
-                "org.terrier.matching.ScoringMatching",
-                request.getControl("matching")
-            ])
-        )
-
-        # Limit to 1 result.
-        request.setControl("end", str(1 - 1))
-
-        # Execute search request.
-        manager.runSearchRequest(request)
-
-        # Parse result document.
-        result_docs: ScoredDocList = request.getResults()
-
-        if len(result_docs) == 0:
-            # Document was not received.
-            return 0
-
-        assert len(result_docs) == 1
-        first_result_doc: ScoredDoc = result_docs[0]
-        assert str(first_result_doc.getMetadata("docno")) == document_id
-
-        # Get retrieval score.
-        retrieval_score = float(first_result_doc.getScore())
-
-        # Cleanup.
-        del first_result_doc
-        del result_docs
-        del request
-        del matching
-
-        return retrieval_score
-
-    def retrieval_score(
-            self,
-            query: Query,
-            document: Document,
-            model: RetrievalModel
-    ) -> float:
-        return self._retrieval_score(
-            query.title,
-            document.id,
-            _weighting_model(model)
-        )
