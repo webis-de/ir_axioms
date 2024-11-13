@@ -180,18 +180,14 @@ class AND(Axiom):
             document1: RankedDocument,
             document2: RankedDocument
     ):
-        query_terms = set(context.term_set(query))
-        s1, s2 = set(), set()
-        for query_term in query_terms:
-            if context.term_frequency(document1, query_term) > 0:
-                s1.add(query_term)
-            if context.term_frequency(document2, query_term) > 0:
-                s2.add(query_term)
-
-        return strictly_greater(
-            len(s1) > 0,
-            len(s2) > 0,
-        )
+        query_terms = context.term_set(query)
+        document1_terms = context.term_set(document1)
+        document2_terms = context.term_set(document2)
+        query_term_count1 = query_terms & document1_terms
+        query_term_count2 = query_terms & document2_terms
+        all_query_terms1 = len(query_term_count1) == len(query_terms)
+        all_query_terms2 = len(query_term_count2) == len(query_terms)
+        return strictly_greater(all_query_terms1, all_query_terms2)
 
 
 @dataclass(frozen=True, kw_only=True)
