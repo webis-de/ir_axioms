@@ -10,7 +10,7 @@ def test_uniform():
     document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
     context = MemoryIndexContext({document1, document2})
 
-    axiom = UniformAxiom(1)
+    axiom = UniformAxiom(scalar=1)
 
     assert axiom.preference(context, query, document1, document2) == 1
     assert axiom.preference(context, query, document2, document1) == 1
@@ -22,9 +22,9 @@ def test_sum():
     document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
     context = MemoryIndexContext({document1, document2})
 
-    axiom1 = UniformAxiom(1)
-    axiom2 = UniformAxiom(2)
-    axiom3 = UniformAxiom(3)
+    axiom1 = UniformAxiom(scalar=1)
+    axiom2 = UniformAxiom(scalar=2)
+    axiom3 = UniformAxiom(scalar=3)
 
     axiom = axiom1 + axiom2 + axiom3
 
@@ -38,9 +38,9 @@ def test_product():
     document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
     context = MemoryIndexContext({document1, document2})
 
-    axiom1 = UniformAxiom(1)
-    axiom2 = UniformAxiom(2)
-    axiom3 = UniformAxiom(3)
+    axiom1 = UniformAxiom(scalar=1)
+    axiom2 = UniformAxiom(scalar=2)
+    axiom3 = UniformAxiom(scalar=3)
 
     axiom = axiom1 * axiom2 * axiom3
 
@@ -54,7 +54,7 @@ def test_multiplicative_inverse():
     document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
     context = MemoryIndexContext({document1, document2})
 
-    axiom = 1 / UniformAxiom(2)
+    axiom = 1 / UniformAxiom(scalar=2)
 
     assert (
             axiom.preference(context, query, document1, document2) ==
@@ -72,9 +72,9 @@ def test_and():
     document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
     context = MemoryIndexContext({document1, document2})
 
-    axiom1 = UniformAxiom(1)
-    axiom2 = UniformAxiom(2)
-    axiom3 = UniformAxiom(0)
+    axiom1 = UniformAxiom(scalar=1)
+    axiom2 = UniformAxiom(scalar=2)
+    axiom3 = UniformAxiom(scalar=0)
 
     axiom4 = axiom1 & axiom2
     axiom5 = axiom1 & axiom2 & axiom3
@@ -91,13 +91,13 @@ def test_majority_vote():
     document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
     context = MemoryIndexContext({document1, document2})
 
-    axiom1 = UniformAxiom(1)
-    axiom2 = UniformAxiom(2)
-    axiom3 = UniformAxiom(0)
+    axiom1 = UniformAxiom(scalar=1)
+    axiom2 = UniformAxiom(scalar=2)
+    axiom3 = UniformAxiom(scalar=0)
 
     axiom4 = axiom1 % axiom2 % axiom3
-    axiom5 = VoteAxiom([axiom1, axiom2, axiom3], minimum_votes=0.5)
-    axiom6 = VoteAxiom([axiom1, axiom2, axiom3], minimum_votes=0.75)
+    axiom5 = VoteAxiom(axioms=[axiom1, axiom2, axiom3], minimum_votes=0.5)
+    axiom6 = VoteAxiom(axioms=[axiom1, axiom2, axiom3], minimum_votes=0.75)
 
     assert axiom4.preference(context, query, document1, document2) == 1
     assert axiom4.preference(context, query, document2, document1) == 1
@@ -113,9 +113,9 @@ def test_cascade():
     document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
     context = MemoryIndexContext({document1, document2})
 
-    axiom1 = UniformAxiom(0)
-    axiom2 = UniformAxiom(1)
-    axiom3 = UniformAxiom(2)
+    axiom1 = UniformAxiom(scalar=0)
+    axiom2 = UniformAxiom(scalar=1)
+    axiom3 = UniformAxiom(scalar=2)
 
     axiom4 = axiom1 | axiom2
     axiom5 = axiom1 | axiom3
@@ -134,7 +134,7 @@ def test_normalize():
     document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
     context = MemoryIndexContext({document1, document2})
 
-    axiom1 = UniformAxiom(2)
+    axiom1 = UniformAxiom(scalar=2)
     axiom2 = +axiom1
 
     assert axiom1.preference(context, query, document1, document2) == 2

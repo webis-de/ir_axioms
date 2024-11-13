@@ -70,7 +70,7 @@ def test_len_m_tdc_false_precondition():
     )
     context = MemoryIndexContext({document1, document2})
 
-    axiom = LEN_M_TDC(0.1)
+    axiom = LEN_M_TDC(margin_fraction=0.1)
 
     # Precondition is not met.
     assert axiom.preference(context, query, document1, document2) == 0
@@ -89,7 +89,7 @@ def test_len_m_tdc():
     )
     context = MemoryIndexContext({document1, document2})
 
-    axiom = LEN_M_TDC(0.3)
+    axiom = LEN_M_TDC(margin_fraction=0.3)
 
     # Prefer the document with more discriminative terms.
     assert axiom.preference(context, query, document1, document2) == 1

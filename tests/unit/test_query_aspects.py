@@ -92,7 +92,7 @@ def test_len_and_false_precondition():
     document2 = RankedTextDocument("d2", 1, 2, "a c b")
     context = MemoryIndexContext({document1, document2})
 
-    axiom = LEN_AND(0.3)
+    axiom = LEN_AND(margin_fraction=0.3)
 
     assert axiom.preference(context, query, document1, document2) == 0
     assert axiom.preference(context, query, document2, document1) == 0
@@ -104,7 +104,7 @@ def test_len_and():
     document2 = RankedTextDocument("d2", 1, 2, "a c b")
     context = MemoryIndexContext({document1, document2})
 
-    axiom = LEN_AND(0.4)
+    axiom = LEN_AND(margin_fraction=0.4)
 
     assert axiom.preference(context, query, document1, document2) == 1
     assert axiom.preference(context, query, document2, document1) == -1
@@ -116,7 +116,7 @@ def test_len_m_and_false_precondition():
     document2 = RankedTextDocument("d2", 1, 2, "a b a b q1 q2 q2 q2 q1 q1 q2")
     context = MemoryIndexContext({document1, document2})
 
-    axiom = LEN_M_AND(0.1)
+    axiom = LEN_M_AND(margin_fraction=0.1)
 
     assert axiom.preference(context, query, document1, document2) == 0
     assert axiom.preference(context, query, document2, document1) == 0
@@ -128,7 +128,7 @@ def test_len_m_and_false_precondition_no_winner():
     document2 = RankedTextDocument("d2", 1, 2, "a b c q1 q1 q1 q2")
     context = MemoryIndexContext({document1, document2})
 
-    axiom = LEN_M_AND(0.1)
+    axiom = LEN_M_AND(margin_fraction=0.1)
 
     assert axiom.preference(context, query, document1, document2) == 0
     assert axiom.preference(context, query, document2, document1) == 0
@@ -140,7 +140,7 @@ def test_len_m_and():
     document2 = RankedTextDocument("d2", 1, 2, "a b a b q1 q2 q2 q2 q1 q1 q2")
     context = MemoryIndexContext({document1, document2})
 
-    axiom = LEN_M_AND(0.3)
+    axiom = LEN_M_AND(margin_fraction=0.3)
 
     assert axiom.preference(context, query, document1, document2) == 1
     assert axiom.preference(context, query, document2, document1) == -1
@@ -152,7 +152,7 @@ def test_len_m_and_no_winner():
     document2 = RankedTextDocument("d2", 1, 2, "a b c q1 q1 q1 q2")
     context = MemoryIndexContext({document1, document2})
 
-    axiom = LEN_M_AND(0.3)
+    axiom = LEN_M_AND(margin_fraction=0.3)
 
     assert axiom.preference(context, query, document1, document2) == 0
     assert axiom.preference(context, query, document2, document1) == 0
@@ -176,7 +176,7 @@ def test_len_div_false_precondition():
     document2 = RankedTextDocument("d2", 1, 2, "foo bar baz bab bac")
     context = MemoryIndexContext({document1, document2})
 
-    axiom = LEN_DIV(0.1)
+    axiom = LEN_DIV(margin_fraction=0.1)
 
     assert axiom.preference(context, query, document1, document2) == 0
     assert axiom.preference(context, query, document2, document1) == 0
@@ -188,7 +188,7 @@ def test_len_div():
     document2 = RankedTextDocument("d2", 1, 2, "q1 q2 q3")
     context = MemoryIndexContext({document1, document2})
 
-    axiom = LEN_DIV(0.5)
+    axiom = LEN_DIV(margin_fraction=0.5)
 
     assert axiom.preference(context, query, document1, document2) == 1
     assert axiom.preference(context, query, document2, document1) == -1

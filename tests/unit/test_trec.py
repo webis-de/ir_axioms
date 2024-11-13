@@ -23,7 +23,10 @@ def test_trec_oracle():
         1: "q1 q2 q3"
     })
 
-    axiom = TrecOracleAxiom(topics, qrel)
+    axiom = TrecOracleAxiom(
+        topics=topics,
+        qrels=qrel,
+    )
 
     assert axiom.preference(context, query, document1, document2) == 1
     assert axiom.preference(context, query, document2, document1) == -1

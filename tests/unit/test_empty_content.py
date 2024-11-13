@@ -3,8 +3,8 @@ from pytest import fixture
 from axioms.axiom import (
     Axiom, ArgUC, QTArg, QTPArg, aSL, PROX1, PROX2, PROX3, PROX4, PROX5, TFC1,
     TFC3, AND, LEN_AND, M_AND, LEN_M_AND, DIV, LEN_DIV, M_TDC, LEN_M_TDC,
-    STMC1, STMC1_f, STMC2, STMC2_f, LNC1, TF_LNC, LB1, REG, ANTI_REG,
-    ASPECT_REG, REG_f, ANTI_REG_f, ASPECT_REG_f
+    STMC1, STMC2, LNC1, TF_LNC, LB1, REG, ANTI_REG,
+    ASPECT_REG
 )
 from axioms.model import Query, RankedTextDocument
 from tests.unit.util import MemoryIndexContext
@@ -24,11 +24,8 @@ from tests.unit.util import MemoryIndexContext
     PROX4(),
     PROX5(),
     REG(),
-    REG_f(),
     ANTI_REG(),
-    ANTI_REG_f(),
     ASPECT_REG(),
-    ASPECT_REG_f(),
     AND(),
     LEN_AND(),
     M_AND(),
@@ -40,9 +37,7 @@ from tests.unit.util import MemoryIndexContext
     M_TDC(),
     LEN_M_TDC(),
     STMC1(),
-    STMC1_f(),
     STMC2(),
-    STMC2_f(),
 ])
 def axiom(request) -> Axiom:
     return request.param
