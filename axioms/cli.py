@@ -11,7 +11,7 @@ app = App()
 def launcher(*tokens: Annotated[str, Parameter(show=False, allow_leading_hyphen=True)]):
     if find_dotenv():
         load_dotenv()
-    command, bound = app.parse_args(tokens)
+    command, bound, _ = app.parse_args(tokens=tokens)
     return command(*bound.args, **bound.kwargs)
 
 
