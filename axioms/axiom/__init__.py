@@ -1,98 +1,111 @@
-from axioms.axiom import (
-    argumentative, arithmetic, base, cache, conversion, length_norm,
-    lower_bound, proximity, query_aspects, retrieval_score, term_frequency,
-    term_similarity, simple, trec, estimator, preconditions
+# Re-export from sub-modules.
+
+from axioms.axiom.argumentative import (  # noqa: F401
+    ArgumentativeUnitsCountAxiom,
+    QueryTermOccurrenceInArgumentativeUnitsAxiom,
+    QueryTermPositionInArgumentativeUnitsAxiom,
+    AverageSentenceLengthAxiom,
+    ArgUC,
+    QTArg,
+    QTPArg,
+    aSLDoc,
+    aSL,
 )
 
-# Re-export from child modules.
-ArgumentativeUnitsCountAxiom = argumentative.ArgumentativeUnitsCountAxiom
-QueryTermOccurrenceInArgumentativeUnitsAxiom = (
-    argumentative.QueryTermOccurrenceInArgumentativeUnitsAxiom
+from axioms.axiom.arithmetic import (  # noqa: F401
+    UniformAxiom,
+    SumAxiom,
+    ProductAxiom,
+    MultiplicativeInverseAxiom,
+    AndAxiom,
+    VoteAxiom,
+    MajorityVoteAxiom,
+    NormalizedAxiom,
 )
-QueryTermPositionInArgumentativeUnitsAxiom = (
-    argumentative.QueryTermPositionInArgumentativeUnitsAxiom
+
+from axioms.axiom.base import (  # noqa: F401
+    Axiom,
+    AxiomLike,
 )
-AverageSentenceLengthAxiom = argumentative.AverageSentenceLengthAxiom
-ArgUC = argumentative.ArgUC
-QTArg = argumentative.QTArg
-QTPArg = argumentative.QTPArg
-aSLDoc = argumentative.aSLDoc
-aSL = argumentative.aSL
 
-UniformAxiom = arithmetic.UniformAxiom
-SumAxiom = arithmetic.SumAxiom
-ProductAxiom = arithmetic.ProductAxiom
-MultiplicativeInverseAxiom = arithmetic.MultiplicativeInverseAxiom
-AndAxiom = arithmetic.AndAxiom
-VoteAxiom = arithmetic.VoteAxiom
-MajorityVoteAxiom = arithmetic.MajorityVoteAxiom
-NormalizedAxiom = arithmetic.NormalizedAxiom
+from axioms.axiom.cache import (  # noqa: F401
+    CachedAxiom,
+)
 
-Axiom = base.Axiom
-AxiomLike = base.AxiomLike
+from axioms.axiom.conversion import (  # noqa: F401
+    to_axiom,
+    to_axioms,
+    AutoAxiom,
+)
 
-CachedAxiom = cache.CachedAxiom
+from axioms.axiom.estimator import (  # noqa: F401
+    EstimatorAxiom,
+)
 
-to_axiom = conversion.to_axiom
-to_axioms = conversion.to_axioms
-AutoAxiom = conversion.AutoAxiom
+from axioms.axiom.length_norm import (  # noqa: F401
+    LNC1,
+    TF_LNC,
+)
 
-EstimatorAxiom = estimator.EstimatorAxiom
+from axioms.axiom.preconditions import (  # noqa: F401
+    LEN,
+    LEN_Mixin,
+)
 
-LNC1 = length_norm.LNC1
-TF_LNC = length_norm.TF_LNC
+from axioms.axiom.lower_bound import (  # noqa: F401
+    LB1,
+)
 
-LEN = preconditions.LEN
-LEN_Mixin = preconditions.LEN_Mixin
+from axioms.axiom.proximity import (  # noqa: F401
+    PROX1,
+    PROX2,
+    PROX3,
+    PROX4,
+    PROX5,
+)
 
-LB1 = lower_bound.LB1
+from axioms.axiom.query_aspects import (  # noqa: F401
+    REG,
+    REG_fastText,
+    REG_f,
+    ANTI_REG,
+    ANTI_REG_fastText,
+    ANTI_REG_f,
+    ASPECT_REG,
+    ASPECT_REG_fastText,
+    ASPECT_REG_f,
+    AND,
+    LEN_AND,
+    M_AND,
+    LEN_M_AND,
+    DIV,
+    LEN_DIV,
+)
 
-PROX1 = proximity.PROX1
-PROX2 = proximity.PROX2
-PROX3 = proximity.PROX3
-PROX4 = proximity.PROX4
-PROX5 = proximity.PROX5
+from axioms.axiom.simple import (  # noqa: F401
+    NopAxiom,
+    OriginalAxiom,
+    OracleAxiom,
+    RandomAxiom,
+    NOP,
+    ORIG,
+    ORACLE,
+    RANDOM,
+)
 
-REG = query_aspects.REG
-REG_fastText = query_aspects.REG_fastText
-REG_f = query_aspects.REG_f
-ANTI_REG = query_aspects.ANTI_REG
-ANTI_REG_fastText = query_aspects.ANTI_REG_fastText
-ANTI_REG_f = query_aspects.ANTI_REG_f
-ASPECT_REG = query_aspects.ASPECT_REG
-ASPECT_REG_fastText = query_aspects.ASPECT_REG_fastText
-ASPECT_REG_f = query_aspects.ASPECT_REG_f
-AND = query_aspects.AND
-LEN_AND = query_aspects.LEN_AND
-M_AND = query_aspects.M_AND
-LEN_M_AND = query_aspects.LEN_M_AND
-DIV = query_aspects.DIV
-LEN_DIV = query_aspects.LEN_DIV
+from axioms.axiom.term_frequency import (  # noqa: F401
+    TFC1,
+    TFC3,
+    M_TDC,
+    LEN_M_TDC,
+)
 
-RetrievalScoreAxiom = retrieval_score.RetrievalScoreAxiom
-RS_TF = retrieval_score.RS_TF
-RS_TF_IDF = retrieval_score.RS_TF_IDF
-RS_BM25 = retrieval_score.RS_BM25
-RS_PL2 = retrieval_score.RS_PL2
-RS_QL = retrieval_score.RS_QL
-RS = retrieval_score.RS
+from axioms.axiom.trec import (  # noqa: F401
+    TrecOracleAxiom,
+    TREC,
+)
 
-NopAxiom = simple.NopAxiom
-OriginalAxiom = simple.OriginalAxiom
-OracleAxiom = simple.OracleAxiom
-RandomAxiom = simple.RandomAxiom
-NOP = simple.NOP
-ORIG = simple.ORIG
-ORACLE = simple.ORACLE
-RANDOM = simple.RANDOM
-
-TFC1 = term_frequency.TFC1
-TFC3 = term_frequency.TFC3
-M_TDC = term_frequency.M_TDC
-LEN_M_TDC = term_frequency.LEN_M_TDC
-
-TrecOracleAxiom = trec.TrecOracleAxiom
-TREC = trec.TREC
-
-STMC1 = term_similarity.STMC1
-STMC2 = term_similarity.STMC2
+from axioms.axiom.term_similarity import (  # noqa: F401
+    STMC1,
+    STMC2,
+)

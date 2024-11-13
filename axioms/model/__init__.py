@@ -1,12 +1,15 @@
-from axioms.model import base, context
+# Re-export from sub-modules.
 
-# Re-export sub-modules.
-Query = base.Query
-Document = base.Document
-TextDocument = base.TextDocument
-RankedDocument = base.RankedDocument
-RankedTextDocument = base.RankedTextDocument
-JudgedRankedDocument = base.JudgedRankedDocument
-JudgedRankedTextDocument = base.JudgedRankedTextDocument
+from axioms.model.base import (  # noqa: F401
+    Query,
+    Document,
+    TextDocument,
+    RankedDocument,
+    RankedTextDocument,
+    JudgedRankedDocument,
+    JudgedRankedTextDocument,
+)
 
-IndexContext = context.IndexContext
+from axioms.model.context import (  # noqa: F401
+    IndexContext,
+)
