@@ -68,7 +68,7 @@ class Axiom(ABC):
     def __add__(self, other: "AxiomLike") -> "Axiom":
         if isinstance(other, Axiom):
             from axioms.axiom.arithmetic import SumAxiom
-            return SumAxiom([self, other])
+            return SumAxiom(axioms=[self, other])
         elif isinstance(other, (float, int, str)):
             from axioms.axiom.conversion import to_axiom
             return self + to_axiom(other)
@@ -82,7 +82,8 @@ class Axiom(ABC):
         return self + other
 
     def __sub__(self, other: "AxiomLike") -> "Axiom":
-        return self + -other
+        from axioms.axiom.conversion import to_axiom
+        return self + -to_axiom(other)
 
     def __rsub__(self, other: "AxiomLike") -> "Axiom":
         return -self + other
@@ -93,7 +94,7 @@ class Axiom(ABC):
     def __mul__(self, other: "AxiomLike") -> "Axiom":
         if isinstance(other, Axiom):
             from axioms.axiom.arithmetic import ProductAxiom
-            return ProductAxiom([self, other])
+            return ProductAxiom(axioms=[self, other])
         elif isinstance(other, (float, int, str)):
             from axioms.axiom.conversion import to_axiom
             return self * to_axiom(other)
@@ -112,7 +113,7 @@ class Axiom(ABC):
     def __truediv__(self, other: "AxiomLike") -> "Axiom":
         if isinstance(other, Axiom):
             from axioms.axiom.arithmetic import MultiplicativeInverseAxiom
-            return self * MultiplicativeInverseAxiom(other)
+            return self * MultiplicativeInverseAxiom(axiom=other)
         elif isinstance(other, (float, int, str)):
             from axioms.axiom.conversion import to_axiom
             return self / to_axiom(other)
@@ -121,7 +122,7 @@ class Axiom(ABC):
 
     def __rtruediv__(self, other: "AxiomLike") -> "Axiom":
         from axioms.axiom.arithmetic import MultiplicativeInverseAxiom
-        return MultiplicativeInverseAxiom(self) * other
+        return MultiplicativeInverseAxiom(axiom=self) * other
 
     def divide(self, other: "AxiomLike") -> "Axiom":
         return self / other
@@ -129,7 +130,7 @@ class Axiom(ABC):
     def __mod__(self, other: "AxiomLike") -> "Axiom":
         if isinstance(other, Axiom):
             from axioms.axiom.arithmetic import VoteAxiom
-            return VoteAxiom([self, other])
+            return VoteAxiom(axioms=[self, other])
         elif isinstance(other, (float, int, str)):
             from axioms.axiom.conversion import to_axiom
             return self % to_axiom(other)
@@ -145,7 +146,7 @@ class Axiom(ABC):
     def __and__(self, other: "AxiomLike") -> "Axiom":
         if isinstance(other, Axiom):
             from axioms.axiom.arithmetic import AndAxiom
-            return AndAxiom([self, other])
+            return AndAxiom(axioms=[self, other])
         elif isinstance(other, (float, int, str)):
             from axioms.axiom.conversion import to_axiom
             return self & to_axiom(other)
@@ -158,7 +159,7 @@ class Axiom(ABC):
     def __or__(self, other: "AxiomLike") -> "Axiom":
         if isinstance(other, Axiom):
             from axioms.axiom.arithmetic import CascadeAxiom
-            return CascadeAxiom([self, other])
+            return CascadeAxiom(axioms=[self, other])
         elif isinstance(other, (float, int, str)):
             from axioms.axiom.conversion import to_axiom
             return self | to_axiom(other)
@@ -183,7 +184,7 @@ class Axiom(ABC):
         replacing positive values with 1 and negative values with -1.
         """
         from axioms.axiom.arithmetic import NormalizedAxiom
-        return NormalizedAxiom(self)
+        return NormalizedAxiom(axiom=self)
 
     def normalized(self) -> "Axiom":
         """
@@ -207,7 +208,7 @@ class Axiom(ABC):
         for each query-documents tuple.
         """
         from axioms.axiom.cache import CachedAxiom
-        return CachedAxiom(self)
+        return CachedAxiom(axiom=self)
 
     @final
     def rerank_kwiksort(
