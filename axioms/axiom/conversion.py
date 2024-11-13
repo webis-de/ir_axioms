@@ -23,7 +23,7 @@ def to_axioms(axiom_likes: Sequence[AxiomLike]) -> Sequence[Axiom]:
     return [to_axiom(axiom_like) for axiom_like in axiom_likes]
 
 
-@dataclass(frozen=True, kw_only=True)
+@dataclass(frozen=True)
 class AutoAxiom(Axiom):
     axiom_like: AxiomLike
 
