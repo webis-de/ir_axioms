@@ -78,12 +78,3 @@ class IndexContext(ABC):
             return 0
         term_count = sum(1 for other in terms if other == term)
         return term_count / terms_len
-
-    @abstractmethod
-    def retrieval_score(
-            self,
-            query: Query,
-            document: Document,
-            model: RetrievalModel
-    ) -> float:
-        pass

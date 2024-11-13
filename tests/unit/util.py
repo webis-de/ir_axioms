@@ -51,11 +51,3 @@ class MemoryIndexContext(IndexContext):
     ) -> Sequence[str]:
         text = self.contents(query_or_document)
         return tuple(word_tokenize(text))
-
-    def retrieval_score(
-            self,
-            query: Query,
-            document: Document,
-            model: RetrievalModel
-    ) -> float:
-        raise NotImplementedError()
