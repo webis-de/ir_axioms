@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from itertools import groupby
-from typing import Tuple, Iterable, Sequence, Union, Optional, Callable
+from typing import Tuple, Iterable, Sequence, Union, Optional, Callable, cast
 
 from numpy import array
 from sklearn.base import is_classifier
@@ -56,7 +56,18 @@ class EstimatorAxiom(Axiom, ABC):
                 bool
             ]] = None,
     ) -> None:
-        return self.fit(ORACLE(), context, query_documents, filter_pairs)
+        return self.fit(
+            target=ORACLE(), 
+            context=context,
+            query_documents=query_documents, 
+            filter_pairs=(
+                (lambda doc1, doc2: filter_pairs(
+                    cast(JudgedRankedDocument, doc1),
+                    cast(JudgedRankedDocument, doc2),
+                ))
+                if filter_pairs is not None else None
+            ),
+        )
 
 
 def _query(query_document_pair: Tuple[Query, RankedDocument]) -> Query:
@@ -135,7 +146,7 @@ class ScikitLearnEstimatorAxiom(EstimatorAxiom, ABC):
     ) -> None:
         axioms = self.axioms
 
-        query_documents_pairs = _query_documents_pairs(query_documents)
+        query_documents_pairs: Iterable[tuple[Query, RankedDocument, RankedDocument]] = _query_documents_pairs(query_documents)
         if filter_pairs is not None:
             query_documents_pairs = [
                 (query, document1, document2)
