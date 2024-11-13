@@ -69,7 +69,7 @@ class RandomAxiom(Axiom):
 
     @cached_property
     def _random(self) -> Random:
-        return Random(self.seed)
+        return Random(self.seed)  # nosec: B311
 
     def preference(
             self,

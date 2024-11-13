@@ -1,9 +1,15 @@
-from typing import TypeVar, Union
-
-T = TypeVar("T")
+from typing import Union, overload
 
 
-def strictly_greater(x: T, y: T) -> float:
+@overload
+def strictly_greater(x: int, y: int) -> float: ...
+
+
+@overload
+def strictly_greater(x: float, y: float) -> float: ...
+
+
+def strictly_greater(x: int | float, y: int | float) -> float:
     if x > y:
         return 1
     elif y > x:
@@ -11,7 +17,15 @@ def strictly_greater(x: T, y: T) -> float:
     return 0
 
 
-def strictly_less(x: T, y: T) -> float:
+@overload
+def strictly_less(x: int, y: int) -> float: ...
+
+
+@overload
+def strictly_less(x: float, y: float) -> float: ...
+
+
+def strictly_less(x: int | float, y: int | float) -> float:
     if y > x:
         return 1
     elif x > y:

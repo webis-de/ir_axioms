@@ -43,14 +43,14 @@ def kwiksort(
                 f"and rank as pivot document {pivot}."
             )
 
-    vertices_left = kwiksort(
+    vertices_left_sorted = kwiksort(
         axiom,
         query,
         context,
         vertices_left,
         pivot_selection
     )
-    vertices_right = kwiksort(
+    vertices_right_sorted = kwiksort(
         axiom,
         query,
         context,
@@ -58,7 +58,7 @@ def kwiksort(
         pivot_selection
     )
 
-    return [*vertices_left, pivot, *vertices_right]
+    return [*vertices_left_sorted, pivot, *vertices_right_sorted]
 
 
 def reset_score(ranking: Sequence[RankedDocument]) -> Sequence[RankedDocument]:

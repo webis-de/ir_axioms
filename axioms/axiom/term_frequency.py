@@ -90,8 +90,8 @@ def _single_different_term_frequency(
         document2: RankedDocument
 ):
     query_terms = context.term_set(query)
-    sum_term_frequency1 = 0
-    sum_term_frequency2 = 0
+    sum_term_frequency1 = 0.0
+    sum_term_frequency2 = 0.0
     term_frequency_different = False
     for term in query_terms:
         count1 = context.term_frequency(document1, term)
