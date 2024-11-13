@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from inspect import isabstract
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.utils import approximately_equal
@@ -63,4 +64,6 @@ class LEN_Mixin(Axiom):
         ):
             # Documents have different lengths.
             return 0
-        return super().preference(context, query, document1, document2)
+        if isabstract(super()):
+            raise RuntimeError("This class must be used as a mixin.")
+        return super().preference(context, query, document1, document2)  # type: ignore
