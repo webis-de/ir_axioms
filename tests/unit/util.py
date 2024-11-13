@@ -6,7 +6,6 @@ from nltk import word_tokenize
 
 from axioms.model import Query, Document, RankedTextDocument
 from axioms.model.context import IndexContext
-from axioms.model.retrieval_model import RetrievalModel
 from axioms.utils.nltk import download_nltk_dependencies
 
 

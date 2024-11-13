@@ -7,7 +7,6 @@ from typing import Optional, Union, FrozenSet, Sequence
 from diskcache import Cache
 
 from axioms.model.base import Query, Document
-from axioms.model.retrieval_model import RetrievalModel
 
 
 class IndexContext(ABC):
