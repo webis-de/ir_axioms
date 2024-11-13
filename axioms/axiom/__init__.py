@@ -66,14 +66,8 @@ from axioms.axiom.proximity import (  # noqa: F401
 
 from axioms.axiom.query_aspects import (  # noqa: F401
     REG,
-    REG_fastText,
-    REG_f,
     ANTI_REG,
-    ANTI_REG_fastText,
-    ANTI_REG_f,
     ASPECT_REG,
-    ASPECT_REG_fastText,
-    ASPECT_REG_f,
     AND,
     LEN_AND,
     M_AND,

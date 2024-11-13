@@ -7,8 +7,7 @@ from axioms.axiom.preconditions import LEN_Mixin
 from axioms.axiom.utils import strictly_greater, approximately_equal
 from axioms.model import Query, RankedDocument, IndexContext
 from axioms.modules.similarity import (
-    TermSimilarityMixin, WordNetSynonymSetTermSimilarityMixin,
-    FastTextWikiNewsTermSimilarityMixin
+    TermSimilarityMixin, WordNetSynonymSetTermSimilarityMixin
 )
 
 
@@ -59,11 +58,6 @@ class REG(_REG, WordNetSynonymSetTermSimilarityMixin):
 
 
 @dataclass(frozen=True, kw_only=True)
-class REG_fastText(_REG, FastTextWikiNewsTermSimilarityMixin):
-    name = "REG-fastText"
-
-
-@dataclass(frozen=True, kw_only=True)
 class _ANTI_REG(Axiom, TermSimilarityMixin, ABC):
     """
     Reference:
@@ -95,11 +89,6 @@ class _ANTI_REG(Axiom, TermSimilarityMixin, ABC):
 @dataclass(frozen=True, kw_only=True)
 class ANTI_REG(_ANTI_REG, WordNetSynonymSetTermSimilarityMixin):
     name = "ANTI-REG"
-
-
-@dataclass(frozen=True, kw_only=True)
-class ANTI_REG_fastText(_ANTI_REG, FastTextWikiNewsTermSimilarityMixin):
-    name = "ANTI-REG-fastText"
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -170,19 +159,14 @@ class _ASPECT_REG(Axiom, TermSimilarityMixin, ABC):
             if not document2_terms.isdisjoint(aspect)
         }
         return strictly_greater(
-            count_document1_aspects,
-            count_document2_aspects
+            len(count_document1_aspects) > 0,
+            len(count_document2_aspects) > 0,
         )
 
 
 @dataclass(frozen=True, kw_only=True)
 class ASPECT_REG(_ASPECT_REG, WordNetSynonymSetTermSimilarityMixin):
     name = "ASPECT-REG"
-
-
-@dataclass(frozen=True, kw_only=True)
-class ASPECT_REG_fastText(_ASPECT_REG, FastTextWikiNewsTermSimilarityMixin):
-    name = "ASPECT-REG-fastText"
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -204,12 +188,10 @@ class AND(Axiom):
             if context.term_frequency(document2, query_term) > 0:
                 s2.add(query_term)
 
-        if not all(i in s1 for i in query_terms):
-            s1 = set()
-        if not all(i in s2 for i in query_terms):
-            s2 = set()
-
-        return strictly_greater(s1, s2)
+        return strictly_greater(
+            len(s1) > 0,
+            len(s2) > 0,
+        )
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -273,9 +255,3 @@ class DIV(Axiom):
 @dataclass(frozen=True, kw_only=True)
 class LEN_DIV(LEN_Mixin, DIV):
     name = "LEN-DIV"
-
-
-# Shorthand names:
-REG_f = REG_fastText
-ANTI_REG_f = ANTI_REG_fastText
-ASPECT_REG_f = ASPECT_REG_fastText
