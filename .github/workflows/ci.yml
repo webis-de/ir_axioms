@@ -161,7 +161,7 @@ jobs:
     - name: 🧪 Test Python code
       run: pytest --cov=./ --cov-report=xml ir_axioms/ tests/unit/ --ignore=ir_axioms/backend/ --ignore=ir_axioms/cli.py
     - name: 📤 Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
@@ -199,7 +199,7 @@ jobs:
     - name: 🧪 Test Python code
       run: pytest --cov=./ --cov-report=xml tests/integration/${{ matrix.backend }}/ ${{ matrix.backend == 'pyterrier' && 'ir_axioms/cli.py' || '' }}
     - name: 📤 Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       if: matrix.python == '3.9' && matrix.os == 'ubuntu-latest'
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
