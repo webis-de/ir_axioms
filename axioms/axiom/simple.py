@@ -1,88 +1,110 @@
 from dataclasses import dataclass
 from functools import cached_property
-from random import Random
-from typing import Any, Optional
+from typing import Any, Optional, Sequence, TypeVar, Protocol
+
+from numpy import zeros, floating
+from numpy.random import Generator, default_rng
+from typing_extensions import TypeAlias  # type: ignore
 
 from axioms.axiom.base import Axiom
-from axioms.axiom.utils import strictly_less, strictly_greater
-from axioms.model import (
-    Query, RankedDocument, IndexContext, JudgedRankedDocument
-)
+from axioms.model import Input, Output, Preference, PreferenceMatrix
 
 
 @dataclass(frozen=True, kw_only=True)
-class NopAxiom(Axiom):
-    name = "NOP"
+class NopAxiom(Axiom[Any, Any]):
 
     def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ):
+        self,
+        input: Input,
+        output1: Output,
+        output2: Output,
+    ) -> Preference:
         return 0
 
+    def preferences(
+        self,
+        input: Input,
+        outputs: Sequence[Output],
+    ) -> PreferenceMatrix:
+        return zeros((len(outputs), len(outputs)))
 
-@dataclass(frozen=True, kw_only=True)
-class OriginalAxiom(Axiom):
-    name = "ORIG"
 
-    def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ):
-        return strictly_less(document1.rank, document2.rank)
+NOP: TypeAlias = NopAxiom
 
 
 @dataclass(frozen=True, kw_only=True)
-class OracleAxiom(Axiom):
-    name = "ORACLE"
-
-    def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ) -> float:
-        if (
-                not isinstance(document1, JudgedRankedDocument) or
-                not isinstance(document2, JudgedRankedDocument)
-        ):
-            raise ValueError(
-                f"Expected both documents to be "
-                f"instances of {JudgedRankedDocument}, "
-                f"but were {type(document1)} and {type(document2)}."
-            )
-        return strictly_greater(document1.relevance, document2.relevance)
-
-
-@dataclass(frozen=True, kw_only=True)
-class RandomAxiom(Axiom):
-    name = "RANDOM"
-
+class RandomAxiom(Axiom[Any, Any]):
     seed: Optional[Any] = None
 
     @cached_property
-    def _random(self) -> Random:
-        return Random(self.seed)  # nosec: B311
+    def _generator(self) -> Generator:
+        return default_rng(seed=self.seed)  # nosec: B311
 
     def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ):
-        return self._random.randint(-1, 1)
+        self,
+        input: Input,
+        output1: Output,
+        output2: Output,
+    ) -> Preference:
+        return self._generator.integers(-1, 1)
+
+    def preferences(
+        self,
+        input: Input,
+        outputs: Sequence[Output],
+    ) -> PreferenceMatrix:
+        return self._generator.integers(-1, 1, (len(outputs), len(outputs))).astype(
+            floating
+        )
 
 
-# Aliases for shorter names:
-NOP = NopAxiom
-ORIG = OriginalAxiom
-ORACLE = OracleAxiom
-RANDOM = RandomAxiom
+RANDOM: TypeAlias = RandomAxiom
+
+
+_T_contra = TypeVar("_T_contra", contravariant=True)
+
+
+class _SupportsComparison(Protocol[_T_contra]):
+    def __lt__(self, other: _T_contra, /) -> bool: ...
+    def __gt__(self, other: _T_contra, /) -> bool: ...
+
+
+_SupportsComparisonT = TypeVar("_SupportsComparisonT")
+
+
+@dataclass(frozen=True, kw_only=True)
+class GreaterThanAxiom(Axiom[Any, _SupportsComparisonT]):
+
+    def preference(
+        self,
+        input: Any,
+        output1: _SupportsComparisonT,
+        output2: _SupportsComparisonT,
+    ) -> Preference:
+        if output1 > output2:
+            return 1
+        elif output1 < output2:
+            return -1
+        return 0
+
+
+GT: TypeAlias = GreaterThanAxiom
+
+
+@dataclass(frozen=True, kw_only=True)
+class LessThanAxiom(Axiom[Any, _SupportsComparisonT]):
+
+    def preference(
+        self,
+        input: Any,
+        output1: _SupportsComparisonT,
+        output2: _SupportsComparisonT,
+    ) -> Preference:
+        if output1 < output2:
+            return 1
+        elif output1 > output2:
+            return -1
+        return 0
+
+
+LT: TypeAlias = LessThanAxiom

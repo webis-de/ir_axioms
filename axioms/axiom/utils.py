@@ -1,49 +1,30 @@
-from typing import Union, overload
+from typing import Union, Any, Optional, Sequence, TypeVar, Protocol
+
+from axioms.axiom.simple import GT, LT
+
+_GT = GT()
+_LT = LT()
+_T_contra = TypeVar("_T_contra", contravariant=True)
 
 
-@overload
-def strictly_greater(x: bool, y: bool) -> float: ...
+class _SupportsComparison(Protocol[_T_contra]):
+    def __lt__(self, other: _T_contra, /) -> bool: ...
+    def __gt__(self, other: _T_contra, /) -> bool: ...
 
 
-@overload
-def strictly_greater(x: int, y: int) -> float: ...
+_SupportsComparisonT = TypeVar("_SupportsComparisonT")
 
 
-@overload
-def strictly_greater(x: float, y: float) -> float: ...
+def strictly_greater(x: _SupportsComparisonT, y: _SupportsComparisonT) -> float:
+    return _GT.preference(None, x, y)
 
 
-def strictly_greater(x: int | float | bool, y: int | float | bool) -> float:
-    if x > y:
-        return 1
-    elif y > x:
-        return -1
-    return 0
-
-
-@overload
-def strictly_less(x: bool, y: bool) -> float: ...
-
-
-@overload
-def strictly_less(x: int, y: int) -> float: ...
-
-
-@overload
-def strictly_less(x: float, y: float) -> float: ...
-
-
-def strictly_less(x: int | float | bool, y: int | float | bool) -> float:
-    if y > x:
-        return 1
-    elif x > y:
-        return -1
-    return 0
+def strictly_less(x: _SupportsComparisonT, y: _SupportsComparisonT) -> float:
+    return _LT.preference(None, x, y)
 
 
 def approximately_equal(
-        *items: Union[int, float],
-        margin_fraction: float = 0.1
+    *items: Union[int, float], margin_fraction: float = 0.1
 ) -> bool:
     """
     True if all numeric args are
