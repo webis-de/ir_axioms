@@ -1,4 +1,3 @@
-from abc import ABC
 from dataclasses import dataclass
 from typing import Final, Set, FrozenSet, List
 
@@ -7,9 +6,9 @@ from axioms.model.retrieval import get_index_context
 from axioms.precondition.length import LEN
 from axioms.axiom.utils import strictly_greater, approximately_equal
 from axioms.model import Query, RankedDocument, IndexContext
-from axioms.modules.similarity import (
-    TermSimilarityMixin,
-    WordNetSynonymSetTermSimilarityMixin,
+from axioms.tools import (
+    TermSimilarity,
+    WordNetSynonymSetTermSimilarity,
 )
 
 
@@ -26,7 +25,7 @@ def _vocabulary_overlap(vocabulary1: FrozenSet[str], vocabulary2: FrozenSet[str]
 
 
 @dataclass(frozen=True, kw_only=True)
-class _RegAxiom(Axiom, TermSimilarityMixin, ABC):
+class RegAxiom(Axiom):
     """
     Reference:
     Zheng, W., Fang, H.: Query aspect based term weighting regularization
@@ -34,13 +33,14 @@ class _RegAxiom(Axiom, TermSimilarityMixin, ABC):
     """
 
     context: IndexContext
+    term_similarity: TermSimilarity
 
     def preference(
         self, query: Query, document1: RankedDocument, document2: RankedDocument
     ):
         query_terms = self.context.term_set(query)
 
-        minimum_similarity_term = self.least_similar_term(query_terms)
+        minimum_similarity_term = self.term_similarity.least_similar_term(query_terms)
         if minimum_similarity_term is None:
             return 0
 
@@ -50,18 +50,14 @@ class _RegAxiom(Axiom, TermSimilarityMixin, ABC):
         )
 
 
-@dataclass(frozen=True, kw_only=True)
-class RegAxiom(_RegAxiom, WordNetSynonymSetTermSimilarityMixin):
-    pass
-
-
 REG: Final = RegAxiom(
     context=get_index_context(),
+    term_similarity=WordNetSynonymSetTermSimilarity(),
 ).with_precondition(LEN)
 
 
 @dataclass(frozen=True, kw_only=True)
-class _AntiRegAxiom(Axiom, TermSimilarityMixin, ABC):
+class AntiRegAxiom(Axiom):
     """
     Reference:
     Zheng, W., Fang, H.: Query aspect based term weighting regularization
@@ -71,13 +67,14 @@ class _AntiRegAxiom(Axiom, TermSimilarityMixin, ABC):
     """
 
     context: IndexContext
+    term_similarity: TermSimilarity
 
     def preference(
         self, query: Query, document1: RankedDocument, document2: RankedDocument
     ):
         query_terms = self.context.term_set(query)
 
-        maximum_similarity_term = self.most_similar_term(query_terms)
+        maximum_similarity_term = self.term_similarity.most_similar_term(query_terms)
         if maximum_similarity_term is None:
             return 0
 
@@ -87,18 +84,14 @@ class _AntiRegAxiom(Axiom, TermSimilarityMixin, ABC):
         )
 
 
-@dataclass(frozen=True, kw_only=True)
-class AntiRegAxiom(_AntiRegAxiom, WordNetSynonymSetTermSimilarityMixin):
-    pass
-
-
 ANTI_REG: Final = AntiRegAxiom(
     context=get_index_context(),
+    term_similarity=WordNetSynonymSetTermSimilarity(),
 )
 
 
 @dataclass(frozen=True, kw_only=True)
-class _AspectRegAxiom(Axiom, TermSimilarityMixin, ABC):
+class AspectRegAxiom(Axiom):
     """
     Similar to REG but follows the query aspect clustering
     from the paper and then counts the number of aspects covered
@@ -110,6 +103,7 @@ class _AspectRegAxiom(Axiom, TermSimilarityMixin, ABC):
     """
 
     context: IndexContext
+    term_similarity: TermSimilarity
     term_discriminator_margin_fraction: float = 0.1
 
     def preference(
@@ -130,7 +124,9 @@ class _AspectRegAxiom(Axiom, TermSimilarityMixin, ABC):
             # Require same term discriminator for all query terms.
             return 0
 
-        average_similarity = self.average_similarity(query_terms, query_terms)
+        average_similarity = self.term_similarity.average_similarity(
+            query_terms, query_terms
+        )
 
         query_aspects: List[Set[str]] = [{term} for term in query_terms]
 
@@ -143,7 +139,7 @@ class _AspectRegAxiom(Axiom, TermSimilarityMixin, ABC):
 
                 # Is any term pair similar enough to merge the aspects?
                 if any(
-                    self.similarity(term1, term2) > average_similarity
+                    self.term_similarity.similarity(term1, term2) > average_similarity
                     for term1 in a1
                     for term2 in a2
                 ):
@@ -164,13 +160,9 @@ class _AspectRegAxiom(Axiom, TermSimilarityMixin, ABC):
         )
 
 
-@dataclass(frozen=True, kw_only=True)
-class AspectRegAxiom(_AspectRegAxiom, WordNetSynonymSetTermSimilarityMixin):
-    pass
-
-
 ASPECT_REG: Final = AspectRegAxiom(
     context=get_index_context(),
+    term_similarity=WordNetSynonymSetTermSimilarity(),
 )
 
 

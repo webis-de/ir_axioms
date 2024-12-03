@@ -1,4 +1,3 @@
-from abc import ABC
 from dataclasses import dataclass
 from math import nan
 from typing import Final
@@ -7,15 +6,13 @@ from axioms.axiom.base import Axiom
 from axioms.model.retrieval import get_index_context
 from axioms.axiom.utils import strictly_greater, approximately_equal
 from axioms.model import Query, RankedDocument, IndexContext
-from axioms.modules.similarity import (
-    TermSimilarityMixin,
-    WordNetSynonymSetTermSimilarityMixin,
-)
+from axioms.tools import TermSimilarity, WordNetSynonymSetTermSimilarity
 
 
 @dataclass(frozen=True, kw_only=True)
-class _Stmc1Axiom(Axiom, TermSimilarityMixin, ABC):
+class Stmc1Axiom(Axiom):
     context: IndexContext
+    term_similarity: TermSimilarity
 
     def preference(
         self, query: Query, document1: RankedDocument, document2: RankedDocument
@@ -25,24 +22,21 @@ class _Stmc1Axiom(Axiom, TermSimilarityMixin, ABC):
         document2_terms = self.context.term_set(document2)
 
         return strictly_greater(
-            self.average_similarity(document1_terms, query_terms),
-            self.average_similarity(document2_terms, query_terms),
+            self.term_similarity.average_similarity(document1_terms, query_terms),
+            self.term_similarity.average_similarity(document2_terms, query_terms),
         )
-
-
-@dataclass(frozen=True, kw_only=True)
-class Stmc1Axiom(_Stmc1Axiom, WordNetSynonymSetTermSimilarityMixin):
-    pass
 
 
 STMC1: Final = Stmc1Axiom(
     context=get_index_context(),
+    term_similarity=WordNetSynonymSetTermSimilarity(),
 )
 
 
 @dataclass(frozen=True, kw_only=True)
-class _Stmc2Axiom(Axiom, TermSimilarityMixin, ABC):
+class Stmc2Axiom(Axiom):
     context: IndexContext
+    term_similarity: TermSimilarity
 
     def preference(
         self, query: Query, document1: RankedDocument, document2: RankedDocument
@@ -66,7 +60,7 @@ class _Stmc2Axiom(Axiom, TermSimilarityMixin, ABC):
 
         non_query_terms = document_terms - query_terms
 
-        most_similar_terms = self.most_similar_pair(
+        most_similar_terms = self.term_similarity.most_similar_pair(
             query_terms,
             non_query_terms,
         )
@@ -104,11 +98,7 @@ class _Stmc2Axiom(Axiom, TermSimilarityMixin, ABC):
         return 0
 
 
-@dataclass(frozen=True, kw_only=True)
-class Stmc2Axiom(_Stmc2Axiom, WordNetSynonymSetTermSimilarityMixin):
-    pass
-
-
 STMC2: Final = Stmc2Axiom(
     context=get_index_context(),
+    term_similarity=WordNetSynonymSetTermSimilarity(),
 )
