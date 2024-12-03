@@ -1,62 +1,30 @@
 from dataclasses import dataclass
-
-from diskcache import Cache
+from typing import Sequence
 
 from axioms.axiom.base import Axiom
-from axioms.model import RankedDocument, Query, IndexContext
+from axioms.model import Input, Output, Preference, PreferenceMatrix
 
 
 @dataclass(frozen=True, kw_only=True)
-class CachedAxiom(Axiom):
-    axiom: Axiom
-    disk: bool = False
-
-    def _key(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ) -> str:
-        return (
-            f"{self.axiom!r},{context},"
-            f"{query.title},{document1.id},{document2.id}"
-        )
+class CachedAxiom(Axiom[Input, Output]):
+    axiom: Axiom[Input, Output]
 
     def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ) -> float:
-        cache: Cache = context.cache
+        self,
+        input: Input,
+        output1: Output,
+        output2: Output,
+    ) -> Preference:
+        # TODO: Implement caching.
+        raise NotImplementedError()
+    
+    def preferences(
+        self,
+        input: Input,
+        outputs: Sequence[Output],
+    ) -> PreferenceMatrix:
+        # TODO: Implement caching.
+        raise NotImplementedError()
 
-        if cache is None:
-            return self.axiom.preference(context, query, document1, document2)
-
-        key = self._key(context, query, document1, document2)
-
-        if key in cache:
-            # Cache hit.
-            return cache[key]
-
-        symmetric_key = self._key(context, query, document2, document1)
-        if symmetric_key in cache:
-            # Cache hit for symmetric key.
-            preference = -cache[symmetric_key]
-            cache[key] = preference
-            return preference
-
-        # Cache miss.
-        preference = self.axiom.preference(
-            context,
-            query,
-            document1,
-            document2
-        )
-        cache[key] = preference
-        return preference
-
-    def cached(self) -> Axiom:
+    def cached(self) -> Axiom[Input, Output]:
         return self
