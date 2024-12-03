@@ -3,7 +3,7 @@ from typing import Sequence
 from axioms import logger
 from axioms.axiom import Axiom
 from axioms.model import Input, Output
-from axioms.modules.pivot import RandomPivotSelection, PivotSelection
+from axioms.tools.pivot import RandomPivotSelection, PivotSelection
 
 
 def kwiksort(
