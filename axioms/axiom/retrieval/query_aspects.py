@@ -1,64 +1,67 @@
 from abc import ABC
 from dataclasses import dataclass
-from typing import Set, FrozenSet, List
+from typing import Final, Set, FrozenSet, List
 
 from axioms.axiom.base import Axiom
-from axioms.axiom.preconditions import LEN_Mixin
+from axioms.model.retrieval import get_index_context
+from axioms.precondition.length import LEN
 from axioms.axiom.utils import strictly_greater, approximately_equal
 from axioms.model import Query, RankedDocument, IndexContext
 from axioms.modules.similarity import (
-    TermSimilarityMixin, WordNetSynonymSetTermSimilarityMixin
+    TermSimilarityMixin,
+    WordNetSynonymSetTermSimilarityMixin,
 )
 
 
-def _vocabulary_overlap(vocabulary1: FrozenSet[str],
-                        vocabulary2: FrozenSet[str]):
+def _vocabulary_overlap(vocabulary1: FrozenSet[str], vocabulary2: FrozenSet[str]):
     """
     Vocabulary overlap as calculated by the Jaccard coefficient.
     """
     intersection_length = len(vocabulary1 & vocabulary2)
     if intersection_length == 0:
         return 0
-    return (
-            intersection_length /
-            (len(vocabulary1) + len(vocabulary2) - intersection_length)
+    return intersection_length / (
+        len(vocabulary1) + len(vocabulary2) - intersection_length
     )
 
 
 @dataclass(frozen=True, kw_only=True)
-class _REG(Axiom, TermSimilarityMixin, ABC):
+class _RegAxiom(Axiom, TermSimilarityMixin, ABC):
     """
     Reference:
     Zheng, W., Fang, H.: Query aspect based term weighting regularization
     in information retrieval. In: Gurrin, C., et al. (eds.) ECIR 2010.
     """
 
+    context: IndexContext
+
     def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
+        self, query: Query, document1: RankedDocument, document2: RankedDocument
     ):
-        query_terms = context.term_set(query)
+        query_terms = self.context.term_set(query)
 
         minimum_similarity_term = self.least_similar_term(query_terms)
         if minimum_similarity_term is None:
             return 0
 
         return strictly_greater(
-            context.term_frequency(document1, minimum_similarity_term),
-            context.term_frequency(document2, minimum_similarity_term),
+            self.context.term_frequency(document1, minimum_similarity_term),
+            self.context.term_frequency(document2, minimum_similarity_term),
         )
 
 
 @dataclass(frozen=True, kw_only=True)
-class REG(_REG, WordNetSynonymSetTermSimilarityMixin):
-    name = "REG"
+class RegAxiom(_RegAxiom, WordNetSynonymSetTermSimilarityMixin):
+    pass
+
+
+REG: Final = RegAxiom(
+    context=get_index_context(),
+).with_precondition(LEN)
 
 
 @dataclass(frozen=True, kw_only=True)
-class _ANTI_REG(Axiom, TermSimilarityMixin, ABC):
+class _AntiRegAxiom(Axiom, TermSimilarityMixin, ABC):
     """
     Reference:
     Zheng, W., Fang, H.: Query aspect based term weighting regularization
@@ -67,32 +70,35 @@ class _ANTI_REG(Axiom, TermSimilarityMixin, ABC):
     Modified to use maximum similarity instead of minimum similarity.
     """
 
+    context: IndexContext
+
     def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
+        self, query: Query, document1: RankedDocument, document2: RankedDocument
     ):
-        query_terms = context.term_set(query)
+        query_terms = self.context.term_set(query)
 
         maximum_similarity_term = self.most_similar_term(query_terms)
         if maximum_similarity_term is None:
             return 0
 
         return strictly_greater(
-            context.term_frequency(document1, maximum_similarity_term),
-            context.term_frequency(document2, maximum_similarity_term),
+            self.context.term_frequency(document1, maximum_similarity_term),
+            self.context.term_frequency(document2, maximum_similarity_term),
         )
 
 
 @dataclass(frozen=True, kw_only=True)
-class ANTI_REG(_ANTI_REG, WordNetSynonymSetTermSimilarityMixin):
-    name = "ANTI-REG"
+class AntiRegAxiom(_AntiRegAxiom, WordNetSynonymSetTermSimilarityMixin):
+    pass
+
+
+ANTI_REG: Final = AntiRegAxiom(
+    context=get_index_context(),
+)
 
 
 @dataclass(frozen=True, kw_only=True)
-class _ASPECT_REG(Axiom, TermSimilarityMixin, ABC):
+class _AspectRegAxiom(Axiom, TermSimilarityMixin, ABC):
     """
     Similar to REG but follows the query aspect clustering
     from the paper and then counts the number of aspects covered
@@ -102,28 +108,24 @@ class _ASPECT_REG(Axiom, TermSimilarityMixin, ABC):
     Zheng, W., Fang, H.: Query aspect based term weighting regularization
     in information retrieval. In: Gurrin, C., et al. (eds.) ECIR 2010.
     """
+
+    context: IndexContext
     term_discriminator_margin_fraction: float = 0.1
 
     def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
+        self, query: Query, document1: RankedDocument, document2: RankedDocument
     ):
-        query_terms = context.term_set(query)
-        document1_terms = context.term_set(document1)
-        document2_terms = context.term_set(document2)
+        query_terms = self.context.term_set(query)
+        document1_terms = self.context.term_set(document1)
+        document2_terms = self.context.term_set(document2)
         if len(query_terms) == 0:
             return 0
 
         term_discriminators = {
-            context.inverse_document_frequency(term)
-            for term in query_terms
+            self.context.inverse_document_frequency(term) for term in query_terms
         }
         if not approximately_equal(
-                *term_discriminators,
-                self.term_discriminator_margin_fraction
+            *term_discriminators, self.term_discriminator_margin_fraction
         ):
             # Require same term discriminator for all query terms.
             return 0
@@ -141,9 +143,9 @@ class _ASPECT_REG(Axiom, TermSimilarityMixin, ABC):
 
                 # Is any term pair similar enough to merge the aspects?
                 if any(
-                        self.similarity(term1, term2) > average_similarity
-                        for term1 in a1
-                        for term2 in a2
+                    self.similarity(term1, term2) > average_similarity
+                    for term1 in a1
+                    for term2 in a2
                 ):
                     # Merge aspect 2 into aspect 1.
                     a1.update(a2)
@@ -151,12 +153,10 @@ class _ASPECT_REG(Axiom, TermSimilarityMixin, ABC):
                     query_aspects.pop(i2)
 
         count_document1_aspects = {
-            1 for aspect in query_aspects
-            if not document1_terms.isdisjoint(aspect)
+            1 for aspect in query_aspects if not document1_terms.isdisjoint(aspect)
         }
         count_document2_aspects = {
-            1 for aspect in query_aspects
-            if not document2_terms.isdisjoint(aspect)
+            1 for aspect in query_aspects if not document2_terms.isdisjoint(aspect)
         }
         return strictly_greater(
             len(count_document1_aspects) > 0,
@@ -165,24 +165,25 @@ class _ASPECT_REG(Axiom, TermSimilarityMixin, ABC):
 
 
 @dataclass(frozen=True, kw_only=True)
-class ASPECT_REG(_ASPECT_REG, WordNetSynonymSetTermSimilarityMixin):
-    name = "ASPECT-REG"
+class AspectRegAxiom(_AspectRegAxiom, WordNetSynonymSetTermSimilarityMixin):
+    pass
+
+
+ASPECT_REG: Final = AspectRegAxiom(
+    context=get_index_context(),
+)
 
 
 @dataclass(frozen=True, kw_only=True)
-class AND(Axiom):
-    name = "AND"
+class AndAxiom(Axiom):
+    context: IndexContext
 
     def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
+        self, query: Query, document1: RankedDocument, document2: RankedDocument
     ):
-        query_terms = context.term_set(query)
-        document1_terms = context.term_set(document1)
-        document2_terms = context.term_set(document2)
+        query_terms = self.context.term_set(query)
+        document1_terms = self.context.term_set(document1)
+        document2_terms = self.context.term_set(document2)
         query_term_count1 = query_terms & document1_terms
         query_term_count2 = query_terms & document2_terms
         all_query_terms1 = len(query_term_count1) == len(query_terms)
@@ -190,64 +191,54 @@ class AND(Axiom):
         return strictly_greater(all_query_terms1, all_query_terms2)
 
 
-@dataclass(frozen=True, kw_only=True)
-class LEN_AND(LEN_Mixin, AND):
-    name = "LEN-AND"
+AND: Final = AndAxiom(
+    context=get_index_context(),
+)
+LEN_AND: Final = AND.with_precondition(LEN)
 
 
 @dataclass(frozen=True, kw_only=True)
-class M_AND(Axiom):
+class ModifiedAndAxiom(Axiom):
     """
     Modified AND:
     One document contains a larger subset of query terms.
     """
-    name = "M-AND"
+
+    context: IndexContext
 
     def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
+        self, query: Query, document1: RankedDocument, document2: RankedDocument
     ):
-        query_terms = context.term_set(query)
-        document1_terms = context.term_set(document1)
-        document2_terms = context.term_set(document2)
+        query_terms = self.context.term_set(query)
+        document1_terms = self.context.term_set(document1)
+        document2_terms = self.context.term_set(document2)
         query_term_count1 = query_terms & document1_terms
         query_term_count2 = query_terms & document2_terms
 
         return strictly_greater(len(query_term_count1), len(query_term_count2))
 
 
-@dataclass(frozen=True, kw_only=True)
-class LEN_M_AND(LEN_Mixin, M_AND):
-    name = "LEN-M-AND"
+M_AND: Final = ModifiedAndAxiom(
+    context=get_index_context(),
+)
+LEN_M_AND: Final = M_AND.with_precondition(LEN)
 
 
 @dataclass(frozen=True, kw_only=True)
-class DIV(Axiom):
-    name = "DIV"
+class DivAxiom(Axiom):
+    context: IndexContext
 
     def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
+        self, query: Query, document1: RankedDocument, document2: RankedDocument
     ):
-        query_terms = context.term_set(query)
-        overlap1 = _vocabulary_overlap(
-            query_terms,
-            context.term_set(document1)
-        )
-        overlap2 = _vocabulary_overlap(
-            query_terms,
-            context.term_set(document2)
-        )
+        query_terms = self.context.term_set(query)
+        overlap1 = _vocabulary_overlap(query_terms, self.context.term_set(document1))
+        overlap2 = _vocabulary_overlap(query_terms, self.context.term_set(document2))
 
         return strictly_greater(overlap2, overlap1)
 
 
-@dataclass(frozen=True, kw_only=True)
-class LEN_DIV(LEN_Mixin, DIV):
-    name = "LEN-DIV"
+DIV: Final = DivAxiom(
+    context=get_index_context(),
+)
+LEN_DIV: Final = DIV.with_precondition(LEN)

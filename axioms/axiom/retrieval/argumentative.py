@@ -3,18 +3,17 @@ from functools import lru_cache
 from math import nan
 from pathlib import Path
 from statistics import mean
-from typing import Set, Dict, Optional
+from typing import Final, Set, Dict, Optional
 
 from nltk import WordNetLemmatizer, sent_tokenize, word_tokenize
-from targer_api import (
-    ArgumentSentences, ArgumentLabel, ArgumentTag, analyze_text
-)
+from targer_api import ArgumentSentences, ArgumentLabel, ArgumentTag, analyze_text
 from targer_api.constants import DEFAULT_TARGER_MODELS, DEFAULT_TARGER_API_URL
 
 from axioms.axiom.base import Axiom
-from axioms.axiom.preconditions import LEN_Mixin
 from axioms.axiom.utils import strictly_greater, strictly_less
-from axioms.model import Query, RankedDocument, IndexContext
+from axioms.model.retrieval import get_index_context
+from axioms.precondition.length import LEN
+from axioms.model import Query, Document, IndexContext
 from axioms.utils.nltk import download_nltk_dependencies
 
 
@@ -42,18 +41,10 @@ def _count_claims(sentences: ArgumentSentences) -> int:
     count: int = 0
     for sentence in sentences:
         for tag in sentence:
-            if (
-                    not last_tag_was_claim and
-                    _is_claim(tag) and
-                    tag.probability > 0.5
-            ):
+            if not last_tag_was_claim and _is_claim(tag) and tag.probability > 0.5:
                 last_tag_was_claim = True
                 count += 1
-            elif (
-                    last_tag_was_claim and
-                    _is_claim(tag) and
-                    tag.probability > 0.5
-            ):
+            elif last_tag_was_claim and _is_claim(tag) and tag.probability > 0.5:
                 pass
             elif last_tag_was_claim and not _is_claim(tag):
                 last_tag_was_claim = False
@@ -62,19 +53,19 @@ def _count_claims(sentences: ArgumentSentences) -> int:
 
 def _is_claim(tag: ArgumentTag) -> bool:
     return (
-            tag.label == ArgumentLabel.C_B or
-            tag.label == ArgumentLabel.C_I or
-            tag.label == ArgumentLabel.MC_B or
-            tag.label == ArgumentLabel.MC_I
+        tag.label == ArgumentLabel.C_B
+        or tag.label == ArgumentLabel.C_I
+        or tag.label == ArgumentLabel.MC_B
+        or tag.label == ArgumentLabel.MC_I
     )
 
 
 def _is_premise(tag: ArgumentTag) -> bool:
     return (
-            tag.label == ArgumentLabel.P_B or
-            tag.label == ArgumentLabel.P_I or
-            tag.label == ArgumentLabel.MP_B or
-            tag.label == ArgumentLabel.MP_I
+        tag.label == ArgumentLabel.P_B
+        or tag.label == ArgumentLabel.P_I
+        or tag.label == ArgumentLabel.MP_B
+        or tag.label == ArgumentLabel.MP_I
     )
 
 
@@ -83,10 +74,10 @@ def _is_claim_or_premise(tag: ArgumentTag) -> bool:
 
 
 def _count_query_terms(
-        context: IndexContext,
-        sentences: ArgumentSentences,
-        query: Query,
-        normalize: bool = True,
+    context: IndexContext,
+    sentences: ArgumentSentences,
+    query: Query,
+    normalize: bool = True,
 ) -> int:
     term_count = 0
     for term in context.terms(query):
@@ -96,20 +87,20 @@ def _count_query_terms(
                 token = tag.token
                 normalized_token = _normalize(token) if normalize else token
                 if (
-                        normalized_term == normalized_token and
-                        _is_claim_or_premise(tag) and
-                        tag.probability > 0.5
+                    normalized_term == normalized_token
+                    and _is_claim_or_premise(tag)
+                    and tag.probability > 0.5
                 ):
                     term_count += 1
     return term_count
 
 
 def _query_term_position_in_argument(
-        context: IndexContext,
-        sentences: ArgumentSentences,
-        query: Query,
-        penalty: int,
-        normalize: bool = True,
+    context: IndexContext,
+    sentences: ArgumentSentences,
+    query: Query,
+    penalty: int,
+    normalize: bool = True,
 ) -> float:
     term_argument_position = []
     tags = [tag for sentence in sentences for tag in sentence]
@@ -121,9 +112,9 @@ def _query_term_position_in_argument(
             token = tag.token
             normalized_token = _normalize(token) if normalize else token
             if (
-                    normalized_term == normalized_token and
-                    tag.label != ArgumentLabel.O and
-                    tag.probability > 0.5
+                normalized_term == normalized_token
+                and tag.label != ArgumentLabel.O
+                and tag.probability > 0.5
             ):
                 term_argument_position.append(position)
                 found = True
@@ -137,8 +128,8 @@ def _query_term_position_in_argument(
 
 @lru_cache(None)
 def _sentence_length(
-        context: IndexContext,
-        document: RankedDocument,
+    context: IndexContext,
+    document: Document,
 ) -> float:
     download_nltk_dependencies("punkt")
     download_nltk_dependencies("punkt_tab")
@@ -146,8 +137,7 @@ def _sentence_length(
     if len(sentences) == 0:
         return nan
     return mean(
-        len(word_tokenize(sentence, preserve_line=True))
-        for sentence in sentences
+        len(word_tokenize(sentence, preserve_line=True)) for sentence in sentences
     )
 
 
@@ -155,66 +145,58 @@ def _sentence_length(
 class _TargerMixin:
     models: Set[str] = field(default_factory=lambda: DEFAULT_TARGER_MODELS)
     api_url: str = DEFAULT_TARGER_API_URL
+    cache_dir: Optional[Path] = None
 
     @lru_cache(None)
     def _analyze_text(
-            self,
-            contents: str,
-            cache_dir: Optional[Path],
+        self,
+        contents: str,
     ) -> Dict[str, ArgumentSentences]:
         return analyze_text(
             contents,
             model_or_models=self.models,
             api_url=self.api_url,
-            cache_dir=(
-                cache_dir / "targer"
-                if cache_dir is not None
-                else None
-            )
+            cache_dir=self.cache_dir,
         )
 
     def analyze_text(
-            self,
-            context: IndexContext,
-            document: RankedDocument,
+        self,
+        context: IndexContext,
+        document: Document,
     ) -> Dict[str, ArgumentSentences]:
-        return self._analyze_text(
-            context.contents(document),
-            context.cache_dir
-        )
+        return self._analyze_text(context.contents(document))
 
 
 @dataclass(frozen=True, kw_only=True)
-class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom):
+class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom[Query, Document]):
     """
     Favor documents with more argumentative units.
     """
 
+    context: IndexContext
+
     def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
+        self,
+        input: Query,
+        output1: Document,
+        output2: Document,
     ):
-        arguments1 = self.analyze_text(context, document1)
-        arguments2 = self.analyze_text(context, document2)
+        arguments1 = self.analyze_text(self.context, output1)
+        arguments2 = self.analyze_text(self.context, output2)
 
         count1 = sum(
-            _count_argumentative_units(sentences)
-            for _, sentences in arguments1.items()
+            _count_argumentative_units(sentences) for _, sentences in arguments1.items()
         )
         count2 = sum(
-            _count_argumentative_units(sentences)
-            for _, sentences in arguments2.items()
+            _count_argumentative_units(sentences) for _, sentences in arguments2.items()
         )
 
         return strictly_greater(count1, count2)
 
 
-@dataclass(frozen=True, kw_only=True)
-class ArgUC(LEN_Mixin, ArgumentativeUnitsCountAxiom):
-    name = "ArgUC"
+ArgUC: Final = ArgumentativeUnitsCountAxiom(
+    context=get_index_context(),
+).with_precondition(LEN)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -223,6 +205,7 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
     Favor documents with more query terms in argumentative units.
     """
 
+    context: IndexContext
     normalize: bool = True
     """
     Normalize query terms and tokens from argumentative units
@@ -234,30 +217,29 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
         download_nltk_dependencies("wordnet", "omw-1.4")
 
     def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
+        self,
+        query: Query,
+        document1: Document,
+        document2: Document,
     ):
-        arguments1 = self.analyze_text(context, document1)
-        arguments2 = self.analyze_text(context, document2)
+        arguments1 = self.analyze_text(self.context, document1)
+        arguments2 = self.analyze_text(self.context, document2)
 
         count1 = sum(
-            _count_query_terms(context, sentences, query, self.normalize)
+            _count_query_terms(self.context, sentences, query, self.normalize)
             for _, sentences in arguments1.items()
         )
         count2 = sum(
-            _count_query_terms(context, sentences, query, self.normalize)
+            _count_query_terms(self.context, sentences, query, self.normalize)
             for _, sentences in arguments2.items()
         )
 
         return strictly_greater(count1, count2)
 
 
-@dataclass(frozen=True, kw_only=True)
-class QTArg(LEN_Mixin, QueryTermOccurrenceInArgumentativeUnitsAxiom):
-    name = "QTArg"
+QTArg: Final = QueryTermOccurrenceInArgumentativeUnitsAxiom(
+    context=get_index_context(),
+).with_precondition(LEN)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -277,12 +259,13 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
             of WWW 2017. pp. 1291–1299. ACM.
     """
 
+    context: IndexContext
     normalize: bool = True
     """
     Normalize query terms and tokens from argumentative units
     using the WordNet lemmatizer.
     """
-    penalty: Optional[int] = 10000000
+    penalty: Optional[int] = 100000
     """
     Penalty for the average query term position,
     if a query term is not found in any argumentative unit for a document.
@@ -294,42 +277,36 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
         download_nltk_dependencies("wordnet", "omw-1.4")
 
     def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
+        self,
+        query: Query,
+        document1: Document,
+        document2: Document,
     ):
-        arguments1 = self.analyze_text(context, document1)
-        arguments2 = self.analyze_text(context, document2)
+        arguments1 = self.analyze_text(self.context, document1)
+        arguments2 = self.analyze_text(self.context, document2)
 
         if len(arguments1) == 0 or len(arguments2) == 0:
             return 0
 
         penalty = self.penalty
         if penalty is None:
-            penalty = max(
-                len(context.terms(document1)),
-                len(context.terms(document2)),
-            ) + 1
+            penalty = (
+                max(
+                    len(self.context.terms(document1)),
+                    len(self.context.terms(document2)),
+                )
+                + 1
+            )
 
         position1 = mean(
             _query_term_position_in_argument(
-                context,
-                sentences,
-                query,
-                penalty,
-                self.normalize
+                self.context, sentences, query, penalty, self.normalize
             )
             for _, sentences in arguments1.items()
         )
         position2 = mean(
             _query_term_position_in_argument(
-                context,
-                sentences,
-                query,
-                penalty,
-                self.normalize
+                self.context, sentences, query, penalty, self.normalize
             )
             for _, sentences in arguments2.items()
         )
@@ -337,9 +314,9 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
         return strictly_less(position1, position2)
 
 
-@dataclass(frozen=True, kw_only=True)
-class QTPArg(LEN_Mixin, QueryTermPositionInArgumentativeUnitsAxiom):
-    name = "QTPArg"
+QTPArg: Final = QueryTermPositionInArgumentativeUnitsAxiom(
+    context=get_index_context(),
+).with_precondition(LEN)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -356,18 +333,18 @@ class AverageSentenceLengthAxiom(Axiom):
         Newell, C.: Editing Tip: Sentence Length (2014)
     """
 
+    context: IndexContext
     min_sentence_length: int = 12
     max_sentence_length: int = 20
 
     def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
+        self,
+        input: Query,
+        document1: Document,
+        document2: Document,
     ):
-        sentence_length1 = _sentence_length(context, document1)
-        sentence_length2 = _sentence_length(context, document2)
+        sentence_length1 = _sentence_length(self.context, document1)
+        sentence_length2 = _sentence_length(self.context, document2)
 
         min_length = self.min_sentence_length
         max_length = self.max_sentence_length
@@ -383,11 +360,7 @@ class AverageSentenceLengthAxiom(Axiom):
             return 0
 
 
-@dataclass(frozen=True, kw_only=True)
-class aSLDoc(LEN_Mixin, AverageSentenceLengthAxiom):
-    name = "aSLDoc"
-
-
-@dataclass(frozen=True, kw_only=True)
-class aSL(LEN_Mixin, AverageSentenceLengthAxiom):
-    name = "aSL"
+aSLDoc: Final = AverageSentenceLengthAxiom(
+    context=get_index_context(),
+).with_precondition(LEN)
+aSL: Final = aSLDoc

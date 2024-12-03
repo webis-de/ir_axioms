@@ -6,13 +6,11 @@ from trectools import TrecQrel, TrecTopics
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.utils import strictly_greater
-from axioms.model import Query, RankedDocument, IndexContext
+from axioms.model import Query, RankedDocument
 
 
 @dataclass(frozen=True, kw_only=True)
 class TrecOracleAxiom(Axiom):
-    name = "TREC-ORACLE"
-
     topics: TrecTopics
     qrels: TrecQrel
 
@@ -24,9 +22,7 @@ class TrecOracleAxiom(Axiom):
             if topic_query == query_title
         ]
         if len(topics) == 0:
-            raise RuntimeError(
-                f"Could not find topic for query '{query_title}'."
-            )
+            raise RuntimeError(f"Could not find topic for query '{query_title}'.")
         if len(topics) > 1:
             raise RuntimeError(
                 f"Found multiple topics for query '{query_title}': {topics}"
@@ -47,16 +43,8 @@ class TrecOracleAxiom(Axiom):
         return judgement
 
     def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
+        self, query: Query, document1: RankedDocument, document2: RankedDocument
     ) -> float:
         judgement1 = self._judgement(query.title, document1.id)
         judgement2 = self._judgement(query.title, document2.id)
         return strictly_greater(judgement1, judgement2)
-
-
-# Aliases for shorter names:
-TREC = TrecOracleAxiom
