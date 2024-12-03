@@ -113,7 +113,7 @@ class MultiplicativeInverseAxiom(Axiom[Input, Output]):
 
 
 @dataclass(frozen=True, kw_only=True)
-class AndAxiom(Axiom[Input, Output]):
+class ConjunctionAxiom(Axiom[Input, Output]):
     # TODO: And is a special case of majority vote with a majority of 1.0
     #   We might want to merge both classes eventually.
     axioms: Iterable[Axiom[Input, Output]]
@@ -138,7 +138,7 @@ class AndAxiom(Axiom[Input, Output]):
 
     def __and__(self, other: Axiom[Input, Output]) -> Axiom[Input, Output]:
         # Avoid chaining operators.
-        return AndAxiom(axioms=[*self.axioms, other])
+        return ConjunctionAxiom(axioms=[*self.axioms, other])
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -202,7 +202,8 @@ class VoteAxiom(Axiom[Input, Output]):
             return super().__mod__(other)
 
 
-MajorityVoteAxiom: TypeAlias = VoteAxiom
+class MajorityVoteAxiom(VoteAxiom):
+    pass
 
 
 @dataclass(frozen=True, kw_only=True)

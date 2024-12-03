@@ -17,7 +17,7 @@ from axioms.axiom.arithmetic import (  # noqa: F401
     SumAxiom,
     ProductAxiom,
     MultiplicativeInverseAxiom,
-    AndAxiom,
+    ConjunctionAxiom,
     VoteAxiom,
     MajorityVoteAxiom,
     NormalizedAxiom,
