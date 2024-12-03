@@ -1,37 +1,13 @@
-from dataclasses import dataclass
+from typing import TypeAlias, TypeVar
 
+from numpy import floating, bool_
+from numpy.typing import NDArray
 
-@dataclass(frozen=True)
-class Query:
-    title: str
+Input = TypeVar("Input")
+Output = TypeVar("Output")
 
+Preference: TypeAlias = float
+PreferenceMatrix: TypeAlias = NDArray[floating]
 
-@dataclass(frozen=True)
-class Document:
-    id: str
-
-
-@dataclass(frozen=True)
-class TextDocument(Document):
-    contents: str
-
-
-@dataclass(frozen=True)
-class RankedDocument(Document):
-    score: float
-    rank: int
-
-
-@dataclass(frozen=True)
-class RankedTextDocument(TextDocument, RankedDocument):
-    pass
-
-
-@dataclass(frozen=True)
-class JudgedRankedDocument(RankedDocument):
-    relevance: float
-
-
-@dataclass(frozen=True)
-class JudgedRankedTextDocument(TextDocument, JudgedRankedDocument):
-    pass
+Mask: TypeAlias = bool
+MaskMatrix: TypeAlias = NDArray[bool_]
