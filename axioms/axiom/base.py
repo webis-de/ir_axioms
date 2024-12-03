@@ -4,7 +4,7 @@ from typing import Generic, Literal, Sequence, Optional, final
 from numpy import floating, array
 
 from axioms.model import Input, Output, Preference, PreferenceMatrix
-from axioms.modules.pivot import PivotSelection, RandomPivotSelection
+from axioms.tools.pivot import PivotSelection, RandomPivotSelection
 from axioms.precondition.base import Precondition
 
 
@@ -112,9 +112,9 @@ class Axiom(ABC, Generic[Input, Output]):
         return self % other
 
     def __and__(self, other: "Axiom"[Input, Output]) -> "Axiom"[Input, Output]:
-        from axioms.axiom.arithmetic import AndAxiom
+        from axioms.axiom.arithmetic import ConjunctionAxiom
 
-        return AndAxiom(axioms=[self, other])
+        return ConjunctionAxiom(axioms=[self, other])
 
     def __rand__(self, other: "Axiom"[Input, Output]) -> "Axiom"[Input, Output]:
         return self & other
