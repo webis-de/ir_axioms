@@ -1,5 +1,9 @@
 # Re-export from sub-modules.
 
+from axioms.axiom.generation import (  # noqa: F401
+    AspectCoverageAxiom,
+)
+
 from axioms.axiom.retrieval import (  # noqa: F401
     ArgumentativeUnitsCountAxiom,
     ArgUC,
