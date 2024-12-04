@@ -1,16 +1,16 @@
 from dataclasses import dataclass
-from typing import NamedTuple, Optional, Sequence, TypeAlias
+from typing import Optional, Sequence, TypeAlias
 
 
-@dataclass(frozen=True, slots=True)
-class GenerationInput(NamedTuple):
+@dataclass(frozen=True)
+class GenerationInput:
     text: str
     context: Sequence[str]
     reference_output: Optional["GenerationOutput"]
 
 
-@dataclass(frozen=True, slots=True)
-class GenerationOutput(NamedTuple):
+@dataclass(frozen=True)
+class GenerationOutput:
     text: str
 
 
