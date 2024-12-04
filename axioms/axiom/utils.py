@@ -1,9 +1,6 @@
-from typing import Union, Any, Optional, Sequence, TypeVar, Protocol
+from typing import Union, TypeVar, Protocol
 
-from axioms.axiom.simple import GT, LT
 
-_GT = GT()
-_LT = LT()
 _T_contra = TypeVar("_T_contra", contravariant=True)
 
 
@@ -16,11 +13,19 @@ _SupportsComparisonT = TypeVar("_SupportsComparisonT")
 
 
 def strictly_greater(x: _SupportsComparisonT, y: _SupportsComparisonT) -> float:
-    return _GT.preference(None, x, y)
+    if x > y:
+        return 1
+    elif x < y:
+        return -1
+    return 0
 
 
 def strictly_less(x: _SupportsComparisonT, y: _SupportsComparisonT) -> float:
-    return _LT.preference(None, x, y)
+    if x < y:
+        return 1
+    elif x > y:
+        return -1
+    return 0
 
 
 def approximately_equal(

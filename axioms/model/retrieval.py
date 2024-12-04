@@ -91,7 +91,7 @@ class IndexContext(ABC):
         return term_count / terms_len
 
 
-@dataclass()
+@dataclass(unsafe_hash=True)
 class _DefaultIndexContext(IndexContext):
     """
     Default lazy wrapper implementation to use as the global index context for all retrieval axioms (and preconditions).

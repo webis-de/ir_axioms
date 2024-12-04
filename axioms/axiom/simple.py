@@ -77,7 +77,7 @@ class GreaterThanAxiom(Axiom[Any, _SupportsComparisonT]):
 
     def preference(
         self,
-        _: Any,
+        input: Any,
         output1: _SupportsComparisonT,
         output2: _SupportsComparisonT,
     ) -> Preference:
@@ -96,7 +96,7 @@ class LessThanAxiom(Axiom[Any, _SupportsComparisonT]):
 
     def preference(
         self,
-        _: Any,
+        input: Any,
         output1: _SupportsComparisonT,
         output2: _SupportsComparisonT,
     ) -> Preference:

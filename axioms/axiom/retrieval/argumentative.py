@@ -177,7 +177,7 @@ class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom[Any, Document]):
 
     def preference(
         self,
-        _: Any,
+        input: Any,
         output1: Document,
         output2: Document,
     ):
@@ -341,7 +341,7 @@ class AverageSentenceLengthAxiom(Axiom[Any, Document]):
 
     def preference(
         self,
-        _: Any,
+        input: Any,
         output1: Document,
         output2: Document,
     ):

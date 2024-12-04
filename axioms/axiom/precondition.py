@@ -11,7 +11,7 @@ from axioms.model import (
     Preference,
     PreferenceMatrix,
 )
-from axioms.precondition import Precondition
+from axioms.precondition.base import Precondition
 
 
 @dataclass(frozen=True, kw_only=True)

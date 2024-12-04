@@ -1,11 +1,9 @@
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Generic, Literal, Sequence
+from typing import Generic, Literal, Sequence, TYPE_CHECKING
 
 from numpy import sign
 
-from axioms.axiom.base import Axiom
-from axioms.axiom.precondition import PreconditionAxiom
 from axioms.model import (
     Input,
     Output,
@@ -14,15 +12,20 @@ from axioms.model import (
 )
 from axioms.precondition.base import Precondition
 
+if TYPE_CHECKING:
+    from axioms.axiom.base import Axiom
+
 
 @dataclass(frozen=True, kw_only=True)
 class AxiomPrecondition(Precondition[Input, Output], Generic[Input, Output]):
-    axiom: Axiom[Input, Output]
+    axiom: "Axiom[Input, Output]"
     expected_sign: Literal[1, 0, -1] = 0
     strip_preconditions: bool = True
 
     @cached_property
-    def _axiom(self) -> Axiom[Input, Output]:
+    def _axiom(self) -> "Axiom[Input, Output]":
+        from axioms.axiom.precondition import PreconditionAxiom
+
         if self.strip_preconditions and isinstance(self.axiom, PreconditionAxiom):
             return self.axiom.strip_preconditions()
         else:
@@ -34,7 +37,7 @@ class AxiomPrecondition(Precondition[Input, Output], Generic[Input, Output]):
         output1: Output,
         output2: Output,
     ) -> Mask:
-        preference = self.axiom.preference(input,output1,output2)
+        preference = self.axiom.preference(input, output1, output2)
         return sign(preference) == self.expected_sign
 
     def preconditions(
@@ -42,5 +45,5 @@ class AxiomPrecondition(Precondition[Input, Output], Generic[Input, Output]):
         input: Input,
         outputs: Sequence[Output],
     ) -> MaskMatrix:
-        preferences = self.axiom.preferences(input,outputs)
+        preferences = self.axiom.preferences(input, outputs)
         return sign(preferences) == self.expected_sign

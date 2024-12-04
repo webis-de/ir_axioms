@@ -1,6 +1,5 @@
-from abc import ABC
 from dataclasses import dataclass
-from typing import Annotated, final
+from typing import Annotated
 
 from annotated_types import Interval
 
