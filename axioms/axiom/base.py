@@ -68,71 +68,71 @@ class Axiom(ABC, Generic[Input, Output]):
             dtype=floating,
         )
 
-    def __add__(self, other: "Axiom"[Input, Output]) -> "Axiom"[Input, Output]:
+    def __add__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         from axioms.axiom.arithmetic import SumAxiom
 
         return SumAxiom(axioms=[self, other])
 
-    def __radd__(self, other: "Axiom"[Input, Output]) -> "Axiom"[Input, Output]:
+    def __radd__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         return self + other
 
-    def __sub__(self, other: "Axiom"[Input, Output]) -> "Axiom"[Input, Output]:
+    def __sub__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         return self + -other
 
-    def __rsub__(self, other: "Axiom"[Input, Output]) -> "Axiom"[Input, Output]:
+    def __rsub__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         return -self + other
 
-    def __mul__(self, other: "Axiom"[Input, Output]) -> "Axiom"[Input, Output]:
+    def __mul__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         from axioms.axiom.arithmetic import ProductAxiom
 
         return ProductAxiom(axioms=[self, other])
 
-    def __rmul__(self, other: "Axiom"[Input, Output]) -> "Axiom"[Input, Output]:
+    def __rmul__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         return self * other
 
-    def __truediv__(self, other: "Axiom"[Input, Output]) -> "Axiom"[Input, Output]:
+    def __truediv__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         from axioms.axiom.arithmetic import MultiplicativeInverseAxiom
 
         return self * MultiplicativeInverseAxiom(axiom=other)
 
-    def __rtruediv__(self, other: "Axiom"[Input, Output]) -> "Axiom"[Input, Output]:
+    def __rtruediv__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         from axioms.axiom.arithmetic import MultiplicativeInverseAxiom
 
         return MultiplicativeInverseAxiom(axiom=self) * other
 
-    def __mod__(self, other: "Axiom"[Input, Output]) -> "Axiom"[Input, Output]:
+    def __mod__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         from axioms.axiom.arithmetic import VoteAxiom
 
         return VoteAxiom(axioms=[self, other])
 
-    def __rmod__(self, other: "Axiom"[Input, Output]) -> "Axiom"[Input, Output]:
+    def __rmod__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         return self % other
 
-    def majority_vote(self, other: "Axiom"[Input, Output]) -> "Axiom"[Input, Output]:
+    def majority_vote(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         return self % other
 
-    def __and__(self, other: "Axiom"[Input, Output]) -> "Axiom"[Input, Output]:
+    def __and__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         from axioms.axiom.arithmetic import ConjunctionAxiom
 
         return ConjunctionAxiom(axioms=[self, other])
 
-    def __rand__(self, other: "Axiom"[Input, Output]) -> "Axiom"[Input, Output]:
+    def __rand__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         return self & other
 
-    def __or__(self, other: "Axiom"[Input, Output]) -> "Axiom"[Input, Output]:
+    def __or__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         from axioms.axiom.arithmetic import CascadeAxiom
 
         return CascadeAxiom(axioms=[self, other])
 
-    def __ror__(self, other: "Axiom"[Input, Output]) -> "Axiom"[Input, Output]:
+    def __ror__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         return other | self
 
-    def __neg__(self) -> "Axiom"[Input, Output]:
+    def __neg__(self) -> "Axiom[Input, Output]":
         from axioms.axiom.arithmetic import UniformAxiom
 
         return self * UniformAxiom(scalar=-1)
 
-    def __pos__(self) -> "Axiom"[Input, Output]:
+    def __pos__(self) -> "Axiom[Input, Output]":
         """
         Return the normalized preference of this axiom,
         replacing positive values with 1 and negative values with -1.
@@ -141,14 +141,14 @@ class Axiom(ABC, Generic[Input, Output]):
 
         return NormalizedAxiom(axiom=self)
 
-    def normalized(self) -> "Axiom"[Input, Output]:
+    def normalized(self) -> "Axiom[Input, Output]":
         """
         Return the normalized preference of this axiom,
         replacing positive values with 1 and negative values with -1.
         """
         return +self
 
-    def __invert__(self) -> "Axiom"[Input, Output]:
+    def __invert__(self) -> "Axiom[Input, Output]":
         """
         Cache this axiom's preferences in the context's cache directory,
         meaning the ``preference()`` method will only be called once
@@ -156,7 +156,7 @@ class Axiom(ABC, Generic[Input, Output]):
         """
         return self.cached()
 
-    def cached(self) -> "Axiom"[Input, Output]:
+    def cached(self) -> "Axiom[Input, Output]":
         """
         Cache this axiom's preferences in the context's cache directory,
         meaning the ``preference()`` method will only be called once
@@ -166,7 +166,7 @@ class Axiom(ABC, Generic[Input, Output]):
 
         return CachedAxiom(axiom=self)
 
-    def parallel(self, n_jobs: Optional[int] = None) -> "Axiom"[Input, Output]:
+    def parallel(self, n_jobs: Optional[int] = None) -> "Axiom[Input, Output]":
         """
         Parallelize preference matrix computation of this axiom.
         """
@@ -190,7 +190,7 @@ class Axiom(ABC, Generic[Input, Output]):
     def with_precondition(
         self,
         precondition: Precondition[Input, Output],
-    ) -> "Axiom"[Input, Output]:
+    ) -> "Axiom[Input, Output]":
         from axioms.axiom.precondition import PreconditionAxiom
 
         return PreconditionAxiom(
