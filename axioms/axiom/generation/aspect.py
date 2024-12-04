@@ -6,7 +6,7 @@ from annotated_types import Interval
 from axioms.axiom.base import Axiom
 from axioms.model.base import Preference
 from axioms.model.generation import GenerationInput, GenerationOutput
-from axioms.tools.aspect import AspectExtraction
+from axioms.tools.aspects import AspectExtraction
 
 
 @dataclass(frozen=True)

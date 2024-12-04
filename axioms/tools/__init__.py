@@ -1,6 +1,6 @@
 # Re-export from sub-modules.
 
-from axioms.tools.aspect import (  # noqa: F401
+from axioms.tools.aspects import (  # noqa: F401
     AspectExtraction,
     SpacyNounChunksAspectExtraction,
 )
