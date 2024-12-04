@@ -1,30 +1,34 @@
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Hashable, Sequence, TypeVar
 
 from axioms.axiom.base import Axiom
-from axioms.model import Input, Output, Preference, PreferenceMatrix
+from axioms.model import Preference, PreferenceMatrix
+
+
+HashableInput = TypeVar("HashableInput", bound=Hashable)
+HashableOutput = TypeVar("HashableOutput", bound=Hashable)
 
 
 @dataclass(frozen=True, kw_only=True)
-class CachedAxiom(Axiom[Input, Output]):
-    axiom: Axiom[Input, Output]
+class CachedAxiom(Axiom[HashableInput, HashableOutput]):
+    axiom: Axiom[HashableInput, HashableOutput]
 
     def preference(
         self,
-        input: Input,
-        output1: Output,
-        output2: Output,
+        input: HashableInput,
+        output1: HashableOutput,
+        output2: HashableOutput,
     ) -> Preference:
         # TODO: Implement caching.
         raise NotImplementedError()
-    
+
     def preferences(
         self,
-        input: Input,
-        outputs: Sequence[Output],
+        input: HashableInput,
+        outputs: Sequence[HashableOutput],
     ) -> PreferenceMatrix:
         # TODO: Implement caching.
         raise NotImplementedError()
 
-    def cached(self) -> Axiom[Input, Output]:
+    def cached(self) -> Axiom[HashableInput, HashableOutput]:
         return self

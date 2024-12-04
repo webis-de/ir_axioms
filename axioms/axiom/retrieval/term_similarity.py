@@ -5,21 +5,24 @@ from typing import Final
 from axioms.axiom.base import Axiom
 from axioms.model.retrieval import get_index_context
 from axioms.axiom.utils import strictly_greater, approximately_equal
-from axioms.model import Query, RankedDocument, IndexContext
+from axioms.model import Query, Document, IndexContext
 from axioms.tools import TermSimilarity, WordNetSynonymSetTermSimilarity
 
 
 @dataclass(frozen=True, kw_only=True)
-class Stmc1Axiom(Axiom):
+class Stmc1Axiom(Axiom[Query, Document]):
     context: IndexContext
     term_similarity: TermSimilarity
 
     def preference(
-        self, query: Query, document1: RankedDocument, document2: RankedDocument
+        self,
+        input: Query,
+        output1: Document,
+        output2: Document,
     ):
-        query_terms = self.context.term_set(query)
-        document1_terms = self.context.term_set(document1)
-        document2_terms = self.context.term_set(document2)
+        query_terms = self.context.term_set(input)
+        document1_terms = self.context.term_set(output1)
+        document2_terms = self.context.term_set(output2)
 
         return strictly_greater(
             self.term_similarity.average_similarity(document1_terms, query_terms),
@@ -34,12 +37,15 @@ STMC1: Final = Stmc1Axiom(
 
 
 @dataclass(frozen=True, kw_only=True)
-class Stmc2Axiom(Axiom):
+class Stmc2Axiom(Axiom[Query, Document]):
     context: IndexContext
     term_similarity: TermSimilarity
 
     def preference(
-        self, query: Query, document1: RankedDocument, document2: RankedDocument
+        self,
+        input: Query,
+        output1: Document,
+        output2: Document,
     ):
         """
         Given the most similar query term and non-query term,
@@ -53,9 +59,9 @@ class Stmc2Axiom(Axiom):
         is non-deterministic if there are multiple equally most similar pairs.
         """
 
-        query_terms = self.context.term_set(query)
-        document1_terms = self.context.term_set(document1)
-        document2_terms = self.context.term_set(document2)
+        query_terms = self.context.term_set(input)
+        document1_terms = self.context.term_set(output1)
+        document2_terms = self.context.term_set(output2)
         document_terms = document1_terms | document2_terms
 
         non_query_terms = document_terms - query_terms
@@ -70,7 +76,8 @@ class Stmc2Axiom(Axiom):
         most_similar_query_term, most_similar_non_query_term = most_similar_terms
 
         def term_frequency_ratio(
-            document_a: RankedDocument, document_b: RankedDocument
+            document_a: Document,
+            document_b: Document,
         ):
             tf_most_similar_query_term = self.context.term_frequency(
                 document_b, most_similar_query_term
@@ -84,13 +91,13 @@ class Stmc2Axiom(Axiom):
 
         if len(document1_terms) > 0 and approximately_equal(
             len(document2_terms) / len(document1_terms),
-            term_frequency_ratio(document2, document1),
+            term_frequency_ratio(output2, output1),
             margin_fraction=0.2,
         ):
             return 1
         elif len(document2_terms) > 0 and approximately_equal(
             len(document1_terms) / len(document2_terms),
-            term_frequency_ratio(document1, document2),
+            term_frequency_ratio(output1, output2),
             margin_fraction=0.2,
         ):
             return -1

@@ -9,27 +9,28 @@ from axioms.model.retrieval import get_index_context
 
 
 @dataclass(frozen=True, kw_only=True)
-class Lb1Axiom(Axiom):
+class Lb1Axiom(Axiom[Query, RankedDocument]):
     context: IndexContext
 
     def preference(
-            self,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
+        self,
+        input: Query,
+        output1: RankedDocument,
+        output2: RankedDocument,
     ):
-        if not approximately_equal(document1.score, document2.score):
+        if not approximately_equal(output1.score, output2.score):
             return 0
 
         # TODO: Do we really want to use the term set here, not the list?
-        for term in self.context.term_set(query):
-            tf1 = self.context.term_frequency(document1, term)
-            tf2 = self.context.term_frequency(document2, term)
+        for term in self.context.term_set(input):
+            tf1 = self.context.term_frequency(output1, term)
+            tf2 = self.context.term_frequency(output2, term)
             if isclose(tf1, 0) and tf2 > 0:
                 return -1
             if isclose(tf2, 0) and tf1 > 0:
                 return 1
         return 0
+
 
 LB1: Final = Lb1Axiom(
     context=get_index_context(),

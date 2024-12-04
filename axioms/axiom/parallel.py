@@ -13,9 +13,8 @@ from axioms.model import (
 )
 
 
-
 @dataclass(frozen=True, kw_only=True)
-class ParllelAxiom(Axiom[Input, Output], Generic[Input, Output]):
+class ParallelAxiom(Axiom[Input, Output], Generic[Input, Output]):
     axiom: Axiom[Input, Output]
     n_jobs: Optional[int] = None
 
@@ -32,8 +31,6 @@ class ParllelAxiom(Axiom[Input, Output], Generic[Input, Output]):
         input: Input,
         outputs: Sequence[Output],
     ) -> PreferenceMatrix:
-        
-
 
         @delayed
         def _preference(
@@ -53,7 +50,4 @@ class ParllelAxiom(Axiom[Input, Output], Generic[Input, Output]):
                 for output2 in outputs
             )
 
-        return array(preferences).reshape(
-            len(outputs),
-            len(outputs)
-        )
+        return array(preferences).reshape(len(outputs), len(outputs))

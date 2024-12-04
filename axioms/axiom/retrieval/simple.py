@@ -2,41 +2,31 @@ from dataclasses import dataclass
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.utils import strictly_less, strictly_greater
-from axioms.model import Query, RankedDocument, IndexContext, JudgedRankedDocument
+from axioms.model import Query, RankedDocument, JudgedRankedDocument
 
 
 @dataclass(frozen=True, kw_only=True)
-class OriginalAxiom(Axiom):
+class OriginalAxiom(Axiom[Query, RankedDocument]):
 
     def preference(
         self,
-        context: IndexContext,
-        query: Query,
-        document1: RankedDocument,
-        document2: RankedDocument,
+        input: Query,
+        output1: RankedDocument,
+        output2: RankedDocument,
     ):
-        return strictly_less(document1.rank, document2.rank)
+        return strictly_less(output1.rank, output2.rank)
 
 
 @dataclass(frozen=True, kw_only=True)
-class OracleAxiom(Axiom):
+class OracleAxiom(Axiom[Query, JudgedRankedDocument]):
 
     def preference(
         self,
-        context: IndexContext,
-        query: Query,
-        document1: RankedDocument,
-        document2: RankedDocument,
+        input: Query,
+        output1: JudgedRankedDocument,
+        output2: JudgedRankedDocument,
     ) -> float:
-        if not isinstance(document1, JudgedRankedDocument) or not isinstance(
-            document2, JudgedRankedDocument
-        ):
-            raise ValueError(
-                f"Expected both documents to be "
-                f"instances of {JudgedRankedDocument}, "
-                f"but were {type(document1)} and {type(document2)}."
-            )
-        return strictly_greater(document1.relevance, document2.relevance)
+        return strictly_greater(output1.relevance, output2.relevance)
 
 
 # Aliases for shorter names:

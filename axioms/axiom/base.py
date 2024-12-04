@@ -170,9 +170,9 @@ class Axiom(ABC, Generic[Input, Output]):
         """
         Parallelize preference matrix computation of this axiom.
         """
-        from axioms.axiom.parallel import ParllelAxiom
+        from axioms.axiom.parallel import ParallelAxiom
 
-        return ParllelAxiom(axiom=self, n_jobs=n_jobs)
+        return ParallelAxiom(axiom=self, n_jobs=n_jobs)
 
     def as_precondition(
         self,
@@ -205,7 +205,7 @@ class Axiom(ABC, Generic[Input, Output]):
         ranking: Sequence[Output],
         pivot_selection: PivotSelection[Input, Output] = RandomPivotSelection(),
     ) -> Sequence[Output]:
-        from axioms.modules.ranking import kwiksort
+        from axioms.algorithms.ranking import kwiksort
 
         ranking = kwiksort(
             axiom=self,

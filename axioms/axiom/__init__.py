@@ -90,7 +90,7 @@ from axioms.axiom.estimator import (  # noqa: F401
 )
 
 from axioms.axiom.parallel import (  # noqa: F401
-    ParllelAxiom,
+    ParallelAxiom,
 )
 
 from axioms.axiom.precondition import (  # noqa: F401

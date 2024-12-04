@@ -3,7 +3,7 @@ from functools import lru_cache
 from math import nan
 from pathlib import Path
 from statistics import mean
-from typing import Final, Set, Dict, Optional
+from typing import Any, Final, Set, Dict, Optional
 
 from nltk import WordNetLemmatizer, sent_tokenize, word_tokenize
 from targer_api import ArgumentSentences, ArgumentLabel, ArgumentTag, analyze_text
@@ -168,7 +168,7 @@ class _TargerMixin:
 
 
 @dataclass(frozen=True, kw_only=True)
-class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom[Query, Document]):
+class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom[Any, Document]):
     """
     Favor documents with more argumentative units.
     """
@@ -177,7 +177,7 @@ class ArgumentativeUnitsCountAxiom(_TargerMixin, Axiom[Query, Document]):
 
     def preference(
         self,
-        input: Query,
+        _: Any,
         output1: Document,
         output2: Document,
     ):
@@ -200,7 +200,9 @@ ArgUC: Final = ArgumentativeUnitsCountAxiom(
 
 
 @dataclass(frozen=True, kw_only=True)
-class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
+class QueryTermOccurrenceInArgumentativeUnitsAxiom(
+    _TargerMixin, Axiom[Query, Document]
+):
     """
     Favor documents with more query terms in argumentative units.
     """
@@ -218,19 +220,19 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
 
     def preference(
         self,
-        query: Query,
-        document1: Document,
-        document2: Document,
+        input: Query,
+        output1: Document,
+        output2: Document,
     ):
-        arguments1 = self.analyze_text(self.context, document1)
-        arguments2 = self.analyze_text(self.context, document2)
+        arguments1 = self.analyze_text(self.context, output1)
+        arguments2 = self.analyze_text(self.context, output2)
 
         count1 = sum(
-            _count_query_terms(self.context, sentences, query, self.normalize)
+            _count_query_terms(self.context, sentences, input, self.normalize)
             for _, sentences in arguments1.items()
         )
         count2 = sum(
-            _count_query_terms(self.context, sentences, query, self.normalize)
+            _count_query_terms(self.context, sentences, input, self.normalize)
             for _, sentences in arguments2.items()
         )
 
@@ -243,7 +245,7 @@ QTArg: Final = QueryTermOccurrenceInArgumentativeUnitsAxiom(
 
 
 @dataclass(frozen=True, kw_only=True)
-class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
+class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom[Query, Document]):
     """
     Favor documents where the first occurrence of a query term
     in an argumentative unit is closer to the beginning of the document.
@@ -278,12 +280,12 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
 
     def preference(
         self,
-        query: Query,
-        document1: Document,
-        document2: Document,
+        input: Query,
+        output1: Document,
+        output2: Document,
     ):
-        arguments1 = self.analyze_text(self.context, document1)
-        arguments2 = self.analyze_text(self.context, document2)
+        arguments1 = self.analyze_text(self.context, output1)
+        arguments2 = self.analyze_text(self.context, output1)
 
         if len(arguments1) == 0 or len(arguments2) == 0:
             return 0
@@ -292,21 +294,21 @@ class QueryTermPositionInArgumentativeUnitsAxiom(_TargerMixin, Axiom):
         if penalty is None:
             penalty = (
                 max(
-                    len(self.context.terms(document1)),
-                    len(self.context.terms(document2)),
+                    len(self.context.terms(output1)),
+                    len(self.context.terms(output1)),
                 )
                 + 1
             )
 
         position1 = mean(
             _query_term_position_in_argument(
-                self.context, sentences, query, penalty, self.normalize
+                self.context, sentences, input, penalty, self.normalize
             )
             for _, sentences in arguments1.items()
         )
         position2 = mean(
             _query_term_position_in_argument(
-                self.context, sentences, query, penalty, self.normalize
+                self.context, sentences, input, penalty, self.normalize
             )
             for _, sentences in arguments2.items()
         )
@@ -320,7 +322,7 @@ QTPArg: Final = QueryTermPositionInArgumentativeUnitsAxiom(
 
 
 @dataclass(frozen=True, kw_only=True)
-class AverageSentenceLengthAxiom(Axiom):
+class AverageSentenceLengthAxiom(Axiom[Any, Document]):
     """
     Favor documents with an average sentence length between
     a minimum (default: 12) and a maximum (default: 20) number of words.
@@ -339,12 +341,12 @@ class AverageSentenceLengthAxiom(Axiom):
 
     def preference(
         self,
-        input: Query,
-        document1: Document,
-        document2: Document,
+        _: Any,
+        output1: Document,
+        output2: Document,
     ):
-        sentence_length1 = _sentence_length(self.context, document1)
-        sentence_length2 = _sentence_length(self.context, document2)
+        sentence_length1 = _sentence_length(self.context, output1)
+        sentence_length2 = _sentence_length(self.context, output2)
 
         min_length = self.min_sentence_length
         max_length = self.max_sentence_length

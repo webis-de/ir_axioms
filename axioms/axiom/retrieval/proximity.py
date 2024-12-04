@@ -11,23 +11,23 @@ from axioms.axiom.utils import (
     strictly_less,
     strictly_greater,
 )
-from axioms.model import Query, RankedDocument, IndexContext
+from axioms.model import Query, Document, IndexContext
 from axioms.model.retrieval import get_index_context
 
 
 def _same_query_term_subset(
     context: IndexContext,
-    query: Query,
-    document1: RankedDocument,
-    document2: RankedDocument,
+    input: Query,
+    output1: Document,
+    output2: Document,
 ) -> bool:
     """
     Both documents contain the same set of query terms.
     """
 
-    query_terms = context.term_set(query)
-    document1_terms = context.term_set(document1)
-    document2_terms = context.term_set(document2)
+    query_terms = context.term_set(input)
+    document1_terms = context.term_set(output1)
+    document2_terms = context.term_set(output2)
 
     if len(query_terms) <= 1:
         return False
@@ -57,13 +57,13 @@ def _average_between_query_terms(
 
 def _all_query_terms_in_documents(
     context: IndexContext,
-    query: Query,
-    document1: RankedDocument,
-    document2: RankedDocument,
+    input: Query,
+    output1: Document,
+    output2: Document,
 ):
-    query_terms = context.term_set(query)
-    document1_terms = context.term_set(document1)
-    document2_terms = context.term_set(document2)
+    query_terms = context.term_set(input)
+    document1_terms = context.term_set(output1)
+    document2_terms = context.term_set(output2)
 
     if len(query_terms) <= 1:
         return False
@@ -73,7 +73,10 @@ def _all_query_terms_in_documents(
     ) == len(query_terms)
 
 
-def _take_closest(sorted_items: Sequence[int], target: int):
+def _take_closest(
+    sorted_items: Sequence[int],
+    target: int,
+):
     """
     Return closest value to n.
     If two numbers are equally close, return the smallest number.
@@ -95,7 +98,8 @@ def _take_closest(sorted_items: Sequence[int], target: int):
 
 
 def _query_term_index_groups(
-    query_terms: FrozenSet[str], document_terms: Sequence[str]
+    query_terms: FrozenSet[str],
+    document_terms: Sequence[str],
 ) -> Sequence[Sequence[int]]:
     index_groups = []
     indexes = defaultdict(lambda: [])
@@ -149,18 +153,21 @@ def _closest_grouping_size_and_count(
 
 
 @dataclass(frozen=True, kw_only=True)
-class Prox1Axiom(Axiom):
+class Prox1Axiom(Axiom[Query, Document]):
     context: IndexContext
 
     def preference(
-        self, query: Query, document1: RankedDocument, document2: RankedDocument
+        self,
+        input: Query,
+        output1: Document,
+        output2: Document,
     ):
-        if not _same_query_term_subset(self.context, query, document1, document2):
+        if not _same_query_term_subset(self.context, input, output1, output2):
             return 0
 
-        query_terms = self.context.term_set(query)
-        document1_terms = self.context.terms(document1)
-        document2_terms = self.context.terms(document2)
+        query_terms = self.context.term_set(input)
+        document1_terms = self.context.terms(output1)
+        document2_terms = self.context.terms(output2)
 
         overlapping_terms = query_terms & set(document1_terms) & set(document2_terms)
 
@@ -176,18 +183,21 @@ PROX1: Final = Prox1Axiom(
 
 
 @dataclass(frozen=True, kw_only=True)
-class Prox2Axiom(Axiom):
+class Prox2Axiom(Axiom[Query, Document]):
     context: IndexContext
 
     def preference(
-        self, query: Query, document1: RankedDocument, document2: RankedDocument
+        self,
+        input: Query,
+        output1: Document,
+        output2: Document,
     ):
-        if not _same_query_term_subset(self.context, query, document1, document2):
+        if not _same_query_term_subset(self.context, input, output1, output2):
             return 0
 
-        query_terms = self.context.term_set(query)
-        document1_terms = self.context.terms(document1)
-        document2_terms = self.context.terms(document2)
+        query_terms = self.context.term_set(input)
+        document1_terms = self.context.terms(output1)
+        document2_terms = self.context.terms(output2)
         terms = set(document1_terms) & set(document2_terms)
 
         first_position_sum1 = 0
@@ -206,7 +216,10 @@ PROX2: Final = Prox2Axiom(
 )
 
 
-def _find_index(query_terms: Sequence[str], document_terms: Sequence[str]):
+def _find_index(
+    query_terms: Sequence[str],
+    document_terms: Sequence[str],
+):
     query_terms_length = len(query_terms)
     terms_length = len(document_terms)
     for index, term in enumerate(document_terms):
@@ -220,17 +233,20 @@ def _find_index(query_terms: Sequence[str], document_terms: Sequence[str]):
 
 
 @dataclass(frozen=True, kw_only=True)
-class Prox3Axiom(Axiom):
+class Prox3Axiom(Axiom[Query, Document]):
     context: IndexContext
 
     def preference(
-        self, query: Query, document1: RankedDocument, document2: RankedDocument
+        self,
+        input: Query,
+        output1: Document,
+        output2: Document,
     ):
-        if not _same_query_term_subset(self.context, query, document1, document2):
+        if not _same_query_term_subset(self.context, input, output1, output2):
             return 0
-        query_terms = self.context.terms(query)
-        document1_terms = self.context.terms(document1)
-        document2_terms = self.context.terms(document2)
+        query_terms = self.context.terms(input)
+        document1_terms = self.context.terms(output1)
+        document2_terms = self.context.terms(output2)
         return strictly_less(
             _find_index(query_terms, document1_terms),
             _find_index(query_terms, document2_terms),
@@ -243,18 +259,21 @@ PROX3: Final = Prox3Axiom(
 
 
 @dataclass(frozen=True, kw_only=True)
-class Prox4Axiom(Axiom):
+class Prox4Axiom(Axiom[Query, Document]):
     context: IndexContext
 
     def preference(
-        self, query: Query, document1: RankedDocument, document2: RankedDocument
+        self,
+        input: Query,
+        output1: Document,
+        output2: Document,
     ):
-        if not _all_query_terms_in_documents(self.context, query, document1, document2):
+        if not _all_query_terms_in_documents(self.context, input, output1, output2):
             return 0
 
-        query_terms = self.context.term_set(query)
-        document1_terms = self.context.terms(document1)
-        document2_terms = self.context.terms(document2)
+        query_terms = self.context.term_set(input)
+        document1_terms = self.context.terms(output1)
+        document2_terms = self.context.terms(output2)
 
         occurrences1, count1 = _closest_grouping_size_and_count(
             query_terms, document1_terms
@@ -275,18 +294,21 @@ PROX4: Final = Prox4Axiom(
 
 
 @dataclass(frozen=True, kw_only=True)
-class Prox5Axiom(Axiom):
+class Prox5Axiom(Axiom[Query, Document]):
     context: IndexContext
 
     def preference(
-        self, query: Query, document1: RankedDocument, document2: RankedDocument
+        self,
+        input: Query,
+        output1: Document,
+        output2: Document,
     ):
-        if not _all_query_terms_in_documents(self.context, query, document1, document2):
+        if not _all_query_terms_in_documents(self.context, input, output1, output2):
             return 0
 
-        query_terms = self.context.term_set(query)
-        document1_terms = self.context.terms(document1)
-        document2_terms = self.context.terms(document2)
+        query_terms = self.context.term_set(input)
+        document1_terms = self.context.terms(output1)
+        document2_terms = self.context.terms(output2)
 
         smallest_span1 = _average_smallest_span(query_terms, document1_terms)
         smallest_span2 = _average_smallest_span(query_terms, document2_terms)

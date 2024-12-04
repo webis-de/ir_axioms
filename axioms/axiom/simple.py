@@ -7,7 +7,7 @@ from numpy.random import Generator, default_rng
 from typing_extensions import TypeAlias  # type: ignore
 
 from axioms.axiom.base import Axiom
-from axioms.model import Input, Output, Preference, PreferenceMatrix
+from axioms.model import Preference, PreferenceMatrix
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -15,16 +15,16 @@ class NopAxiom(Axiom[Any, Any]):
 
     def preference(
         self,
-        input: Input,
-        output1: Output,
-        output2: Output,
+        input: Any,
+        output1: Any,
+        output2: Any,
     ) -> Preference:
         return 0
 
     def preferences(
         self,
-        input: Input,
-        outputs: Sequence[Output],
+        input: Any,
+        outputs: Sequence[Any],
     ) -> PreferenceMatrix:
         return zeros((len(outputs), len(outputs)))
 
@@ -42,16 +42,16 @@ class RandomAxiom(Axiom[Any, Any]):
 
     def preference(
         self,
-        input: Input,
-        output1: Output,
-        output2: Output,
+        input: Any,
+        output1: Any,
+        output2: Any,
     ) -> Preference:
         return self._generator.integers(-1, 1)
 
     def preferences(
         self,
-        input: Input,
-        outputs: Sequence[Output],
+        input: Any,
+        outputs: Sequence[Any],
     ) -> PreferenceMatrix:
         return self._generator.integers(-1, 1, (len(outputs), len(outputs))).astype(
             floating
@@ -69,7 +69,7 @@ class _SupportsComparison(Protocol[_T_contra]):
     def __gt__(self, other: _T_contra, /) -> bool: ...
 
 
-_SupportsComparisonT = TypeVar("_SupportsComparisonT")
+_SupportsComparisonT = TypeVar("_SupportsComparisonT", bound=_SupportsComparison)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -77,7 +77,7 @@ class GreaterThanAxiom(Axiom[Any, _SupportsComparisonT]):
 
     def preference(
         self,
-        input: Any,
+        _: Any,
         output1: _SupportsComparisonT,
         output2: _SupportsComparisonT,
     ) -> Preference:
@@ -96,7 +96,7 @@ class LessThanAxiom(Axiom[Any, _SupportsComparisonT]):
 
     def preference(
         self,
-        input: Any,
+        _: Any,
         output1: _SupportsComparisonT,
         output2: _SupportsComparisonT,
     ) -> Preference:

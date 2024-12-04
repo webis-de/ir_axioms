@@ -4,7 +4,7 @@ from typing import Sequence
 
 from numpy import ndarray, stack
 from sklearn.utils._response import is_classifier
-from typing_extensions import Protocol, Self # type: ignore
+from typing_extensions import Protocol, Self  # type: ignore
 
 from axioms.axiom.base import Axiom
 from axioms.model import Input, Output, Preference, PreferenceMatrix
@@ -22,8 +22,6 @@ class EstimatorAxiom(Axiom[Input, Output], ABC):
         pass
 
 
-
-
 class ScikitLearnEstimator(Protocol):
     def fit(self, x: ndarray, y: ndarray) -> Self:
         pass
@@ -33,7 +31,7 @@ class ScikitLearnEstimator(Protocol):
 
 
 @dataclass(frozen=True)
-class ScikitLearnEstimatorAxiom(EstimatorAxiom, ABC):
+class ScikitLearnEstimatorAxiom(EstimatorAxiom[Input, Output], ABC):
     axioms: Sequence[Axiom]
     estimator: ScikitLearnEstimator
 
@@ -43,11 +41,13 @@ class ScikitLearnEstimatorAxiom(EstimatorAxiom, ABC):
         input: Input,
         outputs: Sequence[Output],
     ) -> None:
-        preferences_x = stack([
-            axiom.preferences(input, outputs)
-            for axiom in self.axioms
-        ])
-        preferences_x = preferences_x.reshape((-1, len(self.axioms)))
+        num_axioms = len(self.axioms)
+        num_outputs = len(outputs)
+
+        preferences_x = stack(
+            [axiom.preferences(input, outputs) for axiom in self.axioms]
+        )
+        preferences_x = preferences_x.reshape((num_outputs * num_outputs, num_axioms))
 
         if is_classifier(self.estimator):
             # If estimator is classifier, normalize target preferences.
@@ -55,7 +55,7 @@ class ScikitLearnEstimatorAxiom(EstimatorAxiom, ABC):
             target = target.normalized()
 
         preferences_y = target.preferences(input, outputs)
-        preferences_y = preferences_y.reshape(-1)
+        preferences_y = preferences_y.reshape(num_outputs * num_outputs)
 
         self.estimator.fit(preferences_x, preferences_y)
 
@@ -65,20 +65,22 @@ class ScikitLearnEstimatorAxiom(EstimatorAxiom, ABC):
         output1: Output,
         output2: Output,
     ) -> Preference:
-        return self.preferences(input, [output1, output2])[0,1]
+        return self.preferences(input, [output1, output2])[0, 1]
 
     def preferences(
         self,
         input: Input,
         outputs: Sequence[Output],
     ) -> PreferenceMatrix:
-        preferences_x = stack([
-            axiom.preferences(input, outputs)
-            for axiom in self.axioms
-        ])
-        preferences_x = preferences_x.reshape((-1, len(self.axioms)))
+        num_axioms = len(self.axioms)
+        num_outputs = len(outputs)
+
+        preferences_x = stack(
+            [axiom.preferences(input, outputs) for axiom in self.axioms]
+        )
+        preferences_x = preferences_x.reshape((num_outputs * num_outputs, num_axioms))
 
         estimated = self.estimator.predict(preferences_x)
-        estimated = estimated.reshape((len(outputs), len(outputs)))
+        estimated = estimated.reshape((num_outputs, num_outputs))
 
         return estimated

@@ -202,7 +202,7 @@ class VoteAxiom(Axiom[Input, Output]):
             return super().__mod__(other)
 
 
-class MajorityVoteAxiom(VoteAxiom):
+class MajorityVoteAxiom(VoteAxiom[Input, Output]):
     pass
 
 

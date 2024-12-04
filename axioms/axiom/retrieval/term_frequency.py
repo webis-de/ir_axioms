@@ -7,21 +7,24 @@ from axioms.axiom.base import Axiom
 from axioms.model.retrieval import get_index_context
 from axioms.precondition.length import LEN
 from axioms.axiom.utils import approximately_equal, strictly_greater
-from axioms.model import Query, RankedDocument, IndexContext
+from axioms.model import Query, Document, IndexContext
 
 
 @dataclass(frozen=True, kw_only=True)
-class Tfc1Axiom(Axiom):
+class Tfc1Axiom(Axiom[Query, Document]):
     context: IndexContext
 
     def preference(
-        self, query: Query, document1: RankedDocument, document2: RankedDocument
+        self,
+        input: Query,
+        output1: Document,
+        output2: Document,
     ) -> float:
         term_frequency1: float = 0
         term_frequency2: float = 0
-        for qt in self.context.terms(query):
-            term_frequency1 += self.context.term_frequency(document1, qt)
-            term_frequency2 += self.context.term_frequency(document2, qt)
+        for qt in self.context.terms(input):
+            term_frequency1 += self.context.term_frequency(output1, qt)
+            term_frequency2 += self.context.term_frequency(output2, qt)
 
         if approximately_equal(term_frequency1, term_frequency2):
             # Less than 10% difference.
@@ -36,25 +39,28 @@ TFC1: Final = Tfc1Axiom(
 
 
 @dataclass(frozen=True, kw_only=True)
-class Tfc3Axiom(Axiom):
+class Tfc3Axiom(Axiom[Query, Document]):
     context: IndexContext
 
     def preference(
-        self, query: Query, document1: RankedDocument, document2: RankedDocument
+        self,
+        input: Query,
+        output1: Document,
+        output2: Document,
     ) -> float:
         sum_document1 = 0
         sum_document2 = 0
 
-        query_terms = self.context.term_set(query)
+        query_terms = self.context.term_set(input)
         for query_term1, query_term2 in combinations(query_terms, 2):
             term_discrimination1 = self.context.inverse_document_frequency(query_term1)
             term_discrimination2 = self.context.inverse_document_frequency(query_term2)
 
             if approximately_equal(term_discrimination1, term_discrimination2):
-                d1q1 = self.context.term_frequency(document1, query_term1)
-                d2q1 = self.context.term_frequency(document2, query_term1)
-                d1q2 = self.context.term_frequency(document1, query_term2)
-                d2q2 = self.context.term_frequency(document2, query_term2)
+                d1q1 = self.context.term_frequency(output1, query_term1)
+                d2q1 = self.context.term_frequency(output2, query_term1)
+                d1q2 = self.context.term_frequency(output1, query_term2)
+                d2q2 = self.context.term_frequency(output2, query_term2)
 
                 if d1q1 != 0 and d1q2 != 0:
                     if isclose(d2q1, d1q1 + d1q2) and isclose(d2q2, 0):
@@ -78,16 +84,16 @@ TFC3: Final = Tfc3Axiom(
 def _single_different_term_frequency(
     context: IndexContext,
     query: Query,
-    document1: RankedDocument,
-    document2: RankedDocument,
+    output1: Document,
+    output2: Document,
 ):
     query_terms = context.term_set(query)
     sum_term_frequency1 = 0.0
     sum_term_frequency2 = 0.0
     term_frequency_different = False
     for term in query_terms:
-        count1 = context.term_frequency(document1, term)
-        count2 = context.term_frequency(document2, term)
+        count1 = context.term_frequency(output1, term)
+        count2 = context.term_frequency(output2, term)
         if count1 != count2:
             term_frequency_different = True
         sum_term_frequency1 += count1
@@ -99,7 +105,7 @@ def _single_different_term_frequency(
 
 
 @dataclass(frozen=True, kw_only=True)
-class ModifiedTdcAxiom(Axiom):
+class ModifiedTdcAxiom(Axiom[Query, Document]):
     """
     Modified TDC as in:
 
@@ -110,14 +116,15 @@ class ModifiedTdcAxiom(Axiom):
     context: IndexContext
 
     def preference(
-        self, query: Query, document1: RankedDocument, document2: RankedDocument
+        self,
+        input: Query,
+        output1: Document,
+        output2: Document,
     ):
-        if not _single_different_term_frequency(
-            self.context, query, document1, document2
-        ):
+        if not _single_different_term_frequency(self.context, input, output1, output2):
             return 0
 
-        query_terms = self.context.term_set(query)
+        query_terms = self.context.term_set(input)
 
         score1 = 0
         score2 = 0
@@ -135,12 +142,12 @@ class ModifiedTdcAxiom(Axiom):
                 # Query term 1 is rarer. Swap query terms.
                 query_term1, query_term2 = query_term2, query_term1
 
-            tf_d1_qt1 = self.context.term_frequency(document1, query_term1)
-            tf_d1_qt2 = self.context.term_frequency(document1, query_term2)
-            tf_d2_qt1 = self.context.term_frequency(document2, query_term1)
-            tf_d2_qt2 = self.context.term_frequency(document2, query_term2)
-            tf_q_qt1 = self.context.term_frequency(query, query_term1)
-            tf_q_qt2 = self.context.term_frequency(query, query_term2)
+            tf_d1_qt1 = self.context.term_frequency(output1, query_term1)
+            tf_d1_qt2 = self.context.term_frequency(output1, query_term2)
+            tf_d2_qt1 = self.context.term_frequency(output2, query_term1)
+            tf_d2_qt2 = self.context.term_frequency(output2, query_term2)
+            tf_q_qt1 = self.context.term_frequency(input, query_term1)
+            tf_q_qt2 = self.context.term_frequency(input, query_term2)
 
             if not (
                 (isclose(tf_d1_qt1, tf_d2_qt2) and isclose(tf_d1_qt2, tf_d2_qt1))
