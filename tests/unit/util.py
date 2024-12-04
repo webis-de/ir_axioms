@@ -5,7 +5,7 @@ from typing import Union, Set, Sequence
 from nltk import word_tokenize
 
 from axioms.model import Query, Document, RankedTextDocument
-from axioms.model.context import IndexContext
+from axioms.model.retrieval import IndexContext
 from axioms.utils.nltk import download_nltk_dependencies
 
 

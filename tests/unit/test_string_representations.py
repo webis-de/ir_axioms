@@ -1,4 +1,4 @@
-from axioms.backend.pyterrier import TerrierIndexContext
+from axioms.tools.terrier import TerrierIndexContext
 
 
 def test_string_representation_of_terrier_index_context_01():
