@@ -9,7 +9,7 @@ class _SupportsComparison(Protocol[_T_contra]):
     def __gt__(self, other: _T_contra, /) -> bool: ...
 
 
-_SupportsComparisonT = TypeVar("_SupportsComparisonT")
+_SupportsComparisonT = TypeVar("_SupportsComparisonT", bound=_SupportsComparison)
 
 
 def strictly_greater(x: _SupportsComparisonT, y: _SupportsComparisonT) -> float:
