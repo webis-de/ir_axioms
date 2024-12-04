@@ -5,7 +5,6 @@ from operator import add, mul
 from typing import Any, Iterable, Sequence
 
 from numpy import full, ones, zeros
-from typing_extensions import TypeAlias  # type: ignore
 
 from axioms.axiom.base import Axiom
 from axioms.model import Input, Output, Preference, PreferenceMatrix
