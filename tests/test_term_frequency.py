@@ -1,4 +1,4 @@
-from axioms.axiom import TFC1, TFC3, LEN_M_TDC, M_TDC, ModifiedTdcAxiom
+from axioms.axiom import TFC1, TFC3, M_TDC, ModifiedTdcAxiom
 from axioms.model import Query, RankedTextDocument
 from axioms.model.retrieval import set_index_context
 from axioms.precondition import LenPrecondition
