@@ -5,8 +5,8 @@ from typing import Optional, Sequence, TypeAlias
 @dataclass(frozen=True)
 class GenerationInput:
     text: str
-    context: Sequence[str]
-    reference_output: Optional["GenerationOutput"]
+    context: Optional[Sequence[str]] = None
+    reference_output: Optional["GenerationOutput"] = None
 
 
 @dataclass(frozen=True)
