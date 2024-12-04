@@ -4,19 +4,19 @@ from typing import Final
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.utils import approximately_equal
-from axioms.model import Query, RankedDocument, IndexContext
+from axioms.model import Query, ScoredDocument, IndexContext
 from axioms.model.retrieval import get_index_context
 
 
 @dataclass(frozen=True, kw_only=True)
-class Lb1Axiom(Axiom[Query, RankedDocument]):
+class Lb1Axiom(Axiom[Query, ScoredDocument]):
     context: IndexContext
 
     def preference(
         self,
         input: Query,
-        output1: RankedDocument,
-        output2: RankedDocument,
+        output1: ScoredDocument,
+        output2: ScoredDocument,
     ):
         if not approximately_equal(output1.score, output2.score):
             return 0

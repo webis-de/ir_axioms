@@ -13,10 +13,9 @@ from axioms.model.retrieval import (  # noqa: F401
     Query,
     Document,
     TextDocument,
+    ScoredDocument,
     RankedDocument,
-    RankedTextDocument,
-    JudgedRankedDocument,
-    JudgedRankedTextDocument,
+    JudgedDocument,
     IndexContext,
 )
 

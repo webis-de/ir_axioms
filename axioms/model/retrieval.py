@@ -20,24 +20,18 @@ class TextDocument(Document):
 
 
 @dataclass(frozen=True)
+class ScoredDocument(Document):
+    score: float
+
+@dataclass(frozen=True)
 class RankedDocument(Document):
     score: float
     rank: int
 
 
 @dataclass(frozen=True)
-class RankedTextDocument(TextDocument, RankedDocument):
-    pass
-
-
-@dataclass(frozen=True)
-class JudgedRankedDocument(RankedDocument):
+class JudgedDocument(Document):
     relevance: float
-
-
-@dataclass(frozen=True)
-class JudgedRankedTextDocument(TextDocument, JudgedRankedDocument):
-    pass
 
 
 class IndexContext(ABC):
