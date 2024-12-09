@@ -1,4 +1,4 @@
-from typing import Union, TypeVar, Protocol
+from typing import Union, TypeVar, Protocol, Sized
 
 
 _T_contra = TypeVar("_T_contra", contravariant=True)
@@ -26,6 +26,14 @@ def strictly_less(x: _SupportsComparisonT, y: _SupportsComparisonT) -> float:
     elif x > y:
         return -1
     return 0
+
+
+def strictly_more(x: Sized, y: Sized) -> float:
+    return strictly_greater(len(x), len(y))
+
+
+def strictly_fewer(x: Sized, y: Sized) -> float:
+    return strictly_less(len(x), len(y))
 
 
 def approximately_equal(
