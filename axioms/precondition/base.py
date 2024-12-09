@@ -1,14 +1,16 @@
-from abc import ABC, abstractmethod
-from typing import Generic, Sequence
+from typing import Generic, Sequence, Protocol
 
 from numpy import array
 
-from axioms.model.base import Input, Mask, MaskMatrix, Output
+from axioms.model.base import (
+    Input,
+    Mask,
+    MaskMatrix,
+    Output,
+)
 
 
-class Precondition(ABC, Generic[Input, Output]):
-
-    @abstractmethod
+class Precondition(Generic[Input, Output], Protocol):
     def precondition(
         self,
         input: Input,
@@ -16,7 +18,7 @@ class Precondition(ABC, Generic[Input, Output]):
         output2: Output,
     ) -> Mask:
         # TODO: Documentation.
-        raise NotImplementedError()
+        pass
 
     def preconditions(
         self,

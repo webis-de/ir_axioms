@@ -1,30 +1,36 @@
 from dataclasses import dataclass
-from typing import Any, Final
+from typing import Final, TypeVar
+
+from injector import inject
 
 from axioms.axiom.utils import approximately_equal
-from axioms.model import Document, IndexContext, Mask
-from axioms.model.retrieval import get_index_context
+from axioms.dependency_injection import injector
+from axioms.model import Document, Mask
 from axioms.precondition.base import Precondition
+from axioms.tools import TextContents, TermTokenizer
+from axioms.utils.lazy import lazy_inject
+
+Input = TypeVar("Input")
 
 
+@inject
 @dataclass(frozen=True, kw_only=True)
-class LenPrecondition(Precondition[Any, Document]):
-    context: IndexContext
+class LenPrecondition(Precondition[Input, Document]):
+    text_contents: TextContents[Document]
+    term_tokenizer: TermTokenizer
     margin_fraction: float = 0.1
 
     def precondition(
         self,
-        input: Any,
+        input: Input,
         output1: Document,
         output2: Document,
     ) -> Mask:
         return approximately_equal(
-            self.context.document_length(output1),
-            self.context.document_length(output2),
+            len(self.term_tokenizer.terms(self.text_contents.contents(output1))),
+            len(self.term_tokenizer.terms(self.text_contents.contents(output2))),
             margin_fraction=self.margin_fraction,
         )
 
 
-LEN: Final = LenPrecondition(
-    context=get_index_context(),
-)
+LEN: Final = lazy_inject(LenPrecondition, injector)
