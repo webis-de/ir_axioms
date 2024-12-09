@@ -1,17 +1,22 @@
 from dataclasses import dataclass
 from math import nan
-from typing import Final
+from typing import Final, Union
+
+from injector import inject
 
 from axioms.axiom.base import Axiom
-from axioms.model.retrieval import get_index_context
 from axioms.axiom.utils import strictly_greater, approximately_equal
-from axioms.model import Query, Document, IndexContext
-from axioms.tools import TermSimilarity, WordNetSynonymSetTermSimilarity
+from axioms.dependency_injection import injector
+from axioms.model import Query, Document, Preference
+from axioms.tools import TextContents, TermTokenizer, TermSimilarity, TextStatistics
+from axioms.utils.lazy import lazy_inject
 
 
+@inject
 @dataclass(frozen=True, kw_only=True)
 class Stmc1Axiom(Axiom[Query, Document]):
-    context: IndexContext
+    text_contents: TextContents[Union[Query, Document]]
+    term_tokenizer: TermTokenizer
     term_similarity: TermSimilarity
 
     def preference(
@@ -19,34 +24,47 @@ class Stmc1Axiom(Axiom[Query, Document]):
         input: Query,
         output1: Document,
         output2: Document,
-    ):
-        query_terms = self.context.term_set(input)
-        document1_terms = self.context.term_set(output1)
-        document2_terms = self.context.term_set(output2)
+    ) -> Preference:
+        query_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(input),
+        )
+        query_unique_terms = set(query_terms)
+        document1_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(output1),
+        )
+        document1_unique_terms = set(document1_terms)
+        document2_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(output2),
+        )
+        document2_unique_terms = set(document2_terms)
 
         return strictly_greater(
-            self.term_similarity.average_similarity(document1_terms, query_terms),
-            self.term_similarity.average_similarity(document2_terms, query_terms),
+            self.term_similarity.average_similarity(
+                document1_unique_terms, query_unique_terms
+            ),
+            self.term_similarity.average_similarity(
+                document2_unique_terms, query_unique_terms
+            ),
         )
 
 
-STMC1: Final = Stmc1Axiom(
-    context=get_index_context(),
-    term_similarity=WordNetSynonymSetTermSimilarity(),
-)
+STMC1: Final = lazy_inject(Stmc1Axiom, injector)
 
 
+@inject
 @dataclass(frozen=True, kw_only=True)
 class Stmc2Axiom(Axiom[Query, Document]):
-    context: IndexContext
+    text_contents: TextContents[Union[Query, Document]]
+    term_tokenizer: TermTokenizer
     term_similarity: TermSimilarity
+    text_statistics: TextStatistics[Document]
 
     def preference(
         self,
         input: Query,
         output1: Document,
         output2: Document,
-    ):
+    ) -> Preference:
         """
         Given the most similar query term and non-query term,
         prefer the first document if
@@ -59,15 +77,25 @@ class Stmc2Axiom(Axiom[Query, Document]):
         is non-deterministic if there are multiple equally most similar pairs.
         """
 
-        query_terms = self.context.term_set(input)
-        document1_terms = self.context.term_set(output1)
-        document2_terms = self.context.term_set(output2)
-        document_terms = document1_terms | document2_terms
+        query_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(input),
+        )
+        query_unique_terms = set(query_terms)
+        document1_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(output1),
+        )
+        document1_unique_terms = set(document1_terms)
+        document2_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(output2),
+        )
+        document2_unique_terms = set(document2_terms)
 
-        non_query_terms = document_terms - query_terms
+        document_terms = document1_unique_terms | document2_unique_terms
+
+        non_query_terms = document_terms - query_unique_terms
 
         most_similar_terms = self.term_similarity.most_similar_pair(
-            query_terms,
+            query_unique_terms,
             non_query_terms,
         )
         if most_similar_terms is None:
@@ -79,24 +107,24 @@ class Stmc2Axiom(Axiom[Query, Document]):
             document_a: Document,
             document_b: Document,
         ):
-            tf_most_similar_query_term = self.context.term_frequency(
+            tf_most_similar_query_term = self.text_statistics.term_frequency(
                 document_b, most_similar_query_term
             )
-            tf_most_similar_non_query_term = self.context.term_frequency(
+            tf_most_similar_non_query_term = self.text_statistics.term_frequency(
                 document_a, most_similar_non_query_term
             )
             if tf_most_similar_query_term <= 0:
                 return nan
             return tf_most_similar_non_query_term / tf_most_similar_query_term
 
-        if len(document1_terms) > 0 and approximately_equal(
-            len(document2_terms) / len(document1_terms),
+        if len(document1_unique_terms) > 0 and approximately_equal(
+            len(document2_unique_terms) / len(document1_unique_terms),
             term_frequency_ratio(output2, output1),
             margin_fraction=0.2,
         ):
             return 1
-        elif len(document2_terms) > 0 and approximately_equal(
-            len(document1_terms) / len(document2_terms),
+        elif len(document2_unique_terms) > 0 and approximately_equal(
+            len(document1_unique_terms) / len(document2_unique_terms),
             term_frequency_ratio(output1, output2),
             margin_fraction=0.2,
         ):
@@ -105,7 +133,4 @@ class Stmc2Axiom(Axiom[Query, Document]):
         return 0
 
 
-STMC2: Final = Stmc2Axiom(
-    context=get_index_context(),
-    term_similarity=WordNetSynonymSetTermSimilarity(),
-)
+STMC2: Final = lazy_inject(Stmc2Axiom, injector)
