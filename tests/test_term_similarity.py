@@ -1,4 +1,4 @@
-from axioms.axiom import STMC1, STMC2
+from axioms.axiom import STMC1  #, STMC2
 from axioms.model import TextQuery, TextDocument
 from tests.util import inject_documents
 

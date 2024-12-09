@@ -59,9 +59,9 @@ from tests.util import inject_documents
         DIV,
         LEN_DIV,
         TFC1,
-        # TFC3,
-        # M_TDC,
-        # LEN_M_TDC,
+        TFC3,
+        M_TDC,
+        LEN_M_TDC,
         STMC1,
         STMC2,
     ]

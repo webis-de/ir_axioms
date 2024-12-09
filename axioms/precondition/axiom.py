@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from functools import cached_property
 from typing import Generic, Literal, Sequence, TYPE_CHECKING
 
 from numpy import sign
@@ -21,15 +20,6 @@ class AxiomPrecondition(Precondition[Input, Output], Generic[Input, Output]):
     axiom: "Axiom[Input, Output]"
     expected_sign: Literal[1, 0, -1] = 0
     strip_preconditions: bool = True
-
-    @cached_property
-    def _axiom(self) -> "Axiom[Input, Output]":
-        from axioms.axiom.precondition import PreconditionAxiom
-
-        if self.strip_preconditions and isinstance(self.axiom, PreconditionAxiom):
-            return self.axiom.strip_preconditions()
-        else:
-            return self.axiom
 
     def precondition(
         self,

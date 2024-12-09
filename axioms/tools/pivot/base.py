@@ -1,6 +1,7 @@
-from typing import Generic, Sequence, Protocol, runtime_checkable
+from typing import Generic, Sequence, Protocol, runtime_checkable, TypeVar
 
-from axioms.model import Input, Output
+Input = TypeVar("Input", contravariant=True)
+Output = TypeVar("Output")
 
 
 @runtime_checkable
