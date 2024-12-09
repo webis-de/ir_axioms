@@ -11,9 +11,11 @@ from axioms.model.base import (  # noqa: F401
 
 from axioms.model.retrieval import (  # noqa: F401
     Query,
+    TextQuery,
     Document,
     TextDocument,
     ScoredDocument,
+    ScoredTextDocument,
     RankedDocument,
     JudgedDocument,
     IndexContext,
