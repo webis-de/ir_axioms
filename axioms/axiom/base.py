@@ -187,17 +187,6 @@ class Axiom(ABC, Generic[Input, Output]):
             strip_preconditions=strip_preconditions,
         )
 
-    def with_precondition(
-        self,
-        precondition: Precondition[Input, Output],
-    ) -> "Axiom[Input, Output]":
-        from axioms.axiom.precondition import PreconditionAxiom
-
-        return PreconditionAxiom(
-            axiom=self,
-            precondition=precondition,
-        )
-
     @final
     def rerank_kwiksort(
         self,
