@@ -56,7 +56,7 @@ experiments =[
     "jupyter~=1.1",
     "lightgbm~=4.5",
     "ragas~=0.2.5",
-    "ray[default,data]~=2.39.0",
+    "ray[default,data]~=2.40.0",
     "rouge-score~=0.1.2",
     "xgboost~=2.1",
 ]
