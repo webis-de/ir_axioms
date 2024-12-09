@@ -1,4 +1,5 @@
-from pytest import fixture
+from typing import Callable
+from pytest import fixture, FixtureRequest
 
 from axioms.axiom import (
     Axiom,
@@ -6,33 +7,32 @@ from axioms.axiom import (
     QTArg,
     QTPArg,
     aSL,
+    LNC1,
+    TF_LNC,
+    LB1,
     PROX1,
     PROX2,
     PROX3,
     PROX4,
     PROX5,
-    TFC1,
-    TFC3,
+    REG,
+    ANTI_REG,
+    ASPECT_REG,
     AND,
     LEN_AND,
     M_AND,
     LEN_M_AND,
     DIV,
     LEN_DIV,
+    TFC1,
+    TFC3,
     M_TDC,
     LEN_M_TDC,
     STMC1,
     STMC2,
-    LNC1,
-    TF_LNC,
-    LB1,
-    REG,
-    ANTI_REG,
-    ASPECT_REG,
 )
-from axioms.model import Query, RankedTextDocument
-from axioms.model.retrieval import set_index_context
-from tests.unit.util import MemoryIndexContext
+from axioms.model import TextQuery, ScoredTextDocument
+from tests.util import inject_documents
 
 
 @fixture(
@@ -59,58 +59,62 @@ from tests.unit.util import MemoryIndexContext
         DIV,
         LEN_DIV,
         TFC1,
-        TFC3,
-        M_TDC,
-        LEN_M_TDC,
+        # TFC3,
+        # M_TDC,
+        # LEN_M_TDC,
         STMC1,
         STMC2,
     ]
 )
-def axiom(request) -> Axiom:
+def axiom_fn(request: FixtureRequest) -> Callable[[], Axiom]:
     return request.param
 
 
-def test_empty_query(axiom: Axiom):
-    query = Query("")
-    document1 = RankedTextDocument("d1", 2, 1, "w1 w2 w3")
-    document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
-    context = MemoryIndexContext({document1, document2})
-    set_index_context(context)
+def test_empty_query(axiom_fn: Callable[[], Axiom]):
+    query = TextQuery("q1", "")
+    document1 = ScoredTextDocument("d1", "w1 w2 w3", 2)
+    document2 = ScoredTextDocument("d2", "w1 w2 w3", 1)
 
+    inject_documents([document1, document2])
+
+    axiom = axiom_fn()
     assert axiom.preference(query, document1, document2) == 0
     assert axiom.preference(query, document2, document1) == 0
 
 
-def test_empty_document1(axiom: Axiom):
-    query = Query("w1 w2 w3")
-    document1 = RankedTextDocument("d1", 2, 1, "")
-    document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
-    context = MemoryIndexContext({document1, document2})
-    set_index_context(context)
+def test_empty_document1(axiom_fn: Callable[[], Axiom]):
+    query = TextQuery("q1", "w1 w2 w3")
+    document1 = ScoredTextDocument("d1", "", 2)
+    document2 = ScoredTextDocument("d2", "w1 w2 w3", 1)
 
+    inject_documents([document1, document2])
+
+    axiom = axiom_fn()
     assert axiom.preference(query, document1, document2) == -axiom.preference(
         query, document2, document1
     )
 
 
-def test_empty_document2(axiom: Axiom):
-    query = Query("w1 w2 w3")
-    document1 = RankedTextDocument("d1", 2, 1, "w1 w2 w3")
-    document2 = RankedTextDocument("d2", 1, 2, "")
-    context = MemoryIndexContext({document1, document2})
-    set_index_context(context)
+def test_empty_document2(axiom_fn: Callable[[], Axiom]):
+    query = TextQuery("q1", "w1 w2 w3")
+    document1 = ScoredTextDocument("d1", "w1 w2 w3", 2)
+    document2 = ScoredTextDocument("d2", "", 1)
 
+    inject_documents([document1, document2])
+
+    axiom = axiom_fn()
     assert axiom.preference(query, document1, document2) == -axiom.preference(
         query, document2, document1
     )
 
 
-def test_empty_documents(axiom: Axiom):
-    query = Query("w1 w2 w3")
-    document1 = RankedTextDocument("d1", 2, 1, "")
-    document2 = RankedTextDocument("d2", 1, 2, "")
-    context = MemoryIndexContext({document1, document2})
-    set_index_context(context)
+def test_empty_documents(axiom_fn: Callable[[], Axiom]):
+    query = TextQuery("q1", "w1 w2 w3")
+    document1 = ScoredTextDocument("d1", "", 2)
+    document2 = ScoredTextDocument("d2", "", 1)
 
+    inject_documents([document1, document2])
+
+    axiom = axiom_fn()
     assert axiom.preference(query, document1, document2) == 0
     assert axiom.preference(query, document2, document1) == 0

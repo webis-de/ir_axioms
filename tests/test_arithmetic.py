@@ -1,23 +1,26 @@
-from axioms.axiom import UniformAxiom, VoteAxiom
-from axioms.model import Query, RankedTextDocument
+from numpy import ones
 from pytest import approx
+
+from axioms.axiom import UniformAxiom, VoteAxiom
+from axioms.model import Query, Document
 
 
 def test_uniform():
-    query = Query("q1 q2 q3")
-    document1 = RankedTextDocument("d1", 2, 1, "w1 w2 w3")
-    document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
+    query = Query(id="q1")
+    document1 = Document(id="d1")
+    document2 = Document(id="d2")
 
     axiom = UniformAxiom(scalar=1)
 
     assert axiom.preference(query, document1, document2) == 1
     assert axiom.preference(query, document2, document1) == 1
+    assert (axiom.preferences(query, [document1, document2]) == ones((2, 2))).all()
 
 
 def test_sum():
-    query = Query("q1 q2 q3")
-    document1 = RankedTextDocument("d1", 2, 1, "w1 w2 w3")
-    document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
+    query = Query(id="q1")
+    document1 = Document(id="d1")
+    document2 = Document(id="d2")
 
     axiom1 = UniformAxiom(scalar=1)
     axiom2 = UniformAxiom(scalar=2)
@@ -27,12 +30,13 @@ def test_sum():
 
     assert axiom.preference(query, document1, document2) == 6
     assert axiom.preference(query, document2, document1) == 6
+    # TODO: Test `preferences()`.
 
 
 def test_product():
-    query = Query("q1 q2 q3")
-    document1 = RankedTextDocument("d1", 2, 1, "w1 w2 w3")
-    document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
+    query = Query(id="q1")
+    document1 = Document(id="d1")
+    document2 = Document(id="d2")
 
     axiom1 = UniformAxiom(scalar=1)
     axiom2 = UniformAxiom(scalar=2)
@@ -45,9 +49,9 @@ def test_product():
 
 
 def test_multiplicative_inverse():
-    query = Query("q1 q2 q3")
-    document1 = RankedTextDocument("d1", 2, 1, "w1 w2 w3")
-    document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
+    query = Query(id="q1")
+    document1 = Document(id="d1")
+    document2 = Document(id="d2")
 
     axiom = UniformAxiom(scalar=1) / UniformAxiom(scalar=2)
 
@@ -56,9 +60,9 @@ def test_multiplicative_inverse():
 
 
 def test_and():
-    query = Query("q1 q2 q3")
-    document1 = RankedTextDocument("d1", 2, 1, "w1 w2 w3")
-    document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
+    query = Query(id="q1")
+    document1 = Document(id="d1")
+    document2 = Document(id="d2")
 
     axiom1 = UniformAxiom(scalar=1)
     axiom2 = UniformAxiom(scalar=2)
@@ -74,9 +78,9 @@ def test_and():
 
 
 def test_majority_vote():
-    query = Query("q1 q2 q3")
-    document1 = RankedTextDocument("d1", 2, 1, "w1 w2 w3")
-    document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
+    query = Query(id="q1")
+    document1 = Document(id="d1")
+    document2 = Document(id="d2")
 
     axiom1 = UniformAxiom(scalar=1)
     axiom2 = UniformAxiom(scalar=2)
@@ -95,9 +99,9 @@ def test_majority_vote():
 
 
 def test_cascade():
-    query = Query("q1 q2 q3")
-    document1 = RankedTextDocument("d1", 2, 1, "w1 w2 w3")
-    document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
+    query = Query(id="q1")
+    document1 = Document(id="d1")
+    document2 = Document(id="d2")
 
     axiom1 = UniformAxiom(scalar=0)
     axiom2 = UniformAxiom(scalar=1)
@@ -115,9 +119,9 @@ def test_cascade():
 
 
 def test_normalize():
-    query = Query("q1 q2 q3")
-    document1 = RankedTextDocument("d1", 2, 1, "w1 w2 w3")
-    document2 = RankedTextDocument("d2", 1, 2, "w1 w2 w3")
+    query = Query(id="q1")
+    document1 = Document(id="d1")
+    document2 = Document(id="d2")
 
     axiom1 = UniformAxiom(scalar=2)
     axiom2 = +axiom1

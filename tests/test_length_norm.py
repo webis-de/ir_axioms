@@ -1,17 +1,16 @@
 from axioms.axiom import LNC1, TF_LNC
-from axioms.model import Query, RankedTextDocument
-from axioms.model.retrieval import set_index_context
-from tests.unit.util import MemoryIndexContext
+from axioms.model import TextQuery, TextDocument
+from tests.util import inject_documents
 
 
 def test_lnc1():
-    query = Query("q1 q2 q3")
-    document1 = RankedTextDocument("d1", 2, 1, "q1 q2 q3 w w w w w w w")
-    document2 = RankedTextDocument("d2", 1, 2, "q1 q2 q3 w w w w w w w w")
-    context = MemoryIndexContext({document1, document2})
-    set_index_context(context)
+    query = TextQuery("q1", "q1 q2 q3")
+    document1 = TextDocument("d1", "q1 q2 q3 w w w w w w w")
+    document2 = TextDocument("d2", "q1 q2 q3 w w w w w w w w")
 
-    axiom = LNC1
+    inject_documents([document1, document2])
+
+    axiom = LNC1()
 
     # Prefer the shorter document.
     assert axiom.preference(query, document1, document2) == 1
@@ -19,15 +18,14 @@ def test_lnc1():
 
 
 def test_tf_lnc():
-    query = Query("q1 q2 q3")
+    query = TextQuery("q1", "q1 q2 q3")
+    document1 = TextDocument("d1", "q1 q1 q2 x y")
+    document2 = TextDocument("d2", "q1 q2 x y")
+    document3 = TextDocument("d3", "q1 q1 q1 x y")
 
-    document1 = RankedTextDocument("d1", 3, 1, "q1 q1 q2 x y")
-    document2 = RankedTextDocument("d2", 2, 2, "q1 q2 x y")
-    document3 = RankedTextDocument("d3", 1, 3, "q1 q1 q1 x y")
-    context = MemoryIndexContext({document1, document2, document3})
-    set_index_context(context)
+    inject_documents([document1, document2])
 
-    axiom = TF_LNC
+    axiom = TF_LNC()
 
     # Prefer document with higher query term frequency
     # while document length without the query term is equal.

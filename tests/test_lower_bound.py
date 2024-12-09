@@ -1,21 +1,20 @@
 from axioms.axiom import LB1
-from axioms.model import Query, RankedTextDocument
-from axioms.model.retrieval import set_index_context
-from tests.unit.util import MemoryIndexContext
+from axioms.model import TextQuery, ScoredTextDocument
+from tests.util import inject_documents
 
 
 def test_lb1():
-    query = Query("test query words")
-    document1 = RankedTextDocument(
-        "d1", 1.00, 2, "test document that contains query words and phrases"
+    query = TextQuery("q1", "test query words")
+    document1 = ScoredTextDocument(
+        "d1", "test document that contains query words and phrases", 1.00
     )
-    document2 = RankedTextDocument(
-        "d2", 1.01, 1, "test document that contains words and phrases"
+    document2 = ScoredTextDocument(
+        "d2", "test document that contains words and phrases", 1.01
     )
-    context = MemoryIndexContext({document2, document1})
-    set_index_context(context)
 
-    ax1 = LB1
+    inject_documents([document1, document2])
+
+    ax1 = LB1()
 
     # Prefer document that contains a query term ('query')
     # which the other document doesn't contain.

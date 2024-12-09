@@ -1,52 +1,45 @@
 from dataclasses import dataclass
-from functools import reduce
-from typing import Union, Set, Sequence
+from typing import Collection
+from injector import inject
 
-from nltk import word_tokenize
-
-from axioms.model import Query, Document, RankedTextDocument
-from axioms.model.retrieval import IndexContext
-from axioms.utils.nltk import download_nltk_dependencies
+from axioms.dependency_injection import injector
+from axioms.model import Document, TextDocument
+from axioms.tools import IndexStatistics, TextContents, TermTokenizer
 
 
 @dataclass(frozen=True)
-class MemoryIndexContext(IndexContext):
-    documents: Set[RankedTextDocument]
+class InMemoryDocumentCollection:
+    documents: Collection[Document]
 
-    # noinspection PyMethodMayBeStatic
-    def __post_init__(self):
-        download_nltk_dependencies("punkt")
-        download_nltk_dependencies("punkt_tab")
 
-    def __hash__(self):
-        return reduce(
-            lambda acc, document: acc * hash(document),
-            self.documents,
-            1,
-        )
+@inject
+@dataclass(frozen=True)
+class InMemoryIndexStatistics(IndexStatistics):
+    document_collection: InMemoryDocumentCollection
+    text_contents: TextContents[Document]
+    term_tokenizer: TermTokenizer
 
     @property
     def document_count(self) -> int:
-        return len(self.documents)
+        return len(self.document_collection.documents)
 
     def document_frequency(self, term: str) -> int:
         return sum(
             1
-            for document in self.documents
-            if term in self.terms(document)
+            for document in self.document_collection.documents
+            if term
+            in self.term_tokenizer.terms(
+                text=self.text_contents.contents(input=document),
+            )
         )
 
-    def document_contents(self, document: Document) -> str:
-        text_document = next(
-            text_document
-            for text_document in self.documents
-            if text_document.id == document.id
-        )
-        return text_document.contents
 
-    def terms(
-            self,
-            query_or_document: Union[Query, Document]
-    ) -> Sequence[str]:
-        text = self.contents(query_or_document)
-        return tuple(word_tokenize(text))
+def inject_documents(documents: Collection[TextDocument]) -> None:
+    injector.binder.bind(
+        interface=IndexStatistics,
+        to=InMemoryIndexStatistics,
+    )
+    injector.binder.bind(
+        interface=InMemoryDocumentCollection,
+        to=InMemoryDocumentCollection(documents),
+    )
