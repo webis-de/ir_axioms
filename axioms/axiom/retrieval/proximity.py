@@ -4,30 +4,26 @@ from dataclasses import dataclass
 from itertools import combinations
 from math import inf
 from statistics import mean
-from typing import Counter, Final, FrozenSet, Sequence
+from typing import Counter, Final, AbstractSet, Sequence, Union
+
+from injector import inject
 
 from axioms.axiom.base import Axiom
-from axioms.axiom.utils import (
-    strictly_less,
-    strictly_greater,
-)
-from axioms.model import Query, Document, IndexContext
-from axioms.model.retrieval import get_index_context
+from axioms.axiom.utils import strictly_less, strictly_greater
+from axioms.dependency_injection import injector
+from axioms.model import Query, Document, Preference
+from axioms.tools import TextContents, TermTokenizer
+from axioms.utils.lazy import lazy_inject
 
 
 def _same_query_term_subset(
-    context: IndexContext,
-    input: Query,
-    output1: Document,
-    output2: Document,
+    query_terms: AbstractSet[str],
+    document1_terms: AbstractSet[str],
+    document2_terms: AbstractSet[str],
 ) -> bool:
     """
     Both documents contain the same set of query terms.
     """
-
-    query_terms = context.term_set(input)
-    document1_terms = context.term_set(output1)
-    document2_terms = context.term_set(output2)
 
     if len(query_terms) <= 1:
         return False
@@ -40,7 +36,7 @@ def _same_query_term_subset(
 
 
 def _average_between_query_terms(
-    query_terms: FrozenSet[str], document_terms: Sequence[str]
+    query_terms: AbstractSet[str], document_terms: Sequence[str]
 ) -> float:
     query_term_pairs = set(combinations(query_terms, 2))
     if len(query_term_pairs) == 0:
@@ -56,15 +52,10 @@ def _average_between_query_terms(
 
 
 def _all_query_terms_in_documents(
-    context: IndexContext,
-    input: Query,
-    output1: Document,
-    output2: Document,
-):
-    query_terms = context.term_set(input)
-    document1_terms = context.term_set(output1)
-    document2_terms = context.term_set(output2)
-
+    query_terms: AbstractSet[str],
+    document1_terms: AbstractSet[str],
+    document2_terms: AbstractSet[str],
+) -> bool:
     if len(query_terms) <= 1:
         return False
 
@@ -76,7 +67,7 @@ def _all_query_terms_in_documents(
 def _take_closest(
     sorted_items: Sequence[int],
     target: int,
-):
+) -> int:
     """
     Return closest value to n.
     If two numbers are equally close, return the smallest number.
@@ -98,7 +89,7 @@ def _take_closest(
 
 
 def _query_term_index_groups(
-    query_terms: FrozenSet[str],
+    query_terms: AbstractSet[str],
     document_terms: Sequence[str],
 ) -> Sequence[Sequence[int]]:
     index_groups = []
@@ -119,7 +110,8 @@ def _query_term_index_groups(
 
 
 def _average_smallest_span(
-    query_terms: FrozenSet[str], document_terms: Sequence[str]
+    query_terms: AbstractSet[str],
+    document_terms: Sequence[str],
 ) -> float:
     index_groups = _query_term_index_groups(query_terms, document_terms)
     if len(index_groups) == 0:
@@ -128,8 +120,9 @@ def _average_smallest_span(
 
 
 def _closest_grouping_size_and_count(
-    query_terms: FrozenSet[str], document_terms: Sequence[str]
-):
+    query_terms: AbstractSet[str],
+    document_terms: Sequence[str],
+) -> tuple[int, int]:
     index_groups = _query_term_index_groups(query_terms, document_terms)
 
     # Number of non-query terms within groups.
@@ -152,24 +145,41 @@ def _closest_grouping_size_and_count(
     return min_occurrences, min_occurrences_count
 
 
+@inject
 @dataclass(frozen=True, kw_only=True)
 class Prox1Axiom(Axiom[Query, Document]):
-    context: IndexContext
+    text_contents: TextContents[Union[Query, Document]]
+    term_tokenizer: TermTokenizer
 
     def preference(
         self,
         input: Query,
         output1: Document,
         output2: Document,
-    ):
-        if not _same_query_term_subset(self.context, input, output1, output2):
+    ) -> Preference:
+        query_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(input),
+        )
+        query_unique_terms = set(query_terms)
+        document1_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(output1),
+        )
+        document1_unique_terms = set(document1_terms)
+        document2_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(output2),
+        )
+        document2_unique_terms = set(document2_terms)
+
+        if not _same_query_term_subset(
+            query_terms=query_unique_terms,
+            document1_terms=document1_unique_terms,
+            document2_terms=document2_unique_terms,
+        ):
             return 0
 
-        query_terms = self.context.term_set(input)
-        document1_terms = self.context.terms(output1)
-        document2_terms = self.context.terms(output2)
-
-        overlapping_terms = query_terms & set(document1_terms) & set(document2_terms)
+        overlapping_terms = (
+            query_unique_terms & document1_unique_terms & document2_unique_terms
+        )
 
         average1 = _average_between_query_terms(overlapping_terms, document1_terms)
         average2 = _average_between_query_terms(overlapping_terms, document2_terms)
@@ -177,43 +187,55 @@ class Prox1Axiom(Axiom[Query, Document]):
         return strictly_greater(average2, average1)
 
 
-PROX1: Final = Prox1Axiom(
-    context=get_index_context(),
-)
+PROX1: Final = lazy_inject(Prox1Axiom, injector)
 
 
+@inject
 @dataclass(frozen=True, kw_only=True)
 class Prox2Axiom(Axiom[Query, Document]):
-    context: IndexContext
+    text_contents: TextContents[Union[Query, Document]]
+    term_tokenizer: TermTokenizer
 
     def preference(
         self,
         input: Query,
         output1: Document,
         output2: Document,
-    ):
-        if not _same_query_term_subset(self.context, input, output1, output2):
+    ) -> Preference:
+        query_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(input),
+        )
+        query_unique_terms = set(query_terms)
+        document1_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(output1),
+        )
+        document1_unique_terms = set(document1_terms)
+        document2_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(output2),
+        )
+        document2_unique_terms = set(document2_terms)
+
+        if not _same_query_term_subset(
+            query_terms=query_unique_terms,
+            document1_terms=document1_unique_terms,
+            document2_terms=document2_unique_terms,
+        ):
             return 0
 
-        query_terms = self.context.term_set(input)
-        document1_terms = self.context.terms(output1)
-        document2_terms = self.context.terms(output2)
-        terms = set(document1_terms) & set(document2_terms)
+        common_document_terms = document1_unique_terms & document2_unique_terms
 
         first_position_sum1 = 0
         first_position_sum2 = 0
 
-        for term in query_terms:
-            if term in terms:
+        for term in query_unique_terms:
+            if term in common_document_terms:
                 first_position_sum1 += document1_terms.index(term)
                 first_position_sum2 += document2_terms.index(term)
 
         return strictly_greater(first_position_sum2, first_position_sum1)
 
 
-PROX2: Final = Prox2Axiom(
-    context=get_index_context(),
-)
+PROX2: Final = lazy_inject(Prox2Axiom, injector)
 
 
 def _find_index(
@@ -232,54 +254,92 @@ def _find_index(
     return inf
 
 
+@inject
 @dataclass(frozen=True, kw_only=True)
 class Prox3Axiom(Axiom[Query, Document]):
-    context: IndexContext
+    text_contents: TextContents[Union[Query, Document]]
+    term_tokenizer: TermTokenizer
 
     def preference(
         self,
         input: Query,
         output1: Document,
         output2: Document,
-    ):
-        if not _same_query_term_subset(self.context, input, output1, output2):
+    ) -> Preference:
+        query_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(input),
+        )
+        query_unique_terms = set(query_terms)
+        document1_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(output1),
+        )
+        document1_unique_terms = set(document1_terms)
+        document2_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(output2),
+        )
+        document2_unique_terms = set(document2_terms)
+
+        if not _same_query_term_subset(
+            query_terms=query_unique_terms,
+            document1_terms=document1_unique_terms,
+            document2_terms=document2_unique_terms,
+        ):
             return 0
-        query_terms = self.context.terms(input)
-        document1_terms = self.context.terms(output1)
-        document2_terms = self.context.terms(output2)
+
         return strictly_less(
-            _find_index(query_terms, document1_terms),
-            _find_index(query_terms, document2_terms),
+            _find_index(
+                query_terms=query_terms,
+                document_terms=document1_terms,
+            ),
+            _find_index(
+                query_terms=query_terms,
+                document_terms=document2_terms,
+            ),
         )
 
 
-PROX3: Final = Prox3Axiom(
-    context=get_index_context(),
-)
+PROX3: Final = lazy_inject(Prox3Axiom, injector)
 
 
+@inject
 @dataclass(frozen=True, kw_only=True)
 class Prox4Axiom(Axiom[Query, Document]):
-    context: IndexContext
+    text_contents: TextContents[Union[Query, Document]]
+    term_tokenizer: TermTokenizer
 
     def preference(
         self,
         input: Query,
         output1: Document,
         output2: Document,
-    ):
-        if not _all_query_terms_in_documents(self.context, input, output1, output2):
+    ) -> Preference:
+        query_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(input),
+        )
+        query_unique_terms = set(query_terms)
+        document1_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(output1),
+        )
+        document1_unique_terms = set(document1_terms)
+        document2_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(output2),
+        )
+        document2_unique_terms = set(document2_terms)
+
+        if not _all_query_terms_in_documents(
+            query_terms=query_unique_terms,
+            document1_terms=document1_unique_terms,
+            document2_terms=document2_unique_terms,
+        ):
             return 0
 
-        query_terms = self.context.term_set(input)
-        document1_terms = self.context.terms(output1)
-        document2_terms = self.context.terms(output2)
-
         occurrences1, count1 = _closest_grouping_size_and_count(
-            query_terms, document1_terms
+            query_terms=query_unique_terms,
+            document_terms=document1_terms,
         )
         occurrences2, count2 = _closest_grouping_size_and_count(
-            query_terms, document2_terms
+            query_terms=query_unique_terms,
+            document_terms=document2_terms,
         )
 
         if occurrences1 != occurrences2:
@@ -288,37 +348,54 @@ class Prox4Axiom(Axiom[Query, Document]):
             return strictly_greater(count1, count2)
 
 
-PROX4: Final = Prox4Axiom(
-    context=get_index_context(),
-)
+PROX4: Final = lazy_inject(Prox4Axiom, injector)
 
 
+@inject
 @dataclass(frozen=True, kw_only=True)
 class Prox5Axiom(Axiom[Query, Document]):
-    context: IndexContext
+    text_contents: TextContents[Union[Query, Document]]
+    term_tokenizer: TermTokenizer
 
     def preference(
         self,
         input: Query,
         output1: Document,
         output2: Document,
-    ):
-        if not _all_query_terms_in_documents(self.context, input, output1, output2):
+    ) -> Preference:
+        query_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(input),
+        )
+        query_unique_terms = set(query_terms)
+        document1_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(output1),
+        )
+        document1_unique_terms = set(document1_terms)
+        document2_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(output2),
+        )
+        document2_unique_terms = set(document2_terms)
+
+        if not _all_query_terms_in_documents(
+            query_terms=query_unique_terms,
+            document1_terms=document1_unique_terms,
+            document2_terms=document2_unique_terms,
+        ):
             return 0
 
-        query_terms = self.context.term_set(input)
-        document1_terms = self.context.terms(output1)
-        document2_terms = self.context.terms(output2)
-
-        smallest_span1 = _average_smallest_span(query_terms, document1_terms)
-        smallest_span2 = _average_smallest_span(query_terms, document2_terms)
+        smallest_span1 = _average_smallest_span(
+            query_terms=query_unique_terms,
+            document_terms=document1_terms,
+        )
+        smallest_span2 = _average_smallest_span(
+            query_terms=query_unique_terms,
+            document_terms=document2_terms,
+        )
 
         return strictly_less(smallest_span1, smallest_span2)
 
 
-PROX5: Final = Prox5Axiom(
-    context=get_index_context(),
-)
+PROX5: Final = lazy_inject(Prox5Axiom, injector)
 
 
 # TODO: QPHRA axiom:
