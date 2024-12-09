@@ -1,7 +1,7 @@
 from typing import Sequence
 
-from axioms import logger
 from axioms.axiom import Axiom
+from axioms.logging import logger
 from axioms.model import Input, Output
 from axioms.tools.pivot import RandomPivotSelection, PivotSelection
 
