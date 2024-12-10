@@ -56,16 +56,30 @@ class RegAxiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
         output1: Document,
         output2: Document,
     ) -> Preference:
-        query_terms = set(self.term_tokenizer.terms(self.text_contents.contents(input)))
+        query_unique_terms = self.term_tokenizer.unique_terms(
+            self.text_contents.contents(input)
+        )
 
-        minimum_similarity_term = self.term_similarity.least_similar_term(query_terms)
-        if minimum_similarity_term is None:
+        min_average_similarity_terms = (
+            self.term_similarity.min_average_similarity_terms(query_unique_terms)
+        )
+        if len(min_average_similarity_terms) == 0:
             return 0
 
-        return strictly_greater(
-            self.text_statistics.term_frequency(output1, minimum_similarity_term),
-            self.text_statistics.term_frequency(output2, minimum_similarity_term),
-        )
+        if all(
+            self.text_statistics.term_frequency(output1, term)
+            > self.text_statistics.term_frequency(output2, term)
+            for term in min_average_similarity_terms
+        ):
+            return 1
+        elif all(
+            self.text_statistics.term_frequency(output1, term)
+            < self.text_statistics.term_frequency(output2, term)
+            for term in min_average_similarity_terms
+        ):
+            return -1
+        else:
+            return 0
 
 
 REG: Final = lazy_inject(RegAxiom, injector)
@@ -94,21 +108,30 @@ class AntiRegAxiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
         output1: Document,
         output2: Document,
     ) -> Preference:
-        query_terms = self.term_tokenizer.terms(
+        query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
-        query_unique_terms = set(query_terms)
 
-        most_similarity_term = self.term_similarity.most_similar_term(
-            query_unique_terms
+        max_average_similarity_terms = (
+            self.term_similarity.max_average_similarity_terms(query_unique_terms)
         )
-        if most_similarity_term is None:
+        if len(max_average_similarity_terms) == 0:
             return 0
 
-        return strictly_greater(
-            self.text_statistics.term_frequency(output1, most_similarity_term),
-            self.text_statistics.term_frequency(output2, most_similarity_term),
-        )
+        if all(
+            self.text_statistics.term_frequency(output1, term)
+            > self.text_statistics.term_frequency(output2, term)
+            for term in max_average_similarity_terms
+        ):
+            return 1
+        elif all(
+            self.text_statistics.term_frequency(output1, term)
+            < self.text_statistics.term_frequency(output2, term)
+            for term in max_average_similarity_terms
+        ):
+            return -1
+        else:
+            return 0
 
 
 ANTI_REG: Final = lazy_inject(AntiRegAxiom, injector)
