@@ -53,7 +53,9 @@ from axioms.tools.text_statistics import (  # noqa: F401
 
 from axioms.tools.tokenizer import (  # noqa: F401
     TermTokenizer,
+    SentenceTokenizer,
     NltkTermTokenizer,
+    NltkSentenceTokenizer,
     AnseriniTermTokenizer,
     TerrierTermTokenizer,
     TokenizerModule,
