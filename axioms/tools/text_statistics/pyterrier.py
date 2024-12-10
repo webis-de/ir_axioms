@@ -75,7 +75,7 @@ if is_pyterrier_installed():
         def _lexicon(self) -> Any:
             return self._index.getLexicon()
 
-        def term_frequencies(self, document: DocumentType) -> Mapping[str, int]:
+        def term_counts(self, document: DocumentType) -> Mapping[str, int]:
             docid: int = self._meta_index.getDocument("docno", document.id)
             document_entry: Any = self._document_index.getDocumentEntry(docid)
             postings: Optional[Iterable[Any]] = self._direct_index.getPostings(

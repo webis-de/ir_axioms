@@ -29,7 +29,11 @@ if is_pyserini_installed():
             elif isinstance(self.index_dir, str):
                 return LuceneIndexReader(self.index_dir)
 
-        def term_frequencies(self, document: DocumentType) -> Mapping[str, int]:
+        def term_counts(self, document: DocumentType) -> Mapping[str, int]:
+            term_positions = self._index_reader.get_term_positions(document.id)
+            return {term: len(positions) for term, positions in term_positions}
+
+        def term_frequencies(self, document: DocumentType) -> Mapping[str, float]:
             term_frequencies = self._index_reader.get_document_vector(document.id)
             if term_frequencies is None:
                 return {}

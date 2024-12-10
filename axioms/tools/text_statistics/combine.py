@@ -13,7 +13,13 @@ class DocumentQueryTextStatistics(TextStatistics[Union[Document, Query]]):
     document_text_contents: TextStatistics[Document]
     query_text_contents: TextStatistics[Query]
 
-    def term_frequencies(self, document: Union[Document, Query]) -> Mapping[str, int]:
+    def term_counts(self, document: Union[Document, Query]) -> Mapping[str, int]:
+        if isinstance(document, Document):
+            return self.document_text_contents.term_counts(document)
+        elif isinstance(document, Query):
+            return self.query_text_contents.term_counts(document)
+
+    def term_frequencies(self, document: Union[Document, Query]) -> Mapping[str, float]:
         if isinstance(document, Document):
             return self.document_text_contents.term_frequencies(document)
         elif isinstance(document, Query):

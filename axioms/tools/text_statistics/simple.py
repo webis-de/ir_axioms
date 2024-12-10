@@ -23,7 +23,7 @@ class SimpleTextStatistics(TextStatistics[T]):
     text_contents: TextContents[T]
     term_tokenizer: TermTokenizer
 
-    def term_frequencies(self, document: T) -> Mapping[str, int]:
+    def term_counts(self, document: T) -> Mapping[str, int]:
         terms = self.term_tokenizer.terms(
             text=self.text_contents.contents(input=document),
         )
