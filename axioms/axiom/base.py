@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Generic, Literal, Sequence, Optional, final
 
-from numpy import floating, array
+from numpy import float_, array
 
 from axioms.model import Input, Output, Preference, PreferenceMatrix
 from axioms.tools.pivot import PivotSelection, RandomPivotSelection
@@ -65,7 +66,7 @@ class Axiom(ABC, Generic[Input, Output]):
                 ]
                 for output1 in outputs
             ],
-            dtype=floating,
+            dtype=float_,
         )
 
     def __add__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
@@ -148,23 +149,15 @@ class Axiom(ABC, Generic[Input, Output]):
         """
         return +self
 
-    def __invert__(self) -> "Axiom[Input, Output]":
+    def cached(self, cache_path: Path) -> "Axiom[Input, Output]":
         """
-        Cache this axiom's preferences in the context's cache directory,
-        meaning the ``preference()`` method will only be called once
-        for each query-documents tuple.
-        """
-        return self.cached()
-
-    def cached(self) -> "Axiom[Input, Output]":
-        """
-        Cache this axiom's preferences in the context's cache directory,
+        Cache this axiom's preferences in the given cache path,
         meaning the ``preference()`` method will only be called once
         for each query-documents tuple.
         """
         from axioms.axiom.cache import CachedAxiom
 
-        return CachedAxiom(axiom=self)
+        return CachedAxiom(axiom=self, cache_path=cache_path)
 
     def parallel(self, n_jobs: Optional[int] = None) -> "Axiom[Input, Output]":
         """
