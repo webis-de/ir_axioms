@@ -42,6 +42,7 @@ dependencies = [
     "targer-api~=1.1",  # TODO: Make this an optional dependency.
     "tqdm~=4.67",
     "trectools~=0.0.49",  # TODO: Make this an optional dependency.
+    "usearch~=2.16",
 ]
 dynamic = ["version"]
 
