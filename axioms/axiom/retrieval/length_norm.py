@@ -24,7 +24,7 @@ class Lnc1Axiom(Axiom[Query, Document]):
         output1: Document,
         output2: Document,
     ) -> Preference:
-        query_terms = self.term_tokenizer.terms(
+        query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
         if not all(
@@ -32,7 +32,7 @@ class Lnc1Axiom(Axiom[Query, Document]):
                 self.text_statistics.term_frequency(output1, term),
                 self.text_statistics.term_frequency(output2, term),
             )
-            for term in set(query_terms)
+            for term in query_unique_terms
         ):
             return 0
 
@@ -63,7 +63,7 @@ class TfLncAxiom(Axiom[Query, Document]):
         output1: Document,
         output2: Document,
     ) -> Preference:
-        query_terms = self.term_tokenizer.terms(
+        query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
         document1_terms = self.term_tokenizer.terms(
@@ -76,7 +76,7 @@ class TfLncAxiom(Axiom[Query, Document]):
         sum_document1 = 0
         sum_document2 = 0
 
-        for query_term in set(query_terms):
+        for query_term in query_unique_terms:
             tf_d1 = self.text_statistics.term_frequency(output1, query_term)
             tf_d2 = self.text_statistics.term_frequency(output2, query_term)
 
