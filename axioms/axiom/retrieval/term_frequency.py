@@ -23,6 +23,7 @@ class Tfc1Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
     term_tokenizer: TermTokenizer
     text_statistics: TextStatistics[Document]
     precondition: NoInject[Precondition[Query, Document]] = field(default_factory=LEN)
+    margin_fraction: float = 0.1
 
     def preference(
         self,
@@ -34,17 +35,23 @@ class Tfc1Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
             self.text_contents.contents(input),
         )
 
-        term_frequency1: float = 0
-        term_frequency2: float = 0
-        for qt in query_terms:
-            term_frequency1 += self.text_statistics.term_frequency(output1, qt)
-            term_frequency2 += self.text_statistics.term_frequency(output2, qt)
+        term_frequency_sum1 = sum(
+            self.text_statistics.term_frequency(output1, term)
+            for term in query_terms
+        )
+        term_frequency_sum2 = sum(
+            self.text_statistics.term_frequency(output2, term)
+            for term in query_terms
+        )
 
-        if approximately_equal(term_frequency1, term_frequency2):
-            # Less than 10% difference.
+        if approximately_equal(
+            term_frequency_sum1,
+            term_frequency_sum2,
+            self.margin_fraction,
+        ):
             return 0
 
-        return strictly_greater(term_frequency1, term_frequency2)
+        return strictly_greater(term_frequency_sum1, term_frequency_sum2)
 
 
 TFC1: Final = lazy_inject(Tfc1Axiom, injector)
