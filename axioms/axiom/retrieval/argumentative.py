@@ -6,7 +6,6 @@ from statistics import mean
 from typing import Any, Final, Iterable, Dict, Optional, Union
 
 from injector import inject, NoInject
-from nltk import WordNetLemmatizer, sent_tokenize, word_tokenize
 from targer_api import ArgumentSentences, ArgumentLabel, ArgumentTag, analyze_text
 from targer_api.constants import DEFAULT_TARGER_MODELS, DEFAULT_TARGER_API_URL
 
@@ -16,16 +15,10 @@ from axioms.dependency_injection import injector
 from axioms.precondition.base import Precondition
 from axioms.precondition.length import LEN
 from axioms.axiom.utils import strictly_greater, strictly_less
-from axioms.model import Query, Document
-from axioms.tools import TextContents, TermTokenizer
+from axioms.model import Query, Document, Preference
+from axioms.tools import TextContents, TermTokenizer, SentenceTokenizer
 from axioms.utils.nltk import download_nltk_dependencies
 from axioms.utils.lazy import lazy_inject
-
-
-@lru_cache(None)
-def _normalize(word: str):
-    _word_net_lemmatizer = WordNetLemmatizer()
-    return _word_net_lemmatizer.lemmatize(word).lower()
 
 
 def _count_argumentative_units(sentences: ArgumentSentences) -> int:
@@ -83,17 +76,14 @@ def _count_query_terms(
     term_tokenizer: TermTokenizer,
     sentences: ArgumentSentences,
     query: Query,
-    normalize: bool = True,
 ) -> int:
     term_count = 0
     for term in term_tokenizer.terms(text_contents.contents(query)):
-        normalized_term = _normalize(term) if normalize else term
         for sentence in sentences:
             for tag in sentence:
                 token = tag.token
-                normalized_token = _normalize(token) if normalize else token
                 if (
-                    normalized_term == normalized_token
+                    term == token
                     and _is_claim_or_premise(tag)
                     and tag.probability > 0.5
                 ):
@@ -107,22 +97,15 @@ def _query_term_position_in_argument(
     sentences: ArgumentSentences,
     query: Query,
     penalty: int,
-    normalize: bool = True,
 ) -> float:
     term_argument_position = []
     tags = [tag for sentence in sentences for tag in sentence]
     for term in term_tokenizer.terms(text_contents.contents(query)):
-        normalized_term = _normalize(term) if normalize else term
         found: bool = False
         for i, tag in enumerate(tags):
             position = i + 1
             token = tag.token
-            normalized_token = _normalize(token) if normalize else token
-            if (
-                normalized_term == normalized_token
-                and tag.label != ArgumentLabel.O
-                and tag.probability > 0.5
-            ):
+            if term == token and tag.label != ArgumentLabel.O and tag.probability > 0.5:
                 term_argument_position.append(position)
                 found = True
                 break
@@ -134,19 +117,19 @@ def _query_term_position_in_argument(
 
 
 # TODO: Replace with sentence tokenizer tool.
-def _sentence_length(
+def _average_sentence_length(
     text_contents: TextContents[Document],
+    term_tokenizer: TermTokenizer,
+    sentence_tokenizer: SentenceTokenizer,
     document: Document,
 ) -> float:
     download_nltk_dependencies("punkt")
     download_nltk_dependencies("punkt_tab")
     # TODO: Replace with interchangable sentence tokenizer tool.
-    sentences = sent_tokenize(text_contents.contents(document))
+    sentences = sentence_tokenizer.sentences(text_contents.contents(document))
     if len(sentences) == 0:
         return nan
-    return mean(
-        len(word_tokenize(sentence, preserve_line=True)) for sentence in sentences
-    )
+    return mean(len(term_tokenizer.terms(sentence)) for sentence in sentences)
 
 
 # TODO: Migrate TARGER usage to `ArgumentExtractor` tool that can be injected.
@@ -223,11 +206,6 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(
 
     text_contents: TextContents[Union[Query, Document]]
     term_tokenizer: TermTokenizer
-    normalize: bool = True
-    """
-    Normalize query terms and tokens from argumentative units
-    using the WordNet lemmatizer.
-    """
     precondition: NoInject[Precondition[Any, Document]] = field(default_factory=LEN)
 
     def __post_init__(self):
@@ -254,7 +232,6 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(
                 term_tokenizer=self.term_tokenizer,
                 sentences=sentences,
                 query=input,
-                normalize=self.normalize,
             )
             for _, sentences in arguments1.items()
         )
@@ -264,7 +241,6 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(
                 term_tokenizer=self.term_tokenizer,
                 sentences=sentences,
                 query=input,
-                normalize=self.normalize,
             )
             for _, sentences in arguments2.items()
         )
@@ -297,11 +273,6 @@ class QueryTermPositionInArgumentativeUnitsAxiom(
 
     text_contents: TextContents[Union[Query, Document]]
     term_tokenizer: TermTokenizer
-    normalize: bool = True
-    """
-    Normalize query terms and tokens from argumentative units
-    using the WordNet lemmatizer.
-    """
     penalty: Optional[int] = 100000
     """
     Penalty for the average query term position,
@@ -356,7 +327,6 @@ class QueryTermPositionInArgumentativeUnitsAxiom(
                 sentences=sentences,
                 query=input,
                 penalty=penalty,
-                normalize=self.normalize,
             )
             for _, sentences in arguments1.items()
         )
@@ -367,7 +337,6 @@ class QueryTermPositionInArgumentativeUnitsAxiom(
                 sentences=sentences,
                 query=input,
                 penalty=penalty,
-                normalize=self.normalize,
             )
             for _, sentences in arguments2.items()
         )
@@ -381,7 +350,7 @@ QTPArg: Final = lazy_inject(QueryTermPositionInArgumentativeUnitsAxiom, injector
 @inject
 @dataclass(frozen=True, kw_only=True)
 class AverageSentenceLengthAxiom(
-    PreconditionMixin[Query, Document], Axiom[Any, Document]
+    PreconditionMixin[Any, Document], Axiom[Any, Document]
 ):
     """
     Favor documents with an average sentence length between
@@ -396,6 +365,8 @@ class AverageSentenceLengthAxiom(
     """
 
     text_contents: TextContents[Document]
+    term_tokenizer: TermTokenizer
+    sentence_tokenizer: SentenceTokenizer
     min_sentence_length: int = 12
     max_sentence_length: int = 20
     precondition: NoInject[Precondition[Any, Document]] = field(default_factory=LEN)
@@ -405,9 +376,19 @@ class AverageSentenceLengthAxiom(
         input: Any,
         output1: Document,
         output2: Document,
-    ):
-        sentence_length1 = _sentence_length(self.text_contents, output1)
-        sentence_length2 = _sentence_length(self.text_contents, output2)
+    ) -> Preference:
+        sentence_length1 = _average_sentence_length(
+            text_contents=self.text_contents,
+            term_tokenizer=self.term_tokenizer,
+            sentence_tokenizer=self.sentence_tokenizer,
+            document=output1,
+        )
+        sentence_length2 = _average_sentence_length(
+            text_contents=self.text_contents,
+            term_tokenizer=self.term_tokenizer,
+            sentence_tokenizer=self.sentence_tokenizer,
+            document=output2,
+        )
 
         min_length = self.min_sentence_length
         max_length = self.max_sentence_length
