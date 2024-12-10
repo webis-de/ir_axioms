@@ -37,6 +37,7 @@ from axioms.tools.pivot import (  # noqa: F401
 
 from axioms.tools.similarity import (  # noqa: F401
     TermSimilarity,
+    FastTextTermSimilarity,
     WordNetSynonymSetTermSimilarity,
     SimilarityModule,
 )

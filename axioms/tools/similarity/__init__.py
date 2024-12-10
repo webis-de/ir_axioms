@@ -6,6 +6,10 @@ from axioms.tools.similarity.base import (  # noqa: F401
     TermSimilarity,
 )
 
+from axioms.tools.similarity.fasttext import (  # noqa: F401
+    FastTextTermSimilarity,
+)
+
 from axioms.tools.similarity.wordnet import (  # noqa: F401
     WordNetSynonymSetTermSimilarity,
 )
@@ -16,5 +20,10 @@ class SimilarityModule(Module):
         binder.bind(
             interface=TermSimilarity,
             to=WordNetSynonymSetTermSimilarity,
+            scope=singleton,
+        )
+        binder.bind(
+            interface=TermSimilarity,
+            to=FastTextTermSimilarity,
             scope=singleton,
         )
