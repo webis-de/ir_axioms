@@ -4,15 +4,12 @@ from typing import (
     Iterable,
     Dict,
     Collection,
-    Optional,
     Tuple,
     Sequence,
     Protocol,
     runtime_checkable,
+    AbstractSet,
 )
-
-
-from axioms.logging import logger
 
 
 @runtime_checkable
@@ -41,82 +38,36 @@ class TermSimilarity(Protocol):
         term1, term2 = terms
         return self.similarity(term1, term2)
 
-    def most_similar_pair(
+    def max_similarity_pairs(
         self, terms1: Collection[str], terms2: Collection[str]
-    ) -> Optional[Tuple[str, str]]:
+    ) -> AbstractSet[Tuple[str, str]]:
         if len(terms1) == 0 or len(terms2) == 0:
-            return None
+            return set()
         most_similar_pairs: Sequence[Tuple[str, str]] = sorted(
-            product(terms1, terms2),
+            product(set(terms1), set(terms2)),
             key=self._pair_similarity,
             reverse=True,
         )
-        most_similar_pair = most_similar_pairs[0]
-        if len(most_similar_pairs) > 1 and self._pair_similarity(
-            most_similar_pair
-        ) == self._pair_similarity(most_similar_pairs[1]):
-            # No definite winner.
-            logger.debug(
-                f"Cannot find most similar term pair. "
-                f"The following pairs were equally similar: "
-                f"{', '.join(str(pair) for pair in most_similar_pairs)}"
-            )
-            return None
+        max_similarity = self._pair_similarity(most_similar_pairs[0])
+        print("max_similarity", max_similarity)
+        return {
+            pair
+            for pair in most_similar_pairs
+            if self._pair_similarity(pair) >= max_similarity
+        }
 
-        return most_similar_pair
-
-    def most_similar_term(
-        self,
-        terms: Collection[str],
-    ) -> Optional[str]:
+    def max_average_similarity_terms(self, terms: Collection[str]) -> AbstractSet[str]:
         if len(terms) == 0:
-            return None
-        similarity_sums = self.similarity_sums(terms)
-        most_similar_terms: Sequence[str] = sorted(
-            terms,
-            key=lambda term: similarity_sums[term],
-            reverse=True,
-        )
-        most_similar_term = most_similar_terms[0]
-        if (
-            len(most_similar_terms) > 1
-            and similarity_sums[most_similar_term]
-            == similarity_sums[most_similar_terms[1]]
-        ):
-            # No definite winner.
-            logger.debug(
-                f"Cannot find most similar term. "
-                f"The following terms were equally similar: "
-                f"{', '.join(most_similar_terms)}"
-            )
-            return None
+            return set()
+        similarity_sums = self.similarity_sums(set(terms))
+        print("similarity_sums", similarity_sums)
+        max_similarity_sum = max(similarity_sums.values())
+        return {term for term in terms if similarity_sums[term] >= max_similarity_sum}
 
-        return most_similar_term
-
-    def least_similar_term(
-        self,
-        terms: Collection[str],
-    ) -> Optional[str]:
+    def min_average_similarity_terms(self, terms: Collection[str]) -> AbstractSet[str]:
         if len(terms) == 0:
-            return None
-        similarity_sums = self.similarity_sums(terms)
-        least_similar_terms: Sequence[str] = sorted(
-            terms,
-            key=lambda term: similarity_sums[term],
-            reverse=False,
-        )
-        least_similar_term = least_similar_terms[0]
-        if (
-            len(least_similar_terms) > 1
-            and similarity_sums[least_similar_term]
-            == similarity_sums[least_similar_terms[1]]
-        ):
-            # No definite winner.
-            logger.debug(
-                f"Cannot find least similar term. "
-                f"The following terms were equally similar: "
-                f"{', '.join(least_similar_terms)}"
-            )
-            return None
-
-        return least_similar_term
+            return set()
+        similarity_sums = self.similarity_sums(set(terms))
+        print("similarity_sums", similarity_sums)
+        min_similarity_sum = min(similarity_sums.values())
+        return {term for term in terms if similarity_sums[term] <= min_similarity_sum}
