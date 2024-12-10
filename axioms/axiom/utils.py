@@ -58,4 +58,4 @@ def approximately_equal(
     boundary_min = min(boundaries)
     boundary_max = max(boundaries)
 
-    return all(boundary_min < item < boundary_max for item in items)
+    return all(boundary_min <= item <= boundary_max for item in items)
