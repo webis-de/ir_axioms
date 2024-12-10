@@ -17,7 +17,6 @@ from axioms.precondition.length import LEN
 from axioms.axiom.utils import strictly_greater, strictly_less
 from axioms.model import Query, Document, Preference
 from axioms.tools import TextContents, TermTokenizer, SentenceTokenizer
-from axioms.utils.nltk import download_nltk_dependencies
 from axioms.utils.lazy import lazy_inject
 
 
@@ -116,16 +115,12 @@ def _query_term_position_in_argument(
     return mean(term_argument_position)
 
 
-# TODO: Replace with sentence tokenizer tool.
 def _average_sentence_length(
     text_contents: TextContents[Document],
     term_tokenizer: TermTokenizer,
     sentence_tokenizer: SentenceTokenizer,
     document: Document,
 ) -> float:
-    download_nltk_dependencies("punkt")
-    download_nltk_dependencies("punkt_tab")
-    # TODO: Replace with interchangable sentence tokenizer tool.
     sentences = sentence_tokenizer.sentences(text_contents.contents(document))
     if len(sentences) == 0:
         return nan
@@ -208,9 +203,6 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(
     term_tokenizer: TermTokenizer
     precondition: NoInject[Precondition[Any, Document]] = field(default_factory=LEN)
 
-    def __post_init__(self):
-        download_nltk_dependencies("wordnet", "omw-1.4")
-
     def preference(
         self,
         input: Query,
@@ -280,9 +272,6 @@ class QueryTermPositionInArgumentativeUnitsAxiom(
     Set to None to use the maximum length of the two compared documents.
     """
     precondition: NoInject[Precondition[Any, Document]] = field(default_factory=LEN)
-
-    def __post_init__(self):
-        download_nltk_dependencies("wordnet", "omw-1.4")
 
     def preference(
         self,
