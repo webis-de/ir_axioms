@@ -28,20 +28,28 @@ class Lb1Axiom(Axiom[Query, ScoredDocument]):
         if not approximately_equal(output1.score, output2.score):
             return 0
 
-        query_terms = self.term_tokenizer.terms(
+        query_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
 
-        # TODO: Do we really want to use the term set here, not the list?
-        #  It seems as if the order of the terms should matter.
-        for term in set(query_terms):
-            tf1 = self.text_statistics.term_frequency(output1, term)
-            tf2 = self.text_statistics.term_frequency(output2, term)
-            if isclose(tf1, 0) and tf2 > 0:
-                return -1
-            if isclose(tf2, 0) and tf1 > 0:
-                return 1
-        return 0
+        document1_tf = self.text_statistics.term_frequencies(output1)
+        document2_tf = self.text_statistics.term_frequencies(output2)
+
+        query_term_only_in_document1 = any(
+            document1_tf.get(term, 0) > 0 and document2_tf.get(term, 0) <= 0
+            for term in query_terms
+        )
+        query_term_only_in_document2 = any(
+            document2_tf.get(term, 0) > 0 and document1_tf.get(term, 0) <= 0
+            for term in query_terms
+        )
+
+        if query_term_only_in_document1 and not query_term_only_in_document2:
+            return 1
+        elif not query_term_only_in_document1 and query_term_only_in_document2:
+            return -1
+        else:
+            return 0
 
 
 LB1: Final = lazy_inject(Lb1Axiom, injector)
