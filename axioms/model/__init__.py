@@ -18,7 +18,6 @@ from axioms.model.retrieval import (  # noqa: F401
     ScoredTextDocument,
     RankedDocument,
     JudgedDocument,
-    IndexContext,
 )
 
 from axioms.model.generation import (  # noqa: F401
