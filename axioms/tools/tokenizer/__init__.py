@@ -21,15 +21,21 @@ from axioms.tools.tokenizer.pyterrier import (  # noqa: F401
 )
 
 
+from axioms.tools.tokenizer.spacy import (  # noqa: F401
+    SpacyTermTokenizer,
+    SpacySentenceTokenizer,
+)
+
+
 class TokenizerModule(Module):
     def configure(self, binder: Binder) -> None:
         binder.bind(
             interface=TermTokenizer,
-            to=NltkTermTokenizer,
+            to=SpacyTermTokenizer,
             scope=singleton,
         )
         binder.bind(
             interface=SentenceTokenizer,
-            to=NltkSentenceTokenizer,
+            to=SpacySentenceTokenizer,
             scope=singleton,
         )
