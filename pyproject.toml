@@ -54,6 +54,7 @@ test =[
     "pylint~=3.0",
     "pytest>=7.2,<9.0",
     "pytest-cov>=4,<6",
+    "python-terrier~=0.10.0",
 ]
 examples =[
     "jupyter~=1.0",
