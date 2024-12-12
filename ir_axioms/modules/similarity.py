@@ -190,13 +190,14 @@ class WordNetSynonymSetTermSimilarityMixin(TermSimilarityMixin):
 
 
 class MagnitudeTermSimilarityMixin(TermSimilarityMixin, ABC):
-    embeddings_path: str = NotImplemented
+    embeddings_path: str = None
 
     @cached_property
     def _embeddings(self):
         url = 'https://files.webis.de/data-in-production/data-research/ir-axioms/wiki-news-300d-1M.magnitude'  # noqa: E501
         if (
              not os.path.isfile(self.embeddings_path)
+             and self.embeddings_path
              and self.embeddings_path.endswith('wiki-news-300d-1M.magnitude')
         ):
             wget.download(url, out=self.embeddings_path)
