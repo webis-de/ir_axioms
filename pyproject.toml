@@ -45,6 +45,7 @@ dependencies = [
     "trectools~=0.0.44",
     "typing-extensions~=4.0",
     "xxhash~=3.0",
+    "wget",
 ]
 dynamic = ["version"]
 
