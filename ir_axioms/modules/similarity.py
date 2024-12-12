@@ -194,8 +194,11 @@ class MagnitudeTermSimilarityMixin(TermSimilarityMixin, ABC):
 
     @cached_property
     def _embeddings(self):
-        url = 'https://files.webis.de/data-in-production/data-research/ir-axioms/wiki-news-300d-1M.magnitude' # noqa: E501
-        if not os.path.isfile(self.embeddings_path) and self.embeddings_path.endswith('wiki-news-300d-1M.magnitude'):
+        url = 'https://files.webis.de/data-in-production/data-research/ir-axioms/wiki-news-300d-1M.magnitude'  # noqa: E501
+        if (
+             not os.path.isfile(self.embeddings_path)
+             and self.embeddings_path.endswith('wiki-news-300d-1M.magnitude')
+        ):
             wget.download(url, out=self.embeddings_path)
 
         return Magnitude(self.embeddings_path)
@@ -211,5 +214,3 @@ class FastTextWikiNewsTermSimilarityMixin(MagnitudeTermSimilarityMixin):
 
     def __init__(self):
         super().__init__()
-        
-
