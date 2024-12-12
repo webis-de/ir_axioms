@@ -45,3 +45,6 @@ The new RAG-specific axioms can be used as shown in the [ICTIR 2025 notebook](..
 ## Other Breaking Changes
 
 - There is no longer implicit disk-caching of axioms. Instead, you now have to define the cache location explicitly, using the `CachedAxiom` or the `Axiom.cached()` instance method.
+- Axioms can no longer be loaded by name. The class registry was removed for simplicity.
+- Some version constraints on sub-dependencies (e.g., PyTerrier) have been strictened.
+- Magnitude versions of word-embeddings have been replaced by [TODO][TODO]
