@@ -13,6 +13,9 @@ from pymagnitude import Magnitude
 from ir_axioms import logger
 from ir_axioms.utils.nltk import download_nltk_dependencies
 
+import os
+DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+
 
 @lru_cache(None)
 def synonym_set(
@@ -199,5 +202,5 @@ class MagnitudeTermSimilarityMixin(TermSimilarityMixin, ABC):
 
 
 class FastTextWikiNewsTermSimilarityMixin(MagnitudeTermSimilarityMixin):
-    # wget via: https://files.webis.de/data-in-production/data-research/ir-axioms/wiki-news-300d-1M.magnitude
-    embeddings_path: Final[str] = "/workspaces/ecir25-gpt-axioms/wiki-news-300d-1M.magnitude"
+    # wget via: https://files.webis.de/data-in-production/data-research/ir-axioms/wiki-news-300d-1M.magnitude # noqa: E501
+    embeddings_path: Final[str] = f"{DIR_PATH}/wiki-news-300d-1M.magnitude"

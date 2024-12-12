@@ -88,7 +88,9 @@ class TerrierIndexContext(IndexContext):
             )
 
     def __str__(self):
-        return f'TerrierIndexContext({str(self.index_location).split("/")[-1].split(" ")[0]})'
+        ret = str(self.index_location)
+        ret = ret.split("/")[-1].split(" ")[0]
+        return f'TerrierIndexContext({ret})'
 
     @cached_property
     def _meta_index(self) -> MetaIndex:
