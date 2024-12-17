@@ -49,7 +49,7 @@ def test_cache():
     assert (axiom.preferences(input, [output1, output2]) == full((2, 2), 2)).all()
 
     with TemporaryDirectory() as tmp_dir:
-        tmp_path = Path(tmp_dir)
+        tmp_path = Path(tmp_dir) / "cache"
 
         cached_axiom = axiom.cached(tmp_path)
 
