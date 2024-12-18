@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 
 from pandas import DataFrame, read_json, concat, Series
 from typing_extensions import TypeAlias  # type: ignore
@@ -22,6 +22,7 @@ class TrecRagNuggetAxiom(Axiom[GenerationInput, GenerationOutput]):
     assignments_path: Path = Path("data/nugget_assignment.20241108.jl")
     score_type: TrecRagNuggetScoreType = "all"
     strict: bool = False
+    threshold: Optional[float] = None
 
     @cached_property
     def _assignments(self) -> DataFrame:
@@ -94,5 +95,8 @@ class TrecRagNuggetAxiom(Axiom[GenerationInput, GenerationOutput]):
                 df2_vital["assignment_score"].sum()
                 + 0.5 * df2_okay["assignment_score"].sum()
             ) / (len(df2_vital) + 0.5 * len(df2_okay))
+
+        if self.threshold is not None and abs(score1 - score2) < self.threshold:
+            return 0
 
         return strictly_greater(score1, score2)
