@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Generic, Literal, Sequence, Optional, final
 
 from numpy import float_, array
+from tqdm import tqdm
 
 from axioms.model import Input, Output, Preference, PreferenceMatrix
 from axioms.tools.pivot import PivotSelection, RandomPivotSelection
@@ -55,19 +56,23 @@ class Axiom(ABC, Generic[Input, Output]):
         """
 
         return array(
-            [
-                [
-                    self.preference(
-                        input=input,
-                        output1=output1,
-                        output2=output2,
-                    )
-                    for output2 in outputs
-                ]
-                for output1 in outputs
-            ],
+            list(
+                tqdm(
+                    (
+                        self.preference(
+                            input=input,
+                            output1=output1,
+                            output2=output2,
+                        )
+                        for output1 in outputs
+                        for output2 in outputs
+                    ),
+                    desc="Preferences",
+                    total=len(outputs) * len(outputs),
+                )
+            ),
             dtype=float_,
-        )
+        ).reshape((len(outputs), len(outputs)))
 
     def __add__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         from axioms.axiom.arithmetic import SumAxiom
