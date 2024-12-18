@@ -1,7 +1,7 @@
 # Re-export from sub-modules.
 
 from axioms.axiom.generation.aspect import (  # noqa: F401
-    ConceptCoverageAxiom,
+    AspectCoverageAxiom,
 )
 
 from axioms.axiom.generation.retrieval import (  # noqa: F401
