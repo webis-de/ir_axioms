@@ -3,11 +3,13 @@ from functools import lru_cache
 from math import nan
 from pathlib import Path
 from statistics import mean
-from typing import Any, Final, Iterable, Dict, Optional, Union
+from typing import Any, Final, Iterable, Dict, Optional, Sequence, Union
 
 from injector import inject, NoInject
+from numpy import array, float_
 from targer_api import ArgumentSentences, ArgumentLabel, ArgumentTag, analyze_text
 from targer_api.constants import DEFAULT_TARGER_MODELS, DEFAULT_TARGER_API_URL
+from tqdm import tqdm
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.precondition import PreconditionMixin
@@ -15,7 +17,7 @@ from axioms.dependency_injection import injector
 from axioms.precondition.base import Precondition
 from axioms.precondition.length import LEN
 from axioms.axiom.utils import strictly_greater, strictly_less
-from axioms.model import Query, Document, Preference
+from axioms.model import PreferenceMatrix, Query, Document, Preference
 from axioms.tools import TextContents, TermTokenizer, SentenceTokenizer
 from axioms.utils.lazy import lazy_inject
 
@@ -385,12 +387,39 @@ class AverageSentenceLengthAxiom(
         length_in_range1 = min_length <= sentence_length1 <= max_length
         length_in_range2 = min_length <= sentence_length2 <= max_length
 
-        if length_in_range1 and not length_in_range2:
-            return 1
-        elif length_in_range2 and not length_in_range1:
-            return -1
-        else:
-            return 0
+        return strictly_greater(length_in_range1, length_in_range2)
+
+    def preferences(
+        self,
+        input: Any,
+        outputs: Sequence[Document],
+    ) -> PreferenceMatrix:
+        lengths = (
+            _average_sentence_length(
+                text_contents=self.text_contents,
+                term_tokenizer=self.term_tokenizer,
+                sentence_tokenizer=self.sentence_tokenizer,
+                document=document,
+            )
+            for document in outputs
+        )
+        lengths_in_range = [
+            self.min_sentence_length <= length <= self.max_sentence_length
+            for length in tqdm(
+                lengths,
+                total=len(outputs),
+                desc="Sentence lengths",
+                unit="document",
+            )
+        ]
+        return array(
+            [
+                strictly_greater(length_in_range1, length_in_range2)
+                for length_in_range1 in lengths_in_range
+                for length_in_range2 in lengths_in_range
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
 
 
 aSLDoc: Final = lazy_inject(AverageSentenceLengthAxiom, injector)
