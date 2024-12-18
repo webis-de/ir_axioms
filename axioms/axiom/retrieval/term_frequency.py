@@ -1,9 +1,11 @@
 from dataclasses import dataclass, field
-from itertools import combinations
+from itertools import chain, combinations
 from math import isclose
-from typing import AbstractSet, Final, Union
+from typing import AbstractSet, Final, Sequence, Union
 
 from injector import inject, NoInject
+from numpy import array, float_
+from tqdm import tqdm
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.precondition import PreconditionMixin
@@ -11,7 +13,7 @@ from axioms.dependency_injection import injector
 from axioms.precondition.base import Precondition
 from axioms.precondition.length import LEN
 from axioms.axiom.utils import approximately_equal, strictly_greater
-from axioms.model import Query, Document, Preference
+from axioms.model import PreferenceMatrix, Query, Document, Preference
 from axioms.tools import IndexStatistics, TermTokenizer, TextContents, TextStatistics
 from axioms.utils.lazy import lazy_inject
 
@@ -25,6 +27,20 @@ class Tfc1Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
     precondition: NoInject[Precondition[Query, Document]] = field(default_factory=LEN)
     margin_fraction: float = 0.1
 
+    def _preference(
+        self,
+        term_frequency_sum1: float,
+        term_frequency_sum2: float,
+    ) -> Preference:
+        if approximately_equal(
+            term_frequency_sum1,
+            term_frequency_sum2,
+            self.margin_fraction,
+        ):
+            return 0
+
+        return strictly_greater(term_frequency_sum1, term_frequency_sum2)
+
     def preference(
         self,
         input: Query,
@@ -36,22 +52,44 @@ class Tfc1Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
         )
 
         term_frequency_sum1 = sum(
-            self.text_statistics.term_frequency(output1, term)
-            for term in query_terms
+            self.text_statistics.term_frequency(output1, term) for term in query_terms
         )
         term_frequency_sum2 = sum(
-            self.text_statistics.term_frequency(output2, term)
-            for term in query_terms
+            self.text_statistics.term_frequency(output2, term) for term in query_terms
         )
 
-        if approximately_equal(
-            term_frequency_sum1,
-            term_frequency_sum2,
-            self.margin_fraction,
-        ):
-            return 0
+        return self._preference(term_frequency_sum1, term_frequency_sum2)
 
-        return strictly_greater(term_frequency_sum1, term_frequency_sum2)
+    def preferences(
+        self,
+        input: Query,
+        outputs: Sequence[Document],
+    ) -> PreferenceMatrix:
+
+        query_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(input),
+        )
+
+        term_frequency_sums = [
+            sum(
+                self.text_statistics.term_frequency(output, term)
+                for term in query_terms
+            )
+            for output in tqdm(
+                outputs,
+                desc="Sum term frequencies",
+                unit="document",
+            )
+        ]
+
+        return array(
+            [
+                self._preference(term_frequency_sum1, term_frequency_sum2)
+                for term_frequency_sum1 in term_frequency_sums
+                for term_frequency_sum2 in term_frequency_sums
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
 
 
 TFC1: Final = lazy_inject(Tfc1Axiom, injector)
@@ -72,10 +110,9 @@ class Tfc3Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
         output1: Document,
         output2: Document,
     ) -> Preference:
-        query_terms = self.term_tokenizer.terms(
+        query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
-        query_unique_terms = set(query_terms)
 
         sum_document1 = 0
         sum_document2 = 0
@@ -94,17 +131,110 @@ class Tfc3Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
                 d2q2 = self.text_statistics.term_frequency(output2, query_term2)
 
                 if d1q1 != 0 and d1q2 != 0:
-                    if isclose(d2q1, d1q1 + d1q2) and isclose(d2q2, 0):
+                    if isclose(d2q1, d1q1 + d1q2) and d2q2 == 0:
                         sum_document1 += 1
-                    if isclose(d2q2, d1q2 + d1q1) and isclose(d2q1, 0):
+                    if isclose(d2q2, d1q2 + d1q1) and d2q1 == 0:
                         sum_document1 += 1
                 if d2q1 != 0 and d2q2 != 0:
-                    if isclose(d1q1, d2q1 + d2q2) and isclose(d1q2, 0):
+                    if isclose(d1q1, d2q1 + d2q2) and d1q2 == 0:
                         sum_document2 += 1
-                    if isclose(d1q2, d2q2 + d2q1) and isclose(d1q1, 0):
+                    if isclose(d1q2, d2q2 + d2q1) and d1q1 == 0:
                         sum_document2 += 1
 
         return strictly_greater(sum_document1, sum_document2)
+
+    def preferences(
+        self,
+        input: Query,
+        outputs: Sequence[Document],
+    ) -> PreferenceMatrix:
+        query_unique_terms = self.term_tokenizer.unique_terms(
+            self.text_contents.contents(input),
+        )
+        query_term_pairs = [
+            (query_term1, query_term2)
+            for query_term1, query_term2 in tqdm(
+                combinations(query_unique_terms, 2),
+                desc="Query term pairs",
+                unit="pair",
+            )
+            if approximately_equal(
+                self.index_statistics.inverse_document_frequency(query_term1),
+                self.index_statistics.inverse_document_frequency(query_term2),
+            )
+        ]
+        considered_query_terms = set(chain.from_iterable(query_term_pairs))
+        term_frequencies = [
+            {
+                query_term: self.text_statistics.term_frequency(output, query_term)
+                for query_term in considered_query_terms
+            }
+            for output in tqdm(outputs, desc="Term frequencies", unit="document")
+        ]
+
+        return array(
+            list(
+                tqdm(
+                    (
+                        strictly_greater(
+                            sum(
+                                1
+                                for query_term1, query_term2 in query_term_pairs
+                                if term_frequencies[i1][query_term1] != 0
+                                and term_frequencies[i1][query_term2] != 0
+                                and (
+                                    (
+                                        isclose(
+                                            term_frequencies[i2][query_term1],
+                                            term_frequencies[i1][query_term1]
+                                            + term_frequencies[i1][query_term2],
+                                        )
+                                        and term_frequencies[i2][query_term2] == 0
+                                    )
+                                    or (
+                                        isclose(
+                                            term_frequencies[i2][query_term2],
+                                            term_frequencies[i1][query_term2]
+                                            + term_frequencies[i1][query_term1],
+                                        )
+                                        and term_frequencies[i2][query_term1] == 0
+                                    )
+                                )
+                            ),
+                            sum(
+                                1
+                                for query_term1, query_term2 in query_term_pairs
+                                if term_frequencies[i2][query_term1] != 0
+                                and term_frequencies[i2][query_term2] != 0
+                                and (
+                                    (
+                                        isclose(
+                                            term_frequencies[i1][query_term1],
+                                            term_frequencies[i2][query_term1]
+                                            + term_frequencies[i2][query_term2],
+                                        )
+                                        and term_frequencies[i1][query_term2] == 0
+                                    )
+                                    or (
+                                        isclose(
+                                            term_frequencies[i1][query_term2],
+                                            term_frequencies[i2][query_term2]
+                                            + term_frequencies[i2][query_term1],
+                                        )
+                                        and term_frequencies[i1][query_term1] == 0
+                                    )
+                                )
+                            ),
+                        )
+                        for i1 in range(len(outputs))
+                        for i2 in range(len(outputs))
+                    ),
+                    desc="Compare",
+                    unit="pair",
+                )
+            ),
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
 
 
 TFC3: Final = lazy_inject(Tfc3Axiom, injector)
