@@ -46,12 +46,15 @@ from axioms.axiom.retrieval.query_aspects import (  # noqa: F401
     ASPECT_REG,
     AndAxiom,
     AND,
+    LenAndAxiom,
     LEN_AND,
     ModifiedAndAxiom,
     M_AND,
+    LenModifiedAndAxiom,
     LEN_M_AND,
     DivAxiom,
     DIV,
+    LenDivAxiom,
     LEN_DIV,
 )
 
@@ -69,6 +72,7 @@ from axioms.axiom.retrieval.term_frequency import (  # noqa: F401
     TFC3,
     ModifiedTdcAxiom,
     M_TDC,
+    LenModifiedTdcAxiom,
     LEN_M_TDC,
 )
 
