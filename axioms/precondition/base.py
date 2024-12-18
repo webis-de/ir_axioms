@@ -28,14 +28,12 @@ class Precondition(Generic[Input, Output], Protocol):
         # TODO: Documentation.
         return array(
             [
-                [
-                    self.precondition(
-                        input=input,
-                        output1=output1,
-                        output2=output2,
-                    )
-                    for output2 in outputs
-                ]
+                self.precondition(
+                    input=input,
+                    output1=output1,
+                    output2=output2,
+                )
                 for output1 in outputs
+                for output2 in outputs
             ]
-        )
+        ).reshape((len(outputs), len(outputs)))
