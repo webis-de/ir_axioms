@@ -49,7 +49,6 @@ class TermSimilarity(Protocol):
             reverse=True,
         )
         max_similarity = self._pair_similarity(most_similar_pairs[0])
-        print("max_similarity", max_similarity)
         return {
             pair
             for pair in most_similar_pairs
@@ -60,7 +59,6 @@ class TermSimilarity(Protocol):
         if len(terms) == 0:
             return set()
         similarity_sums = self.similarity_sums(set(terms))
-        print("similarity_sums", similarity_sums)
         max_similarity_sum = max(similarity_sums.values())
         return {term for term in terms if similarity_sums[term] >= max_similarity_sum}
 
@@ -68,6 +66,5 @@ class TermSimilarity(Protocol):
         if len(terms) == 0:
             return set()
         similarity_sums = self.similarity_sums(set(terms))
-        print("similarity_sums", similarity_sums)
         min_similarity_sum = min(similarity_sums.values())
         return {term for term in terms if similarity_sums[term] <= min_similarity_sum}
