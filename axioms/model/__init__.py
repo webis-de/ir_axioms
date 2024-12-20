@@ -17,7 +17,16 @@ from axioms.model.retrieval import (  # noqa: F401
     ScoredDocument,
     ScoredTextDocument,
     RankedDocument,
+    RankedTextDocument,
+    RankedScoredDocument,
+    RankedScoredTextDocument,
     JudgedDocument,
+    JudgedScoredDocument,
+    JudgedScoredTextDocument,
+    JudgedRankedDocument,
+    JudgedRankedTextDocument,
+    JudgedRankedScoredDocument,
+    JudgedRankedScoredTextDocument,
 )
 
 from axioms.model.generation import (  # noqa: F401
