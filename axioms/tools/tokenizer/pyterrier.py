@@ -33,6 +33,7 @@ if is_pyterrier_installed():
         tokeniser: Tokeniser = field(  # type: ignore
             default_factory=lambda: EnglishTokeniser()
         )
+        # TODO: Add index location arg to guess tokenizer and term pipelines from index configuration.
 
         @cached_property
         def _term_pipelines(self) -> Sequence[Any]:
