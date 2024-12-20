@@ -2,7 +2,7 @@ from typing import Union
 
 from injector import Module, Binder, singleton
 
-from axioms.model import Document, Query
+from axioms.model import Document, Query, GenerationInput, GenerationOutput
 
 # Re-export from sub-modules.
 from axioms.tools.contents.base import (  # noqa: F401
@@ -41,6 +41,16 @@ class ContentsModule(Module):
         )
         binder.bind(
             interface=TextContents[Document],
+            to=SimpleTextContents,  # type: ignore
+            scope=singleton,
+        )
+        binder.bind(
+            interface=TextContents[GenerationInput],
+            to=SimpleTextContents,  # type: ignore
+            scope=singleton,
+        )
+        binder.bind(
+            interface=TextContents[GenerationOutput],
             to=SimpleTextContents,  # type: ignore
             scope=singleton,
         )
