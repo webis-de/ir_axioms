@@ -50,3 +50,8 @@ from axioms.axiom.generation.retrieval import (  # noqa: F401
     GenerativeStmc2Axiom,
     GEN_STMC2,
 )
+
+from axioms.axiom.generation.spelling import (  # noqa: F401
+    GenSpellAxiom,
+    GEN_SPELL,
+)
