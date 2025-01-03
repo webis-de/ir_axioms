@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from math import isclose
 from typing import AbstractSet, Final, Mapping, Sequence, Union
 
 from injector import inject
@@ -7,7 +8,7 @@ from tqdm import tqdm
 
 from axioms.axiom.base import Axiom
 from axioms.dependency_injection import injector
-from axioms.axiom.utils import approximately_equal, strictly_fewer, strictly_greater
+from axioms.axiom.utils import strictly_fewer, strictly_greater
 from axioms.model import PreferenceMatrix, Query, Document, Preference
 from axioms.tools import TextContents, TermTokenizer, TextStatistics
 from axioms.utils.lazy import lazy_inject
@@ -19,6 +20,7 @@ class Lnc1Axiom(Axiom[Query, Document]):
     text_contents: TextContents[Union[Query, Document]]
     term_tokenizer: TermTokenizer
     text_statistics: TextStatistics[Document]
+    margin_fraction: float = 0.1
 
     def preference(
         self,
@@ -30,9 +32,10 @@ class Lnc1Axiom(Axiom[Query, Document]):
             self.text_contents.contents(input),
         )
         if not all(
-            approximately_equal(
+            isclose(
                 self.text_statistics.term_frequency(output1, term),
                 self.text_statistics.term_frequency(output2, term),
+                rel_tol=self.margin_fraction,
             )
             for term in query_unique_terms
         ):

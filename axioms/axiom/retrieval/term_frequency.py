@@ -12,7 +12,7 @@ from axioms.axiom.precondition import PreconditionMixin
 from axioms.dependency_injection import injector
 from axioms.precondition.base import Precondition
 from axioms.precondition.length import LEN
-from axioms.axiom.utils import approximately_equal, strictly_greater
+from axioms.axiom.utils import strictly_greater
 from axioms.model import PreferenceMatrix, Query, Document, Preference
 from axioms.tools import IndexStatistics, TermTokenizer, TextContents, TextStatistics
 from axioms.utils.lazy import lazy_inject
@@ -32,10 +32,10 @@ class Tfc1Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
         term_frequency_sum1: float,
         term_frequency_sum2: float,
     ) -> Preference:
-        if approximately_equal(
+        if isclose(
             term_frequency_sum1,
             term_frequency_sum2,
-            self.margin_fraction,
+            rel_tol=self.margin_fraction,
         ):
             return 0
 
@@ -103,6 +103,7 @@ class Tfc3Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
     index_statistics: IndexStatistics
     text_statistics: TextStatistics[Document]
     precondition: NoInject[Precondition[Query, Document]] = field(default_factory=LEN)
+    margin_fraction: float = 0.1
 
     def preference(
         self,
@@ -124,7 +125,11 @@ class Tfc3Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
                 query_term2
             )
 
-            if approximately_equal(term_discrimination1, term_discrimination2):
+            if isclose(
+                term_discrimination1,
+                term_discrimination2,
+                rel_tol=self.margin_fraction,
+            ):
                 d1q1 = self.text_statistics.term_frequency(output1, query_term1)
                 d2q1 = self.text_statistics.term_frequency(output2, query_term1)
                 d1q2 = self.text_statistics.term_frequency(output1, query_term2)
@@ -158,9 +163,10 @@ class Tfc3Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
                 desc="Query term pairs",
                 unit="pair",
             )
-            if approximately_equal(
+            if isclose(
                 self.index_statistics.inverse_document_frequency(query_term1),
                 self.index_statistics.inverse_document_frequency(query_term2),
+                rel_tol=self.margin_fraction,
             )
         ]
         considered_query_terms = set(chain.from_iterable(query_term_pairs))
@@ -242,7 +248,7 @@ TFC3: Final = lazy_inject(Tfc3Axiom, injector)
 
 def _single_different_term_frequency(
     query_unique_terms: AbstractSet,
-    text_statistics: TextStatistics,
+    text_statistics: TextStatistics[Document],
     output1: Document,
     output2: Document,
 ) -> bool:

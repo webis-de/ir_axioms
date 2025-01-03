@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
-from typing import Final, Set, AbstractSet, List, Union
+from typing import Final, Sequence, Set, AbstractSet, List, Union
 
 from injector import inject, NoInject
+from numpy import array, float_
+from tqdm import tqdm
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.precondition import PreconditionMixin
@@ -9,7 +11,7 @@ from axioms.dependency_injection import injector
 from axioms.precondition.base import Precondition
 from axioms.precondition.length import LEN
 from axioms.axiom.utils import strictly_greater, approximately_equal
-from axioms.model import Query, Document, Preference
+from axioms.model import PreferenceMatrix, Query, Document, Preference
 from axioms.tools import (
     TermSimilarity,
     TextContents,
@@ -183,7 +185,8 @@ class AspectRegAxiom(Axiom[Query, Document]):
             for term in query_unique_terms
         }
         if not approximately_equal(
-            *term_discriminators, self.term_discriminator_margin_fraction
+            *term_discriminators,
+            margin_fraction=self.term_discriminator_margin_fraction,
         ):
             # Require same term discriminator for all query terms.
             return 0
@@ -243,22 +246,51 @@ class AndAxiom(Axiom[Query, Document]):
         output1: Document,
         output2: Document,
     ) -> Preference:
-        query_terms = self.term_tokenizer.terms(
+        query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
-        query_unique_terms = set(query_terms)
-        document1_terms = self.term_tokenizer.terms(
+        document1_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(output1),
         )
-        document1_unique_terms = set(document1_terms)
-        document2_terms = self.term_tokenizer.terms(
+        document2_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(output2),
         )
-        document2_unique_terms = set(document2_terms)
 
-        all_query_terms1 = query_unique_terms.issubset(document1_unique_terms)
-        all_query_terms2 = query_unique_terms.issubset(document2_unique_terms)
+        all_query_terms1 = query_unique_terms <= document1_unique_terms
+        all_query_terms2 = query_unique_terms <= document2_unique_terms
         return strictly_greater(all_query_terms1, all_query_terms2)
+
+    def preferences(
+        self,
+        input: Query,
+        outputs: Sequence[Document],
+    ) -> PreferenceMatrix:
+        query_unique_terms = self.term_tokenizer.unique_terms(
+            self.text_contents.contents(input),
+        )
+        document_unique_terms = (
+            self.term_tokenizer.unique_terms(
+                self.text_contents.contents(output),
+            )
+            for output in outputs
+        )
+        all_query_terms = [
+            query_unique_terms <= terms
+            for terms in tqdm(
+                document_unique_terms,
+                total=len(outputs),
+                desc="Query term overlap",
+                unit="document",
+            )
+        ]
+        return array(
+            [
+                strictly_greater(all_query_terms1, all_query_terms2)
+                for all_query_terms1 in all_query_terms
+                for all_query_terms2 in all_query_terms
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
 
 
 AND: Final = lazy_inject(AndAxiom, injector)
@@ -290,22 +322,51 @@ class ModifiedAndAxiom(Axiom[Query, Document]):
         output1: Document,
         output2: Document,
     ) -> Preference:
-        query_terms = self.term_tokenizer.terms(
+        query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
-        query_unique_terms = set(query_terms)
-        document1_terms = self.term_tokenizer.terms(
+        document1_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(output1),
         )
-        document1_unique_terms = set(document1_terms)
-        document2_terms = self.term_tokenizer.terms(
+        document2_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(output2),
         )
-        document2_unique_terms = set(document2_terms)
 
-        query_term_count1 = query_unique_terms & document1_unique_terms
-        query_term_count2 = query_unique_terms & document2_unique_terms
-        return strictly_greater(len(query_term_count1), len(query_term_count2))
+        query_terms1 = query_unique_terms & document1_unique_terms
+        query_terms2 = query_unique_terms & document2_unique_terms
+        return strictly_greater(len(query_terms1), len(query_terms2))
+
+    def preferences(
+        self,
+        input: Query,
+        outputs: Sequence[Document],
+    ) -> PreferenceMatrix:
+        query_unique_terms = self.term_tokenizer.unique_terms(
+            self.text_contents.contents(input),
+        )
+        document_unique_terms = (
+            self.term_tokenizer.unique_terms(
+                self.text_contents.contents(output),
+            )
+            for output in outputs
+        )
+        num_query_terms = [
+            len(query_unique_terms & terms)
+            for terms in tqdm(
+                document_unique_terms,
+                total=len(outputs),
+                desc="Query term overlap",
+                unit="document",
+            )
+        ]
+        return array(
+            [
+                strictly_greater(num_query_terms1, num_query_terms2)
+                for num_query_terms1 in num_query_terms
+                for num_query_terms2 in num_query_terms
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
 
 
 M_AND: Final = lazy_inject(ModifiedAndAxiom, injector)
@@ -332,18 +393,15 @@ class DivAxiom(Axiom[Query, Document]):
         output1: Document,
         output2: Document,
     ) -> Preference:
-        query_terms = self.term_tokenizer.terms(
+        query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
-        query_unique_terms = set(query_terms)
-        document1_terms = self.term_tokenizer.terms(
+        document1_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(output1),
         )
-        document1_unique_terms = set(document1_terms)
-        document2_terms = self.term_tokenizer.terms(
+        document2_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(output2),
         )
-        document2_unique_terms = set(document2_terms)
 
         overlap1 = _vocabulary_overlap(
             vocabulary1=query_unique_terms,
@@ -355,6 +413,41 @@ class DivAxiom(Axiom[Query, Document]):
         )
 
         return strictly_greater(overlap2, overlap1)
+
+    def preferences(
+        self,
+        input: Query,
+        outputs: Sequence[Document],
+    ) -> PreferenceMatrix:
+        query_unique_terms = self.term_tokenizer.unique_terms(
+            self.text_contents.contents(input),
+        )
+        document_unique_terms = (
+            self.term_tokenizer.unique_terms(
+                self.text_contents.contents(output),
+            )
+            for output in outputs
+        )
+        overlaps = [
+            _vocabulary_overlap(
+                vocabulary1=query_unique_terms,
+                vocabulary2=terms,
+            )
+            for terms in tqdm(
+                document_unique_terms,
+                total=len(outputs),
+                desc="Vocabulary overlap",
+                unit="document",
+            )
+        ]
+        return array(
+            [
+                strictly_greater(overlap2, overlap1)
+                for overlap1 in overlaps
+                for overlap2 in overlaps
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
 
 
 DIV: Final = lazy_inject(DivAxiom, injector)

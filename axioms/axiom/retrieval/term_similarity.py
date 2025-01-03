@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from math import nan
+from math import isclose, nan
 from typing import Final, Union
 
 from injector import inject
 
 from axioms.axiom.base import Axiom
-from axioms.axiom.utils import strictly_greater, approximately_equal
+from axioms.axiom.utils import strictly_greater
 from axioms.dependency_injection import injector
 from axioms.model import Query, Document, Preference
 from axioms.tools import TextContents, TermTokenizer, TermSimilarity, TextStatistics
@@ -108,25 +108,25 @@ class Stmc2Axiom(Axiom[Query, Document]):
         document2_length = len(document2_terms)
 
         if all(
-            approximately_equal(
+            isclose(
                 _safe_ratio(document2_length, document1_length),
                 _safe_ratio(
                     self.text_statistics.term_frequency(output2, non_query_term),
                     self.text_statistics.term_frequency(output1, query_term),
                 ),
-                margin_fraction=self.margin_fraction,
+                rel_tol=self.margin_fraction,
             )
             for query_term, non_query_term in max_similarity_pairs
         ):
             return 1
         elif all(
-            approximately_equal(
+            isclose(
                 _safe_ratio(document1_length, document2_length),
                 _safe_ratio(
                     self.text_statistics.term_frequency(output1, non_query_term),
                     self.text_statistics.term_frequency(output2, query_term),
                 ),
-                margin_fraction=self.margin_fraction,
+                rel_tol=self.margin_fraction,
             )
             for query_term, non_query_term in max_similarity_pairs
         ):

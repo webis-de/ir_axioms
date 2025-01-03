@@ -1,10 +1,10 @@
 from dataclasses import dataclass
+from math import isclose
 from typing import Final, Union
 
 from injector import inject
 
 from axioms.axiom.base import Axiom
-from axioms.axiom.utils import approximately_equal
 from axioms.dependency_injection import injector
 from axioms.model import Query, Document, ScoredDocument, Preference
 from axioms.tools import TextContents, TermTokenizer, TextStatistics
@@ -17,6 +17,7 @@ class Lb1Axiom(Axiom[Query, ScoredDocument]):
     text_contents: TextContents[Union[Query, Document]]
     term_tokenizer: TermTokenizer
     text_statistics: TextStatistics[Document]
+    margin_fraction: float = 0.1
 
     def preference(
         self,
@@ -24,7 +25,11 @@ class Lb1Axiom(Axiom[Query, ScoredDocument]):
         output1: ScoredDocument,
         output2: ScoredDocument,
     ) -> Preference:
-        if not approximately_equal(output1.score, output2.score):
+        if not isclose(
+            output1.score,
+            output2.score,
+            rel_tol=self.margin_fraction,
+        ):
             return 0
 
         query_terms = self.term_tokenizer.unique_terms(
