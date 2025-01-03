@@ -34,6 +34,8 @@ from axioms.axiom.generation import (  # noqa: F401
     GEN_LEN_AND,
     GenerativeModifiedAndAxiom,
     GEN_M_AND,
+    GenerativeModifiedTdcAxiom,
+    GEN_M_TDC,
     GenerativeLenModifiedTdcAxiom,
     GEN_LEN_M_TDC,
     GenerativeDivAxiom,
