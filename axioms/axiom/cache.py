@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 from dbm import open as dbm_open
 from functools import cached_property
-from math import nan
 from pathlib import Path
 from sqlite3 import connect
 from struct import pack, unpack
 from typing import Iterable, Iterator, Protocol, Sequence, Tuple, TypeVar
 
-from numpy import array, float_, ndarray, isnan, ones_like
+from numpy import array, float_, ndarray, isnan, ones_like, nan
 from more_itertools import chunked
 from optimask import OptiMask
+from tqdm import tqdm
 from typing_extensions import TypeAlias  # type: ignore
 
 from axioms.axiom.base import Axiom
@@ -147,6 +147,10 @@ class DbmCachedAxiom(Axiom[_Input, _Output]):
                 if key in cache:
                     preference_bytes = cache[key]
                     (preference,) = unpack("f", preference_bytes)
+                    if isnan(preference):
+                        raise RuntimeError(
+                            f"Invalid cache. Please delete cache file at: {self.cache_path}"
+                        )
                     yield preference
                 elif only_cached:
                     yield nan
@@ -199,16 +203,22 @@ class DbmCachedAxiom(Axiom[_Input, _Output]):
         # First, only load the cached dependencies.
         preferences = self._cached_preferences(input, outputs)
 
-        # Then, fill as-large-as-possible sub-blocks of the matrix by computing preference matrices. 
+        # Then, fill as-large-as-possible sub-blocks of the matrix by computing preference matrices.
         while isnan(preferences).any():
-            mask = ones_like(preferences)
-            mask[~isnan(preferences)] = nan
-            rows, cols = self._opti_mask.solve(mask)
-            indices = sorted(set(rows) & set(cols))
-            if len(indices) == 0:
+            if isnan(preferences).sum() == preferences.size:
+                start = 0
+                end = preferences.shape[0]
+            else:
+                mask = ones_like(preferences)
+                mask[~isnan(preferences)] = nan
+                rows, cols = self._opti_mask.solve(mask)
+                indices = sorted(set(rows) & set(cols))
+                if len(indices) <= 1:
+                    break
+                start = min(indices)
+                end = max(indices) + 1
+            if end - start <= 1:
                 break
-            start = min(indices)
-            end = max(indices) + 1
             sub_outputs = outputs[start:end]
             sub_preferences = self.axiom.preferences(input, sub_outputs)
 
@@ -216,7 +226,10 @@ class DbmCachedAxiom(Axiom[_Input, _Output]):
                 for i1, output1 in enumerate(sub_outputs):
                     for i2, output2 in enumerate(sub_outputs):
                         key = repr((input, output1, output2)).encode(encoding="utf-8")
-                        preference_bytes = pack("f", sub_preferences[i1, i2])
+                        preference = float(sub_preferences[i1, i2])
+                        if isnan(preference):
+                            raise RuntimeError("Missing preferences.")
+                        preference_bytes = pack("f", preference)
                         cache[key] = preference_bytes
 
             preferences[start:end, start:end] = sub_preferences
@@ -226,14 +239,21 @@ class DbmCachedAxiom(Axiom[_Input, _Output]):
             (i1, i2)
             for i1 in range(len(outputs))
             for i2 in range(len(outputs))
-            if isnan(preferences[i1,i2])
+            if isnan(preferences[i1, i2])
         ]
+        if len(unfilled_pairs) == 0:
+            return preferences
+
         unfilled_inouts_outputs = (
-            (input, outputs[i1], outputs[i2])
-            for i1, i2 in unfilled_pairs
+            (input, outputs[i1], outputs[i2]) for i1, i2 in unfilled_pairs
         )
         unfilled_preferences = self._iter_preferences(unfilled_inouts_outputs)
-        for (i1, i2), preference in zip(unfilled_pairs, unfilled_preferences):
+        for (i1, i2), preference in tqdm(
+            zip(unfilled_pairs, unfilled_preferences),
+            total=len(unfilled_pairs),
+            desc="Cache preferences",
+            unit="pair",
+        ):
             preferences[i1, i2] = preference
 
         return preferences
