@@ -1,6 +1,7 @@
 from typing import Generic, Sequence, Protocol
 
 from numpy import array
+from tqdm import tqdm
 
 from axioms.model.base import (
     Input,
@@ -27,13 +28,19 @@ class Precondition(Generic[Input, Output], Protocol):
     ) -> MaskMatrix:
         # TODO: Documentation.
         return array(
-            [
-                self.precondition(
-                    input=input,
-                    output1=output1,
-                    output2=output2,
+            list(
+                tqdm(
+                    (
+                        self.precondition(
+                            input=input,
+                            output1=output1,
+                            output2=output2,
+                        )
+                        for output1 in outputs
+                        for output2 in outputs
+                    ),
+                    desc="Preconditions",
+                    total=len(outputs) * len(outputs),
                 )
-                for output1 in outputs
-                for output2 in outputs
-            ]
+            )
         ).reshape((len(outputs), len(outputs)))

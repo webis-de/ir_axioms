@@ -1,10 +1,12 @@
 from dataclasses import dataclass
+from itertools import product
+from math import isclose
 from typing import Final, Sequence, TypeVar
 
 from injector import inject
 from numpy import array, bool_
+from tqdm import tqdm
 
-from axioms.axiom.utils import approximately_equal
 from axioms.dependency_injection import injector
 from axioms.model import Document, Mask, MaskMatrix
 from axioms.precondition.base import Precondition
@@ -27,10 +29,10 @@ class LenPrecondition(Precondition[Input, Document]):
         output1: Document,
         output2: Document,
     ) -> Mask:
-        return approximately_equal(
+        return isclose(
             len(self.term_tokenizer.terms(self.text_contents.contents(output1))),
             len(self.term_tokenizer.terms(self.text_contents.contents(output2))),
-            margin_fraction=self.margin_fraction,
+            rel_tol=self.margin_fraction,
         )
 
     def preconditions(
@@ -40,17 +42,25 @@ class LenPrecondition(Precondition[Input, Document]):
     ) -> MaskMatrix:
         lengths = [
             len(self.term_tokenizer.terms(self.text_contents.contents(output)))
-            for output in outputs
+            for output in tqdm(
+                outputs,
+                desc="Lengths",
+                unit="document",
+            )
         ]
         return array(
             [
-                approximately_equal(
+                isclose(
                     length1,
                     length2,
-                    margin_fraction=self.margin_fraction,
+                    rel_tol=self.margin_fraction,
                 )
-                for length1 in lengths
-                for length2 in lengths
+                for length1, length2 in tqdm(
+                    product(lengths, repeat=2),
+                    total=len(lengths) * len(lengths),
+                    desc="Compare lengths",
+                    unit="pair",
+                )
             ],
             dtype=bool_,
         ).reshape((len(outputs), len(outputs)))
