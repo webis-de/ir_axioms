@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Final, Sequence
 
 from injector import inject
+from tqdm import tqdm
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.retrieval import (
@@ -21,6 +22,7 @@ from axioms.axiom.retrieval import (
     AndAxiom,
     LenAndAxiom,
     ModifiedAndAxiom,
+    ModifiedTdcAxiom,
     LenModifiedTdcAxiom,
     DivAxiom,
     LenDivAxiom,
@@ -80,7 +82,11 @@ class _RetrievalAxiomWrapper(Axiom[GenerationInput, GenerationOutput]):
                 id=output.id if output.id is not None else "",
                 text=output.text if output.text is not None else "",
             )
-            for output in outputs
+            for output in tqdm(
+                outputs,
+                desc="Convert",
+                unit="output",
+            )
         ]
         return self.axiom.preferences(retrieval_input, retrieval_outputs)
 
@@ -231,6 +237,15 @@ class GenerativeModifiedAndAxiom(_RetrievalAxiomWrapper):
 
 
 GEN_M_AND: Final = lazy_inject(GenerativeModifiedAndAxiom, injector)
+
+
+@inject
+@dataclass(frozen=True, kw_only=True)
+class GenerativeModifiedTdcAxiom(_RetrievalAxiomWrapper):
+    axiom: ModifiedTdcAxiom
+
+
+GEN_M_TDC: Final = lazy_inject(GenerativeModifiedTdcAxiom, injector)
 
 
 @inject
