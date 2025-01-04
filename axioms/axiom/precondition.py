@@ -2,7 +2,7 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import Sequence
 
-from numpy import zeros_like
+from numpy import zeros_like, array
 from numpy.ma import masked_array
 
 from axioms.axiom.base import Axiom
@@ -49,10 +49,12 @@ class PreconditionMixin(Axiom[Input, Output], ABC):
         if not mask.any():
             return zeros_like(mask)
         # TODO: We could try to isolate the non-masked entries here, and only compute preferences where at least one output of the tuple is not masked.
-        return masked_array(
-            data=super().preferences(
-                input=input,
-                outputs=outputs,
-            ),
-            mask=mask,
+        preferences = super().preferences(
+            input=input,
+            outputs=outputs,
         )
+        return array(masked_array(
+            data=preferences,
+            mask=mask,
+            fill_value=0,
+        ))
