@@ -47,6 +47,7 @@ class TextStatisticsModule(Module):
             scope=singleton,
         )
         binder.bind(
-            interface=TextStatistics[Union[Document, Query]],
+            interface=TextStatistics[Union[Query, Document]],
             to=DocumentQueryTextStatistics,
+            scope=singleton,
         )

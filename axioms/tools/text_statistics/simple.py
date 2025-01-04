@@ -1,17 +1,12 @@
 from collections import Counter
 from dataclasses import dataclass
-from typing import Mapping, Protocol, TypeVar, runtime_checkable
+from typing import Mapping, TypeVar
 
 from injector import inject
 
 from axioms.tools.text_statistics.base import TextStatistics
 from axioms.tools.contents.base import TextContents
 from axioms.tools.tokenizer.base import TermTokenizer
-
-
-@runtime_checkable
-class HasText(Protocol):
-    text: str
 
 
 T = TypeVar("T", contravariant=True)

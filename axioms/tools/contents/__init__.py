@@ -57,4 +57,5 @@ class ContentsModule(Module):
         binder.bind(
             interface=TextContents[Union[Document, Query]],
             to=DocumentQueryTextContents,
+            scope=singleton,
         )
