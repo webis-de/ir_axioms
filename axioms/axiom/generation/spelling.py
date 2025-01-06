@@ -19,7 +19,7 @@ from axioms.utils.lazy import lazy_inject
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class GenSpellAxiom(Axiom[Any, GenerationOutput]):
+class GenerativeSpellAxiom(Axiom[Any, GenerationOutput]):
     """
     Prefer outputs that contain less misspellings.
     """
@@ -80,4 +80,4 @@ class GenSpellAxiom(Axiom[Any, GenerationOutput]):
         ).reshape((len(outputs), len(outputs)))
 
 
-GEN_SPELL: Final = lazy_inject(GenSpellAxiom, injector)
+GEN_SPELL: Final = lazy_inject(GenerativeSpellAxiom, injector)

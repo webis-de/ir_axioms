@@ -54,6 +54,13 @@ from axioms.axiom.generation.retrieval import (  # noqa: F401
 )
 
 from axioms.axiom.generation.spelling import (  # noqa: F401
-    GenSpellAxiom,
+    GenerativeSpellAxiom,
     GEN_SPELL,
+)
+
+from axioms.axiom.generation.vocabulary import (  # noqa: F401
+    GenerativeWordCommonnessAxiom,
+    GEN_W_COMM,
+    GenerativeNormalizedWordCommonnessAxiom,
+    GEN_N_W_COMM,
 )
