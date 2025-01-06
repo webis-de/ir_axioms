@@ -11,6 +11,7 @@ from axioms.tools.contents.base import (  # noqa: F401
 
 from axioms.tools.contents.combine import (  # noqa: F401
     DocumentQueryTextContents,
+    GenerationInputOutputTextContents,
 )
 
 from axioms.tools.contents.ir_datasets import (  # noqa: F401
@@ -57,5 +58,10 @@ class ContentsModule(Module):
         binder.bind(
             interface=TextContents[Union[Document, Query]],
             to=DocumentQueryTextContents,
+            scope=singleton,
+        )
+        binder.bind(
+            interface=TextContents[Union[GenerationInput, GenerationOutput]],
+            to=GenerationInputOutputTextContents,
             scope=singleton,
         )
