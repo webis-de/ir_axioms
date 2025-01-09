@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, Sequence, TypeAlias
+from typing import Optional, Sequence
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -14,7 +14,3 @@ class GenerationInput:
 class GenerationOutput:
     id: Optional[str] = None
     text: str
-
-
-Aspect: TypeAlias = str
-Aspects: TypeAlias = Sequence[Aspect]

@@ -39,6 +39,7 @@ from axioms.tools.similarity import (  # noqa: F401
     TermSimilarity,
     SentenceSimilarity,
     FastTextTermSimilarity,
+    WordNetSynonymSetTermSimilarity,
     SentenceTransformersSentenceSimilarity,
     WordNetSynonymSetTermSimilarity,
     SimilarityModule,

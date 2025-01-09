@@ -1,16 +1,15 @@
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Literal
+from typing import Literal, Sequence
 
 from spacy import load as spacy_load
 from spacy.language import Language
 
-from axioms.model.generation import Aspects
 from axioms.tools.aspects.base import AspectExtraction
 
 
 @dataclass(frozen=True)
-class SpacyNounChunksAspectExtraction(AspectExtraction[str]):
+class SpacyNounChunksAspectExtraction(AspectExtraction):
     language_name: str = "en_core_web_sm"
     chunks: Literal["direct", "root", "both"] = "direct"
 
@@ -18,7 +17,7 @@ class SpacyNounChunksAspectExtraction(AspectExtraction[str]):
     def _language(self) -> Language:
         return spacy_load(name=self.language_name, enable=["parser"])
 
-    def extract_aspects(self, input: str) -> Aspects:
+    def aspects(self, input: str) -> Sequence[str]:
         document = self._language(input)
         chunks = []
         if self.chunks == "direct" or self.chunks == "both":

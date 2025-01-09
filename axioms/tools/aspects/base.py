@@ -1,12 +1,10 @@
-from typing import Generic, TypeVar, Protocol, runtime_checkable
-
-
-from axioms.model.generation import Aspects
-
-T = TypeVar("T", contravariant=True)
+from typing import Protocol, runtime_checkable, Sequence, AbstractSet
 
 
 @runtime_checkable
-class AspectExtraction(Generic[T], Protocol):
-    def extract_aspects(self, input: T) -> Aspects:
+class AspectExtraction(Protocol):
+    def aspects(self, text: str) -> Sequence[str]:
         pass
+
+    def unique_aspects(self, text: str) -> AbstractSet[str]:
+        return set(self.aspects(text))

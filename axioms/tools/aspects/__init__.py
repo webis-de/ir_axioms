@@ -14,7 +14,7 @@ from axioms.tools.aspects.spacy import (  # noqa: F401
 class AspectsModule(Module):
     def configure(self, binder: Binder) -> None:
         binder.bind(
-            interface=AspectExtraction[str],
+            interface=AspectExtraction,
             to=SpacyNounChunksAspectExtraction,
             scope=singleton,
         )

@@ -32,6 +32,4 @@ from axioms.model.retrieval import (  # noqa: F401
 from axioms.model.generation import (  # noqa: F401
     GenerationInput,
     GenerationOutput,
-    Aspect,
-    Aspects,
 )
