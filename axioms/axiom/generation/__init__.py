@@ -27,7 +27,7 @@ from axioms.axiom.generation.consistency import (  # noqa: F401
     CONS2,
     AspectSimilarityConsistencyAxiom,
     CONS3,
-    SentenceContradictionConsistencyAxiom,
+    EntityContradictionConsistencyAxiom,
     CONS4,
 )
 
@@ -80,10 +80,6 @@ from axioms.axiom.generation.retrieval import (  # noqa: F401
     GEN_LEN_AND,
     GenerativeModifiedAndAxiom,
     GEN_M_AND,
-    GenerativeModifiedTdcAxiom,
-    GEN_M_TDC,
-    GenerativeLenModifiedTdcAxiom,
-    GEN_LEN_M_TDC,
     GenerativeDivAxiom,
     GEN_DIV,
     GenerativeLenDivAxiom,

@@ -22,8 +22,6 @@ from axioms.axiom.retrieval import (
     AndAxiom,
     LenAndAxiom,
     ModifiedAndAxiom,
-    ModifiedTdcAxiom,
-    LenModifiedTdcAxiom,
     DivAxiom,
     LenDivAxiom,
     Tfc1Axiom,
@@ -237,24 +235,6 @@ class GenerativeModifiedAndAxiom(_RetrievalAxiomWrapper):
 
 
 GEN_M_AND: Final = lazy_inject(GenerativeModifiedAndAxiom, injector)
-
-
-@inject
-@dataclass(frozen=True, kw_only=True)
-class GenerativeModifiedTdcAxiom(_RetrievalAxiomWrapper):
-    axiom: ModifiedTdcAxiom
-
-
-GEN_M_TDC: Final = lazy_inject(GenerativeModifiedTdcAxiom, injector)
-
-
-@inject
-@dataclass(frozen=True, kw_only=True)
-class GenerativeLenModifiedTdcAxiom(_RetrievalAxiomWrapper):
-    axiom: LenModifiedTdcAxiom
-
-
-GEN_LEN_M_TDC: Final = lazy_inject(GenerativeLenModifiedTdcAxiom, injector)
 
 
 @inject

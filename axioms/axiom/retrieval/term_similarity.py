@@ -60,6 +60,7 @@ class Stmc1Axiom(Axiom[Query, Document]):
             self.term_similarity.average_similarity(document_terms, query_unique_terms)
             for document_terms in tqdm(
                 document_unique_terms,
+                total=len(outputs),
                 desc="Compute avg. similarities",
                 unit="document",
             )

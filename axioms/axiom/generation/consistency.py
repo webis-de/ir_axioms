@@ -334,9 +334,9 @@ CONS3: Final = lazy_inject(AspectSimilarityConsistencyAxiom, injector)
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class SentenceContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
+class EntityContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
     """
-    Prefer text with sentences that less frequently contradict each other.
+    Prefer text with entities less frequently mentioned in contradictory phrases.
     """
 
     text_contents: TextContents[GenerationOutput]
@@ -439,4 +439,4 @@ class SentenceContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
         ).reshape((len(outputs), len(outputs)))
 
 
-CONS4: Final = lazy_inject(SentenceContradictionConsistencyAxiom, injector)
+CONS4: Final = lazy_inject(EntityContradictionConsistencyAxiom, injector)

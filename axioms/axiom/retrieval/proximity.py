@@ -7,11 +7,13 @@ from statistics import mean
 from typing import Counter, Final, AbstractSet, Sequence, Union
 
 from injector import inject
+from numpy import array, float_
+from tqdm.auto import tqdm
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.utils import strictly_less, strictly_greater
 from axioms.dependency_injection import injector
-from axioms.model import Query, Document, Preference
+from axioms.model import Query, Document, Preference, PreferenceMatrix
 from axioms.tools import TextContents, TermTokenizer
 from axioms.utils.lazy import lazy_inject
 
@@ -44,9 +46,9 @@ def _average_between_query_terms(
         return 0
 
     number_words = 0
-    for item in query_term_pairs:
-        element1_position = document_terms.index(item[0])
-        element2_position = document_terms.index(item[1])
+    for term1, term2 in query_term_pairs:
+        element1_position = document_terms.index(term1)
+        element2_position = document_terms.index(term2)
         number_words += abs(element1_position - element2_position - 1)
     return number_words / len(query_term_pairs)
 
@@ -157,10 +159,9 @@ class Prox1Axiom(Axiom[Query, Document]):
         output1: Document,
         output2: Document,
     ) -> Preference:
-        query_terms = self.term_tokenizer.terms(
+        query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
-        query_unique_terms = set(query_terms)
         document1_terms = self.term_tokenizer.terms(
             self.text_contents.contents(output1),
         )
@@ -186,6 +187,9 @@ class Prox1Axiom(Axiom[Query, Document]):
 
         return strictly_greater(average2, average1)
 
+    # TODO: Come up with a better way to batch-compute preference-matrices.
+    # The largest hurdle seems to be the overlapping terms computation.
+
 
 PROX1: Final = lazy_inject(Prox1Axiom, injector)
 
@@ -202,10 +206,9 @@ class Prox2Axiom(Axiom[Query, Document]):
         output1: Document,
         output2: Document,
     ) -> Preference:
-        query_terms = self.term_tokenizer.terms(
+        query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
-        query_unique_terms = set(query_terms)
         document1_terms = self.term_tokenizer.terms(
             self.text_contents.contents(output1),
         )
@@ -222,17 +225,59 @@ class Prox2Axiom(Axiom[Query, Document]):
         ):
             return 0
 
-        common_document_terms = document1_unique_terms & document2_unique_terms
+        common_terms = (
+            query_unique_terms & document1_unique_terms & document2_unique_terms
+        )
 
-        first_position_sum1 = 0
-        first_position_sum2 = 0
-
-        for term in query_unique_terms:
-            if term in common_document_terms:
-                first_position_sum1 += document1_terms.index(term)
-                first_position_sum2 += document2_terms.index(term)
-
+        first_position_sum1 = sum(document1_terms.index(term) for term in common_terms)
+        first_position_sum2 = sum(document2_terms.index(term) for term in common_terms)
         return strictly_greater(first_position_sum2, first_position_sum1)
+
+    def preferences(
+        self,
+        input: Query,
+        outputs: Sequence[Document],
+    ) -> PreferenceMatrix:
+        query_unique_terms = self.term_tokenizer.unique_terms(
+            self.text_contents.contents(input),
+        )
+        document_terms = [
+            self.term_tokenizer.terms(self.text_contents.contents(output))
+            for output in tqdm(
+                outputs,
+                desc="Tokenize documents",
+                unit="document",
+            )
+        ]
+        return array(
+            [
+                (
+                    strictly_greater(
+                        sum(
+                            document_terms1.index(term)
+                            for term in query_unique_terms
+                            & set(document_terms1)
+                            & set(document_terms2)
+                        ),
+                        sum(
+                            document_terms2.index(term)
+                            for term in query_unique_terms
+                            & set(document_terms1)
+                            & set(document_terms2)
+                        ),
+                    )
+                    if _same_query_term_subset(
+                        query_terms=query_unique_terms,
+                        document1_terms=set(document_terms1),
+                        document2_terms=set(document_terms2),
+                    )
+                    else 0
+                )
+                for document_terms1 in document_terms
+                for document_terms2 in document_terms
+            ],
+            dtype=float_,
+        )
 
 
 PROX2: Final = lazy_inject(Prox2Axiom, injector)
@@ -297,6 +342,8 @@ class Prox3Axiom(Axiom[Query, Document]):
             ),
         )
 
+    # TODO: Come up with a better way to batch-compute preference-matrices.
+
 
 PROX3: Final = lazy_inject(Prox3Axiom, injector)
 
@@ -313,10 +360,9 @@ class Prox4Axiom(Axiom[Query, Document]):
         output1: Document,
         output2: Document,
     ) -> Preference:
-        query_terms = self.term_tokenizer.terms(
+        query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
-        query_unique_terms = set(query_terms)
         document1_terms = self.term_tokenizer.terms(
             self.text_contents.contents(output1),
         )
@@ -347,6 +393,8 @@ class Prox4Axiom(Axiom[Query, Document]):
         else:
             return strictly_greater(count1, count2)
 
+    # TODO: Come up with a better way to batch-compute preference-matrices.
+
 
 PROX4: Final = lazy_inject(Prox4Axiom, injector)
 
@@ -363,10 +411,9 @@ class Prox5Axiom(Axiom[Query, Document]):
         output1: Document,
         output2: Document,
     ) -> Preference:
-        query_terms = self.term_tokenizer.terms(
+        query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
-        query_unique_terms = set(query_terms)
         document1_terms = self.term_tokenizer.terms(
             self.text_contents.contents(output1),
         )
@@ -393,6 +440,8 @@ class Prox5Axiom(Axiom[Query, Document]):
         )
 
         return strictly_less(smallest_span1, smallest_span2)
+
+    # TODO: Come up with a better way to batch-compute preference-matrices.
 
 
 PROX5: Final = lazy_inject(Prox5Axiom, injector)

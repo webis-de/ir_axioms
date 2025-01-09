@@ -188,7 +188,7 @@ CLAR2: Final = lazy_inject(GrammarErrorTypesClarityAxiom, injector)
 @dataclass(frozen=True, kw_only=True)
 class GrammarErrorProportionClarityAxiom(Axiom[Any, GenerationOutput]):
     """
-    Prefer text with a lower proportion of charecters covered by grammar errors.
+    Prefer text with a lower proportion of characters covered by grammar errors.
     """
 
     text_contents: TextContents[GenerationOutput]
@@ -453,10 +453,14 @@ class WordCommonnessClarityAxiom(Axiom[Any, GenerationOutput]):
                     wordlist="small",
                 )
                 for term in unique_terms
-            ]
+            ],
+            dtype=float_,
         )
         expected_frequencies /= expected_frequencies.sum()
-        observed_frequencies = array([term_frequencies[term] for term in unique_terms])
+        observed_frequencies = array(
+            [term_frequencies[term] for term in unique_terms],
+            dtype=float_,
+        )
         return rel_entr(observed_frequencies, expected_frequencies).sum()
 
     def preference(
@@ -535,15 +539,18 @@ class NormalizedWordCommonnessClarityAxiom(Axiom[GenerationInput, GenerationOutp
                     wordlist="small",
                 )
                 for term in unique_terms
-            ]
+            ],
+            dtype=float_,
         )
         expected_frequencies /= expected_frequencies.sum()
 
         observed_output_frequencies = array(
-            [output_term_frequencies[term] for term in unique_terms]
+            [output_term_frequencies[term] for term in unique_terms],
+            dtype=float_,
         )
         observed_input_frequencies = array(
-            [input_term_frequencies.get(term, 0) for term in unique_terms]
+            [input_term_frequencies.get(term, 0) for term in unique_terms],
+            dtype=float_,
         )
         observed_input_frequencies /= observed_input_frequencies.sum()
 
