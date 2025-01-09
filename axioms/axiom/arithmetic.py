@@ -4,7 +4,8 @@ from math import isclose, ceil
 from operator import add, mul
 from typing import Any, Iterable, Sequence
 
-from numpy import full, ones, zeros
+from numpy import full, ones, stack, zeros
+from tqdm import tqdm
 
 from axioms.axiom.base import Axiom
 from axioms.model import Input, Output, Preference, PreferenceMatrix
@@ -157,30 +158,18 @@ class VoteAxiom(Axiom[Input, Output]):
         output1: Output,
         output2: Output,
     ) -> Preference:
-        axioms = tuple(self.axioms)
-        preferences = (axiom.preference(input, output1, output2) for axiom in axioms)
+        preferences = [axiom.preference(input, output1, output2) for axiom in self.axioms]
 
         # Total count of possible votes.
-        count: int = len(axioms)
+        count: int = len(preferences)
 
         # Minimum (absolute) number of votes to reach a majority.
         minimum_votes: int = ceil(self.minimum_votes * count)
 
         # Number of observed positive votes.
-        positive_votes: int = 0
+        positive_votes: int = sum(1 for preference in preferences if preference > 0)
         # Number of observed negative votes.
-        negative_votes: int = 0
-        # Number of observed neutral votes.
-        neutral_votes: int = 0
-
-        for preference in preferences:
-            if preference > 0:
-                positive_votes += 1
-            elif preference < 0:
-                negative_votes += 1
-            else:
-                neutral_votes += 1
-        # TODO: Optimize by comparing majorities with "open" votes.
+        negative_votes: int = sum(1 for preference in preferences if preference < 0)
 
         if positive_votes > negative_votes and positive_votes >= minimum_votes:
             return 1
@@ -189,6 +178,36 @@ class VoteAxiom(Axiom[Input, Output]):
         else:
             # Draw.
             return 0
+        
+    def preferences(
+        self,
+        input: Input,
+        outputs: Sequence[Output],
+    ) -> PreferenceMatrix:
+        preferences = stack([
+            axiom.preferences(input, outputs)
+            for axiom in tqdm(
+                self.axioms,
+                desc="Computing preferences",
+            )
+        ])
+
+        # Total count of possible votes.
+        count: int = preferences.shape[0]
+
+        # Minimum (absolute) number of votes to reach a majority.
+        minimum_votes: int = ceil(self.minimum_votes * count)
+
+        # Number of observed positive votes.
+        positive_votes = (preferences > 0).sum(axis=0)
+        # Number of observed negative votes.
+        negative_votes = (preferences < 0).sum(axis=0)
+
+        aggregated_preferences = zeros((len(outputs), len(outputs)))
+        aggregated_preferences += (positive_votes > negative_votes) & (positive_votes >= minimum_votes) * 1
+        aggregated_preferences += (negative_votes > positive_votes) & (negative_votes >= minimum_votes) * -1
+
+        return aggregated_preferences
 
     # TODO: Add batched preference computation.
 
