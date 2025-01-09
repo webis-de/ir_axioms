@@ -1,0 +1,43 @@
+from dataclasses import dataclass
+from functools import cached_property
+from typing import Sequence
+
+
+from numpy import array, float_, ndarray, dot
+from numpy.linalg import norm
+from numpy.typing import NDArray
+from sentence_transformers import SentenceTransformer
+
+from axioms.tools.similarity.base import SentenceSimilarity
+
+
+def _cosine_similarity(vector1: ndarray, vector2: ndarray) -> float:
+    return dot(vector1, vector2) / (norm(vector1) * norm(vector2))
+
+
+@dataclass(frozen=True)
+class SentenceTransformersSentenceSimilarity(SentenceSimilarity):
+    model_name: str = "sentence-transformers/all-mpnet-base-v2"
+
+    @cached_property
+    def model(self) -> SentenceTransformer:
+        return SentenceTransformer(
+            model_name_or_path=self.model_name,
+        )
+
+    def similarity(self, sentence1: str, sentence2: str) -> float:
+        return self.similarities([sentence1, sentence2])[0, 1]
+
+    def similarities(self, sentences: Sequence[str]) -> NDArray[float_]:
+        vectors = self.model.encode(
+            sentences=list(sentences),
+            convert_to_numpy=True,
+        )
+        return array(
+            [
+                _cosine_similarity(vectors[i1], vectors[i2])
+                for i1 in range(len(sentences))
+                for i2 in range(len(sentences))
+            ],
+            dtype=float_,
+        ).reshape((len(sentences), len(sentences)))

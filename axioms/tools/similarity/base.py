@@ -11,11 +11,27 @@ from typing import (
     AbstractSet,
 )
 
+from numpy import array, float_
+from numpy.typing import NDArray
+
 
 @runtime_checkable
 class TermSimilarity(Protocol):
     def similarity(self, term1: str, term2: str) -> float:
         pass
+
+    def similarities(self, terms: Sequence[str]) -> NDArray[float_]:
+        return array(
+            [
+                self.similarity(
+                    term1=term1,
+                    term2=term2,
+                )
+                for term1 in terms
+                for term2 in terms
+            ],
+            dtype=float_,
+        ).reshape((len(terms), len(terms)))
 
     def similarity_sums(self, terms: Iterable[str]) -> Dict[str, float]:
         similarity_sums: Dict[str, float] = {term: 0 for term in terms}
@@ -68,3 +84,33 @@ class TermSimilarity(Protocol):
         similarity_sums = self.similarity_sums(set(terms))
         min_similarity_sum = min(similarity_sums.values())
         return {term for term in terms if similarity_sums[term] <= min_similarity_sum}
+
+
+@runtime_checkable
+class SentenceSimilarity(Protocol):
+    def similarity(self, sentence1: str, sentence2: str) -> float:
+        pass
+
+    def similarities(self, sentences: Sequence[str]) -> NDArray[float_]:
+        return array(
+            [
+                self.similarity(
+                    sentence1=sentence1,
+                    sentence2=sentence2,
+                )
+                for sentence1 in sentences
+                for sentence2 in sentences
+            ],
+            dtype=float_,
+        ).reshape((len(sentences), len(sentences)))
+
+    def average_similarity(
+        self, sentences1: Collection[str], sentences2: Collection[str]
+    ) -> float:
+        if len(sentences1) == 0 or len(sentences2) == 0:
+            return 0
+        return mean(
+            self.similarity(sentence1, sentence2)
+            for sentence1 in sentences1
+            for sentence2 in sentences2
+        )
