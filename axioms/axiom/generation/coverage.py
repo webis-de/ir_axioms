@@ -10,7 +10,7 @@ from typing import Final, Union, Sequence, Any
 
 from injector import inject
 from numpy import array, float_, zeros
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.utils import strictly_greater, strictly_less

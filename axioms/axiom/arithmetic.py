@@ -5,7 +5,7 @@ from operator import add, mul
 from typing import Any, Iterable, Sequence
 
 from numpy import full, ones, stack, zeros
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from axioms.axiom.base import Axiom
 from axioms.model import Input, Output, Preference, PreferenceMatrix

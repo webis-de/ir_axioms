@@ -4,7 +4,7 @@ from typing import AbstractSet, Final, Mapping, Sequence, Union
 
 from injector import inject
 from numpy import array, float_
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from axioms.axiom.base import Axiom
 from axioms.dependency_injection import injector

@@ -5,7 +5,7 @@ from typing import AbstractSet, Final, Sequence, Union
 
 from injector import inject, NoInject
 from numpy import array, float_
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.precondition import PreconditionMixin

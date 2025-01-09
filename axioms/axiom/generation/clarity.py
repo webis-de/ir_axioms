@@ -20,7 +20,7 @@ from typing import Final, Sequence, Any, Mapping, Union
 from injector import inject, NoInject
 from language_tool_python import LanguageTool
 from numpy import array, float_
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from scipy.special import rel_entr
 from spacy import load as spacy_load
 from spacy.language import Language

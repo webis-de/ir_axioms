@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Generic, Literal, Sequence, Optional, final
 
 from numpy import float_, array
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from axioms.model import Input, Output, Preference, PreferenceMatrix
 from axioms.tools.pivot import PivotSelection, RandomPivotSelection

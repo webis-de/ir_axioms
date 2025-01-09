@@ -17,7 +17,7 @@ from negspacy.termsets import termset
 from numpy import array, float_, zeros
 from spacy import load as spacy_load
 from spacy.language import Language
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.utils import strictly_greater, strictly_less

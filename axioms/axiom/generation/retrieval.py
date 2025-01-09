@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Final, Sequence
 
 from injector import inject
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.retrieval import (

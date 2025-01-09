@@ -5,7 +5,7 @@ from typing import Final, Sequence, TypeVar
 
 from injector import inject
 from numpy import array, bool_
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from axioms.dependency_injection import injector
 from axioms.model import Document, Mask, MaskMatrix

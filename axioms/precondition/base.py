@@ -1,7 +1,7 @@
 from typing import Generic, Sequence, Protocol
 
 from numpy import array
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from axioms.model.base import (
     Input,

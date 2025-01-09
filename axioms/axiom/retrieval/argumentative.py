@@ -9,7 +9,7 @@ from injector import inject, NoInject
 from numpy import array, float_
 from targer_api import ArgumentSentences, ArgumentLabel, ArgumentTag, analyze_text
 from targer_api.constants import DEFAULT_TARGER_MODELS, DEFAULT_TARGER_API_URL
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.precondition import PreconditionMixin

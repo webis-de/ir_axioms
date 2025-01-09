@@ -9,7 +9,7 @@ from typing import Iterable, Iterator, Protocol, Sequence, Tuple, TypeVar
 from numpy import array, float_, ndarray, isnan, ones_like, nan
 from more_itertools import chunked
 from optimask import OptiMask
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from typing_extensions import TypeAlias  # type: ignore
 
 from axioms.axiom.base import Axiom
