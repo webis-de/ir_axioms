@@ -27,7 +27,7 @@ dependencies = [
     "diskcache~=5.6",  # TODO: Instead just use SQLite directly.
     "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl",
     "fasttext~=0.9.3",
-    "huggingface-hub~=0.26.5",
+    "huggingface-hub~=0.27.1",
     "injector~=0.22.0",
     "ir-datasets~=0.5.9",  # TODO: Make this an optional dependency.
     "ir-measures~=0.3.6",  # TODO: Make this an optional dependency.
