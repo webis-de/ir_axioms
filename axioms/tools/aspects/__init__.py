@@ -6,6 +6,11 @@ from axioms.tools.aspects.base import (  # noqa: F401
     AspectExtraction,
 )
 
+from axioms.tools.aspects.keybert import (  # noqa: F401
+    KeyBertAspectExtraction,
+    KeyLlmAspectExtraction,
+)
+
 from axioms.tools.aspects.spacy import (  # noqa: F401
     SpacyNounChunksAspectExtraction,
 )

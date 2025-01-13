@@ -4,6 +4,8 @@ from injector import Module, Binder
 
 from axioms.tools.aspects import (  # noqa: F401
     AspectExtraction,
+    KeyBertAspectExtraction,
+    KeyLlmAspectExtraction,
     SpacyNounChunksAspectExtraction,
     AspectsModule,
 )
