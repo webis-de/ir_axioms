@@ -277,7 +277,7 @@ class Prox2Axiom(Axiom[Query, Document]):
                 for document_terms2 in document_terms
             ],
             dtype=float_,
-        )
+        ).reshape(len(outputs), len(outputs))
 
 
 PROX2: Final = lazy_inject(Prox2Axiom, injector)
