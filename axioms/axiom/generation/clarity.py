@@ -25,7 +25,7 @@ from scipy.special import rel_entr
 from spacy import load as spacy_load
 from spacy.language import Language
 from spellchecker import SpellChecker
-from wordfreq import word_frequency
+from wordfreq import get_frequency_dict
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.utils import strictly_less
@@ -443,22 +443,22 @@ class WordCommonnessClarityAxiom(Axiom[Any, GenerationOutput]):
     language: NoInject[str] = "en"
     margin_fraction: float = 0.1
 
+    @cached_property
+    def _word_frequencies(self) -> Mapping[str, float]:
+        return get_frequency_dict(
+            lang=self.language,
+            wordlist="small",
+        )
+
     def _commonness(self, term_frequencies: Mapping[str, float]) -> float:
-        unique_terms = sorted(term_frequencies.keys())
+        word_frequencies = self._word_frequencies
+        terms = sorted(set(word_frequencies.keys()) | set(term_frequencies.keys()))
         expected_frequencies = array(
-            [
-                word_frequency(
-                    word=term,
-                    lang=self.language,
-                    wordlist="small",
-                )
-                for term in unique_terms
-            ],
+            [word_frequencies.get(term, 0) for term in terms],
             dtype=float_,
         )
-        expected_frequencies /= expected_frequencies.sum()
         observed_frequencies = array(
-            [term_frequencies[term] for term in unique_terms],
+            [term_frequencies.get(term, 0) for term in terms],
             dtype=float_,
         )
         return rel_entr(observed_frequencies, expected_frequencies).sum()
@@ -523,36 +523,34 @@ class NormalizedWordCommonnessClarityAxiom(Axiom[GenerationInput, GenerationOutp
     text_statistics: TextStatistics[Union[GenerationInput, GenerationOutput]]
 
     language: NoInject[str] = "en"
-    margin_fraction: float = 0.0
+    margin_fraction: float = 0.1
+
+    @cached_property
+    def _word_frequencies(self) -> Mapping[str, float]:
+        return get_frequency_dict(
+            lang=self.language,
+            wordlist="small",
+        )
 
     def _commonness(
         self,
         output_term_frequencies: Mapping[str, float],
         input_term_frequencies: Mapping[str, float],
     ) -> float:
-        unique_terms = sorted(output_term_frequencies.keys())
+        word_frequencies = self._word_frequencies
+        terms = sorted(set(word_frequencies.keys()) | set(output_term_frequencies.keys()) | set(input_term_frequencies.keys()))
         expected_frequencies = array(
-            [
-                word_frequency(
-                    word=term,
-                    lang=self.language,
-                    wordlist="small",
-                )
-                for term in unique_terms
-            ],
+            [word_frequencies.get(term, 0) for term in terms],
             dtype=float_,
         )
-        expected_frequencies /= expected_frequencies.sum()
-
         observed_output_frequencies = array(
-            [output_term_frequencies[term] for term in unique_terms],
+            [output_term_frequencies.get(term, 0) for term in terms],
             dtype=float_,
         )
         observed_input_frequencies = array(
-            [input_term_frequencies.get(term, 0) for term in unique_terms],
+            [input_term_frequencies.get(term, 0) for term in terms],
             dtype=float_,
         )
-        observed_input_frequencies /= observed_input_frequencies.sum()
 
         output_divergence = rel_entr(observed_output_frequencies, expected_frequencies)
         input_divergence = rel_entr(observed_input_frequencies, expected_frequencies)
