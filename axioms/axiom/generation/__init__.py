@@ -17,8 +17,14 @@ from axioms.axiom.generation.clarity import (  # noqa: F401
     CLAR7,
 )
 
-# from axioms.axiom.generation.coherence import (  # noqa: F401
-# )
+from axioms.axiom.generation.coherence import (  # noqa: F401
+    WordLengthDeviationCoherenceAxiom,
+    COH1,
+    SentenceLengthDeviationCoherenceAxiom,
+    COH2,
+    TenseSwitchingCoherenceAxiom,
+    COH3,
+)
 
 from axioms.axiom.generation.consistency import (  # noqa: F401
     AspectOverlapConsistenyAxiom,

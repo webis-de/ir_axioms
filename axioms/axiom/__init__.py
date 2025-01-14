@@ -1,6 +1,12 @@
 # Re-export from sub-modules.
 
 from axioms.axiom.generation import (  # noqa: F401
+    WordLengthDeviationCoherenceAxiom,
+    COH1,
+    SentenceLengthDeviationCoherenceAxiom,
+    COH2,
+    TenseSwitchingCoherenceAxiom,
+    COH3,
     GrammarErrorsClarityAxiom,
     CLAR1,
     GrammarErrorTypesClarityAxiom,
