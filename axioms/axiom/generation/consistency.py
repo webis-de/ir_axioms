@@ -8,8 +8,8 @@
 
 from dataclasses import dataclass
 from functools import cached_property
-from math import isclose
-from typing import Final, Union, Sequence, Any, TYPE_CHECKING
+from math import isclose, nan
+from typing import Final, Union, Sequence, Any, TYPE_CHECKING, AbstractSet
 
 from injector import inject, NoInject
 from negspacy.negation import Negex
@@ -32,6 +32,26 @@ from axioms.tools import (
 from axioms.utils.lazy import lazy_inject
 
 
+def _coverage(
+    a: AbstractSet[str],
+    b: AbstractSet[str],
+) -> float:
+    divisor = min(len(a), len(b))
+    if divisor == 0:
+        return nan
+    return len(a & b) / divisor
+
+
+def _jaccard(
+    a: AbstractSet[str],
+    b: AbstractSet[str],
+) -> float:
+    divisor = len(a | b)
+    if divisor == 0:
+        return nan
+    return len(a & b) / divisor
+
+
 @inject
 @dataclass(frozen=True, kw_only=True)
 class AspectOverlapConsistenyAxiom(Axiom[GenerationInput, GenerationOutput]):
@@ -42,7 +62,7 @@ class AspectOverlapConsistenyAxiom(Axiom[GenerationInput, GenerationOutput]):
     text_contents: TextContents[Union[GenerationInput, GenerationOutput]]
     aspect_extraction: AspectExtraction
 
-    margin_fraction: float = 0.0
+    margin_fraction: float = 0.1
 
     def preference(
         self,
@@ -66,12 +86,8 @@ class AspectOverlapConsistenyAxiom(Axiom[GenerationInput, GenerationOutput]):
             self.text_contents.contents(output2)
         )
 
-        coverage1 = len(context_unique_aspects & output1_unique_aspects) / len(
-            context_unique_aspects
-        )
-        coverage2 = len(context_unique_aspects & output2_unique_aspects) / len(
-            context_unique_aspects
-        )
+        coverage1 = _coverage(context_unique_aspects, output1_unique_aspects)
+        coverage2 = _coverage(context_unique_aspects, output2_unique_aspects)
 
         if isclose(
             coverage1,
@@ -104,7 +120,7 @@ class AspectOverlapConsistenyAxiom(Axiom[GenerationInput, GenerationOutput]):
         )
 
         coverage = [
-            len(context_unique_aspects & aspects) / len(context_unique_aspects)
+            _coverage(context_unique_aspects, aspects)
             for aspects in output_unique_aspects
         ]
 
@@ -131,15 +147,15 @@ CONS1: Final = lazy_inject(AspectOverlapConsistenyAxiom, injector)
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class PenalizedAspectOverlapConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
+class AspectJaccardConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
     """
-    Prefer text with larger overlap of extracted aspects to the aspects extracted from the input contexts, but penalize by the number of aspects in the output.
+    Prefer text with larger Jaccard index of extracted aspects to the aspects extracted from the input contexts.
     """
 
     text_contents: TextContents[Union[GenerationInput, GenerationOutput]]
     aspect_extraction: AspectExtraction
 
-    margin_fraction: float = 0.0
+    margin_fraction: float = 0.1
 
     def preference(
         self,
@@ -156,6 +172,7 @@ class PenalizedAspectOverlapConsistencyAxiom(Axiom[GenerationInput, GenerationOu
         }
         if len(context_unique_aspects) == 0:
             return 0
+        # FIXME: Penalize by the number of repeated aspects in the output.
         output1_unique_aspects = self.aspect_extraction.unique_aspects(
             self.text_contents.contents(output1)
         )
@@ -163,24 +180,16 @@ class PenalizedAspectOverlapConsistencyAxiom(Axiom[GenerationInput, GenerationOu
             self.text_contents.contents(output2)
         )
 
-        coverage1 = (
-            len(context_unique_aspects & output1_unique_aspects)
-            / len(context_unique_aspects)
-            / len(output1_unique_aspects)
-        )
-        coverage2 = (
-            len(context_unique_aspects & output2_unique_aspects)
-            / len(context_unique_aspects)
-            / len(output2_unique_aspects)
-        )
+        jaccard1 = _jaccard(context_unique_aspects, output1_unique_aspects)
+        jaccard2 = _jaccard(context_unique_aspects, output2_unique_aspects)
 
         if isclose(
-            coverage1,
-            coverage2,
+            jaccard1,
+            jaccard2,
             rel_tol=self.margin_fraction,
         ):
             return 0
-        return strictly_greater(coverage1, coverage2)
+        return strictly_greater(jaccard1, jaccard2)
 
     def preferences(
         self,
@@ -204,29 +213,28 @@ class PenalizedAspectOverlapConsistencyAxiom(Axiom[GenerationInput, GenerationOu
             )
         )
 
-        coverage = [
-            len(context_unique_aspects & aspects)
-            / len(context_unique_aspects)
-            / len(aspects)
+        jaccard = [
+            _jaccard(context_unique_aspects, aspects)
             for aspects in output_unique_aspects
         ]
 
         return array(
             [
                 (
-                    strictly_greater(coverage1, coverage2)
+                    strictly_greater(jaccard1, jaccard2)
                     if not isclose(
-                        coverage1,
-                        coverage2,
+                        jaccard1,
+                        jaccard2,
                         rel_tol=self.margin_fraction,
                     )
                     else 0
                 )
-                for coverage1 in coverage
-                for coverage2 in coverage
+                for jaccard1 in jaccard
+                for jaccard2 in jaccard
             ],
             dtype=float_,
         ).reshape((len(outputs), len(outputs)))
+
 
 # TODO: Less harsh penalization for the number of aspects in the output.
 
@@ -246,7 +254,7 @@ class AspectSimilarityConsistencyAxiom(Axiom[GenerationInput, GenerationOutput])
     aspect_extraction: AspectExtraction
     sentence_similarity: SentenceSimilarity
 
-    margin_fraction: float = 0.0
+    margin_fraction: float = 0.5
 
     def preference(
         self,
@@ -342,7 +350,7 @@ class EntityContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
     text_contents: TextContents[GenerationOutput]
 
     language_name: NoInject[str] = "en_core_web_sm"
-    margin_fraction: float = 0.0
+    margin_fraction: float = 0.2
 
     # TODO: Migrate to tool injected by DI.
     @cached_property
@@ -355,23 +363,23 @@ class EntityContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
             factory_name="negex",
             config={
                 "ent_types": [
-                    "CARDINAL",
-                    "DATE",
-                    "EVENT",
-                    "FAC",
-                    "GPE",
+                    # "CARDINAL",  # other numbers
+                    # "DATE",
+                    "EVENT",  # event names
+                    "FAC",  # facilities
+                    "GPE",  # geopolitical entities
                     "LANGUAGE",
-                    "LAW",
-                    "LOC",
-                    "MONEY",
-                    "NORP",
-                    "ORDINAL",
+                    "LAW",  # legal document titles
+                    "LOC",  # other geographic locations
+                    # "MONEY",
+                    "NORP",  # nationalities, religious groups, political groups
+                    # "ORDINAL",
                     "ORG",
-                    "PERCENT",
+                    # "PERCENT",
                     "PERSON",
                     "PRODUCT",
-                    "QUANTITY",
-                    "TIME",
+                    # "QUANTITY",
+                    # "TIME",
                     "WORK_OF_ART",
                 ],
                 "neg_termset": neg_termset.get_patterns(),

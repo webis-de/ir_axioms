@@ -5,8 +5,8 @@
 # - [x] Cover aspects mentioned in query.
 
 from dataclasses import dataclass
-from math import isclose
-from typing import Final, Union, Sequence, Any
+from math import isclose, nan
+from typing import Final, Union, Sequence, Any, AbstractSet
 
 from injector import inject
 from numpy import array, float_, zeros
@@ -21,6 +21,26 @@ from axioms.tools import TextContents, AspectExtraction, SentenceSimilarity
 from axioms.utils.lazy import lazy_inject
 
 
+def _coverage(
+    a: AbstractSet[str],
+    b: AbstractSet[str],
+) -> float:
+    divisor = min(len(a), len(b))
+    if divisor == 0:
+        return nan
+    return len(a & b) / divisor
+
+
+def _jaccard(
+    a: AbstractSet[str],
+    b: AbstractSet[str],
+) -> float:
+    divisor = len(a | b)
+    if divisor == 0:
+        return nan
+    return len(a & b) / divisor
+
+
 @inject
 @dataclass(frozen=True, kw_only=True)
 class AspectOverlapCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
@@ -31,7 +51,7 @@ class AspectOverlapCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
     text_contents: TextContents[Union[GenerationInput, GenerationOutput]]
     aspect_extraction: AspectExtraction
 
-    margin_fraction: float = 0.0
+    margin_fraction: float = 0.1
 
     def preference(
         self,
@@ -51,12 +71,8 @@ class AspectOverlapCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
             self.text_contents.contents(output2)
         )
 
-        coverage1 = len(input_unique_aspects & output1_unique_aspects) / len(
-            input_unique_aspects
-        )
-        coverage2 = len(input_unique_aspects & output2_unique_aspects) / len(
-            input_unique_aspects
-        )
+        coverage1 = _coverage(input_unique_aspects, output1_unique_aspects)
+        coverage2 = _coverage(input_unique_aspects, output2_unique_aspects)
 
         if isclose(
             coverage1,
@@ -85,7 +101,7 @@ class AspectOverlapCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
         )
 
         coverage = [
-            len(input_unique_aspects & aspects) / len(input_unique_aspects)
+            _coverage(input_unique_aspects, aspects)
             for aspects in output_unique_aspects
         ]
 
@@ -112,15 +128,15 @@ COV1: Final = lazy_inject(AspectOverlapCoverageAxiom, injector)
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class PenalizedAspectOverlapCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
+class AspectJaccardCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
     """
-    Prefer text with larger overlap of extracted aspects to the aspects extracted from the input text, but penalize by the number of aspects in the output.
+    Prefer text with larger Jaccard index of extracted aspects to the aspects extracted from the input text.
     """
 
     text_contents: TextContents[Union[GenerationInput, GenerationOutput]]
     aspect_extraction: AspectExtraction
 
-    margin_fraction: float = 0.0
+    margin_fraction: float = 0.1
 
     def preference(
         self,
@@ -140,24 +156,16 @@ class PenalizedAspectOverlapCoverageAxiom(Axiom[GenerationInput, GenerationOutpu
             self.text_contents.contents(output2)
         )
 
-        coverage1 = (
-            len(input_unique_aspects & output1_unique_aspects)
-            / len(input_unique_aspects)
-            / len(output1_unique_aspects)
-        )
-        coverage2 = (
-            len(input_unique_aspects & output2_unique_aspects)
-            / len(input_unique_aspects)
-            / len(output2_unique_aspects)
-        )
+        jaccard1 = _jaccard(input_unique_aspects, output1_unique_aspects)
+        jaccard2 = _jaccard(input_unique_aspects, output2_unique_aspects)
 
         if isclose(
-            coverage1,
-            coverage2,
+            jaccard1,
+            jaccard2,
             rel_tol=self.margin_fraction,
         ):
             return 0
-        return strictly_greater(coverage1, coverage2)
+        return strictly_greater(jaccard1, jaccard2)
 
     def preferences(
         self,
@@ -177,26 +185,23 @@ class PenalizedAspectOverlapCoverageAxiom(Axiom[GenerationInput, GenerationOutpu
             )
         )
 
-        coverage = [
-            len(input_unique_aspects & aspects)
-            / len(input_unique_aspects)
-            / len(aspects)
-            for aspects in output_unique_aspects
+        jaccard = [
+            _jaccard(input_unique_aspects, aspects) for aspects in output_unique_aspects
         ]
 
         return array(
             [
                 (
-                    strictly_greater(coverage1, coverage2)
+                    strictly_greater(jaccard1, jaccard2)
                     if not isclose(
-                        coverage1,
-                        coverage2,
+                        jaccard1,
+                        jaccard2,
                         rel_tol=self.margin_fraction,
                     )
                     else 0
                 )
-                for coverage1 in coverage
-                for coverage2 in coverage
+                for jaccard1 in jaccard
+                for jaccard2 in jaccard
             ],
             dtype=float_,
         ).reshape((len(outputs), len(outputs)))
@@ -218,7 +223,7 @@ class AspectSimilarityCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
     aspect_extraction: AspectExtraction
     sentence_similarity: SentenceSimilarity
 
-    margin_fraction: float = 0.0
+    margin_fraction: float = 0.5
 
     def preference(
         self,
@@ -376,7 +381,7 @@ class AspectRedundancyCoverageAxiom(Axiom[Any, GenerationOutput]):
     aspect_extraction: AspectExtraction
     sentence_similarity: SentenceSimilarity
 
-    margin_fraction: float = 0.0
+    margin_fraction: float = 0.2
 
     def preference(
         self,
@@ -440,4 +445,4 @@ class AspectRedundancyCoverageAxiom(Axiom[Any, GenerationOutput]):
         ).reshape((len(outputs), len(outputs)))
 
 
-COV5: Final = lazy_inject(AspectSimilarityCoverageAxiom, injector)
+COV5: Final = lazy_inject(AspectRedundancyCoverageAxiom, injector)

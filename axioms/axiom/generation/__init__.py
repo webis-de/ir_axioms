@@ -43,7 +43,7 @@ from axioms.axiom.generation.consistency import (  # noqa: F401
 from axioms.axiom.generation.coverage import (  # noqa: F401
     AspectOverlapCoverageAxiom,
     COV1,
-    PenalizedAspectOverlapCoverageAxiom,
+    AspectJaccardCoverageAxiom,
     COV2,
     AspectSimilarityCoverageAxiom,
     COV3,
