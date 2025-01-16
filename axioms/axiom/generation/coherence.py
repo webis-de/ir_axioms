@@ -7,9 +7,10 @@
 from dataclasses import dataclass
 from itertools import chain
 from functools import cached_property
-from math import isclose
-from typing import Final, Sequence, Any
+from math import isclose, nan
+from typing import Final, Sequence, Any, TYPE_CHECKING
 
+from fastcoref import spacy_component
 from injector import inject, NoInject
 from more_itertools import pairwise
 from numpy import array, float_
@@ -41,7 +42,7 @@ class WordLengthDeviationCoherenceAxiom(Axiom[Any, GenerationOutput]):
     sentence_tokenizer: SentenceTokenizer
     term_tokenizer: TermTokenizer
 
-    margin_fraction: float = 0.2
+    margin_fraction: NoInject[float] = 0.0
 
     def preference(
         self,
@@ -142,7 +143,7 @@ class SentenceLengthDeviationCoherenceAxiom(Axiom[Any, GenerationOutput]):
     sentence_tokenizer: SentenceTokenizer
     term_tokenizer: TermTokenizer
 
-    margin_fraction: float = 0.2
+    margin_fraction: NoInject[float] = 0.0
 
     def preference(
         self,
@@ -234,12 +235,15 @@ class TenseSwitchingCoherenceAxiom(Axiom[Any, GenerationOutput]):
     text_contents: TextContents[GenerationOutput]
 
     language_name: NoInject[str] = "en_core_web_sm"
-    margin_fraction: float = 0.2
+    margin_fraction: NoInject[float] = 0.0
 
     # TODO: Migrate to tool injected by DI.
     @cached_property
     def _language(self) -> Language:
-        return spacy_load(name=self.language_name)
+        return spacy_load(
+            name=self.language_name,
+            disable=["parser"],
+        )
 
     def preference(
         self,
@@ -321,3 +325,228 @@ class TenseSwitchingCoherenceAxiom(Axiom[Any, GenerationOutput]):
 
 
 COH3: Final = lazy_inject(TenseSwitchingCoherenceAxiom, injector)
+
+
+@inject
+@dataclass(frozen=True, kw_only=True)
+class CoreferenceClusterClosenessCoherenceAxiom(Axiom[Any, GenerationOutput]):
+    """
+    Prefer text with coreference clusters that are closer together.
+    """
+
+    text_contents: TextContents[GenerationOutput]
+
+    language_name: NoInject[str] = "en_core_web_sm"
+    margin_fraction: float = 0.1
+
+    # TODO: Migrate to tool for dependency injection.
+    @cached_property
+    def _language(self) -> Language:
+        if TYPE_CHECKING:
+            spacy_component  # To ignore the unused import warning.
+        language = spacy_load(
+            name=self.language_name,
+            exclude=["parser", "lemmatizer", "ner", "textcat"],
+        )
+        language.add_pipe("fastcoref")
+        return language
+
+    def preference(
+        self,
+        input: Any,
+        output1: GenerationOutput,
+        output2: GenerationOutput,
+    ) -> Preference:
+        coreference_clusters1: Sequence[Sequence[tuple[int, int]]] = self._language(
+            self.text_contents.contents(output1)
+        )._.coref_clusters
+        coreference_clusters2: Sequence[Sequence[tuple[int, int]]] = self._language(
+            self.text_contents.contents(output2)
+        )._.coref_clusters
+
+        coreference_distances1 = array(
+            [
+                (
+                    cluster[-1][1] - cluster[0][0]
+                    if len(coreference_clusters1) > 0
+                    else nan
+                )
+                for cluster in coreference_clusters1
+            ]
+        )
+        coreference_distances2 = array(
+            [
+                (
+                    cluster[-1][1] - cluster[0][0]
+                    if len(coreference_clusters2) > 0
+                    else nan
+                )
+                for cluster in coreference_clusters2
+            ]
+        )
+
+        avg_coreference_distance1 = coreference_distances1.mean()
+        avg_coreference_distance2 = coreference_distances2.mean()
+
+        if isclose(
+            avg_coreference_distance1,
+            avg_coreference_distance2,
+            rel_tol=self.margin_fraction,
+        ):
+            return 0
+        return strictly_less(avg_coreference_distance1, avg_coreference_distance2)
+
+    def preferences(
+        self,
+        input: Any,
+        outputs: Sequence[GenerationOutput],
+    ) -> PreferenceMatrix:
+        docs = self._language.pipe(
+            self.text_contents.contents(output)
+            for output in tqdm(
+                outputs,
+                desc="Analyze coreference clusters",
+                unit="output",
+            )
+        )
+
+        coreference_clusters = (doc._.coref_clusters for doc in docs)
+
+        coreference_distances = [
+            array(
+                [
+                    (
+                        cluster[-1][1] - cluster[0][0]
+                        if len(coreference_clusters) > 0
+                        else nan
+                    )
+                ]
+                for cluster in coreference_clusters
+            )
+            for coreference_clusters in coreference_clusters
+        ]
+
+        avg_coreference_distances = [
+            coreference_distances.mean()
+            for coreference_distances in coreference_distances
+        ]
+
+        return array(
+            [
+                (
+                    strictly_less(avg_coreference_distance1, avg_coreference_distance2)
+                    if not isclose(
+                        avg_coreference_distance1,
+                        avg_coreference_distance2,
+                        rel_tol=self.margin_fraction,
+                    )
+                    else 0
+                )
+                for avg_coreference_distance1 in avg_coreference_distances
+                for avg_coreference_distance2 in avg_coreference_distances
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
+
+
+COH4: Final = lazy_inject(CoreferenceClusterClosenessCoherenceAxiom, injector)
+
+
+@inject
+@dataclass(frozen=True, kw_only=True)
+class ShortAnswerCoherenceAxiom(Axiom[Any, GenerationOutput]):
+    """
+    Prefer text that gives the answer earlier (i.e., the first phrase before the first punctuation or conjunction).
+    """
+
+    text_contents: TextContents[GenerationOutput]
+
+    language_name: NoInject[str] = "en_core_web_sm"
+    margin_fraction: float = 0.1
+
+    # TODO: Migrate to tool for dependency injection.
+    @cached_property
+    def _language(self) -> Language:
+        return spacy_load(
+            name=self.language_name,
+        )
+
+    def preference(
+        self,
+        input: Any,
+        output1: GenerationOutput,
+        output2: GenerationOutput,
+    ) -> Preference:
+        doc1 = self._language(self.text_contents.contents(output1))
+        doc2 = self._language(self.text_contents.contents(output2))
+
+        first_punct1 = next(
+            (
+                token.i
+                for token in doc1
+                if token.is_punct or token.pos_ in ("CCONJ", "SCONJ")
+            ),
+            len(doc1),
+        )
+        first_punct2 = next(
+            (
+                token.i
+                for token in doc2
+                if token.is_punct or token.text in {"and", "or"}
+            ),
+            len(doc2),
+        )
+
+        if isclose(
+            first_punct1,
+            first_punct2,
+            rel_tol=self.margin_fraction,
+        ):
+            return 0
+        return strictly_less(first_punct1, first_punct2)
+
+    def preferences(
+        self,
+        input: Any,
+        outputs: Sequence[GenerationOutput],
+    ) -> PreferenceMatrix:
+        docs = self._language.pipe(
+            self.text_contents.contents(output)
+            for output in tqdm(
+                outputs,
+                desc="Analyze text",
+                unit="output",
+            )
+        )
+
+        first_puncts = [
+            next(
+                (
+                    token.i
+                    for token in doc
+                    if token.is_punct or token.pos_ in ("CCONJ", "SCONJ")
+                ),
+                len(doc),
+            )
+            for doc in docs
+        ]
+
+        return array(
+            [
+                (
+                    strictly_less(first_punct1, first_punct2)
+                    if not isclose(
+                        first_punct1,
+                        first_punct2,
+                        rel_tol=self.margin_fraction,
+                    )
+                    else 0
+                )
+                for first_punct1 in first_puncts
+                for first_punct2 in first_puncts
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
+
+
+COH5: Final = lazy_inject(ShortAnswerCoherenceAxiom, injector)

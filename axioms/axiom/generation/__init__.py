@@ -24,6 +24,10 @@ from axioms.axiom.generation.coherence import (  # noqa: F401
     COH2,
     TenseSwitchingCoherenceAxiom,
     COH3,
+    CoreferenceClusterClosenessCoherenceAxiom,
+    COH4,
+    ShortAnswerCoherenceAxiom,
+    COH5,
 )
 
 from axioms.axiom.generation.consistency import (  # noqa: F401
