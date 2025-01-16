@@ -8,11 +8,15 @@ from axioms.tools.aspects.base import (  # noqa: F401
 
 from axioms.tools.aspects.keybert import (  # noqa: F401
     KeyBertAspectExtraction,
-    KeyLlmAspectExtraction,
 )
 
 from axioms.tools.aspects.spacy import (  # noqa: F401
     SpacyNounChunksAspectExtraction,
+)
+
+
+from axioms.tools.aspects.textacy import (  # noqa: F401
+    YakeAspectExtraction,
 )
 
 
