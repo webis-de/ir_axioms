@@ -23,8 +23,6 @@ from axioms.axiom.generation import (  # noqa: F401
     CLAR5,
     WordCommonnessClarityAxiom,
     CLAR6,
-    NormalizedWordCommonnessClarityAxiom,
-    CLAR7,
     AspectOverlapConsistenyAxiom,
     CONS1,
     AspectJaccardConsistencyAxiom,
