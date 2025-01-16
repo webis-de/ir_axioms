@@ -39,8 +39,12 @@ from axioms.axiom.generation.consistency import (  # noqa: F401
     CONS4,
 )
 
-# from axioms.axiom.generation.correctness import (  # noqa: F401
-# )
+from axioms.axiom.generation.correctness import (  # noqa: F401
+    UrlSentenceCorrectnessAxiom,
+    CORR1,
+    CitationSentenceCorrectnessAxiom,
+    CORR2,
+)
 
 from axioms.axiom.generation.coverage import (  # noqa: F401
     AspectOverlapCoverageAxiom,
