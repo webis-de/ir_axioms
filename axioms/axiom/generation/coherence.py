@@ -255,14 +255,14 @@ class TenseSwitchingCoherenceAxiom(Axiom[Any, GenerationOutput]):
             chain.from_iterable(
                 token.morph.get("Tense", [])
                 for token in self._language(self.text_contents.contents(output1))
-                if token.pos_ == "VERB"
+                if token.pos_ == "VERB" and token.morph.get("Tense", []) != []
             )
         )
         tenses2 = list(
             chain.from_iterable(
                 token.morph.get("Tense", [])
                 for token in self._language(self.text_contents.contents(output2))
-                if token.pos_ == "VERB"
+                if token.pos_ == "VERB" and token.morph.get("Tense", []) != []
             )
         )
 
@@ -291,7 +291,7 @@ class TenseSwitchingCoherenceAxiom(Axiom[Any, GenerationOutput]):
                 chain.from_iterable(
                     token.morph.get("Tense", [])
                     for token in self._language(self.text_contents.contents(output))
-                    if token.pos_ == "VERB"
+                    if token.pos_ == "VERB" and token.morph.get("Tense", []) != []
                 )
             )
             for output in tqdm(
