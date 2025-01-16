@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Sequence
+from typing import Sequence, Collection
 
 
 from numpy import array, float_, ndarray, dot
@@ -41,3 +41,24 @@ class SentenceTransformersSentenceSimilarity(SentenceSimilarity):
             ],
             dtype=float_,
         ).reshape((len(sentences), len(sentences)))
+
+    def average_similarity(
+        self, sentences1: Collection[str], sentences2: Collection[str]
+    ) -> float:
+        if len(sentences1) == 0 or len(sentences2) == 0:
+            return 0
+        vectors1 = self.model.encode(
+            sentences=list(sentences1),
+            convert_to_numpy=True,
+        )
+        vectors2 = self.model.encode(
+            sentences=list(sentences2),
+            convert_to_numpy=True,
+        )
+        return array(
+            [
+                _cosine_similarity(vector1, vector2)
+                for vector1 in vectors1
+                for vector2 in vectors2
+            ]
+        ).mean()
