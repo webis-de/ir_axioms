@@ -27,6 +27,7 @@ dependencies = [
     "diskcache~=5.6",  # TODO: Instead just use SQLite directly.
     "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl",
     "fasttext~=0.9.3",
+    "fastcoref~=2.1",
     "huggingface-hub~=0.27.1",
     "injector~=0.22.0",
     "ir-datasets~=0.5.9",  # TODO: Make this an optional dependency.
@@ -49,7 +50,6 @@ dependencies = [
     "sentence-transformers~=3.3",
     "spacy~=3.7",
     # "spacy-readability~=1.4",
-    "stanza~=1.10",
     "targer-api~=1.1",  # TODO: Make this an optional dependency.
     "textacy~=0.13.0",
     "tf-keras~=2.18",
