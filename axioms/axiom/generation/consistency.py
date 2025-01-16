@@ -119,6 +119,7 @@ class AspectOverlapConsistenyAxiom(Axiom[GenerationInput, GenerationOutput]):
             for aspects in tqdm(
                 aspects,
                 desc="Extract aspects",
+                total=len(outputs),
             )
         ]
 
@@ -211,6 +212,7 @@ class AspectJaccardConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
             for aspects in tqdm(
                 aspects,
                 desc="Extract aspects",
+                total=len(outputs),
             )
         ]
 
@@ -308,6 +310,7 @@ class AspectSimilarityConsistencyAxiom(Axiom[GenerationInput, GenerationOutput])
             for document_unique_aspects in tqdm(
                 aspects,
                 desc="Extract aspects",
+                total=len(outputs),
             )
         ]
 

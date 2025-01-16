@@ -101,6 +101,7 @@ class AspectOverlapCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
             for aspects in tqdm(
                 aspects,
                 desc="Extract aspects",
+                total=len(outputs),
             )
         ]
 
@@ -185,6 +186,7 @@ class AspectJaccardCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
             for aspects in tqdm(
                 aspects,
                 desc="Extract aspects",
+                total=len(outputs),
             )
         ]
 
@@ -272,6 +274,7 @@ class AspectSimilarityCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
             for aspects in tqdm(
                 aspects,
                 desc="Extract aspects",
+                total=len(outputs),
             )
         ]
 
@@ -344,6 +347,7 @@ class AspectCountCoverageAxiom(Axiom[Any, GenerationOutput]):
             for aspects in tqdm(
                 aspects,
                 desc="Extract aspects",
+                total=len(outputs),
             )
         ]
 
@@ -420,6 +424,7 @@ class AspectRedundancyCoverageAxiom(Axiom[Any, GenerationOutput]):
             for aspects in tqdm(
                 aspects,
                 desc="Extract aspects",
+                total=len(outputs),
             )
         )
         aggregate_similarities = [similarities.mean() for similarities in similarities]
