@@ -59,20 +59,20 @@ class AspectOverlapCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
         output1: GenerationOutput,
         output2: GenerationOutput,
     ) -> Preference:
-        input_unique_aspects = self.aspect_extraction.unique_aspects(
+        input_aspects = self.aspect_extraction.aspects(
             self.text_contents.contents(input)
         )
-        if len(input_unique_aspects) == 0:
+        if len(input_aspects) == 0:
             return 0
-        output1_unique_aspects = self.aspect_extraction.unique_aspects(
+        aspects1 = self.aspect_extraction.aspects(
             self.text_contents.contents(output1)
         )
-        output2_unique_aspects = self.aspect_extraction.unique_aspects(
+        aspects2 = self.aspect_extraction.aspects(
             self.text_contents.contents(output2)
         )
 
-        coverage1 = _coverage(input_unique_aspects, output1_unique_aspects)
-        coverage2 = _coverage(input_unique_aspects, output2_unique_aspects)
+        coverage1 = _coverage(input_aspects, aspects1)
+        coverage2 = _coverage(input_aspects, aspects2)
 
         if isclose(
             coverage1,
@@ -87,22 +87,21 @@ class AspectOverlapCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
         input: GenerationInput,
         outputs: Sequence[GenerationOutput],
     ) -> PreferenceMatrix:
-        input_unique_aspects = self.aspect_extraction.unique_aspects(
+        input_aspects = self.aspect_extraction.aspects(
             self.text_contents.contents(input)
         )
-        if len(input_unique_aspects) == 0:
+        if len(input_aspects) == 0:
             return zeros((len(outputs), len(outputs)))
-        output_unique_aspects = (
-            self.aspect_extraction.unique_aspects(self.text_contents.contents(output))
-            for output in tqdm(
-                outputs,
-                desc="Extract aspects",
-            )
-        )
+
+        contents = (self.text_contents.contents(output) for output in outputs)
+        aspects = self.aspect_extraction.iter_aspects(contents)
 
         coverage = [
-            _coverage(input_unique_aspects, aspects)
-            for aspects in output_unique_aspects
+            _coverage(input_aspects, aspects)
+            for aspects in tqdm(
+                aspects,
+                desc="Extract aspects",
+            )
         ]
 
         return array(
@@ -144,20 +143,20 @@ class AspectJaccardCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
         output1: GenerationOutput,
         output2: GenerationOutput,
     ) -> Preference:
-        input_unique_aspects = self.aspect_extraction.unique_aspects(
+        input_aspects = self.aspect_extraction.aspects(
             self.text_contents.contents(input)
         )
-        if len(input_unique_aspects) == 0:
+        if len(input_aspects) == 0:
             return 0
-        output1_unique_aspects = self.aspect_extraction.unique_aspects(
+        aspects2 = self.aspect_extraction.aspects(
             self.text_contents.contents(output1)
         )
-        output2_unique_aspects = self.aspect_extraction.unique_aspects(
+        aspects2 = self.aspect_extraction.aspects(
             self.text_contents.contents(output2)
         )
 
-        jaccard1 = _jaccard(input_unique_aspects, output1_unique_aspects)
-        jaccard2 = _jaccard(input_unique_aspects, output2_unique_aspects)
+        jaccard1 = _jaccard(input_aspects, aspects2)
+        jaccard2 = _jaccard(input_aspects, aspects2)
 
         if isclose(
             jaccard1,
@@ -172,21 +171,21 @@ class AspectJaccardCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
         input: GenerationInput,
         outputs: Sequence[GenerationOutput],
     ) -> PreferenceMatrix:
-        input_unique_aspects = self.aspect_extraction.unique_aspects(
+        input_aspects = self.aspect_extraction.aspects(
             self.text_contents.contents(input)
         )
-        if len(input_unique_aspects) == 0:
+        if len(input_aspects) == 0:
             return zeros((len(outputs), len(outputs)))
-        output_unique_aspects = (
-            self.aspect_extraction.unique_aspects(self.text_contents.contents(output))
-            for output in tqdm(
-                outputs,
-                desc="Extract aspects",
-            )
-        )
+
+        contents = (self.text_contents.contents(output) for output in outputs)
+        aspects = self.aspect_extraction.iter_aspects(contents)
 
         jaccard = [
-            _jaccard(input_unique_aspects, aspects) for aspects in output_unique_aspects
+            _jaccard(input_aspects, aspects)
+            for aspects in tqdm(
+                aspects,
+                desc="Extract aspects",
+            )
         ]
 
         return array(
@@ -231,22 +230,22 @@ class AspectSimilarityCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
         output1: GenerationOutput,
         output2: GenerationOutput,
     ) -> Preference:
-        input_unique_aspects = self.aspect_extraction.unique_aspects(
+        input_aspects = self.aspect_extraction.aspects(
             self.text_contents.contents(input)
         )
 
-        document1_unique_aspects = self.aspect_extraction.unique_aspects(
+        aspects1 = self.aspect_extraction.aspects(
             self.text_contents.contents(output1),
         )
-        document2_unique_aspects = self.aspect_extraction.unique_aspects(
+        aspects2 = self.aspect_extraction.aspects(
             self.text_contents.contents(output2),
         )
 
         similarity1 = self.sentence_similarity.average_similarity(
-            document1_unique_aspects, input_unique_aspects
+            aspects1, input_aspects
         )
         similarity2 = self.sentence_similarity.average_similarity(
-            document2_unique_aspects, input_unique_aspects
+            aspects2, input_aspects
         )
         if isclose(
             similarity1,
@@ -261,21 +260,19 @@ class AspectSimilarityCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
         input: GenerationInput,
         outputs: Sequence[GenerationOutput],
     ) -> PreferenceMatrix:
-        input_unique_aspects = self.aspect_extraction.unique_aspects(
+        input_aspects = self.aspect_extraction.aspects(
             self.text_contents.contents(input)
         )
 
-        document_unique_aspects = (
-            self.aspect_extraction.unique_aspects(self.text_contents.contents(output))
-            for output in tqdm(
-                outputs,
+        contents = (self.text_contents.contents(output) for output in outputs)
+        aspects = self.aspect_extraction.iter_aspects(contents)
+
+        similarities = [
+            self.sentence_similarity.average_similarity(aspects, input_aspects)
+            for aspects in tqdm(
+                aspects,
                 desc="Extract aspects",
             )
-        )
-
-        similarity = [
-            self.sentence_similarity.average_similarity(aspects, input_unique_aspects)
-            for aspects in document_unique_aspects
         ]
 
         return array(
@@ -289,8 +286,8 @@ class AspectSimilarityCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
                     )
                     else 0
                 )
-                for similarity1 in similarity
-                for similarity2 in similarity
+                for similarity1 in similarities
+                for similarity2 in similarities
             ],
             dtype=float_,
         ).reshape((len(outputs), len(outputs)))
@@ -317,15 +314,15 @@ class AspectCountCoverageAxiom(Axiom[Any, GenerationOutput]):
         output1: GenerationOutput,
         output2: GenerationOutput,
     ) -> Preference:
-        document1_unique_aspects = self.aspect_extraction.unique_aspects(
+        aspects1 = self.aspect_extraction.aspects(
             self.text_contents.contents(output1),
         )
-        document2_unique_aspects = self.aspect_extraction.unique_aspects(
+        aspects2 = self.aspect_extraction.aspects(
             self.text_contents.contents(output2),
         )
 
-        count1 = len(document1_unique_aspects)
-        count2 = len(document2_unique_aspects)
+        count1 = len(aspects1)
+        count2 = len(aspects2)
         if isclose(
             count1,
             count2,
@@ -339,15 +336,16 @@ class AspectCountCoverageAxiom(Axiom[Any, GenerationOutput]):
         input: Any,
         outputs: Sequence[GenerationOutput],
     ) -> PreferenceMatrix:
-        document_unique_aspects = (
-            self.aspect_extraction.unique_aspects(self.text_contents.contents(output))
-            for output in tqdm(
-                outputs,
+        contents = (self.text_contents.contents(output) for output in outputs)
+        aspects = self.aspect_extraction.iter_aspects(contents)
+
+        counts = [
+            len(aspects)
+            for aspects in tqdm(
+                aspects,
                 desc="Extract aspects",
             )
-        )
-
-        counts = [len(aspects) for aspects in document_unique_aspects]
+        ]
 
         return array(
             [
@@ -389,15 +387,15 @@ class AspectRedundancyCoverageAxiom(Axiom[Any, GenerationOutput]):
         output1: GenerationOutput,
         output2: GenerationOutput,
     ) -> Preference:
-        document1_aspects = self.aspect_extraction.aspects(
+        aspects1 = self.aspect_extraction.aspects(
             self.text_contents.contents(output1),
         )
-        document2_aspects = self.aspect_extraction.aspects(
+        aspects2 = self.aspect_extraction.aspects(
             self.text_contents.contents(output2),
         )
 
-        similarities1 = self.sentence_similarity.similarities(document1_aspects)
-        similarities2 = self.sentence_similarity.similarities(document2_aspects)
+        similarities1 = self.sentence_similarity.similarities(list(aspects1))
+        similarities2 = self.sentence_similarity.similarities(list(aspects2))
 
         # TODO: Make aggregation configurable.
         aggregate_similarity1 = similarities1.mean()
@@ -415,16 +413,14 @@ class AspectRedundancyCoverageAxiom(Axiom[Any, GenerationOutput]):
         input: Any,
         outputs: Sequence[GenerationOutput],
     ) -> PreferenceMatrix:
-        document_aspects = (
-            self.aspect_extraction.aspects(self.text_contents.contents(output))
-            for output in tqdm(
-                outputs,
+        contents = (self.text_contents.contents(output) for output in outputs)
+        aspects = self.aspect_extraction.iter_aspects(contents)
+        similarities = (
+            self.sentence_similarity.similarities(list(aspects))
+            for aspects in tqdm(
+                aspects,
                 desc="Extract aspects",
             )
-        )
-        similarities = (
-            self.sentence_similarity.similarities(aspects)
-            for aspects in document_aspects
         )
         aggregate_similarities = [similarities.mean() for similarities in similarities]
         return array(

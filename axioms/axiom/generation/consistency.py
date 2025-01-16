@@ -71,22 +71,22 @@ class AspectOverlapConsistenyAxiom(Axiom[GenerationInput, GenerationOutput]):
     ) -> Preference:
         if input.context is None:
             return 0
-        context_unique_aspects = {
+        context_aspects = {
             aspect
             for context in input.context
-            for aspect in self.aspect_extraction.unique_aspects(context)
+            for aspect in self.aspect_extraction.aspects(context)
         }
-        if len(context_unique_aspects) == 0:
+        if len(context_aspects) == 0:
             return 0
-        output1_unique_aspects = self.aspect_extraction.unique_aspects(
+        aspects1 = self.aspect_extraction.aspects(
             self.text_contents.contents(output1)
         )
-        output2_unique_aspects = self.aspect_extraction.unique_aspects(
+        aspects2 = self.aspect_extraction.aspects(
             self.text_contents.contents(output2)
         )
 
-        coverage1 = _coverage(context_unique_aspects, output1_unique_aspects)
-        coverage2 = _coverage(context_unique_aspects, output2_unique_aspects)
+        coverage1 = _coverage(context_aspects, aspects1)
+        coverage2 = _coverage(context_aspects, aspects2)
 
         if isclose(
             coverage1,
@@ -103,24 +103,23 @@ class AspectOverlapConsistenyAxiom(Axiom[GenerationInput, GenerationOutput]):
     ) -> PreferenceMatrix:
         if input.context is None:
             return zeros((len(outputs), len(outputs)))
-        context_unique_aspects = {
+        context_aspects = {
             aspect
             for context in input.context
-            for aspect in self.aspect_extraction.unique_aspects(context)
+            for aspect in self.aspect_extraction.aspects(context)
         }
-        if len(context_unique_aspects) == 0:
+        if len(context_aspects) == 0:
             return zeros((len(outputs), len(outputs)))
-        output_unique_aspects = (
-            self.aspect_extraction.unique_aspects(self.text_contents.contents(output))
-            for output in tqdm(
-                outputs,
-                desc="Extract aspects",
-            )
-        )
+
+        output_contents = (self.text_contents.contents(output) for output in outputs)
+        aspects = self.aspect_extraction.iter_aspects(output_contents)
 
         coverage = [
-            _coverage(context_unique_aspects, aspects)
-            for aspects in output_unique_aspects
+            _coverage(context_aspects, aspects)
+            for aspects in tqdm(
+                aspects,
+                desc="Extract aspects",
+            )
         ]
 
         return array(
@@ -164,23 +163,22 @@ class AspectJaccardConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
     ) -> Preference:
         if input.context is None:
             return 0
-        context_unique_aspects = {
+        context_aspects = {
             aspect
             for context in input.context
-            for aspect in self.aspect_extraction.unique_aspects(context)
+            for aspect in self.aspect_extraction.aspects(context)
         }
-        if len(context_unique_aspects) == 0:
+        if len(context_aspects) == 0:
             return 0
-        # FIXME: Penalize by the number of repeated aspects in the output.
-        output1_unique_aspects = self.aspect_extraction.unique_aspects(
+        aspects1 = self.aspect_extraction.aspects(
             self.text_contents.contents(output1)
         )
-        output2_unique_aspects = self.aspect_extraction.unique_aspects(
+        aspects2 = self.aspect_extraction.aspects(
             self.text_contents.contents(output2)
         )
 
-        jaccard1 = _jaccard(context_unique_aspects, output1_unique_aspects)
-        jaccard2 = _jaccard(context_unique_aspects, output2_unique_aspects)
+        jaccard1 = _jaccard(context_aspects, aspects1)
+        jaccard2 = _jaccard(context_aspects, aspects2)
 
         if isclose(
             jaccard1,
@@ -197,24 +195,23 @@ class AspectJaccardConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
     ) -> PreferenceMatrix:
         if input.context is None:
             return zeros((len(outputs), len(outputs)))
-        context_unique_aspects = {
+        context_aspects = {
             aspect
             for context in input.context
-            for aspect in self.aspect_extraction.unique_aspects(context)
+            for aspect in self.aspect_extraction.aspects(context)
         }
-        if len(context_unique_aspects) == 0:
+        if len(context_aspects) == 0:
             return zeros((len(outputs), len(outputs)))
-        output_unique_aspects = (
-            self.aspect_extraction.unique_aspects(self.text_contents.contents(output))
-            for output in tqdm(
-                outputs,
-                desc="Extract aspects",
-            )
-        )
+
+        contents = (self.text_contents.contents(output) for output in outputs)
+        aspects = self.aspect_extraction.iter_aspects(contents)
 
         jaccard = [
-            _jaccard(context_unique_aspects, aspects)
-            for aspects in output_unique_aspects
+            _jaccard(context_aspects, aspects)
+            for aspects in tqdm(
+                aspects,
+                desc="Extract aspects",
+            )
         ]
 
         return array(
@@ -234,8 +231,6 @@ class AspectJaccardConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
             dtype=float_,
         ).reshape((len(outputs), len(outputs)))
 
-
-# TODO: Less harsh penalization for the number of aspects in the output.
 
 CONS2: Final = lazy_inject(AspectJaccardConsistencyAxiom, injector)
 
@@ -263,24 +258,24 @@ class AspectSimilarityConsistencyAxiom(Axiom[GenerationInput, GenerationOutput])
     ) -> Preference:
         if input.context is None:
             return 0
-        context_unique_aspects = {
+        context_aspects = {
             aspect
             for context in input.context
-            for aspect in self.aspect_extraction.unique_aspects(context)
+            for aspect in self.aspect_extraction.aspects(context)
         }
 
-        document1_unique_aspects = self.aspect_extraction.unique_aspects(
+        aspects1 = self.aspect_extraction.aspects(
             self.text_contents.contents(output1),
         )
-        document2_unique_aspects = self.aspect_extraction.unique_aspects(
+        aspects2 = self.aspect_extraction.aspects(
             self.text_contents.contents(output2),
         )
 
         similarity1 = self.sentence_similarity.average_similarity(
-            document1_unique_aspects, context_unique_aspects
+            aspects1, context_aspects
         )
         similarity2 = self.sentence_similarity.average_similarity(
-            document2_unique_aspects, context_unique_aspects
+            aspects2, context_aspects
         )
         if isclose(
             similarity1,
@@ -297,25 +292,23 @@ class AspectSimilarityConsistencyAxiom(Axiom[GenerationInput, GenerationOutput])
     ) -> PreferenceMatrix:
         if input.context is None:
             return zeros((len(outputs), len(outputs)))
-        context_unique_aspects = {
+        context_aspects = {
             aspect
             for context in input.context
-            for aspect in self.aspect_extraction.unique_aspects(context)
+            for aspect in self.aspect_extraction.aspects(context)
         }
 
-        document_unique_aspects = (
-            self.aspect_extraction.unique_aspects(self.text_contents.contents(output))
-            for output in tqdm(
-                outputs,
-                desc="Extract aspects",
-            )
-        )
+        contents = (self.text_contents.contents(output) for output in outputs)
+        aspects = self.aspect_extraction.iter_aspects(contents)
 
         similarity = [
             self.sentence_similarity.average_similarity(
-                document_unique_aspects, context_unique_aspects
+                document_unique_aspects, context_aspects
             )
-            for document_unique_aspects in document_unique_aspects
+            for document_unique_aspects in tqdm(
+                aspects,
+                desc="Extract aspects",
+            )
         ]
 
         return array(
