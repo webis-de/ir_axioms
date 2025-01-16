@@ -3,8 +3,7 @@
 # - [x] aspect-based overlap
 # - [x] aspect-based similarity
 # Internal consistency:
-# - [ ] self-contradictions
-# TODO: Propose axioms for consistency.
+# - [x] self-contradictions
 
 from dataclasses import dataclass
 from functools import cached_property
@@ -62,7 +61,7 @@ class AspectOverlapConsistenyAxiom(Axiom[GenerationInput, GenerationOutput]):
     text_contents: TextContents[Union[GenerationInput, GenerationOutput]]
     aspect_extraction: AspectExtraction
 
-    margin_fraction: float = 0.1
+    margin_fraction: NoInject[float] = 0.1
 
     def preference(
         self,
@@ -155,7 +154,7 @@ class AspectJaccardConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
     text_contents: TextContents[Union[GenerationInput, GenerationOutput]]
     aspect_extraction: AspectExtraction
 
-    margin_fraction: float = 0.1
+    margin_fraction: NoInject[float] = 0.1
 
     def preference(
         self,
@@ -238,7 +237,7 @@ class AspectJaccardConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
 
 # TODO: Less harsh penalization for the number of aspects in the output.
 
-CONS2: Final = lazy_inject(AspectOverlapConsistenyAxiom, injector)
+CONS2: Final = lazy_inject(AspectJaccardConsistencyAxiom, injector)
 
 
 @inject
@@ -254,7 +253,7 @@ class AspectSimilarityConsistencyAxiom(Axiom[GenerationInput, GenerationOutput])
     aspect_extraction: AspectExtraction
     sentence_similarity: SentenceSimilarity
 
-    margin_fraction: float = 0.5
+    margin_fraction: NoInject[float] = 0.5
 
     def preference(
         self,
@@ -350,7 +349,7 @@ class EntityContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
     text_contents: TextContents[GenerationOutput]
 
     language_name: NoInject[str] = "en_core_web_sm"
-    margin_fraction: float = 0.2
+    margin_fraction: NoInject[float] = 0.2
 
     # TODO: Migrate to tool injected by DI.
     @cached_property
@@ -387,15 +386,18 @@ class EntityContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
         )
         return language
 
-    def _count_contradictions(self, text: str) -> int:
+    def _contradictions_ratio(self, text: str) -> float:
         document = self._language(text)
         entity_negated_pairs: set[tuple[str, bool]] = {
             (entity.text, entity._.negex)
             for entity in document.ents
             if entity._.negex is not None
         }
-        entities = {entity for entity, _ in entity_negated_pairs}
-        return len(entity_negated_pairs) - len(entities)
+        num_contradictions = len(entity_negated_pairs) - len(
+            {entity for entity, _ in entity_negated_pairs}
+        )
+        num_entities = sum(1 for _ in document.ents)
+        return num_contradictions / num_entities if num_entities != 0 else nan
 
     def preference(
         self,
@@ -405,8 +407,8 @@ class EntityContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
     ) -> Preference:
         contents1 = self.text_contents.contents(output1)
         contents2 = self.text_contents.contents(output2)
-        contradictions1 = self._count_contradictions(contents1)
-        contradictions2 = self._count_contradictions(contents2)
+        contradictions1 = self._contradictions_ratio(contents1)
+        contradictions2 = self._contradictions_ratio(contents2)
         if isclose(
             contradictions1,
             contradictions2,
@@ -428,7 +430,7 @@ class EntityContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
                 unit="output",
             )
         )
-        contradictions = [self._count_contradictions(content) for content in contents]
+        contradictions = [self._contradictions_ratio(content) for content in contents]
         return array(
             [
                 (

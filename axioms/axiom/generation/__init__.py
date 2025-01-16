@@ -33,7 +33,7 @@ from axioms.axiom.generation.coherence import (  # noqa: F401
 from axioms.axiom.generation.consistency import (  # noqa: F401
     AspectOverlapConsistenyAxiom,
     CONS1,
-    PenalizedAspectOverlapConsistencyAxiom,
+    AspectJaccardConsistencyAxiom,
     CONS2,
     AspectSimilarityConsistencyAxiom,
     CONS3,

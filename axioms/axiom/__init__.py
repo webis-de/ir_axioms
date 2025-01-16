@@ -27,7 +27,7 @@ from axioms.axiom.generation import (  # noqa: F401
     CLAR7,
     AspectOverlapConsistenyAxiom,
     CONS1,
-    PenalizedAspectOverlapConsistencyAxiom,
+    AspectJaccardConsistencyAxiom,
     CONS2,
     AspectSimilarityConsistencyAxiom,
     CONS3,
