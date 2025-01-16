@@ -19,7 +19,10 @@ class SpacyTermTokenizer(TermTokenizer):
 
     @cached_property
     def _language(self) -> Language:
-        return spacy_load(name=self.language_name)
+        return spacy_load(
+            name=self.language_name,
+            # exclude=["parser", "ner"] + (["lemmatizer"] if not self.lemmatize else []),
+        )
 
     def terms(self, text: str) -> Sequence[str]:
         document = self._language(text)
@@ -47,7 +50,11 @@ class SpacySentenceTokenizer(SentenceTokenizer):
 
     @cached_property
     def _language(self) -> Language:
-        return spacy_load(name=self.language_name)
+        return spacy_load(
+            name=self.language_name,
+            # exclude=["parser", "ner", "lemmatizer"],
+            # enable=["sentencizer"],
+        )
 
     def sentences(self, text: str) -> Sequence[str]:
         document = self._language(text)
