@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from math import isclose, nan
 from typing import Final, Union, Sequence, Any, AbstractSet
 
-from injector import inject
+from injector import inject, NoInject
 from numpy import array, float_, zeros
 from tqdm.auto import tqdm
 
@@ -51,7 +51,7 @@ class AspectOverlapCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
     text_contents: TextContents[Union[GenerationInput, GenerationOutput]]
     aspect_extraction: AspectExtraction
 
-    margin_fraction: float = 0.1
+    margin_fraction: NoInject[float] = 0.1
 
     def preference(
         self,
@@ -136,7 +136,7 @@ class AspectJaccardCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
     text_contents: TextContents[Union[GenerationInput, GenerationOutput]]
     aspect_extraction: AspectExtraction
 
-    margin_fraction: float = 0.1
+    margin_fraction: NoInject[float] = 0.1
 
     def preference(
         self,
@@ -207,7 +207,7 @@ class AspectJaccardCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
         ).reshape((len(outputs), len(outputs)))
 
 
-COV2: Final = lazy_inject(AspectOverlapCoverageAxiom, injector)
+COV2: Final = lazy_inject(AspectJaccardCoverageAxiom, injector)
 
 
 @inject
@@ -223,7 +223,7 @@ class AspectSimilarityCoverageAxiom(Axiom[GenerationInput, GenerationOutput]):
     aspect_extraction: AspectExtraction
     sentence_similarity: SentenceSimilarity
 
-    margin_fraction: float = 0.5
+    margin_fraction: NoInject[float] = 0.5
 
     def preference(
         self,
@@ -309,7 +309,7 @@ class AspectCountCoverageAxiom(Axiom[Any, GenerationOutput]):
     text_contents: TextContents[GenerationOutput]
     aspect_extraction: AspectExtraction
 
-    margin_fraction: float = 0.0
+    margin_fraction: NoInject[float] = 0.0
 
     def preference(
         self,
@@ -381,7 +381,7 @@ class AspectRedundancyCoverageAxiom(Axiom[Any, GenerationOutput]):
     aspect_extraction: AspectExtraction
     sentence_similarity: SentenceSimilarity
 
-    margin_fraction: float = 0.2
+    margin_fraction: NoInject[float] = 0.2
 
     def preference(
         self,
