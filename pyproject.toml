@@ -23,6 +23,7 @@ classifiers = [
 ]
 dependencies = [
     "annotated-types~=0.7.0",
+    "cached-property~=2.0",
     "cyclopts~=3.0",
     "diskcache~=5.6",  # TODO: Instead just use SQLite directly.
     "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl",
@@ -77,6 +78,8 @@ experiments =[
     "ray[default,data]~=2.40.0",
     "rouge-score~=0.1.2",
     "seaborn~=0.13.2",
+    "transformers~=4.48",
+    "typing-extensions~=4.12",
     "xgboost~=2.1",
 ]
 pyserini =[

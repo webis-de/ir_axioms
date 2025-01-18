@@ -1,0 +1,18 @@
+working_dir: "."
+excludes:
+  - data/cache/
+  - data/runs/
+  - data/crowd/ratings.jsonl
+  - data/crowd/ratings.jsonl.gz
+  - data/crowd/responses.jsonl
+  - data/crowd/responses.jsonl.gz
+  - ".*/"
+  - "__.*cache__/"
+pip:
+  - cached-property~=2.0
+  - cyclopts~=3.0
+  - pandas~=2.0
+  - python-dotenv~=1.0
+  - tqdm~=4.0
+  - transformers~=4.48
+  - typing-extensions~=4.12
