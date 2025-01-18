@@ -13,9 +13,15 @@ from axioms.axiom.utils import strictly_greater
 
 TrecRagCrowdUtilityType: TypeAlias = Literal[
     "overall",
+    "logical coherence",
+    "stylistic coherence",
     "coherence",
+    "internal consistency",
     "consistency",
+    "topical correctness",
     "correctness",
+    "broad coverage",
+    "deep coverage",
     "coverage",
 ]
 
@@ -45,19 +51,27 @@ class TrecRagCrowdAxiom(Axiom[GenerationInput, GenerationOutput]):
         if self.utility_type == "overall":
             df["quality_p_a"] = df["quality_overall_p_a"]
             df["quality_p_b"] = df["quality_overall_p_b"]
+        elif self.utility_type == "logical coherence":
+            df["quality_p_a"] = df["coherence_logical_p_a"]
+            df["quality_p_b"] = df["coherence_logical_p_b"]
+        elif self.utility_type == "stylistic coherence":
+            df["quality_p_a"] = df["coherence_stylistic_p_a"]
+            df["quality_p_b"] = df["coherence_stylistic_p_b"]
         elif self.utility_type == "coherence":
-            df["quality_p_a"] = (
-                df["coherence_logical_p_a"] + df["coherence_stylistic_p_a"]
-            ) / 2
-            df["quality_p_b"] = (
-                df["coherence_logical_p_b"] + df["coherence_stylistic_p_b"]
-            ) / 2
-        elif self.utility_type == "consistency":
+            df["quality_p_a"] = (df["coherence_stylistic_p_a"] + df["coherence_logical_p_a"]) / 2
+            df["quality_p_b"] = (df["coherence_stylistic_p_b"] + df["coherence_logical_p_b"]) / 2
+        elif self.utility_type == "internal consistency" or self.utility_type == "consistency":
             df["quality_p_a"] = df["consistency_internal_p_a"]
             df["quality_p_b"] = df["consistency_internal_p_b"]
-        elif self.utility_type == "correctness":
+        elif self.utility_type == "topical correctness" or self.utility_type == "correctness":
             df["quality_p_a"] = df["correctness_topical_p_a"]
             df["quality_p_b"] = df["correctness_topical_p_b"]
+        elif self.utility_type == "broad coverage":
+            df["quality_p_a"] = df["coverage_broad_p_a"]
+            df["quality_p_b"] = df["coverage_broad_p_b"]
+        elif self.utility_type == "deep coverage":
+            df["quality_p_a"] = df["coverage_deep_p_a"]
+            df["quality_p_b"] = df["coverage_deep_p_b"]
         elif self.utility_type == "coverage":
             df["quality_p_a"] = (df["coverage_broad_p_a"] + df["coverage_deep_p_a"]) / 2
             df["quality_p_b"] = (df["coverage_broad_p_b"] + df["coverage_deep_p_b"]) / 2
