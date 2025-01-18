@@ -1,6 +1,7 @@
 # Coherence: statement arrangement to form a narrative without contradictions
 # Logical coherence:
 # - [ ] well-structuredness (e.g., answer first, explanation later; implementation: maybe match "because" or dependency tree)
+# - [ ] avoid topic switching
 # Stylistic coherence:
 # - [x] uniform style of speech
 
@@ -10,13 +11,15 @@ from functools import cached_property
 from math import isclose, nan
 from typing import Final, Sequence, Any, TYPE_CHECKING
 
-from fastcoref import spacy_component
+from fastcoref.spacy_component import FastCorefResolver
 from injector import inject, NoInject
 from more_itertools import pairwise
 from numpy import array, float_
 from spacy import load as spacy_load
 from spacy.language import Language
+from spacy.tokens import Doc, Token
 from tqdm.auto import tqdm
+from textacy.extract.triples import subject_verb_object_triples
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.utils import strictly_less
@@ -337,18 +340,21 @@ class CoreferenceClusterClosenessCoherenceAxiom(Axiom[Any, GenerationOutput]):
     text_contents: TextContents[GenerationOutput]
 
     language_name: NoInject[str] = "en_core_web_sm"
-    margin_fraction: float = 0.1
+    margin_fraction: NoInject[float] = 0.1
 
     # TODO: Migrate to tool for dependency injection.
     @cached_property
     def _language(self) -> Language:
         if TYPE_CHECKING:
-            spacy_component  # To ignore the unused import warning.
+            FastCorefResolver  # To ignore the unused import warning.
         language = spacy_load(
             name=self.language_name,
             exclude=["parser", "lemmatizer", "ner", "textcat"],
         )
-        language.add_pipe("fastcoref")
+        language.add_pipe(
+            "fastcoref",
+            config={"enable_progress_bar": False},
+        )
         return language
 
     def preference(
@@ -366,23 +372,17 @@ class CoreferenceClusterClosenessCoherenceAxiom(Axiom[Any, GenerationOutput]):
 
         coreference_distances1 = array(
             [
-                (
-                    cluster[-1][1] - cluster[0][0]
-                    if len(coreference_clusters1) > 0
-                    else nan
-                )
+                (cluster[-1][1] - cluster[0][0] if len(cluster) > 0 else nan)
                 for cluster in coreference_clusters1
-            ]
+            ],
+            dtype=float_,
         )
         coreference_distances2 = array(
             [
-                (
-                    cluster[-1][1] - cluster[0][0]
-                    if len(coreference_clusters2) > 0
-                    else nan
-                )
+                (cluster[-1][1] - cluster[0][0] if len(cluster) > 0 else nan)
                 for cluster in coreference_clusters2
-            ]
+            ],
+            dtype=float_,
         )
 
         avg_coreference_distance1 = coreference_distances1.mean()
@@ -415,13 +415,10 @@ class CoreferenceClusterClosenessCoherenceAxiom(Axiom[Any, GenerationOutput]):
         coreference_distances = [
             array(
                 [
-                    (
-                        cluster[-1][1] - cluster[0][0]
-                        if len(coreference_clusters) > 0
-                        else nan
-                    )
-                ]
-                for cluster in coreference_clusters
+                    (cluster[-1][1] - cluster[0][0] if len(cluster) > 0 else nan)
+                    for cluster in coreference_clusters
+                ],
+                dtype=float_,
             )
             for coreference_clusters in coreference_clusters
         ]
@@ -452,17 +449,47 @@ class CoreferenceClusterClosenessCoherenceAxiom(Axiom[Any, GenerationOutput]):
 COH4: Final = lazy_inject(CoreferenceClusterClosenessCoherenceAxiom, injector)
 
 
+def _direct_answer_length(doc: Doc) -> int:
+    last_token: Token | None = None
+    for token in doc:
+        if (
+            token.is_punct
+            and last_token is not None
+            and last_token.lemma_.lower()
+            in (
+                "yes",
+                "no",
+                "yeah",
+                "nope",
+                "yep",
+                "nah",
+                "yup",
+                "true",
+                "false",
+                "correct",
+                "incorrect",
+                "right",
+                "wrong",
+            )
+        ):
+            return token.i + 1
+        if token.pos_ in ("CCONJ", "SCONJ"):
+            return token.i + 1
+        last_token = token
+    return len(doc)
+
+
 @inject
 @dataclass(frozen=True, kw_only=True)
-class ShortAnswerCoherenceAxiom(Axiom[Any, GenerationOutput]):
+class DirectAnswerLengthCoherenceAxiom(Axiom[Any, GenerationOutput]):
     """
-    Prefer text that gives the answer earlier (i.e., the first phrase before the first punctuation or conjunction).
+    Prefer text that gives a shorter "direct" answer (e.g. a "yes" or "no"  before a punctuation  or anything before the first conjunction).
     """
 
     text_contents: TextContents[GenerationOutput]
 
     language_name: NoInject[str] = "en_core_web_sm"
-    margin_fraction: float = 0.1
+    margin_fraction: NoInject[float] = 0.1
 
     # TODO: Migrate to tool for dependency injection.
     @cached_property
@@ -480,30 +507,16 @@ class ShortAnswerCoherenceAxiom(Axiom[Any, GenerationOutput]):
         doc1 = self._language(self.text_contents.contents(output1))
         doc2 = self._language(self.text_contents.contents(output2))
 
-        first_punct1 = next(
-            (
-                token.i
-                for token in doc1
-                if token.is_punct or token.pos_ in ("CCONJ", "SCONJ")
-            ),
-            len(doc1),
-        )
-        first_punct2 = next(
-            (
-                token.i
-                for token in doc2
-                if token.is_punct or token.text in {"and", "or"}
-            ),
-            len(doc2),
-        )
+        direct_answer_length1 = _direct_answer_length(doc1)
+        direct_answer_length2 = _direct_answer_length(doc2)
 
         if isclose(
-            first_punct1,
-            first_punct2,
+            direct_answer_length1,
+            direct_answer_length2,
             rel_tol=self.margin_fraction,
         ):
             return 0
-        return strictly_less(first_punct1, first_punct2)
+        return strictly_less(direct_answer_length1, direct_answer_length2)
 
     def preferences(
         self,
@@ -511,24 +524,17 @@ class ShortAnswerCoherenceAxiom(Axiom[Any, GenerationOutput]):
         outputs: Sequence[GenerationOutput],
     ) -> PreferenceMatrix:
         docs = self._language.pipe(
-            self.text_contents.contents(output)
-            for output in tqdm(
-                outputs,
-                desc="Analyze text",
-                unit="output",
-            )
+            self.text_contents.contents(output) for output in outputs
         )
 
-        first_puncts = [
-            next(
-                (
-                    token.i
-                    for token in doc
-                    if token.is_punct or token.pos_ in ("CCONJ", "SCONJ")
-                ),
-                len(doc),
+        direct_answer_lengths = [
+            _direct_answer_length(doc)
+            for doc in tqdm(
+                docs,
+                total=len(outputs),
+                desc="Measure short answer lengths",
+                unit="output",
             )
-            for doc in docs
         ]
 
         return array(
@@ -542,11 +548,132 @@ class ShortAnswerCoherenceAxiom(Axiom[Any, GenerationOutput]):
                     )
                     else 0
                 )
-                for first_punct1 in first_puncts
-                for first_punct2 in first_puncts
+                for first_punct1 in direct_answer_lengths
+                for first_punct2 in direct_answer_lengths
             ],
             dtype=float_,
         ).reshape((len(outputs), len(outputs)))
 
 
-COH5: Final = lazy_inject(ShortAnswerCoherenceAxiom, injector)
+COH5: Final = lazy_inject(DirectAnswerLengthCoherenceAxiom, injector)
+
+
+@inject
+@dataclass(frozen=True, kw_only=True)
+class SubjectVerbClosenessCoherenceAxiom(Axiom[Any, GenerationOutput]):
+    """
+    Prefer text with subjects and verbs that are closer together.
+    """
+
+    text_contents: TextContents[GenerationOutput]
+
+    language_name: NoInject[str] = "en_core_web_sm"
+    margin_fraction: NoInject[float] = 0.1
+
+    @cached_property
+    def _language(self) -> Language:
+        return spacy_load(
+            name=self.language_name,
+        )
+
+    def preference(
+        self,
+        input: Any,
+        output1: GenerationOutput,
+        output2: GenerationOutput,
+    ) -> Preference:
+        doc1 = self._language(self.text_contents.contents(output1))
+        doc2 = self._language(self.text_contents.contents(output2))
+
+        svo_triples1 = subject_verb_object_triples(doc1)
+        svo_triples2 = subject_verb_object_triples(doc2)
+
+        max_sv_distances1 = array(
+            [
+                max(
+                    abs(verb.i - subject.i)
+                    for subject in subject_toks
+                    for verb in verb_toks
+                )
+                for subject_toks, verb_toks, _ in svo_triples1
+            ]
+        )
+        max_sv_distances2 = array(
+            [
+                max(
+                    abs(verb.i - subject.i)
+                    for subject in subject_toks
+                    for verb in verb_toks
+                )
+                for subject_toks, verb_toks, _ in svo_triples2
+            ]
+        )
+
+        avg_max_sv_distance1 = max_sv_distances1.mean()
+        avg_max_sv_distance2 = max_sv_distances2.mean()
+
+        if isclose(
+            avg_max_sv_distance1,
+            avg_max_sv_distance2,
+            rel_tol=self.margin_fraction,
+        ):
+            return 0
+        return strictly_less(avg_max_sv_distance1, avg_max_sv_distance2)
+
+    def preferences(
+        self,
+        input: Any,
+        outputs: Sequence[GenerationOutput],
+    ) -> PreferenceMatrix:
+        docs = self._language.pipe(
+            self.text_contents.contents(output) for output in outputs
+        )
+
+        svo_triples = (subject_verb_object_triples(doc) for doc in docs)
+
+        max_sv_distances = (
+            array(
+                [
+                    max(
+                        abs(verb.i - subject.i)
+                        for subject in subject_toks
+                        for verb in verb_toks
+                    )
+                    for subject_toks, verb_toks, _ in svo_triples
+                ]
+            )
+            for svo_triples in svo_triples
+        )
+
+        avg_max_sv_distances = [
+            max_sv_distances.mean()
+            for max_sv_distances in tqdm(
+                max_sv_distances,
+                total=len(outputs),
+                desc="Calculate S-V distances",
+                unit="output",
+            )
+        ]
+
+        return array(
+            [
+                (
+                    strictly_less(avg_max_sv_distance1, avg_max_sv_distance2)
+                    if not isclose(
+                        avg_max_sv_distance1,
+                        avg_max_sv_distance2,
+                        rel_tol=self.margin_fraction,
+                    )
+                    else 0
+                )
+                for avg_max_sv_distance1 in avg_max_sv_distances
+                for avg_max_sv_distance2 in avg_max_sv_distances
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
+
+
+COH6: Final = lazy_inject(SubjectVerbClosenessCoherenceAxiom, injector)
+
+
+# TODO: Topic position and stess position by looking up if noun chunks appear in the beginning or end of the sentence.
