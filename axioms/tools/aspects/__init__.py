@@ -12,6 +12,7 @@ from axioms.tools.aspects.keybert import (  # noqa: F401
 
 from axioms.tools.aspects.spacy import (  # noqa: F401
     SpacyNounChunksAspectExtraction,
+    SpacyEntitiesAspectExtraction,
 )
 
 
