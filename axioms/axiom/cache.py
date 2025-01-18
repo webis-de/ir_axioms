@@ -1,13 +1,10 @@
 from dataclasses import dataclass
 from dbm import open as dbm_open
-from functools import cached_property
 from pathlib import Path
 from struct import pack, unpack
 from typing import Iterable, Iterator, Protocol, Sequence, Tuple, TypeVar
 
-from numpy import array, float_, ndarray, isnan, ones_like, nan
-from optimask import OptiMask
-from tqdm.auto import tqdm
+from numpy import array, float_, ndarray, isnan, nan
 from typing_extensions import TypeAlias  # type: ignore
 
 from axioms.axiom.base import Axiom
@@ -75,18 +72,14 @@ class DbmCachedAxiom(Axiom[_Input, _Output]):
                 self._iter_preferences(
                     (
                         (input, output1, output2)
-                        for output2 in outputs
                         for output1 in outputs
+                        for output2 in outputs
                     ),
                     only_cached=True,
                 )
             ),
             dtype=float_,
         ).reshape((len(outputs), len(outputs)))
-
-    @cached_property
-    def _opti_mask(self) -> OptiMask:
-        return OptiMask()
 
     def preferences(
         self,
@@ -96,59 +89,19 @@ class DbmCachedAxiom(Axiom[_Input, _Output]):
         # First, only load the cached dependencies.
         preferences = self._cached_preferences(input, outputs)
 
-        # Then, fill as-large-as-possible sub-blocks of the matrix by computing preference matrices.
-        while isnan(preferences).any():
-            if isnan(preferences).sum() == preferences.size:
-                start = 0
-                end = preferences.shape[0]
-            else:
-                mask = ones_like(preferences)
-                mask[~isnan(preferences)] = nan
-                rows, cols = self._opti_mask.solve(mask)
-                indices = sorted(set(rows) & set(cols))
-                if len(indices) <= 1:
-                    break
-                start = min(indices)
-                end = max(indices) + 1
-            if end - start <= 1:
-                break
-            sub_outputs = outputs[start:end]
-            sub_preferences = self.axiom.preferences(input, sub_outputs)
-
-            with dbm_open(self.cache_path, flag="c") as cache:
-                for i1, output1 in enumerate(sub_outputs):
-                    for i2, output2 in enumerate(sub_outputs):
-                        key = repr((input, output1, output2)).encode(encoding="utf-8")
-                        preference = float(sub_preferences[i1, i2])
-                        if isnan(preference):
-                            raise RuntimeError("Missing preferences.")
-                        preference_bytes = pack("f", preference)
-                        cache[key] = preference_bytes
-
-            preferences[start:end, start:end] = sub_preferences
-
-        # Last, for the remaining pairs, fill them iteratively.
-        unfilled_pairs = [
-            (i1, i2)
-            for i1 in range(len(outputs))
-            for i2 in range(len(outputs))
-            if isnan(preferences[i1, i2])
-        ]
-        if len(unfilled_pairs) == 0:
+        if not (isnan(preferences).any()):
             return preferences
 
-        unfilled_inouts_outputs = (
-            (input, outputs[i1], outputs[i2]) for i1, i2 in unfilled_pairs
-        )
-        unfilled_preferences = self._iter_preferences(unfilled_inouts_outputs)
-        for (i1, i2), preference in tqdm(
-            zip(unfilled_pairs, unfilled_preferences),
-            total=len(unfilled_pairs),
-            desc="Cache preferences",
-            unit="pair",
-        ):
-            preferences[i1, i2] = preference
-
+        preferences = self.axiom.preferences(input, outputs)
+        with dbm_open(self.cache_path, flag="c") as cache:
+            for i1, output1 in enumerate(outputs):
+                for i2, output2 in enumerate(outputs):
+                    key = repr((input, output1, output2)).encode(encoding="utf-8")
+                    preference = float(preferences[i1, i2])
+                    if isnan(preference):
+                        raise RuntimeError("Missing preferences.")
+                    preference_bytes = pack("f", preference)
+                    cache[key] = preference_bytes
         return preferences
 
     def cached(self, cache_path: Path) -> Axiom[_Input, _Output]:
