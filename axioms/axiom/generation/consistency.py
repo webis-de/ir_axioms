@@ -7,13 +7,16 @@
 
 from dataclasses import dataclass
 from functools import cached_property
+from itertools import chain
 from math import isclose, nan
-from typing import Final, Union, Sequence, Any, TYPE_CHECKING, AbstractSet
+from typing import Final, Union, Sequence, Any, TYPE_CHECKING, AbstractSet, Iterable
 
 from injector import inject, NoInject
 from negspacy.negation import Negex
 from negspacy.termsets import termset
+from nltk.translate.bleu_score import corpus_bleu, SmoothingFunction
 from numpy import array, float_, zeros
+from numpy.typing import NDArray
 from spacy import load as spacy_load
 from spacy.language import Language
 from tqdm.auto import tqdm
@@ -27,6 +30,8 @@ from axioms.tools import (
     TextContents,
     AspectExtraction,
     SentenceSimilarity,
+    TermTokenizer,
+    SentenceTokenizer,
 )
 from axioms.utils.lazy import lazy_inject
 
@@ -71,19 +76,13 @@ class AspectOverlapConsistenyAxiom(Axiom[GenerationInput, GenerationOutput]):
     ) -> Preference:
         if input.context is None:
             return 0
-        context_aspects = {
-            aspect
-            for context in input.context
-            for aspect in self.aspect_extraction.aspects(context)
-        }
+        context_aspects = set(
+            chain.from_iterable(self.aspect_extraction.iter_aspects(input.context))
+        )
         if len(context_aspects) == 0:
             return 0
-        aspects1 = self.aspect_extraction.aspects(
-            self.text_contents.contents(output1)
-        )
-        aspects2 = self.aspect_extraction.aspects(
-            self.text_contents.contents(output2)
-        )
+        aspects1 = self.aspect_extraction.aspects(self.text_contents.contents(output1))
+        aspects2 = self.aspect_extraction.aspects(self.text_contents.contents(output2))
 
         coverage1 = _coverage(context_aspects, aspects1)
         coverage2 = _coverage(context_aspects, aspects2)
@@ -103,11 +102,9 @@ class AspectOverlapConsistenyAxiom(Axiom[GenerationInput, GenerationOutput]):
     ) -> PreferenceMatrix:
         if input.context is None:
             return zeros((len(outputs), len(outputs)))
-        context_aspects = {
-            aspect
-            for context in input.context
-            for aspect in self.aspect_extraction.aspects(context)
-        }
+        context_aspects = set(
+            chain.from_iterable(self.aspect_extraction.iter_aspects(input.context))
+        )
         if len(context_aspects) == 0:
             return zeros((len(outputs), len(outputs)))
 
@@ -164,19 +161,13 @@ class AspectJaccardConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
     ) -> Preference:
         if input.context is None:
             return 0
-        context_aspects = {
-            aspect
-            for context in input.context
-            for aspect in self.aspect_extraction.aspects(context)
-        }
+        context_aspects = set(
+            chain.from_iterable(self.aspect_extraction.iter_aspects(input.context))
+        )
         if len(context_aspects) == 0:
             return 0
-        aspects1 = self.aspect_extraction.aspects(
-            self.text_contents.contents(output1)
-        )
-        aspects2 = self.aspect_extraction.aspects(
-            self.text_contents.contents(output2)
-        )
+        aspects1 = self.aspect_extraction.aspects(self.text_contents.contents(output1))
+        aspects2 = self.aspect_extraction.aspects(self.text_contents.contents(output2))
 
         jaccard1 = _jaccard(context_aspects, aspects1)
         jaccard2 = _jaccard(context_aspects, aspects2)
@@ -196,11 +187,9 @@ class AspectJaccardConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
     ) -> PreferenceMatrix:
         if input.context is None:
             return zeros((len(outputs), len(outputs)))
-        context_aspects = {
-            aspect
-            for context in input.context
-            for aspect in self.aspect_extraction.aspects(context)
-        }
+        context_aspects = set(
+            chain.from_iterable(self.aspect_extraction.iter_aspects(input.context))
+        )
         if len(context_aspects) == 0:
             return zeros((len(outputs), len(outputs)))
 
@@ -260,11 +249,11 @@ class AspectSimilarityConsistencyAxiom(Axiom[GenerationInput, GenerationOutput])
     ) -> Preference:
         if input.context is None:
             return 0
-        context_aspects = {
-            aspect
-            for context in input.context
-            for aspect in self.aspect_extraction.aspects(context)
-        }
+        context_aspects = set(
+            chain.from_iterable(self.aspect_extraction.iter_aspects(input.context))
+        )
+        if len(context_aspects) == 0:
+            return 0
 
         aspects1 = self.aspect_extraction.aspects(
             self.text_contents.contents(output1),
@@ -273,12 +262,13 @@ class AspectSimilarityConsistencyAxiom(Axiom[GenerationInput, GenerationOutput])
             self.text_contents.contents(output2),
         )
 
-        similarity1 = self.sentence_similarity.average_similarity(
-            aspects1, context_aspects
-        )
-        similarity2 = self.sentence_similarity.average_similarity(
-            aspects2, context_aspects
-        )
+        similarity1 = self.sentence_similarity.paired_similarities(
+            list(aspects1), list(context_aspects)
+        ).mean()
+        similarity2 = self.sentence_similarity.paired_similarities(
+            list(aspects2), list(context_aspects)
+        ).mean()
+
         if isclose(
             similarity1,
             similarity2,
@@ -294,20 +284,20 @@ class AspectSimilarityConsistencyAxiom(Axiom[GenerationInput, GenerationOutput])
     ) -> PreferenceMatrix:
         if input.context is None:
             return zeros((len(outputs), len(outputs)))
-        context_aspects = {
-            aspect
-            for context in input.context
-            for aspect in self.aspect_extraction.aspects(context)
-        }
+        context_aspects = list(
+            chain.from_iterable(self.aspect_extraction.iter_aspects(input.context))
+        )
+        if len(context_aspects) == 0:
+            return zeros((len(outputs), len(outputs)))
 
         contents = (self.text_contents.contents(output) for output in outputs)
         aspects = self.aspect_extraction.iter_aspects(contents)
 
         similarity = [
-            self.sentence_similarity.average_similarity(
-                document_unique_aspects, context_aspects
-            )
-            for document_unique_aspects in tqdm(
+            self.sentence_similarity.paired_similarities(
+                list(aspects), context_aspects
+            ).mean()
+            for aspects in tqdm(
                 aspects,
                 desc="Extract aspects",
                 total=len(outputs),
@@ -446,3 +436,245 @@ class EntityContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
 
 
 CONS4: Final = lazy_inject(EntityContradictionConsistencyAxiom, injector)
+
+
+@inject
+@dataclass(frozen=True, kw_only=True)
+class BleuConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
+    """
+    Prefer text with higher BLEU score compared to the input contexts.
+    """
+
+    text_contents: TextContents[Union[GenerationInput, GenerationOutput]]
+    sentence_tokenizer: SentenceTokenizer
+    term_tokenizer: TermTokenizer
+
+    margin_fraction: NoInject[float] = 0.1
+
+    @cached_property
+    def _smoothing_function(self) -> SmoothingFunction:
+        return SmoothingFunction().method1
+
+    def preference(
+        self,
+        input: GenerationInput,
+        output1: GenerationOutput,
+        output2: GenerationOutput,
+    ) -> Preference:
+        if input.context is None:
+            return 0
+
+        context_sentences = chain.from_iterable(
+            self.sentence_tokenizer.sentences(context) for context in input.context
+        )
+        context_sentence_terms = [
+            self.term_tokenizer.terms(sentence) for sentence in context_sentences
+        ]
+
+        sentences1 = self.sentence_tokenizer.sentences(
+            self.text_contents.contents(output1)
+        )
+        sentences2 = self.sentence_tokenizer.sentences(
+            self.text_contents.contents(output2)
+        )
+
+        sentence_terms1 = [
+            self.term_tokenizer.terms(sentence) for sentence in sentences1
+        ]
+        sentence_terms2 = [
+            self.term_tokenizer.terms(sentence) for sentence in sentences2
+        ]
+
+        bleu1: float = corpus_bleu(
+            list_of_references=[context_sentence_terms for _ in sentences1],
+            hypotheses=sentence_terms1,
+            smoothing_function=self._smoothing_function,
+        )
+        bleu2: float = corpus_bleu(
+            list_of_references=[context_sentence_terms for _ in sentences2],
+            hypotheses=sentence_terms2,
+            smoothing_function=self._smoothing_function,
+        )
+        if isclose(
+            bleu1,
+            bleu2,
+            rel_tol=self.margin_fraction,
+        ):
+            return 0
+        return strictly_greater(bleu1, bleu2)
+
+    def preferences(
+        self,
+        input: GenerationInput,
+        outputs: Sequence[GenerationOutput],
+    ) -> PreferenceMatrix:
+        if input.context is None:
+            return zeros((len(outputs), len(outputs)))
+
+        context_sentences = chain.from_iterable(
+            self.sentence_tokenizer.sentences(context) for context in input.context
+        )
+        context_sentence_terms = [
+            self.term_tokenizer.terms(sentence) for sentence in context_sentences
+        ]
+
+        sentences = (
+            self.sentence_tokenizer.sentences(self.text_contents.contents(output))
+            for output in outputs
+        )
+        sentence_terms = (
+            [self.term_tokenizer.terms(sentence) for sentence in sentences]
+            for sentences in sentences
+        )
+
+        bleus = [
+            corpus_bleu(
+                list_of_references=[context_sentence_terms for _ in sentence_terms],
+                hypotheses=sentence_terms,
+                smoothing_function=self._smoothing_function,
+            )
+            for sentence_terms in tqdm(
+                sentence_terms,
+                desc="Compute BLEU",
+                total=len(outputs),
+                unit="output",
+            )
+        ]
+
+        print(bleus)
+
+        return array(
+            [
+                (
+                    strictly_greater(bleu1, bleu2)
+                    if not isclose(
+                        bleu1,
+                        bleu2,
+                        rel_tol=self.margin_fraction,
+                    )
+                    else 0
+                )
+                for bleu1 in bleus
+                for bleu2 in bleus
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
+
+
+CONS5: Final = lazy_inject(BleuConsistencyAxiom, injector)
+
+
+@inject
+@dataclass(frozen=True, kw_only=True)
+class SentenceSimilarityConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
+    """
+    Prefer text with sentences closer to sentences from the input contexts, as measured by sentence similarity.
+    """
+
+    text_contents: TextContents[Union[GenerationInput, GenerationOutput]]
+    sentence_tokenizer: SentenceTokenizer
+    sentence_similarity: SentenceSimilarity
+
+    margin_fraction: NoInject[float] = 0.1
+
+    def preference(
+        self,
+        input: GenerationInput,
+        output1: GenerationOutput,
+        output2: GenerationOutput,
+    ) -> Preference:
+        if input.context is None:
+            return 0
+
+        context_sentences = list(
+            chain.from_iterable(
+                self.sentence_tokenizer.sentences(context) for context in input.context
+            )
+        )
+
+        sentences1 = self.sentence_tokenizer.sentences(
+            self.text_contents.contents(output1)
+        )
+        sentences2 = self.sentence_tokenizer.sentences(
+            self.text_contents.contents(output2)
+        )
+
+        max_sentence_similarities1: NDArray[float_] = (
+            self.sentence_similarity.paired_similarities(
+                sentences1, context_sentences
+            ).max(axis=1)
+        )
+        max_sentence_similarities2: NDArray[float_] = (
+            self.sentence_similarity.paired_similarities(
+                sentences2, context_sentences
+            ).max(axis=1)
+        )
+
+        similarity1 = max_sentence_similarities1.mean()
+        similarity2 = max_sentence_similarities2.mean()
+
+        if isclose(
+            similarity1,
+            similarity2,
+            rel_tol=self.margin_fraction,
+        ):
+            return 0
+        return strictly_greater(similarity1, similarity2)
+
+    def preferences(
+        self,
+        input: GenerationInput,
+        outputs: Sequence[GenerationOutput],
+    ) -> PreferenceMatrix:
+        if input.context is None:
+            return zeros((len(outputs), len(outputs)))
+
+        context_sentences = list(
+            chain.from_iterable(
+                self.sentence_tokenizer.sentences(context) for context in input.context
+            )
+        )
+
+        sentences = (
+            self.sentence_tokenizer.sentences(self.text_contents.contents(output))
+            for output in outputs
+        )
+
+        max_sentence_similarities: Iterable[NDArray[float_]] = (
+            self.sentence_similarity.paired_similarities(
+                sentences, context_sentences
+            ).max(axis=1)
+            for sentences in tqdm(
+                sentences,
+                total=len(outputs),
+                desc="Compute similarities",
+                unit="output",
+            )
+        )
+
+        similarities = [
+            max_sentence_similarity.mean()
+            for max_sentence_similarity in max_sentence_similarities
+        ]
+
+        print(similarities)
+
+        return array(
+            [
+                (
+                    strictly_greater(similarity1, similarity2)
+                    if not isclose(
+                        similarity1,
+                        similarity2,
+                        rel_tol=self.margin_fraction,
+                    )
+                    else 0
+                )
+                for similarity1 in similarities
+                for similarity2 in similarities
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
+
+
+CONS6: Final = lazy_inject(SentenceSimilarityConsistencyAxiom, injector)
