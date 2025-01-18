@@ -1,5 +1,4 @@
 from itertools import product, combinations
-from statistics import mean
 from typing import (
     Iterable,
     Dict,
@@ -46,9 +45,9 @@ class TermSimilarity(Protocol):
     ) -> float:
         if len(terms1) == 0 or len(terms2) == 0:
             return 0
-        return mean(
-            self.similarity(term1, term2) for term1 in terms1 for term2 in terms2
-        )
+        return array(
+            [self.similarity(term1, term2) for term1 in terms1 for term2 in terms2]
+        ).mean()
 
     def _pair_similarity(self, terms: Tuple[str, str]) -> float:
         term1, term2 = terms
@@ -91,7 +90,7 @@ class SentenceSimilarity(Protocol):
     def similarity(self, sentence1: str, sentence2: str) -> float:
         pass
 
-    def similarities(self, sentences: Sequence[str]) -> NDArray[float_]:
+    def self_similarities(self, sentences: Sequence[str]) -> NDArray[float_]:
         return array(
             [
                 self.similarity(
@@ -104,13 +103,22 @@ class SentenceSimilarity(Protocol):
             dtype=float_,
         ).reshape((len(sentences), len(sentences)))
 
+    def paired_similarities(
+        self, sentences1: Sequence[str], sentences2: Sequence[str]
+    ) -> NDArray[float_]:
+        return array(
+            [
+                self.similarity(
+                    sentence1=sentence1,
+                    sentence2=sentence2,
+                )
+                for sentence1 in sentences1
+                for sentence2 in sentences2
+            ],
+            dtype=float_,
+        ).reshape((len(sentences1), len(sentences2)))
+
     def average_similarity(
         self, sentences1: Collection[str], sentences2: Collection[str]
     ) -> float:
-        if len(sentences1) == 0 or len(sentences2) == 0:
-            return 0
-        return mean(
-            self.similarity(sentence1, sentence2)
-            for sentence1 in sentences1
-            for sentence2 in sentences2
-        )
+        return self.paired_similarities(list(sentences1), list(sentences2)).mean()
