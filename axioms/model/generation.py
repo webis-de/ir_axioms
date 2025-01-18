@@ -6,7 +6,7 @@ from typing import Optional, Sequence
 class GenerationInput:
     id: Optional[str] = None
     text: str
-    context: Optional[Sequence[str]] = None
+    context: Optional[Sequence[str]] = None  # TODO: Would it make more sense to move this to the output?
     reference_output: Optional["GenerationOutput"] = None
 
 
