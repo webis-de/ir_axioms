@@ -1,12 +1,10 @@
 # Clarity: generated text is comprehensible and clearly communicates the key information/sources
 # Language clarity:
 # - [x] concise
-# - [ ] fluent (-> compare "size"/"depth" of dependency parse tree)
-# - [ ] comprehensible (-> check language; n-gram statistics with Netspeak)
+# - [x] comprehensible/readable
 # - [x] lexically correct
 # - [x] grammatically correct
 # - [ ] user-accessible (-> detect garbled text)
-# - [ ] avoid topic switching
 # Content clarity:
 # - [x] communicate most salient information (-> avoid redundancy)
 # - [x] avoid jargon (-> check vocabulary commonness)
@@ -21,7 +19,10 @@ from language_tool_python import LanguageTool
 from numpy import array, float_
 from tqdm.auto import tqdm
 from scipy.special import rel_entr
+from spacy import load as spacy_load
+from spacy.language import Language
 from spellchecker import SpellChecker
+from textacy.text_stats import flesch_reading_ease
 from wordfreq import get_frequency_dict
 
 from axioms.axiom.base import Axiom
@@ -303,10 +304,10 @@ class SentenceRedundancyClarityAxiom(Axiom[Any, GenerationOutput]):
         output1: GenerationOutput,
         output2: GenerationOutput,
     ) -> Preference:
-        similarities1 = self.sentence_similarity.similarities(
+        similarities1 = self.sentence_similarity.self_similarities(
             self.sentence_tokenizer.sentences(self.text_contents.contents(output1))
         )
-        similarities2 = self.sentence_similarity.similarities(
+        similarities2 = self.sentence_similarity.self_similarities(
             self.sentence_tokenizer.sentences(self.text_contents.contents(output2))
         )
         # TODO: Make aggregation configurable.
@@ -326,7 +327,7 @@ class SentenceRedundancyClarityAxiom(Axiom[Any, GenerationOutput]):
         outputs: Sequence[GenerationOutput],
     ) -> PreferenceMatrix:
         similarities = (
-            self.sentence_similarity.similarities(
+            self.sentence_similarity.self_similarities(
                 self.sentence_tokenizer.sentences(self.text_contents.contents(output))
             )
             for output in tqdm(
@@ -503,3 +504,77 @@ class WordCommonnessClarityAxiom(Axiom[Any, GenerationOutput]):
 
 
 CLAR6: Final = lazy_inject(WordCommonnessClarityAxiom, injector)
+
+
+@inject
+@dataclass(frozen=True, kw_only=True)
+class FleschReadingEaseClarityAxiom(Axiom[Any, GenerationOutput]):
+    """
+    Prefer text with higher readability as measured by the Flesch reading ease score.
+    """
+
+    text_contents: TextContents[GenerationOutput]
+
+    language_name: NoInject[str] = "en_core_web_sm"
+    margin_fraction: NoInject[float] = 0.0
+
+    @cached_property
+    def _language(self) -> Language:
+        return spacy_load(name=self.language_name)
+
+    def preference(
+        self,
+        input: Any,
+        output1: GenerationOutput,
+        output2: GenerationOutput,
+    ) -> Preference:
+        document1 = self._language(self.text_contents.contents(output1))
+        document2 = self._language(self.text_contents.contents(output2))
+
+        flesch_reading_ease1 = flesch_reading_ease(document1)
+        flesch_reading_ease2 = flesch_reading_ease(document2)
+
+        if isclose(
+            flesch_reading_ease1,
+            flesch_reading_ease2,
+            rel_tol=self.margin_fraction,
+        ):
+            return 0
+        return strictly_less(flesch_reading_ease1, flesch_reading_ease2)
+
+    def preferences(
+        self,
+        input: Any,
+        outputs: Sequence[GenerationOutput],
+    ) -> PreferenceMatrix:
+        documents = (
+            self._language(self.text_contents.contents(output)) for output in outputs
+        )
+        flesch_reading_eases = [
+            flesch_reading_ease(document)
+            for document in tqdm(
+                documents,
+                total=len(outputs),
+                desc="Computing Flesch reading ease",
+                unit="output",
+            )
+        ]
+        return array(
+            [
+                (
+                    strictly_less(flesch_reading_ease1, flesch_reading_ease2)
+                    if not isclose(
+                        flesch_reading_ease1,
+                        flesch_reading_ease2,
+                        rel_tol=self.margin_fraction,
+                    )
+                    else 0
+                )
+                for flesch_reading_ease1 in flesch_reading_eases
+                for flesch_reading_ease2 in flesch_reading_eases
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
+
+
+CLAR7: Final = lazy_inject(FleschReadingEaseClarityAxiom, injector)
