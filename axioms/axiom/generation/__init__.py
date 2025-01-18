@@ -13,6 +13,8 @@ from axioms.axiom.generation.clarity import (  # noqa: F401
     CLAR5,
     WordCommonnessClarityAxiom,
     CLAR6,
+    FleschReadingEaseClarityAxiom,
+    CLAR7,
 )
 
 from axioms.axiom.generation.coherence import (  # noqa: F401
@@ -24,8 +26,10 @@ from axioms.axiom.generation.coherence import (  # noqa: F401
     COH3,
     CoreferenceClusterClosenessCoherenceAxiom,
     COH4,
-    ShortAnswerCoherenceAxiom,
+    DirectAnswerLengthCoherenceAxiom,
     COH5,
+    SubjectVerbClosenessCoherenceAxiom,
+    COH6,
 )
 
 from axioms.axiom.generation.consistency import (  # noqa: F401
@@ -37,6 +41,10 @@ from axioms.axiom.generation.consistency import (  # noqa: F401
     CONS3,
     EntityContradictionConsistencyAxiom,
     CONS4,
+    BleuConsistencyAxiom,
+    CONS5,
+    SentenceSimilarityConsistencyAxiom,
+    CONS6,
 )
 
 from axioms.axiom.generation.correctness import (  # noqa: F401
@@ -57,6 +65,16 @@ from axioms.axiom.generation.coverage import (  # noqa: F401
     COV4,
     AspectRedundancyCoverageAxiom,
     COV5,
+    BleuCoverageAxiom,
+    COV6,
+    AspectRedundancy2CoverageAxiom,
+    COV7,
+    EntitySentenceCountCoverageAxiom,
+    COV8,
+    EntityOverlapCoverageAxiom,
+    COV9,
+    AspectSimilaritySentenceCountCoverageAxiom,
+    COV10,
 )
 
 from axioms.axiom.generation.retrieval import (  # noqa: F401
