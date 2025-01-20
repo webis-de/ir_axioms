@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from functools import cached_property
+from math import nan
 from typing import Sequence
 
 
@@ -12,7 +13,10 @@ from axioms.tools.similarity.base import SentenceSimilarity
 
 
 def _cosine_similarity(vector1: ndarray, vector2: ndarray) -> float:
-    return dot(vector1, vector2) / (norm(vector1) * norm(vector2))
+    divisor = norm(vector1) * norm(vector2)
+    if divisor == 0:
+        return nan
+    return dot(vector1, vector2) / divisor
 
 
 @dataclass(frozen=True)
