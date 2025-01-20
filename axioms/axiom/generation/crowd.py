@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from functools import cached_property
-from math import isclose
+from math import isclose, nan
 from pathlib import Path
-from typing import TypeAlias, Literal
+from typing import TypeAlias, Literal, Mapping
 
-from pandas import DataFrame, read_json, concat
+from pandas import read_json
 
 from axioms.axiom.base import Axiom
 from axioms.model import GenerationInput, GenerationOutput
@@ -35,84 +35,85 @@ class TrecRagCrowdAxiom(Axiom[GenerationInput, GenerationOutput]):
     margin_fraction: float = 0.1
 
     @cached_property
-    def _ratings(self) -> DataFrame:
+    def _ratings(self) -> Mapping[tuple[int, int, int], tuple[float, float]]:
+        df = read_json(self.ratings_path, lines=True)
         df_responses = read_json(self.responses_path, lines=True)
-        df_responses["query_hash"] = df_responses.pop("query").map(hash)
-        df_responses["answer_text_hash"] = df_responses.pop("raw_text").map(hash)
-        df_responses = df_responses[
-            ["topic", "query_hash", "response", "answer_text_hash"]
-        ]
 
-        df = read_json(
-            self.ratings_path,
-            lines=True,
-        )
-
-        if self.utility_type == "overall":
-            df["quality_p_a"] = df["quality_overall_p_a"]
-            df["quality_p_b"] = df["quality_overall_p_b"]
-        elif self.utility_type == "logical coherence":
-            df["quality_p_a"] = df["coherence_logical_p_a"]
-            df["quality_p_b"] = df["coherence_logical_p_b"]
-        elif self.utility_type == "stylistic coherence":
-            df["quality_p_a"] = df["coherence_stylistic_p_a"]
-            df["quality_p_b"] = df["coherence_stylistic_p_b"]
-        elif self.utility_type == "coherence":
-            df["quality_p_a"] = (df["coherence_stylistic_p_a"] + df["coherence_logical_p_a"]) / 2
-            df["quality_p_b"] = (df["coherence_stylistic_p_b"] + df["coherence_logical_p_b"]) / 2
-        elif self.utility_type == "internal consistency" or self.utility_type == "consistency":
-            df["quality_p_a"] = df["consistency_internal_p_a"]
-            df["quality_p_b"] = df["consistency_internal_p_b"]
-        elif self.utility_type == "topical correctness" or self.utility_type == "correctness":
-            df["quality_p_a"] = df["correctness_topical_p_a"]
-            df["quality_p_b"] = df["correctness_topical_p_b"]
-        elif self.utility_type == "broad coverage":
-            df["quality_p_a"] = df["coverage_broad_p_a"]
-            df["quality_p_b"] = df["coverage_broad_p_b"]
-        elif self.utility_type == "deep coverage":
-            df["quality_p_a"] = df["coverage_deep_p_a"]
-            df["quality_p_b"] = df["coverage_deep_p_b"]
-        elif self.utility_type == "coverage":
-            df["quality_p_a"] = (df["coverage_broad_p_a"] + df["coverage_deep_p_a"]) / 2
-            df["quality_p_b"] = (df["coverage_broad_p_b"] + df["coverage_deep_p_b"]) / 2
-        else:
-            raise ValueError(f"Unknown utility type: {self.utility_type}")
-
-        df = df[
-            [
-                "query_id",
-                "response_a",
-                "response_b",
-                "quality_p_a",
-                "quality_p_b",
-            ]
-        ]
+        # Merge in the query text.
         df = df.merge(
-            right=df_responses[["topic", "query_hash"]].drop_duplicates(),
+            right=df_responses[["topic", "query"]].drop_duplicates(),
             left_on="query_id",
             right_on="topic",
         )
-        df_responses.drop(columns=["query_hash"], inplace=True)
+
+        # Merge in the response text.
         df = df.merge(
-            right=df_responses,
+            right=df_responses[["topic", "response", "raw_text"]],
             left_on=["query_id", "response_a"],
             right_on=["topic", "response"],
-        ).rename(columns={"answer_text_hash": "answer_text_hash_a"})
+        ).rename(columns={"raw_text": "raw_text_a"})
         df = df.merge(
-            right=df_responses,
+            right=df_responses[["topic", "response", "raw_text"]],
             left_on=["query_id", "response_b"],
             right_on=["topic", "response"],
-        ).rename(columns={"answer_text_hash": "answer_text_hash_b"})
-        df = df[
-            [
-                "query_hash",
-                "answer_text_hash_a",
-                "answer_text_hash_b",
-                "quality_p_a",
-                "quality_p_b",
-            ]
-        ]
-        return df
+        ).rename(columns={"raw_text": "raw_text_b"})
+
+        # Select the quality columns based on the utility type.
+        if self.utility_type == "overall":
+            df["utility_p_a"] = df["quality_overall_p_a"]
+            df["utility_p_b"] = df["quality_overall_p_b"]
+        elif self.utility_type == "logical coherence":
+            df["utility_p_a"] = df["coherence_logical_p_a"]
+            df["utility_p_b"] = df["coherence_logical_p_b"]
+        elif self.utility_type == "stylistic coherence":
+            df["utility_p_a"] = df["coherence_stylistic_p_a"]
+            df["utility_p_b"] = df["coherence_stylistic_p_b"]
+        elif self.utility_type == "coherence":
+            df["utility_p_a"] = (
+                df["coherence_stylistic_p_a"] + df["coherence_logical_p_a"]
+            ) / 2
+            df["utility_p_b"] = (
+                df["coherence_stylistic_p_b"] + df["coherence_logical_p_b"]
+            ) / 2
+        elif (
+            self.utility_type == "internal consistency"
+            or self.utility_type == "consistency"
+        ):
+            df["utility_p_a"] = df["consistency_internal_p_a"]
+            df["utility_p_b"] = df["consistency_internal_p_b"]
+        elif (
+            self.utility_type == "topical correctness"
+            or self.utility_type == "correctness"
+        ):
+            df["utility_p_a"] = df["correctness_topical_p_a"]
+            df["utility_p_b"] = df["correctness_topical_p_b"]
+        elif self.utility_type == "broad coverage":
+            df["utility_p_a"] = df["coverage_broad_p_a"]
+            df["utility_p_b"] = df["coverage_broad_p_b"]
+        elif self.utility_type == "deep coverage":
+            df["utility_p_a"] = df["coverage_deep_p_a"]
+            df["utility_p_b"] = df["coverage_deep_p_b"]
+        elif self.utility_type == "coverage":
+            df["utility_p_a"] = (df["coverage_broad_p_a"] + df["coverage_deep_p_a"]) / 2
+            df["utility_p_b"] = (df["coverage_broad_p_b"] + df["coverage_deep_p_b"]) / 2
+        else:
+            raise ValueError(f"Unknown utility type: {self.utility_type}")
+
+        return {
+            (
+                hash(row["query"]),
+                hash(row[f"raw_text_{suffix1}"]),
+                hash(row[f"raw_text_{suffix2}"]),
+            ): (
+                row[f"utility_p_{suffix1}"],
+                row[f"utility_p_{suffix2}"],
+            )
+            for _, row in df.iterrows()
+            for suffix1, suffix2 in (
+                ("a", "b"),
+                ("b", "a"),
+            )
+        }
 
     def preference(
         self,
@@ -120,30 +121,19 @@ class TrecRagCrowdAxiom(Axiom[GenerationInput, GenerationOutput]):
         output1: GenerationOutput,
         output2: GenerationOutput,
     ) -> float:
-        df = self._ratings.copy()
-        df = df[df["query_hash"] == hash(input.text)]
-        hash1 = hash(output1.text)
-        hash2 = hash(output2.text)
-        if hash1 == hash2:
+        input_hash = hash(input.text)
+        output1_hash = hash(output1.text)
+        output2_hash = hash(output2.text)
+
+        if hash(output1.text) == hash(output2.text):
             return 0
-        df1 = df[
-            (df["answer_text_hash_a"] == hash1) & (df["answer_text_hash_b"] == hash2)
-        ].copy()
-        df2 = df[
-            (df["answer_text_hash_a"] == hash2) & (df["answer_text_hash_b"] == hash1)
-        ].copy()
-        df2["quality_p_a"] = 1 - df2["quality_p_a"]
-        df2["quality_p_b"] = 1 - df2["quality_p_b"]
-        df = concat([df1, df2])
-        if len(df) == 0:
-            return 0
-        df = (
-            df.groupby(["answer_text_hash_a", "answer_text_hash_b"])
-            .mean()
-            .reset_index()
+
+        prob1, prob2 = self._ratings.get(
+            (input_hash, output1_hash, output2_hash), (nan, nan)
         )
-        prob1 = df.iloc[0]["quality_p_a"]
-        prob2 = df.iloc[0]["quality_p_b"]
-        if isclose(prob1, prob2, rel_tol=self.margin_fraction):
+
+        if self.margin_fraction > 0 and isclose(
+            prob1, prob2, rel_tol=self.margin_fraction
+        ):
             return 0
         return strictly_greater(prob1, prob2)
