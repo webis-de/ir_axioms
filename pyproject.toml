@@ -71,7 +71,7 @@ tests =[
     "types-tqdm~=4.66",
 ]
 experiments =[
-    "cappr~=0.9.6",
+    "cappr[hf]~=0.9.6",
     "jupyter~=1.1",
     "lightgbm~=4.5",
     "ragas~=0.2.5",

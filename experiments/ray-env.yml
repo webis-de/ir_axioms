@@ -16,7 +16,7 @@ excludes:
   - ".*\\.log"
   - ".*\\.ipynb"
 pip:
-  - cappr~=0.9.6
+  - cappr[hf]~=0.9.6
   - cached-property~=2.0
   - cyclopts~=3.0
   - pandas~=2.0
