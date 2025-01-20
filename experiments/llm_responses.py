@@ -1,3 +1,5 @@
+# ray job submit --runtime-env experiments/ray-env.yml -- python experiments/generate_llm_responses.py generate-llm-responses --model-name HuggingFaceTB/SmolLM-360M-Instruct
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence, Literal, Mapping, TYPE_CHECKING
@@ -222,9 +224,9 @@ def generate_llm_responses(
         batch_size=1,
         batch_format="pandas",
         num_cpus=1,
-        num_gpus=1 if "1.7B" in model_name else 0.5,
-        accelerator_type="GeForce-GTX-1080",
-        memory=20 * 1024 * 1024 * 1024,
+        num_gpus=0 if "1.7B" in model_name else 0.5,
+        accelerator_type="A100-20GB" if "1.7B" in model_name else "GeForce-GTX-1080",
+        # memory=20 * 1024 * 1024 * 1024,
         concurrency=10,
         max_retries=10,
     )
