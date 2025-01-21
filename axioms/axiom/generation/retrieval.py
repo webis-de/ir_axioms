@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Final, Sequence
 
 from injector import inject
-from tqdm.auto import tqdm
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.retrieval import (
@@ -80,11 +79,7 @@ class _RetrievalAxiomWrapper(Axiom[GenerationInput, GenerationOutput]):
                 id=output.id if output.id is not None else "",
                 text=output.text if output.text is not None else "",
             )
-            for output in tqdm(
-                outputs,
-                desc="Convert",
-                unit="output",
-            )
+            for output in outputs
         ]
         return self.axiom.preferences(retrieval_input, retrieval_outputs)
 
