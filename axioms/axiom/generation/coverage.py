@@ -891,6 +891,8 @@ class AspectSimilaritySentenceCountCoverageAxiom(
         input_aspects = self.aspect_extraction.aspects(
             self.text_contents.contents(input)
         )
+        if len(input_aspects) == 0:
+            return 0
 
         sentences1 = self.sentence_tokenizer.sentences(
             self.text_contents.contents(output1)
@@ -928,6 +930,8 @@ class AspectSimilaritySentenceCountCoverageAxiom(
         input_aspects = self.aspect_extraction.aspects(
             self.text_contents.contents(input)
         )
+        if len(input_aspects) == 0:
+            return zeros((len(outputs), len(outputs)))
 
         sentences = (
             self.sentence_tokenizer.sentences(self.text_contents.contents(output))
