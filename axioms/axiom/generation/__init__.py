@@ -81,6 +81,12 @@ from axioms.axiom.generation.coverage import (  # noqa: F401
     COV10,
 )
 
+from axioms.axiom.generation.crowd import (  # noqa: F401
+    TrecRagCrowdAxiom,
+)
+
+from axioms.axiom.generation.llm import TrecRagLlmOrigAxiom  # noqa: F401
+
 from axioms.axiom.generation.retrieval import (  # noqa: F401
     GenerativeArgumentativeUnitsCountAxiom,
     GEN_ArgUC,
@@ -124,14 +130,6 @@ from axioms.axiom.generation.retrieval import (  # noqa: F401
     GEN_STMC1,
     GenerativeStmc2Axiom,
     GEN_STMC2,
-)
-
-
-# TODO: generated text length axiom (for normalization), in which utility dimension does it fit best?
-
-
-from axioms.axiom.generation.crowd import (  # noqa: F401
-    TrecRagCrowdAxiom,
 )
 
 from axioms.axiom.generation.trec import (  # noqa: F401

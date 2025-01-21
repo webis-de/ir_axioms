@@ -110,6 +110,7 @@ from axioms.axiom.generation import (  # noqa: F401
     GenerativeStmc2Axiom,
     GEN_STMC2,
     TrecRagCrowdAxiom,
+    TrecRagLlmOrigAxiom,
     TrecRagNuggetAxiom,
 )
 
