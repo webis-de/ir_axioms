@@ -45,6 +45,10 @@ from axioms.axiom.generation.consistency import (  # noqa: F401
     CONS5,
     SentenceSimilarityConsistencyAxiom,
     CONS6,
+    RougeConsistencyAxiom,
+    CONS7,
+    AspectSimilaritySentenceCountConsistencyAxiom,
+    CONS8,
 )
 
 from axioms.axiom.generation.correctness import (  # noqa: F401

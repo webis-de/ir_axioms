@@ -17,6 +17,8 @@ from negspacy.termsets import termset
 from nltk.translate.bleu_score import corpus_bleu, SmoothingFunction
 from numpy import array, float_, zeros
 from numpy.typing import NDArray
+from rouge_score.rouge_scorer import RougeScorer
+from rouge_score.scoring import Score
 from spacy import load as spacy_load
 from spacy.language import Language
 from tqdm.auto import tqdm
@@ -412,7 +414,7 @@ class EntityContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
             self.text_contents.contents(output)
             for output in tqdm(
                 outputs,
-                desc="Counting contradictions",
+                desc="Count contradictions",
                 unit="output",
             )
         )
@@ -678,3 +680,340 @@ class SentenceSimilarityConsistencyAxiom(Axiom[GenerationInput, GenerationOutput
 
 
 CONS6: Final = lazy_inject(SentenceSimilarityConsistencyAxiom, injector)
+
+
+@inject
+@dataclass(frozen=True, kw_only=True)
+class RougeConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
+    """
+    Prefer text with higher ROUGE score compared to the input contexts.
+    """
+
+    text_contents: TextContents[Union[GenerationInput, GenerationOutput]]
+    sentence_tokenizer: SentenceTokenizer
+    term_tokenizer: TermTokenizer
+
+    margin_fraction: NoInject[float] = 0.1
+
+    @cached_property
+    def _rouge_scorer(self) -> RougeScorer:
+        return RougeScorer(
+            rouge_types=["rougeLsum"],
+            use_stemmer=False,
+            split_summaries=True,
+        )
+
+    def preference(
+        self,
+        input: GenerationInput,
+        output1: GenerationOutput,
+        output2: GenerationOutput,
+    ) -> Preference:
+        if input.context is None:
+            return 0
+
+        context = "\n\n".join(input.context)
+
+        contents1 = self.text_contents.contents(output1)
+        contents2 = self.text_contents.contents(output2)
+
+        rouge1: dict[str, Score] = self._rouge_scorer.score_multi(
+            target=context,
+            prediction=contents1,
+        )
+        rouge2: dict[str, Score] = self._rouge_scorer.score(
+            target=context,
+            prediction=contents2,
+        )
+        rouge_l_sum1 = rouge1["rougeLsum"].fmeasure
+        rouge_l_sum2 = rouge2["rougeLsum"].fmeasure
+
+        if isclose(
+            rouge_l_sum1,
+            rouge_l_sum2,
+            rel_tol=self.margin_fraction,
+        ):
+            return 0
+        return strictly_greater(rouge_l_sum1, rouge_l_sum2)
+
+    def preferences(
+        self,
+        input: GenerationInput,
+        outputs: Sequence[GenerationOutput],
+    ) -> PreferenceMatrix:
+        if input.context is None:
+            return zeros((len(outputs), len(outputs)))
+
+        context = "\n\n".join(input.context)
+
+        contents = (self.text_contents.contents(output) for output in outputs)
+
+        rouges: Iterable[dict[str, Score]] = (
+            self._rouge_scorer.score(
+                target=context,
+                prediction=content,
+            )
+            for content in tqdm(
+                contents,
+                desc="Compute ROUGE",
+                total=len(outputs),
+                unit="output",
+            )
+        )
+        rouge_l_sums = [rouge["rougeLsum"].fmeasure for rouge in rouges]
+
+        print(rouge_l_sums)
+
+        return array(
+            [
+                (
+                    strictly_greater(rouge_l_sum1, rouge_l_sum2)
+                    if not isclose(
+                        rouge_l_sum1,
+                        rouge_l_sum2,
+                        rel_tol=self.margin_fraction,
+                    )
+                    else 0
+                )
+                for rouge_l_sum1 in rouge_l_sums
+                for rouge_l_sum2 in rouge_l_sums
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
+
+
+CONS7: Final = lazy_inject(RougeConsistencyAxiom, injector)
+
+
+@inject
+@dataclass(frozen=True, kw_only=True)
+class AspectSimilaritySentenceCountConsistencyAxiom(
+    Axiom[GenerationInput, GenerationOutput]
+):
+    """
+    Prefer text with extracted aspects from the input context mentioned in more sentences of the output, weighing by the sentence's similarity to the aspects.
+    """
+
+    text_contents: TextContents[Union[GenerationInput, GenerationOutput]]
+    aspect_extraction: AspectExtraction
+    sentence_tokenizer: SentenceTokenizer
+    sentence_similarity: SentenceSimilarity
+
+    margin_fraction: NoInject[float] = 0.5
+
+    def preference(
+        self,
+        input: GenerationInput,
+        output1: GenerationOutput,
+        output2: GenerationOutput,
+    ) -> Preference:
+        if input.context is None:
+            return 0
+        context_aspects = set(
+            chain.from_iterable(self.aspect_extraction.iter_aspects(input.context))
+        )
+        if len(context_aspects) == 0:
+            return 0
+
+        sentences1 = self.sentence_tokenizer.sentences(
+            self.text_contents.contents(output1)
+        )
+        sentences2 = self.sentence_tokenizer.sentences(
+            self.text_contents.contents(output2)
+        )
+
+        similarities1 = self.sentence_similarity.paired_similarities(
+            list(sentences1), list(context_aspects)
+        )
+        similarities2 = self.sentence_similarity.paired_similarities(
+            list(sentences2), list(context_aspects)
+        )
+
+        sentence_weights1: NDArray[float_] = similarities1.mean(axis=1)
+        sentence_weights2: NDArray[float_] = similarities2.mean(axis=1)
+
+        sentence_counts1 = sentence_weights1.sum()
+        sentence_counts2 = sentence_weights2.sum()
+
+        if isclose(
+            sentence_counts1,
+            sentence_counts2,
+            rel_tol=self.margin_fraction,
+        ):
+            return 0
+        return strictly_greater(sentence_counts1, sentence_counts2)
+
+    def preferences(
+        self,
+        input: GenerationInput,
+        outputs: Sequence[GenerationOutput],
+    ) -> PreferenceMatrix:
+        if input.context is None:
+            return zeros((len(outputs), len(outputs)))
+        context_aspects = self.aspect_extraction.aspects(
+            self.text_contents.contents(input)
+        )
+        if len(context_aspects) == 0:
+            return zeros((len(outputs), len(outputs)))
+
+        sentences = (
+            self.sentence_tokenizer.sentences(self.text_contents.contents(output))
+            for output in outputs
+        )
+
+        similarities = (
+            self.sentence_similarity.paired_similarities(
+                list(sentences), list(context_aspects)
+            )
+            for sentences in tqdm(
+                sentences,
+                desc="Aspect-sentence similarities",
+                total=len(outputs),
+            )
+        )
+
+        sentence_weights: Iterable[NDArray[float_]] = (
+            weights.mean(axis=1) for weights in similarities
+        )
+
+        sentence_counts = [weights.sum() for weights in sentence_weights]
+
+        return array(
+            [
+                (
+                    strictly_greater(sentence_count1, sentence_count2)
+                    if not isclose(
+                        sentence_count1,
+                        sentence_count2,
+                        rel_tol=self.margin_fraction,
+                    )
+                    else 0
+                )
+                for sentence_count1 in sentence_counts
+                for sentence_count2 in sentence_counts
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
+
+
+CONS8: Final = lazy_inject(AspectSimilaritySentenceCountConsistencyAxiom, injector)
+
+
+@inject
+@dataclass(frozen=True, kw_only=True)
+class WeightedSentenceSimilarityConsistencyAxiom(
+    Axiom[GenerationInput, GenerationOutput]
+):
+    """
+    Prefer text with sentences closer to the most dissimilar sentences from the input contexts, as measured by sentence similarity.
+    """
+
+    text_contents: TextContents[Union[GenerationInput, GenerationOutput]]
+    sentence_tokenizer: SentenceTokenizer
+    sentence_similarity: SentenceSimilarity
+
+    margin_fraction: NoInject[float] = 0.1
+
+    def preference(
+        self,
+        input: GenerationInput,
+        output1: GenerationOutput,
+        output2: GenerationOutput,
+    ) -> Preference:
+        if input.context is None:
+            return 0
+
+        context_sentences = list(
+            chain.from_iterable(
+                self.sentence_tokenizer.sentences(context) for context in input.context
+            )
+        )
+        if len(context_sentences) == 0:
+            return 0
+
+        sentences1 = self.sentence_tokenizer.sentences(
+            self.text_contents.contents(output1)
+        )
+        sentences2 = self.sentence_tokenizer.sentences(
+            self.text_contents.contents(output2)
+        )
+
+        max_sentence_similarities1: NDArray[float_] = (
+            self.sentence_similarity.paired_similarities(
+                sentences1, context_sentences
+            ).max(axis=0)
+        )
+        max_sentence_similarities2: NDArray[float_] = (
+            self.sentence_similarity.paired_similarities(
+                sentences2, context_sentences
+            ).max(axis=1)
+        )
+
+        similarity1 = max_sentence_similarities1.mean()
+        similarity2 = max_sentence_similarities2.mean()
+
+        if isclose(
+            similarity1,
+            similarity2,
+            rel_tol=self.margin_fraction,
+        ):
+            return 0
+        return strictly_greater(similarity1, similarity2)
+
+    def preferences(
+        self,
+        input: GenerationInput,
+        outputs: Sequence[GenerationOutput],
+    ) -> PreferenceMatrix:
+        if input.context is None:
+            return zeros((len(outputs), len(outputs)))
+
+        context_sentences = list(
+            chain.from_iterable(
+                self.sentence_tokenizer.sentences(context) for context in input.context
+            )
+        )
+
+        sentences = (
+            self.sentence_tokenizer.sentences(self.text_contents.contents(output))
+            for output in outputs
+        )
+
+        max_sentence_similarities: Iterable[NDArray[float_]] = (
+            self.sentence_similarity.paired_similarities(
+                sentences, context_sentences
+            ).max(axis=1)
+            for sentences in tqdm(
+                sentences,
+                total=len(outputs),
+                desc="Compute similarities",
+                unit="output",
+            )
+        )
+
+        similarities = [
+            max_sentence_similarity.mean()
+            for max_sentence_similarity in max_sentence_similarities
+        ]
+
+        print(similarities)
+
+        return array(
+            [
+                (
+                    strictly_greater(similarity1, similarity2)
+                    if not isclose(
+                        similarity1,
+                        similarity2,
+                        rel_tol=self.margin_fraction,
+                    )
+                    else 0
+                )
+                for similarity1 in similarities
+                for similarity2 in similarities
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
+
+
+# TODO: How many of the context documents were cited in the output?
