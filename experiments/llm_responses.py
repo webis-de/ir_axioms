@@ -88,6 +88,8 @@ class _Generator:
 
     @cached_property
     def _tokenizer(self) -> PreTrainedTokenizer:
+        if find_dotenv():
+            load_dotenv()
         return AutoTokenizer.from_pretrained(self.model_name)
 
     def _generate(self, input: Series) -> DataFrame:
@@ -187,7 +189,7 @@ def generate_llm_responses(
     num_return_sequences: int = 5,
     max_new_tokens: int = 1000,
     references_top_k: int = 5,
-    input_path: ResolvedExistingFile = Path("data/crowd/study1_retrieval.jsonl.gz"),
+    input_path: ResolvedExistingFile = Path("/mnt/ceph/storage/data-in-progress/data-research/web-search/axioms/crowd/study1_retrieval.jsonl.gz"),
     output_path: ResolvedDirectory = Path(
         "/mnt/ceph/storage/data-in-progress/data-research/web-search/axioms/llm-responses"
     ),
