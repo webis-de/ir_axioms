@@ -270,7 +270,7 @@ if is_pyterrier_installed():
             if self.verbose and 0 < logger.level <= DEBUG:
                 axioms = tqdm(
                     axioms,
-                    desc="Computing axiom preferences",
+                    desc="Axiom preferences",
                     unit="axiom",
                 )
 
@@ -289,7 +289,7 @@ if is_pyterrier_installed():
                     # Very verbose progress bars.
                     document_pairs = tqdm(
                         document_pairs,
-                        desc="Computing axiom preference",
+                        desc="Axiom preference",
                         unit="pair",
                     )
                 results_pairs[column] = [
