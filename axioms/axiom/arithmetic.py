@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from functools import reduce
 from math import isclose, ceil
-from operator import add, mul
+from operator import mul
 from typing import Any, Iterable, Sequence
 
-from numpy import full, ones, stack, zeros
+from numpy import full, stack, zeros
 from tqdm.auto import tqdm
 
 from axioms.axiom.base import Axiom
@@ -48,10 +48,8 @@ class SumAxiom(Axiom[Input, Output]):
         input: Input,
         outputs: Sequence[Output],
     ) -> PreferenceMatrix:
-        return reduce(
-            add,
-            (axiom.preferences(input, outputs) for axiom in self.axioms),
-            zeros((len(outputs), len(outputs))),
+        return stack([axiom.preferences(input, outputs) for axiom in self.axioms]).sum(
+            axis=0
         )
 
     def __add__(self, other: Axiom[Input, Output]) -> Axiom[Input, Output]:
@@ -77,10 +75,8 @@ class ProductAxiom(Axiom[Input, Output]):
         input: Input,
         outputs: Sequence[Output],
     ) -> PreferenceMatrix:
-        return reduce(
-            mul,
-            (axiom.preferences(input, outputs) for axiom in self.axioms),
-            ones((len(outputs), len(outputs))),
+        return stack([axiom.preferences(input, outputs) for axiom in self.axioms]).prod(
+            axis=0
         )
 
     def __mul__(self, other: Axiom[Input, Output]) -> Axiom[Input, Output]:
@@ -158,7 +154,9 @@ class VoteAxiom(Axiom[Input, Output]):
         output1: Output,
         output2: Output,
     ) -> Preference:
-        preferences = [axiom.preference(input, output1, output2) for axiom in self.axioms]
+        preferences = [
+            axiom.preference(input, output1, output2) for axiom in self.axioms
+        ]
 
         # Total count of possible votes.
         count: int = len(preferences)
@@ -178,19 +176,21 @@ class VoteAxiom(Axiom[Input, Output]):
         else:
             # Draw.
             return 0
-        
+
     def preferences(
         self,
         input: Input,
         outputs: Sequence[Output],
     ) -> PreferenceMatrix:
-        preferences = stack([
-            axiom.preferences(input, outputs)
-            for axiom in tqdm(
-                self.axioms,
-                desc="Computing preferences",
-            )
-        ])
+        preferences = stack(
+            [
+                axiom.preferences(input, outputs)
+                for axiom in tqdm(
+                    self.axioms,
+                    desc="Compute preferences",
+                )
+            ]
+        )
 
         # Total count of possible votes.
         count: int = preferences.shape[0]
@@ -203,13 +203,14 @@ class VoteAxiom(Axiom[Input, Output]):
         # Number of observed negative votes.
         negative_votes = (preferences < 0).sum(axis=0)
 
+        mask_positive = (positive_votes > negative_votes) & (positive_votes >= minimum_votes)
+        mask_negative = (negative_votes > positive_votes) & (negative_votes >= minimum_votes)
+
         aggregated_preferences = zeros((len(outputs), len(outputs)))
-        aggregated_preferences += (positive_votes > negative_votes) & (positive_votes >= minimum_votes) * 1
-        aggregated_preferences += (negative_votes > positive_votes) & (negative_votes >= minimum_votes) * -1
+        aggregated_preferences += mask_positive * 1
+        aggregated_preferences += mask_negative * -1
 
         return aggregated_preferences
-
-    # TODO: Add batched preference computation.
 
     def __mod__(self, other: Axiom[Input, Output]) -> Axiom[Input, Output]:
         if isclose(self.minimum_votes, 0.5):
@@ -267,7 +268,15 @@ class NormalizedAxiom(Axiom[Input, Output]):
         else:
             return 0
 
-    # TODO: Add batched preference computation.
+    def preferences(
+        self,
+        input: Input,
+        outputs: Sequence[Output],
+    ) -> PreferenceMatrix:
+        preferences = self.axiom.preferences(input, outputs)
+        preferences[preferences > 0] = 1
+        preferences[preferences < 0] = -1
+        return preferences
 
     def __pos__(self) -> Axiom[Input, Output]:
         # This axiom is already normalized.
