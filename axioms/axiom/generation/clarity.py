@@ -1,29 +1,18 @@
 # Clarity: generated text is comprehensible and clearly communicates the key information/sources
-# Language clarity:
-# - [x] concise
-# - [x] comprehensible/readable
-# - [x] lexically correct
-# - [x] grammatically correct
-# - [ ] user-accessible (-> detect garbled text)
-# Content clarity:
-# - [x] communicate most salient information (-> avoid redundancy)
-# - [x] avoid jargon (-> check vocabulary commonness)
 
 from dataclasses import dataclass
 from functools import cached_property
-from math import isclose
-from typing import Final, Sequence, Any, Mapping
+from math import isclose, nan
+from typing import Final, Sequence, Any, Literal, Iterable
+from typing_extensions import TypeAlias  # type: ignore
 
 from injector import inject, NoInject
 from language_tool_python import LanguageTool
 from numpy import array, float_
 from tqdm.auto import tqdm
-from scipy.special import rel_entr
 from spacy import load as spacy_load
 from spacy.language import Language
-from spellchecker import SpellChecker
 from textacy.text_stats import flesch_reading_ease
-from wordfreq import get_frequency_dict
 
 from axioms.axiom.base import Axiom
 from axioms.axiom.utils import strictly_less
@@ -31,32 +20,53 @@ from axioms.dependency_injection import injector
 from axioms.model import PreferenceMatrix
 from axioms.model.base import Preference
 from axioms.model.generation import GenerationOutput
-from axioms.tools import (
-    TextContents,
-    TermTokenizer,
-    SentenceSimilarity,
-    SentenceTokenizer,
-    TextStatistics,
-)
+from axioms.tools import TextContents
 from axioms.utils.lazy import lazy_inject
+
+
+_LanguageToolCategory: TypeAlias = Literal[
+    "CASING",
+    "COLLOQUIALISMS",
+    "COMPOUNDING",
+    "CONFUSED_WORDS",
+    "FALSE_FRIENDS",
+    "GENDER_NEUTRALITY",
+    "GRAMMAR",
+    "MISC",
+    "PLAIN_ENGLISH",
+    "PUNCTUATION",
+    "REDUNDANCY",
+    "REGIONALISMS",
+    "REPETITIONS",
+    "REPETITIONS_STYLE",
+    "SEMANTICS",
+    "STYLE",
+    "TYPOGRAPHY",
+    "TYPOS",
+    "WIKIPEDIA",
+]
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class GrammarErrorsClarityAxiom(Axiom[Any, GenerationOutput]):
+class _LanguageToolErrorCountsClarityAxiom(Axiom[Any, GenerationOutput]):
     """
-    Prefer text with fewer grammar errors.
+    Prefer text with fewer errors found by language tool.
     """
 
     text_contents: TextContents[GenerationOutput]
 
     language: NoInject[str] = "en-US"
+    enabled_categories: NoInject[Iterable[_LanguageToolCategory]] = frozenset()
     margin_fraction: NoInject[float] = 0.0
 
     @cached_property
     def _language_tool(self) -> LanguageTool:
         # TODO: Make the grammar checker a configurable dependency.
-        return LanguageTool(language=self.language)
+        language_tool = LanguageTool(language=self.language)
+        language_tool.enabled_categories = set(self.enabled_categories)
+        language_tool.enabled_rules_only = True
+        return language_tool
 
     def preference(
         self,
@@ -85,11 +95,12 @@ class GrammarErrorsClarityAxiom(Axiom[Any, GenerationOutput]):
             self._language_tool.check(self.text_contents.contents(output))
             for output in tqdm(
                 outputs,
-                desc="Checking grammar",
+                desc="Check grammar",
                 unit="output",
             )
         )
         num_matches = [len(matches) for matches in matches]
+        print(num_matches)
         return array(
             [
                 (
@@ -108,96 +119,26 @@ class GrammarErrorsClarityAxiom(Axiom[Any, GenerationOutput]):
         ).reshape((len(outputs), len(outputs)))
 
 
-CLAR1: Final = lazy_inject(GrammarErrorsClarityAxiom, injector)
-
-
 @inject
 @dataclass(frozen=True, kw_only=True)
-class GrammarErrorTypesClarityAxiom(Axiom[Any, GenerationOutput]):
+class _LanguageToolErrorProportionClarityAxiom(Axiom[Any, GenerationOutput]):
     """
-    Prefer text with fewer types of grammar errors.
+    Prefer text with a lower proportion of characters covered by errors from LanguageTool.
     """
 
     text_contents: TextContents[GenerationOutput]
 
     language: NoInject[str] = "en-US"
-    margin_fraction: NoInject[float] = 0.0
-
-    @cached_property
-    def _language_tool(self) -> LanguageTool:
-        return LanguageTool(language=self.language)
-
-    def preference(
-        self,
-        input: Any,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
-    ) -> Preference:
-        matches1 = self._language_tool.check(self.text_contents.contents(output1))
-        matches2 = self._language_tool.check(self.text_contents.contents(output2))
-        match_types1 = set(match.ruleId for match in matches1)
-        match_types2 = set(match.ruleId for match in matches2)
-        num_matches1 = len(match_types1)
-        num_matches2 = len(match_types2)
-        if isclose(
-            num_matches1,
-            num_matches2,
-            rel_tol=self.margin_fraction,
-        ):
-            return 0
-        return strictly_less(num_matches1, num_matches2)
-
-    def preferences(
-        self,
-        input: Any,
-        outputs: Sequence[GenerationOutput],
-    ) -> PreferenceMatrix:
-        matches = (
-            self._language_tool.check(self.text_contents.contents(output))
-            for output in tqdm(
-                outputs,
-                desc="Checking grammar",
-                unit="output",
-            )
-        )
-        match_types = (set(match.ruleId for match in matches) for matches in matches)
-        num_matches = [len(match_types) for match_types in match_types]
-        return array(
-            [
-                (
-                    strictly_less(num_matches1, num_matches2)
-                    if not isclose(
-                        num_matches1,
-                        num_matches2,
-                        rel_tol=self.margin_fraction,
-                    )
-                    else 0
-                )
-                for num_matches1 in num_matches
-                for num_matches2 in num_matches
-            ],
-            dtype=float_,
-        ).reshape((len(outputs), len(outputs)))
-
-
-CLAR2: Final = lazy_inject(GrammarErrorTypesClarityAxiom, injector)
-
-
-@inject
-@dataclass(frozen=True, kw_only=True)
-class GrammarErrorProportionClarityAxiom(Axiom[Any, GenerationOutput]):
-    """
-    Prefer text with a lower proportion of characters covered by grammar errors.
-    """
-
-    text_contents: TextContents[GenerationOutput]
-
-    language: NoInject[str] = "en-US"
+    enabled_categories: NoInject[Iterable[_LanguageToolCategory]] = frozenset()
     margin_fraction: NoInject[float] = 0.1
 
     @cached_property
     def _language_tool(self) -> LanguageTool:
-        return LanguageTool(language=self.language)
+        # TODO: Make the grammar checker a configurable dependency.
+        language_tool = LanguageTool(language=self.language)
+        language_tool.enabled_categories = set(self.enabled_categories)
+        language_tool.enabled_rules_only = True
+        return language_tool
 
     def preference(
         self,
@@ -245,7 +186,7 @@ class GrammarErrorProportionClarityAxiom(Axiom[Any, GenerationOutput]):
             self._language_tool.check(content)
             for content in tqdm(
                 contents,
-                desc="Checking grammar",
+                desc="Check grammar",
                 unit="output",
             )
         )
@@ -282,228 +223,108 @@ class GrammarErrorProportionClarityAxiom(Axiom[Any, GenerationOutput]):
         ).reshape((len(outputs), len(outputs)))
 
 
-CLAR3: Final = lazy_inject(GrammarErrorProportionClarityAxiom, injector)
+@inject
+@dataclass(frozen=True, kw_only=True)
+class LanguageToolGrammarErrorCountsClarityAxiom(_LanguageToolErrorCountsClarityAxiom):
+    """
+    Prefer text with fewer grammar errors.
+    """
+
+    enabled_categories: Final[NoInject[Iterable[_LanguageToolCategory]]] = frozenset(
+        {"GRAMMAR"}
+    )
+
+
+CLAR1: Final = lazy_inject(LanguageToolGrammarErrorCountsClarityAxiom, injector)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class SentenceRedundancyClarityAxiom(Axiom[Any, GenerationOutput]):
+class LanguageToolGrammarErrorProportionClarityAxiom(
+    _LanguageToolErrorProportionClarityAxiom
+):
     """
-    Prefer text with less redundant sentences as measured by average similarity of all sentences.
+    Prefer text with a lower proportion of characters covered by grammar errors.
     """
 
-    text_contents: TextContents[GenerationOutput]
-    sentence_tokenizer: SentenceTokenizer
-    sentence_similarity: SentenceSimilarity
-
-    margin_fraction: NoInject[float] = 0.2
-
-    def preference(
-        self,
-        input: Any,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
-    ) -> Preference:
-        similarities1 = self.sentence_similarity.self_similarities(
-            self.sentence_tokenizer.sentences(self.text_contents.contents(output1))
-        )
-        similarities2 = self.sentence_similarity.self_similarities(
-            self.sentence_tokenizer.sentences(self.text_contents.contents(output2))
-        )
-        # TODO: Make aggregation configurable.
-        aggregate_similarity1 = similarities1.mean()
-        aggregate_similarity2 = similarities2.mean()
-        if isclose(
-            aggregate_similarity1,
-            aggregate_similarity2,
-            rel_tol=self.margin_fraction,
-        ):
-            return 0
-        return strictly_less(aggregate_similarity1, aggregate_similarity2)
-
-    def preferences(
-        self,
-        input: Any,
-        outputs: Sequence[GenerationOutput],
-    ) -> PreferenceMatrix:
-        similarities = (
-            self.sentence_similarity.self_similarities(
-                self.sentence_tokenizer.sentences(self.text_contents.contents(output))
-            )
-            for output in tqdm(
-                outputs,
-                desc="Computing sentence similarities",
-                unit="text",
-            )
-        )
-        aggregate_similarities = [similarities.mean() for similarities in similarities]
-        return array(
-            [
-                (
-                    strictly_less(aggregate_similarity1, aggregate_similarity2)
-                    if not isclose(
-                        aggregate_similarity1,
-                        aggregate_similarity2,
-                        rel_tol=self.margin_fraction,
-                    )
-                    else 0
-                )
-                for aggregate_similarity1 in aggregate_similarities
-                for aggregate_similarity2 in aggregate_similarities
-            ],
-            dtype=float_,
-        ).reshape((len(outputs), len(outputs)))
+    enabled_categories: Final[NoInject[Iterable[_LanguageToolCategory]]] = frozenset(
+        {"GRAMMAR"}
+    )
 
 
-CLAR4: Final = lazy_inject(SentenceRedundancyClarityAxiom, injector)
+CLAR2: Final = lazy_inject(LanguageToolGrammarErrorProportionClarityAxiom, injector)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class MisspellingsClarityAxiom(Axiom[Any, GenerationOutput]):
+class LanguageToolSpellingErrorCountsClarityAxiom(_LanguageToolErrorCountsClarityAxiom):
     """
-    Prefer outputs that contain fewer misspellings.
+    Prefer text with fewer spelling errors.
     """
 
-    text_contents: TextContents[GenerationOutput]
-    term_tokenizer: TermTokenizer
-
-    language_name: NoInject[str] = "en"
-    margin_fraction: NoInject[float] = 0.2
-
-    # TODO: Migrate spell checker to tool for dependency injection.
-    @cached_property
-    def _spell_checker(self) -> SpellChecker:
-        return SpellChecker(
-            language=self.language_name,
-        )
-
-    def preference(
-        self,
-        input: Any,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
-    ) -> Preference:
-        return self.preferences(input, [output1, output2])[0, 1]
-
-    def preferences(
-        self,
-        input: Any,
-        outputs: Sequence[GenerationOutput],
-    ) -> PreferenceMatrix:
-        words = (
-            set(self.term_tokenizer.terms(self.text_contents.contents(output)))
-            for output in outputs
-        )
-        misspellings = [
-            (
-                len(self._spell_checker.unknown(words)) / len(words)
-                if len(words) > 0
-                else 0
-            )
-            for words in words
-        ]
-        return array(
-            [
-                (
-                    0
-                    if isclose(
-                        misspellings1,
-                        misspellings2,
-                        rel_tol=self.margin_fraction,
-                    )
-                    else strictly_less(misspellings1, misspellings2)
-                )
-                for misspellings1 in misspellings
-                for misspellings2 in misspellings
-            ],
-            dtype=float_,
-        ).reshape((len(outputs), len(outputs)))
+    enabled_categories: Final[NoInject[Iterable[_LanguageToolCategory]]] = frozenset(
+        {
+            "CASING",
+            "TYPOS",
+        }
+    )
 
 
-CLAR5: Final = lazy_inject(MisspellingsClarityAxiom, injector)
+CLAR3: Final = lazy_inject(LanguageToolSpellingErrorCountsClarityAxiom, injector)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class WordCommonnessClarityAxiom(Axiom[Any, GenerationOutput]):
+class LanguageToolSpellingErrorProportionClarityAxiom(
+    _LanguageToolErrorProportionClarityAxiom
+):
     """
-    Prefer text with more common vocabulary according to some reference corpus, e.g., the Wikipedia.
+    Prefer text with a lower proportion of characters covered by spelling errors.
     """
 
-    text_statistics: TextStatistics[GenerationOutput]
-
-    language: NoInject[str] = "en"
-    margin_fraction: NoInject[float] = 0.0
-
-    @cached_property
-    def _word_frequencies(self) -> Mapping[str, float]:
-        return get_frequency_dict(
-            lang=self.language,
-            wordlist="small",
-        )
-
-    def _commonness(self, term_frequencies: Mapping[str, float]) -> float:
-        word_frequencies = self._word_frequencies
-        terms = sorted(set(word_frequencies.keys()) | set(term_frequencies.keys()))
-        expected_frequencies = array(
-            [word_frequencies.get(term, 0) for term in terms],
-            dtype=float_,
-        )
-        observed_frequencies = array(
-            [term_frequencies.get(term, 0) for term in terms],
-            dtype=float_,
-        )
-        return rel_entr(observed_frequencies, expected_frequencies).sum()
-
-    def preference(
-        self,
-        input: Any,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
-    ) -> Preference:
-        commonnness1 = self._commonness(self.text_statistics.term_frequencies(output1))
-        commonnness2 = self._commonness(self.text_statistics.term_frequencies(output2))
-        if isclose(
-            commonnness1,
-            commonnness2,
-            rel_tol=self.margin_fraction,
-        ):
-            return 0
-        return strictly_less(commonnness1, commonnness2)
-
-    def preferences(
-        self,
-        input: Any,
-        outputs: Sequence[GenerationOutput],
-    ) -> PreferenceMatrix:
-        commonnesses = [
-            self._commonness(self.text_statistics.term_frequencies(output))
-            for output in tqdm(
-                outputs,
-                desc="Computing word commonnesses",
-                unit="text",
-            )
-        ]
-        return array(
-            [
-                (
-                    strictly_less(commonness1, commonness2)
-                    if not isclose(
-                        commonness1,
-                        commonness2,
-                        rel_tol=self.margin_fraction,
-                    )
-                    else 0
-                )
-                for commonness1 in commonnesses
-                for commonness2 in commonnesses
-            ],
-            dtype=float_,
-        ).reshape((len(outputs), len(outputs)))
+    enabled_categories: Final[NoInject[Iterable[_LanguageToolCategory]]] = frozenset(
+        {
+            "CASING",
+            "TYPOS",
+        }
+    )
 
 
-CLAR6: Final = lazy_inject(WordCommonnessClarityAxiom, injector)
+CLAR4: Final = lazy_inject(LanguageToolSpellingErrorProportionClarityAxiom, injector)
+
+
+@inject
+@dataclass(frozen=True, kw_only=True)
+class LanguageToolRepetitionsErrorCountsClarityAxiom(
+    _LanguageToolErrorCountsClarityAxiom
+):
+    """
+    Prefer text with fewer repetitions errors.
+    """
+
+    enabled_categories: Final[NoInject[Iterable[_LanguageToolCategory]]] = frozenset(
+        {"REPETITIONS"}
+    )
+
+
+CLAR5: Final = lazy_inject(LanguageToolRepetitionsErrorCountsClarityAxiom, injector)
+
+
+@inject
+@dataclass(frozen=True, kw_only=True)
+class LanguageToolRepetitionsErrorProportionClarityAxiom(
+    _LanguageToolErrorProportionClarityAxiom
+):
+    """
+    Prefer text with a lower proportion of characters covered by repetitions errors.
+    """
+
+    enabled_categories: Final[NoInject[Iterable[_LanguageToolCategory]]] = frozenset(
+        {"REPETITIONS"}
+    )
+
+
+CLAR6: Final = lazy_inject(LanguageToolRepetitionsErrorProportionClarityAxiom, injector)
 
 
 @inject
@@ -551,11 +372,11 @@ class FleschReadingEaseClarityAxiom(Axiom[Any, GenerationOutput]):
             self._language(self.text_contents.contents(output)) for output in outputs
         )
         flesch_reading_eases = [
-            flesch_reading_ease(document)
+            flesch_reading_ease(document) if len(document) > 0 else nan
             for document in tqdm(
                 documents,
                 total=len(outputs),
-                desc="Computing Flesch reading ease",
+                desc="Flesch reading eases",
                 unit="output",
             )
         ]

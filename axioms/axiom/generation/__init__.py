@@ -1,17 +1,17 @@
 # Re-export from sub-modules.
 
 from axioms.axiom.generation.clarity import (  # noqa: F401
-    GrammarErrorsClarityAxiom,
+    LanguageToolGrammarErrorCountsClarityAxiom,
     CLAR1,
-    GrammarErrorTypesClarityAxiom,
+    LanguageToolGrammarErrorProportionClarityAxiom,
     CLAR2,
-    GrammarErrorProportionClarityAxiom,
+    LanguageToolSpellingErrorCountsClarityAxiom,
     CLAR3,
-    SentenceRedundancyClarityAxiom,
+    LanguageToolSpellingErrorProportionClarityAxiom,
     CLAR4,
-    MisspellingsClarityAxiom,
+    LanguageToolRepetitionsErrorCountsClarityAxiom,
     CLAR5,
-    WordCommonnessClarityAxiom,
+    LanguageToolRepetitionsErrorProportionClarityAxiom,
     CLAR6,
     FleschReadingEaseClarityAxiom,
     CLAR7,
