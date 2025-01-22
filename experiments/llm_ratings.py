@@ -12,7 +12,7 @@ from cyclopts.types import ResolvedExistingFile, ResolvedDirectory
 from dotenv import load_dotenv, find_dotenv
 from pandas import DataFrame
 from ray import init
-from ray.data import read_json
+from ray.data import read_json, Dataset, DataContext
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.modeling_utils import PreTrainedModel
 from transformers.tokenization_utils import PreTrainedTokenizer
@@ -85,6 +85,8 @@ class _Rater:
 
     @cached_property
     def _tokenizer(self) -> PreTrainedTokenizer:
+        if find_dotenv():
+            load_dotenv()
         return AutoTokenizer.from_pretrained(self.model_name)
 
     def rate(self, batch: DataFrame) -> DataFrame:
@@ -118,13 +120,10 @@ class _Rater:
         # Prepare input-output examples.
         examples = [
             Example(
-                input=input,
-                output=[
-                    row["raw_text_1"],
-                    row["raw_text_2"],
-                ],
+                prompt=input,
+                completions=[row["raw_text"]],
                 end_of_prompt="",
-                normalize=True,
+                normalize=False,
             )
             for input, (_, row) in zip(inputs, batch.iterrows())
         ]
@@ -136,32 +135,20 @@ class _Rater:
             show_progress_bar=False,
             batch_size=2,
             batch_size_completions=2,
-        )
-
-        probabilities1 = probabilities[:, 0]
-        probabilities2 = probabilities[:, 1]
+        )[:, 0]
 
         # Construct the output DataFrame.
-        batch["probability_1"] = probabilities1
-        batch["probability_2"] = probabilities2
+        batch["probability"] = probabilities
 
         return batch[
             [
                 "topic",
                 "query",
-                "response_1",
-                "raw_text_1",
-                "probability_1",
-                "response_2",
-                "raw_text_2",
-                "probability_2",
+                "response",
+                "raw_text",
+                "probability",
             ]
         ]
-
-
-def _cross_topic(df: DataFrame) -> DataFrame:
-    df = df.merge(df, on=["topic", "query"], how="cross", suffixes=("_1", "_2"))
-    return df
 
 
 cli = App()
@@ -171,23 +158,25 @@ cli = App()
 def rate_llm_responses(
     model_name: str = "HuggingFaceTB/SmolLM-135M-Instruct",
     references_top_k: int = 5,
-    input_path: ResolvedExistingFile = Path("data/crowd/responses.jsonl.gz"),
+    input_path: ResolvedExistingFile = Path(
+        "/mnt/ceph/storage/data-in-progress/data-research/web-search/axioms/crowd/responses.jsonl.gz"
+    ),
     output_path: ResolvedDirectory = Path(
         "/mnt/ceph/storage/data-in-progress/data-research/web-search/axioms/llm-ratings"
     ),
 ) -> None:
     init()
 
-    dataset = read_json(str(input_path))
-    dataset = dataset.select_columns(
-        ["topic", "query", "response", "style", "references_texts", "raw_text"]
+    data_context = DataContext.get_current()
+    data_context.enable_tensor_extension_casting = False
+
+    dataset: Dataset = read_json(
+        paths=str(input_path),
+        concurrency=10,
     )
-    grouped = dataset.groupby("topic")
-    dataset = grouped.map_groups(
-        _cross_topic,
-        batch_format="pandas",
-        num_cpus=0.5,
-        concurrency=20,
+    dataset = dataset.select_columns(
+        cols=["topic", "query", "response", "style", "references_texts", "raw_text"],
+        concurrency=10,
     )
 
     rater = _Rater(
@@ -195,15 +184,21 @@ def rate_llm_responses(
         references_top_k=references_top_k,
     )
 
+    is_large = (
+        "1.7B" in model_name
+        or "1B" in model_name
+        or "Phi-3-mini" in model_name
+        or "B-Instruct" in model_name.casefold()
+    )
+
     dataset = dataset.map_batches(
         rater.rate,
         zero_copy_batch=True,
-        batch_size=1,
+        batch_size=32,
         batch_format="pandas",
-        num_cpus=1,
-        num_gpus=0 if "1.7B" in model_name else 0.5,
-        accelerator_type="A100-20GB" if "1.7B" in model_name else "GeForce-GTX-1080",
-        memory=20 * 1024 * 1024 * 1024,
+        num_gpus=1 if is_large else 0.5,
+        accelerator_type="A100-10GB" if False else "GeForce-GTX-1080",
+        # memory=20 * 1024 * 1024 * 1024,
         concurrency=10,
         max_retries=10,
     )
