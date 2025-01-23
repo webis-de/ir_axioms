@@ -1,4 +1,11 @@
-# Clarity: generated text is comprehensible and clearly communicates the key information/sources
+"""
+Clarity axioms for retrieval-augmented generation.
+
+For a definition of this utility dimension, see: https://doi.org/10.1145/3626772.3657849
+
+- Language clarity: Is the response concise, comprehensible, lexically and grammatically correct, and user-accessible?
+- Content clarity: Does the response clearly communicate the most salient information and where it stems from?
+"""
 
 from dataclasses import dataclass
 from functools import cached_property
@@ -45,78 +52,6 @@ _LanguageToolCategory: TypeAlias = Literal[
     "TYPOS",
     "WIKIPEDIA",
 ]
-
-
-@inject
-@dataclass(frozen=True, kw_only=True)
-class _LanguageToolErrorCountsClarityAxiom(Axiom[Any, GenerationOutput]):
-    """
-    Prefer text with fewer errors found by language tool.
-    """
-
-    text_contents: TextContents[GenerationOutput]
-
-    language: NoInject[str] = "en-US"
-    enabled_categories: NoInject[Iterable[_LanguageToolCategory]] = frozenset()
-    margin_fraction: NoInject[float] = 0.0
-
-    @cached_property
-    def _language_tool(self) -> LanguageTool:
-        # TODO: Make the grammar checker a configurable dependency.
-        language_tool = LanguageTool(language=self.language)
-        language_tool.enabled_categories = set(self.enabled_categories)
-        language_tool.enabled_rules_only = True
-        return language_tool
-
-    def preference(
-        self,
-        input: Any,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
-    ) -> Preference:
-        matches1 = self._language_tool.check(self.text_contents.contents(output1))
-        matches2 = self._language_tool.check(self.text_contents.contents(output2))
-        num_matches1 = len(matches1)
-        num_matches2 = len(matches2)
-        if isclose(
-            num_matches1,
-            num_matches2,
-            rel_tol=self.margin_fraction,
-        ):
-            return 0
-        return strictly_less(num_matches1, num_matches2)
-
-    def preferences(
-        self,
-        input: Any,
-        outputs: Sequence[GenerationOutput],
-    ) -> PreferenceMatrix:
-        matches = (
-            self._language_tool.check(self.text_contents.contents(output))
-            for output in tqdm(
-                outputs,
-                desc="Check grammar",
-                unit="output",
-            )
-        )
-        num_matches = [len(matches) for matches in matches]
-        print(num_matches)
-        return array(
-            [
-                (
-                    strictly_less(num_matches1, num_matches2)
-                    if not isclose(
-                        num_matches1,
-                        num_matches2,
-                        rel_tol=self.margin_fraction,
-                    )
-                    else 0
-                )
-                for num_matches1 in num_matches
-                for num_matches2 in num_matches
-            ],
-            dtype=float_,
-        ).reshape((len(outputs), len(outputs)))
 
 
 @inject
@@ -225,21 +160,6 @@ class _LanguageToolErrorProportionClarityAxiom(Axiom[Any, GenerationOutput]):
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class LanguageToolGrammarErrorCountsClarityAxiom(_LanguageToolErrorCountsClarityAxiom):
-    """
-    Prefer text with fewer grammar errors.
-    """
-
-    enabled_categories: Final[NoInject[Iterable[_LanguageToolCategory]]] = frozenset(
-        {"GRAMMAR"}
-    )
-
-
-CLAR1: Final = lazy_inject(LanguageToolGrammarErrorCountsClarityAxiom, injector)
-
-
-@inject
-@dataclass(frozen=True, kw_only=True)
 class LanguageToolGrammarErrorProportionClarityAxiom(
     _LanguageToolErrorProportionClarityAxiom
 ):
@@ -253,78 +173,6 @@ class LanguageToolGrammarErrorProportionClarityAxiom(
 
 
 CLAR2: Final = lazy_inject(LanguageToolGrammarErrorProportionClarityAxiom, injector)
-
-
-@inject
-@dataclass(frozen=True, kw_only=True)
-class LanguageToolSpellingErrorCountsClarityAxiom(_LanguageToolErrorCountsClarityAxiom):
-    """
-    Prefer text with fewer spelling errors.
-    """
-
-    enabled_categories: Final[NoInject[Iterable[_LanguageToolCategory]]] = frozenset(
-        {
-            "CASING",
-            "TYPOS",
-        }
-    )
-
-
-CLAR3: Final = lazy_inject(LanguageToolSpellingErrorCountsClarityAxiom, injector)
-
-
-@inject
-@dataclass(frozen=True, kw_only=True)
-class LanguageToolSpellingErrorProportionClarityAxiom(
-    _LanguageToolErrorProportionClarityAxiom
-):
-    """
-    Prefer text with a lower proportion of characters covered by spelling errors.
-    """
-
-    enabled_categories: Final[NoInject[Iterable[_LanguageToolCategory]]] = frozenset(
-        {
-            "CASING",
-            "TYPOS",
-        }
-    )
-
-
-CLAR4: Final = lazy_inject(LanguageToolSpellingErrorProportionClarityAxiom, injector)
-
-
-@inject
-@dataclass(frozen=True, kw_only=True)
-class LanguageToolRepetitionsErrorCountsClarityAxiom(
-    _LanguageToolErrorCountsClarityAxiom
-):
-    """
-    Prefer text with fewer repetitions errors.
-    """
-
-    enabled_categories: Final[NoInject[Iterable[_LanguageToolCategory]]] = frozenset(
-        {"REPETITIONS"}
-    )
-
-
-CLAR5: Final = lazy_inject(LanguageToolRepetitionsErrorCountsClarityAxiom, injector)
-
-
-@inject
-@dataclass(frozen=True, kw_only=True)
-class LanguageToolRepetitionsErrorProportionClarityAxiom(
-    _LanguageToolErrorProportionClarityAxiom
-):
-    """
-    Prefer text with a lower proportion of characters covered by repetitions errors.
-    """
-
-    enabled_categories: Final[NoInject[Iterable[_LanguageToolCategory]]] = frozenset(
-        {"REPETITIONS"}
-    )
-
-
-CLAR6: Final = lazy_inject(LanguageToolRepetitionsErrorProportionClarityAxiom, injector)
 
 
 @inject

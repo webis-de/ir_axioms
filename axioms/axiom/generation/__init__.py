@@ -1,18 +1,8 @@
 # Re-export from sub-modules.
 
 from axioms.axiom.generation.clarity import (  # noqa: F401
-    LanguageToolGrammarErrorCountsClarityAxiom,
-    CLAR1,
     LanguageToolGrammarErrorProportionClarityAxiom,
     CLAR2,
-    LanguageToolSpellingErrorCountsClarityAxiom,
-    CLAR3,
-    LanguageToolSpellingErrorProportionClarityAxiom,
-    CLAR4,
-    LanguageToolRepetitionsErrorCountsClarityAxiom,
-    CLAR5,
-    LanguageToolRepetitionsErrorProportionClarityAxiom,
-    CLAR6,
     FleschReadingEaseClarityAxiom,
     CLAR7,
 )
@@ -20,31 +10,13 @@ from axioms.axiom.generation.clarity import (  # noqa: F401
 from axioms.axiom.generation.coherence import (  # noqa: F401
     WordLengthDeviationCoherenceAxiom,
     COH1,
-    SentenceLengthDeviationCoherenceAxiom,
-    COH2,
-    TenseSwitchingCoherenceAxiom,
-    COH3,
-    CoreferenceClusterClosenessCoherenceAxiom,
-    COH4,
-    DirectAnswerLengthCoherenceAxiom,
-    COH5,
     SubjectVerbClosenessCoherenceAxiom,
     COH6,
 )
 
 from axioms.axiom.generation.consistency import (  # noqa: F401
-    AspectOverlapConsistenyAxiom,
-    CONS1,
-    AspectJaccardConsistencyAxiom,
-    CONS2,
-    AspectSimilarityConsistencyAxiom,
-    CONS3,
     EntityContradictionConsistencyAxiom,
     CONS4,
-    BleuConsistencyAxiom,
-    CONS5,
-    SentenceSimilarityConsistencyAxiom,
-    CONS6,
     RougeConsistencyAxiom,
     CONS7,
     AspectSimilaritySentenceCountConsistencyAxiom,
@@ -52,31 +24,15 @@ from axioms.axiom.generation.consistency import (  # noqa: F401
 )
 
 from axioms.axiom.generation.correctness import (  # noqa: F401
-    UrlSentenceCorrectnessAxiom,
-    CORR1,
     CitationSentenceCorrectnessAxiom,
     CORR2,
 )
 
 from axioms.axiom.generation.coverage import (  # noqa: F401
-    AspectOverlapCoverageAxiom,
-    COV1,
-    AspectJaccardCoverageAxiom,
-    COV2,
-    AspectSimilarityCoverageAxiom,
-    COV3,
     AspectCountCoverageAxiom,
     COV4,
     AspectRedundancyCoverageAxiom,
     COV5,
-    BleuCoverageAxiom,
-    COV6,
-    AspectRedundancy2CoverageAxiom,
-    COV7,
-    EntitySentenceCountCoverageAxiom,
-    COV8,
-    EntityOverlapCoverageAxiom,
-    COV9,
     AspectSimilaritySentenceCountCoverageAxiom,
     COV10,
 )
