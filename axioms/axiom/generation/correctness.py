@@ -132,4 +132,4 @@ class CitationSentenceCorrectnessAxiom(Axiom[Any, GenerationOutput]):
         ).reshape((len(outputs), len(outputs)))
 
 
-CORR2: Final = lazy_inject(CitationSentenceCorrectnessAxiom, injector)
+CORR1: Final = lazy_inject(CitationSentenceCorrectnessAxiom, injector)

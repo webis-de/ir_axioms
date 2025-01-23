@@ -172,7 +172,7 @@ class LanguageToolGrammarErrorProportionClarityAxiom(
     )
 
 
-CLAR2: Final = lazy_inject(LanguageToolGrammarErrorProportionClarityAxiom, injector)
+CLAR1: Final = lazy_inject(LanguageToolGrammarErrorProportionClarityAxiom, injector)
 
 
 @inject
@@ -246,4 +246,4 @@ class FleschReadingEaseClarityAxiom(Axiom[Any, GenerationOutput]):
         ).reshape((len(outputs), len(outputs)))
 
 
-CLAR7: Final = lazy_inject(FleschReadingEaseClarityAxiom, injector)
+CLAR2: Final = lazy_inject(FleschReadingEaseClarityAxiom, injector)

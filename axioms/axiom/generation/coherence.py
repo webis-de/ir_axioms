@@ -248,7 +248,7 @@ class SubjectVerbClosenessCoherenceAxiom(Axiom[Any, GenerationOutput]):
         ).reshape((len(outputs), len(outputs)))
 
 
-COH6: Final = lazy_inject(SubjectVerbClosenessCoherenceAxiom, injector)
+COH2: Final = lazy_inject(SubjectVerbClosenessCoherenceAxiom, injector)
 
 
 # TODO: Topic position and stess position by looking up if noun chunks appear in the beginning or end of the sentence.

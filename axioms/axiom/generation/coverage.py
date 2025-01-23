@@ -100,7 +100,7 @@ class AspectCountCoverageAxiom(Axiom[Any, GenerationOutput]):
         ).reshape((len(outputs), len(outputs)))
 
 
-COV4: Final = lazy_inject(AspectCountCoverageAxiom, injector)
+COV1: Final = lazy_inject(AspectCountCoverageAxiom, injector)
 
 
 @inject
@@ -177,7 +177,7 @@ class AspectRedundancyCoverageAxiom(Axiom[Any, GenerationOutput]):
         ).reshape((len(outputs), len(outputs)))
 
 
-COV5: Final = lazy_inject(AspectRedundancyCoverageAxiom, injector)
+COV2: Final = lazy_inject(AspectRedundancyCoverageAxiom, injector)
 
 
 @inject
@@ -287,6 +287,6 @@ class AspectSimilaritySentenceCountCoverageAxiom(
         ).reshape((len(outputs), len(outputs)))
 
 
-COV10: Final = lazy_inject(AspectSimilaritySentenceCountCoverageAxiom, injector)
+COV3: Final = lazy_inject(AspectSimilaritySentenceCountCoverageAxiom, injector)
 
 # TODO: Weighted aspect similarity sentence length axiom.

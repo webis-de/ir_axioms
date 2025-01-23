@@ -2,39 +2,39 @@
 
 from axioms.axiom.generation.clarity import (  # noqa: F401
     LanguageToolGrammarErrorProportionClarityAxiom,
-    CLAR2,
+    CLAR1,
     FleschReadingEaseClarityAxiom,
-    CLAR7,
+    CLAR2,
 )
 
 from axioms.axiom.generation.coherence import (  # noqa: F401
     WordLengthDeviationCoherenceAxiom,
     COH1,
     SubjectVerbClosenessCoherenceAxiom,
-    COH6,
+    COH2,
 )
 
 from axioms.axiom.generation.consistency import (  # noqa: F401
-    EntityContradictionConsistencyAxiom,
-    CONS4,
-    RougeConsistencyAxiom,
-    CONS7,
     AspectSimilaritySentenceCountConsistencyAxiom,
-    CONS8,
+    CONS1,
+    RougeConsistencyAxiom,
+    CONS2,
+    EntityContradictionConsistencyAxiom,
+    CONS3,
 )
 
 from axioms.axiom.generation.correctness import (  # noqa: F401
     CitationSentenceCorrectnessAxiom,
-    CORR2,
+    CORR1,
 )
 
 from axioms.axiom.generation.coverage import (  # noqa: F401
     AspectCountCoverageAxiom,
-    COV4,
+    COV1,
     AspectRedundancyCoverageAxiom,
-    COV5,
+    COV2,
     AspectSimilaritySentenceCountCoverageAxiom,
-    COV10,
+    COV3,
 )
 
 from axioms.axiom.generation.crowd import (  # noqa: F401
