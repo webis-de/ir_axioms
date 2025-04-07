@@ -54,7 +54,7 @@ test =[
     "flake8>=6.1,<8.0",
     "pylint~=3.0",
     "pytest>=7.2,<9.0",
-    "pytest-cov>=4,<6",
+    "pytest-cov>=4,<7",
     "python-terrier~=0.10.0",
 ]
 examples =[
