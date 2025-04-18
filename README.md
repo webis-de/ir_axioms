@@ -11,7 +11,7 @@
 
 # ↕️ axioms
 
-Axiomatic constraints for (generative) information retrieval.
+Axiomatic constraints for information retrieval and retrieval-augmented generation.
 
 ## Installation
 
