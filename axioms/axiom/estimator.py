@@ -1,9 +1,10 @@
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Sequence, Iterable
 
 from numpy import ndarray, stack
 from sklearn.utils._response import is_classifier
+from tqdm.auto import tqdm
 from typing_extensions import Protocol, Self  # type: ignore
 
 from axioms.axiom.base import Axiom
@@ -16,8 +17,7 @@ class EstimatorAxiom(Axiom[Input, Output], ABC):
     def fit(
         self,
         target: Axiom,
-        input: Input,
-        outputs: Sequence[Output],
+        inputs_outputs: Iterable[tuple[Input, Sequence[Output]]],
     ) -> None:
         pass
 
@@ -38,24 +38,47 @@ class ScikitLearnEstimatorAxiom(EstimatorAxiom[Input, Output], ABC):
     def fit(
         self,
         target: Axiom,
-        input: Input,
-        outputs: Sequence[Output],
+        inputs_outputs: Iterable[tuple[Input, Sequence[Output]]],
     ) -> None:
         num_axioms = len(self.axioms)
-        num_outputs = len(outputs)
 
         preferences_x = stack(
-            [axiom.preferences(input, outputs) for axiom in self.axioms]
+            [
+                stack(
+                    [
+                        axiom.preferences(input, outputs)
+                        for input, outputs in tqdm(
+                            inputs_outputs,
+                            desc="Feature preferences",
+                            unit="query",
+                        )
+                    ]
+                )
+                for axiom in self.axioms
+            ]
         )
-        preferences_x = preferences_x.reshape((num_outputs * num_outputs, num_axioms))
+        print(preferences_x.shape)
+        preferences_x = preferences_x.reshape((num_axioms, -1))
+        print(preferences_x.shape)
 
         if is_classifier(self.estimator):
             # If estimator is classifier, normalize target preferences.
             # This will generate the classes: -1, 0, 1
             target = target.normalized()
 
-        preferences_y = target.preferences(input, outputs)
-        preferences_y = preferences_y.reshape(num_outputs * num_outputs)
+        preferences_y = stack(
+            [
+                target.preferences(input, outputs)
+                for input, outputs in tqdm(
+                    inputs_outputs,
+                    desc="Target preferences",
+                    unit="query",
+                )
+            ]
+        )
+        print(preferences_y.shape)
+        preferences_y = preferences_y.reshape(-1)
+        print(preferences_y.shape)
 
         self.estimator.fit(preferences_x, preferences_y)
 
