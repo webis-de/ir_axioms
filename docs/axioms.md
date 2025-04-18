@@ -1,6 +1,6 @@
 # Axiom Details
 
-Below, we provide an overview and mapping of various [utility dimensions](#utility-dimensions) described in related work to the [implemented axioms](#axioms-for-utility-dimensions).
+Below, we provide an overview and mapping of various [utility dimensions](#utility-dimensions) described in related work to the [implemented axioms](#axioms-for-utility-dimensions). Because this library not yet comprehensibly covers all aspects of response quality in retrieval-augmented generation, we provide a [list of "missing" axioms and ideas](#missing-axioms-and-axiom-ideas)
 
 ## Utility Dimensions
 
@@ -59,3 +59,19 @@ The following list matches our new proposed axioms (and existing axioms) to the 
 - [CORR1](/axioms/axiom/generation/correctness.py) "Prefer response with more sentences containing citations." (correctness)
 - [CLAR1](/axioms/axiom/generation/clarity.py) "Prefer lower text proportion covered by grammar errors." (clarity)
 - [CLAR2](/axioms/axiom/generation/clarity.py) "Prefer the more readable reponse." (clarity)
+
+## Missing Axioms and Axiom Ideas
+
+The [above axioms](#axioms-for-utility-dimensions) not yet completely cover all individual aspects of response quality. The below list contains ideas on how to extend the set of axioms further:
+
+- Factual-grounding-based axioms (main obstacle: fact checking often uses opaque models)
+- Axioms from the viewpoint of the query, like EXAM/RUBRIC
+- Content clarity axioms based on discourse structure
+- More aspects of stylistic coherence
+- Penalize too many tense switches
+- Prefer response with easier coreference resolution
+- Consider other citation format or URLs for citation count
+- Axioms for multi-modal outputs (e.g., generated images)
+
+We are happy to collaborate to get more diverse axioms implemented.
+Please [create a pull request](#todo) to propose new ideas and refer to our [guide on axiom development](./axiom-development.md) to realize an idea as code.
