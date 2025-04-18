@@ -367,5 +367,3 @@ class EntityContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
 
 
 CONS3: Final = lazy_inject(EntityContradictionConsistencyAxiom, injector)
-
-# TODO: How many of the context documents were cited in the output?

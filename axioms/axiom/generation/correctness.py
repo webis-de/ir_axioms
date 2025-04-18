@@ -14,7 +14,6 @@ within the scope of the user's information need?
 #   - Implementation: Extract sentences containing aspects from input, then find contradictions of the retrieved context as evidence.
 # Topical correctness:
 # - [ ] Topical relevance/alignment (-> use retrieval axioms?)
-# TODO: Propose axioms for correctness.
 
 
 from dataclasses import dataclass
