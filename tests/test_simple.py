@@ -1,5 +1,5 @@
-from axioms.axiom import NOP, ORIG, ORACLE
-from axioms.model import Query, Document, RankedDocument, ScoredDocument, JudgedDocument
+from ir_axioms.axiom import NOP, ORIG, ORACLE
+from ir_axioms.model import Query, Document, RankedDocument, ScoredDocument, JudgedDocument
 
 
 def test_nop():

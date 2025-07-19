@@ -1,17 +1,19 @@
-[![CI status](https://img.shields.io/github/actions/workflow/status/janheinrichmerker/axioms/ci.yml?branch=main&style=flat-square)](https://github.com/janheinrichmerker/axioms/actions/workflows/ci.yml)
-[![Code coverage](https://img.shields.io/codecov/c/github/janheinrichmerker/axioms?style=flat-square)](https://codecov.io/github/janheinrichmerker/axioms/)
-[![Maintenance](https://img.shields.io/maintenance/yes/2024?style=flat-square)](https://github.com/janheinrichmerker/axioms/graphs/contributors)  
-[![PyPI version](https://img.shields.io/pypi/v/axioms?style=flat-square)](https://pypi.org/project/axioms/)
-[![PyPI downloads](https://img.shields.io/pypi/dm/axioms?style=flat-square)](https://pypi.org/project/axioms/)
-[![Python versions](https://img.shields.io/pypi/pyversions/axioms?style=flat-square)](https://pypi.org/project/axioms/)  
-[![Issues](https://img.shields.io/github/issues/janheinrichmerker/axioms?style=flat-square)](https://github.com/janheinrichmerker/axioms/issues)
-[![Pull requests](https://img.shields.io/github/issues-pr/janheinrichmerker/axioms?style=flat-square)](https://github.com/janheinrichmerker/axioms/pulls)
-[![Commit activity](https://img.shields.io/github/commit-activity/m/janheinrichmerker/axioms?style=flat-square)](https://github.com/janheinrichmerker/axioms/commits)
-[![License](https://img.shields.io/github/license/janheinrichmerker/axioms?style=flat-square)](LICENSE)
+[![CI status](https://img.shields.io/github/actions/workflow/status/webis-de/ir_axioms/ci.yml?branch=main&style=flat-square)](https://github.com/webis-de/ir_axioms/actions/workflows/ci.yml)
+[![Code coverage](https://img.shields.io/codecov/c/github/webis-de/ir_axioms?style=flat-square)](https://codecov.io/github/webis-de/ir_axioms/)
+[![Maintenance](https://img.shields.io/maintenance/yes/2025?style=flat-square)](https://github.com/webis-de/ir_axioms/graphs/contributors)  
+[![PyPI version](https://img.shields.io/pypi/v/ir-axioms?style=flat-square)](https://pypi.org/project/ir-axioms/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/ir-axioms?style=flat-square)](https://pypi.org/project/ir-axioms/)
+[![Python versions](https://img.shields.io/pypi/pyversions/ir-axioms?style=flat-square)](https://pypi.org/project/ir-axioms/)  
+[![Issues](https://img.shields.io/github/issues/webis-de/ir_axioms?style=flat-square)](https://github.com/webis-de/ir_axioms/issues)
+[![Pull requests](https://img.shields.io/github/issues-pr/webis-de/ir_axioms?style=flat-square)](https://github.com/webis-de/ir_axioms/pulls)
+[![Commit activity](https://img.shields.io/github/commit-activity/m/webis-de/ir_axioms?style=flat-square)](https://github.com/webis-de/ir_axioms/commits)
+[![License](https://img.shields.io/github/license/webis-de/ir_axioms?style=flat-square)](LICENSE)
 
-# ↕️ axioms
+# ↕️ ir_axioms
 
 Axiomatic constraints for information retrieval and retrieval-augmented generation.
+
+_Note: If you're looking out for `ir_axioms`<1.0, please [go here]()._
 
 ## Installation
 
@@ -59,9 +61,9 @@ pytest .                       # Unit tests
 
 ## Contribute
 
-If you have found an important feature missing from our tool, please suggest it by creating an [issue](https://github.com/janheinrichmerker/axioms/issues). We also gratefully accept [pull requests](https://github.com/janheinrichmerker/axioms/pulls)!
+If you have found an important feature missing from our tool, please suggest it by creating an [issue](https://github.com/webis-de/ir_axioms/issues). We also gratefully accept [pull requests](https://github.com/webis-de/ir_axioms/pulls)!
 
-If you are unsure about anything, post an [issue](https://github.com/janheinrichmerker/axioms/issues/new) or contact us:
+If you are unsure about anything, post an [issue](https://github.com/webis-de/ir_axioms/issues/new) or contact us:
 
 - [heinrich.merker@uni-jena.de](mailto:heinrich.merker@uni-jena.de)
 

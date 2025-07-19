@@ -1,4 +1,4 @@
-from axioms.axiom import (
+from ir_axioms.axiom import (
     LEN_AND,
     LEN_DIV,
     LEN_M_AND,
@@ -8,8 +8,8 @@ from axioms.axiom import (
     M_AND,
     DIV,
 )
-from axioms.model import TextQuery, TextDocument
-from axioms.precondition import LEN
+from ir_axioms.model import TextQuery, TextDocument
+from ir_axioms.precondition import LEN
 from tests.util import inject_documents
 
 

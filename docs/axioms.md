@@ -52,17 +52,17 @@ Several frameworks describe utility dimensions of retrieval-augmented generation
 
 The following list matches our new proposed axioms (and existing axioms) to the utility aspects they address as per the categorization by Gienapp et al. (see above):
 
-- [COH1](/axioms/axiom/generation/coherence.py) "Prefer less variance in avg. word length across sents." (coherence)
-- [COH2](/axioms/axiom/generation/coherence.py) "Prefer response with subject–verb pairs closer togehter." (coherence)
-- [COV1](/axioms/axiom/generation/coverage.py) "Prefer response containing more extracted aspects." (coverage)
-- [COV2](/axioms/axiom/generation/coverage.py) "Prefer response with less redundant extracted aspects." (coverage)
-- [COV3](/axioms/axiom/generation/coverage.py) "Prefer if more sentences cover aspects from the query." (coverage)
-- [CONS1](/axioms/axiom/generation/consistency.py) "Prefer if more sentences cover aspects from the context." (consistency)
-- [CONS2](/axioms/axiom/generation/consistency.py) "Prefer response with higher textual overlap with contexts." (consistency)
-- [CONS3](/axioms/axiom/generation/consistency.py) "Penalize entities mentioned in contradictory phrases." (consistency)
-- [CORR1](/axioms/axiom/generation/correctness.py) "Prefer response with more sentences containing citations." (correctness)
-- [CLAR1](/axioms/axiom/generation/clarity.py) "Prefer lower text proportion covered by grammar errors." (clarity)
-- [CLAR2](/axioms/axiom/generation/clarity.py) "Prefer the more readable reponse." (clarity)
+- [COH1](/ir_axioms/axiom/generation/coherence.py) "Prefer less variance in avg. word length across sents." (coherence)
+- [COH2](/ir_axioms/axiom/generation/coherence.py) "Prefer response with subject–verb pairs closer togehter." (coherence)
+- [COV1](/ir_axioms/axiom/generation/coverage.py) "Prefer response containing more extracted aspects." (coverage)
+- [COV2](/ir_axioms/axiom/generation/coverage.py) "Prefer response with less redundant extracted aspects." (coverage)
+- [COV3](/ir_axioms/axiom/generation/coverage.py) "Prefer if more sentences cover aspects from the query." (coverage)
+- [CONS1](/ir_axioms/axiom/generation/consistency.py) "Prefer if more sentences cover aspects from the context." (consistency)
+- [CONS2](/ir_axioms/axiom/generation/consistency.py) "Prefer response with higher textual overlap with contexts." (consistency)
+- [CONS3](/ir_axioms/axiom/generation/consistency.py) "Penalize entities mentioned in contradictory phrases." (consistency)
+- [CORR1](/ir_axioms/axiom/generation/correctness.py) "Prefer response with more sentences containing citations." (correctness)
+- [CLAR1](/ir_axioms/axiom/generation/clarity.py) "Prefer lower text proportion covered by grammar errors." (clarity)
+- [CLAR2](/ir_axioms/axiom/generation/clarity.py) "Prefer the more readable reponse." (clarity)
 
 ## Missing Axioms and Axiom Ideas
 

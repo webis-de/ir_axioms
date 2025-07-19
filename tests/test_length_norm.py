@@ -1,5 +1,5 @@
-from axioms.axiom import LNC1, TF_LNC
-from axioms.model import TextQuery, TextDocument
+from ir_axioms.axiom import LNC1, TF_LNC
+from ir_axioms.model import TextQuery, TextDocument
 from tests.util import inject_documents
 
 

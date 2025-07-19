@@ -1,5 +1,5 @@
-from axioms.axiom import LB1
-from axioms.model import TextQuery, ScoredTextDocument
+from ir_axioms.axiom import LB1
+from ir_axioms.model import TextQuery, ScoredTextDocument
 from tests.util import inject_documents
 
 

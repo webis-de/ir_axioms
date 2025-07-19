@@ -1,8 +1,8 @@
 from numpy import ones
 from pytest import approx
 
-from axioms.axiom import UniformAxiom, VoteAxiom
-from axioms.model import Query, Document
+from ir_axioms.axiom import UniformAxiom, VoteAxiom
+from ir_axioms.model import Query, Document
 
 
 def test_uniform():

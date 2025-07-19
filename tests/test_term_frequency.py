@@ -1,6 +1,6 @@
-from axioms.axiom import LEN_M_TDC, TFC1, TFC3, M_TDC
-from axioms.model import TextQuery, TextDocument
-from axioms.precondition import LEN
+from ir_axioms.axiom import LEN_M_TDC, TFC1, TFC3, M_TDC
+from ir_axioms.model import TextQuery, TextDocument
+from ir_axioms.precondition import LEN
 from tests.util import inject_documents
 
 

@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 Style: TypeAlias = Literal["bullet", "essay", "news"]
 
-_NAMESPACE_UUID: UUID = uuid5(NAMESPACE_URL, "axioms")
+_NAMESPACE_UUID: UUID = uuid5(NAMESPACE_URL, "ir_axioms")
 
 _BASE_PROMPT: str = """You are an agent for Retrieval-Augmented Generation. 
 You are given a search request ('topic') and a list of reference documents, just like a search engine would return them.
@@ -189,9 +189,9 @@ def generate_llm_responses(
     num_return_sequences: int = 5,
     max_new_tokens: int = 1000,
     references_top_k: int = 5,
-    input_path: ResolvedExistingFile = Path("/mnt/ceph/storage/data-in-progress/data-research/web-search/axioms/crowd/study1_retrieval.jsonl.gz"),
+    input_path: ResolvedExistingFile = Path("/mnt/ceph/storage/data-in-progress/data-research/web-search/ir_axioms/crowd/study1_retrieval.jsonl.gz"),
     output_path: ResolvedDirectory = Path(
-        "/mnt/ceph/storage/data-in-progress/data-research/web-search/axioms/llm-responses"
+        "/mnt/ceph/storage/data-in-progress/data-research/web-search/ir_axioms/llm-responses"
     ),
 ) -> None:
     init()

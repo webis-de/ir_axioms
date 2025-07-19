@@ -1,7 +1,7 @@
 from typing import Callable
 from pytest import fixture, FixtureRequest
 
-from axioms.axiom import (
+from ir_axioms.axiom import (
     Axiom,
     ArgUC,
     QTArg,
@@ -31,7 +31,7 @@ from axioms.axiom import (
     STMC1,
     STMC2,
 )
-from axioms.model import TextQuery, ScoredTextDocument
+from ir_axioms.model import TextQuery, ScoredTextDocument
 from tests.util import inject_documents
 
 

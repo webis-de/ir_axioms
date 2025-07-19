@@ -1,5 +1,5 @@
 [project]
-name = "axioms"
+name = "ir_axioms"
 authors = [
     {name = "Jan Heinrich Merker", email = "heinrich.merker@uni-jena.de"},
     {name = "Alexander Bondarenko", email = "alexander.bondarenko@uni-jena.de"},
@@ -7,8 +7,9 @@ authors = [
     {name = "Benno Stein", email = "benno.stein@uni-weimar.de"},
     {name = "Michael Völske", email = "michael.voelske@uni-weimar.de"},
     {name = "Matthias Hagen", email = "matthias.hagen@uni-jena.de"},
+    {name = "Martin Potthast", email = "martin.potthast@uni-kassel.de"},
 ]
-description = "Axiomatic constraints for (generative) information retrieval."
+description = "Axiomatic constraints for information retrieval and retrieval-augmented generation."
 readme = "README.md"
 requires-python = ">=3.11"
 classifiers = [
@@ -89,11 +90,13 @@ pyterrier =[
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/janheinrichmerker/axioms"
-"Bug Tracker" = "https://github.com/janheinrichmerker/axioms/issues"
+"Homepage" = "https://github.com/webis-de/ir_axioms"
+"Bug Tracker" = "https://github.com/webis-de/ir_axioms/issues"
 
 [project.scripts]
-axioms = "axioms.cli:app"
+axioms = "ir_axioms.cli:app"
+ir_axioms = "ir_axioms.cli:app"
+ir-axioms = "ir_axioms.cli:app"
 
 [build-system]
 requires = [

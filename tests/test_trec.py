@@ -1,8 +1,8 @@
 from pandas import DataFrame
 from trectools import TrecQrel
 
-from axioms.axiom import TrecOracleAxiom
-from axioms.model import Query, Document
+from ir_axioms.axiom import TrecOracleAxiom
+from ir_axioms.model import Query, Document
 
 
 def test_trec_oracle():

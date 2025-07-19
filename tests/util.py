@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from typing import Collection
 from injector import inject
 
-from axioms.dependency_injection import injector
-from axioms.model import Document, TextDocument
-from axioms.tools import IndexStatistics, TextContents, TermTokenizer
+from ir_axioms.dependency_injection import injector
+from ir_axioms.model import Document, TextDocument
+from ir_axioms.tools import IndexStatistics, TextContents, TermTokenizer
 
 
 @dataclass(frozen=True)
