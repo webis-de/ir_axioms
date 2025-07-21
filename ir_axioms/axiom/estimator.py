@@ -12,7 +12,6 @@ from ir_axioms.model import Input, Output, Preference, PreferenceMatrix
 
 
 class EstimatorAxiom(Axiom[Input, Output], ABC):
-
     @abstractmethod
     def fit(
         self,
@@ -23,10 +22,10 @@ class EstimatorAxiom(Axiom[Input, Output], ABC):
 
 
 class ScikitLearnEstimator(Protocol):
-    def fit(self, x: ndarray, y: ndarray) -> Self:
+    def fit(self, X: ndarray, y: ndarray) -> Self:
         pass
 
-    def predict(self, x: ndarray) -> ndarray:
+    def predict(self, X: ndarray) -> ndarray:
         pass
 
 
