@@ -1,6 +1,6 @@
 from typing import Union
 
-from injector import Module, Binder, singleton
+from injector import Module, Binder, singleton, inject
 
 from ir_axioms.model import Document, Query, GenerationInput, GenerationOutput
 
@@ -31,36 +31,64 @@ class TextStatisticsModule(Module):
     def configure(self, binder: Binder) -> None:
         from ir_axioms.tools import TextContents, TermTokenizer
 
+        @inject
+        def _make_simple_text_statistics_query(
+            text_contents: TextContents[Query],
+            term_tokenizer: TermTokenizer,
+        ) -> TextStatistics[Query]:
+            return SimpleTextStatistics(
+                text_contents=text_contents,
+                term_tokenizer=term_tokenizer,
+            )
+        
+        @inject
+        def _make_simple_text_statistics_document(
+            text_contents: TextContents[Document],
+            term_tokenizer: TermTokenizer,
+        ) -> TextStatistics[Document]:
+            return SimpleTextStatistics(
+                text_contents=text_contents,
+                term_tokenizer=term_tokenizer,
+            )
+        
+        @inject
+        def _make_simple_text_statistics_generation_input(
+            text_contents: TextContents[GenerationInput],
+            term_tokenizer: TermTokenizer,
+        ) -> TextStatistics[GenerationInput]:
+            return SimpleTextStatistics(
+                text_contents=text_contents,
+                term_tokenizer=term_tokenizer,
+            )
+        
+        @inject
+        def _make_simple_text_statistics_generation_output(
+            text_contents: TextContents[GenerationOutput],
+            term_tokenizer: TermTokenizer,
+        ) -> TextStatistics[GenerationOutput]:
+            return SimpleTextStatistics(
+                text_contents=text_contents,
+                term_tokenizer=term_tokenizer,
+            )
+
         binder.bind(
             interface=TextStatistics[Query],
-            to=lambda: SimpleTextStatistics(
-                text_contents=binder.injector.get(TextContents[Query]),
-                term_tokenizer=binder.injector.get(TermTokenizer),
-            ),
+            to=_make_simple_text_statistics_query,
             scope=singleton,
         )
         binder.bind(
             interface=TextStatistics[Document],
-            to=lambda: SimpleTextStatistics(
-                text_contents=binder.injector.get(TextContents[Document]),
-                term_tokenizer=binder.injector.get(TermTokenizer),
-            ),
+            to=_make_simple_text_statistics_document,
             scope=singleton,
         )
         binder.bind(
             interface=TextStatistics[GenerationInput],
-            to=lambda: SimpleTextStatistics(
-                text_contents=binder.injector.get(TextContents[GenerationInput]),
-                term_tokenizer=binder.injector.get(TermTokenizer),
-            ),
+            to=_make_simple_text_statistics_generation_input,
             scope=singleton,
         )
         binder.bind(
             interface=TextStatistics[GenerationOutput],
-            to=lambda: SimpleTextStatistics(
-                text_contents=binder.injector.get(TextContents[GenerationOutput]),
-                term_tokenizer=binder.injector.get(TermTokenizer),
-            ),
+            to=_make_simple_text_statistics_generation_output,
             scope=singleton,
         )
         binder.bind(

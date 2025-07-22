@@ -5,11 +5,9 @@ from typing import Protocol, runtime_checkable
 @runtime_checkable
 class IndexStatistics(Protocol):
     @property
-    def document_count(self) -> int:
-        pass
+    def document_count(self) -> int: ...
 
-    def document_frequency(self, term: str) -> int:
-        pass
+    def document_frequency(self, term: str) -> int: ...
 
     def inverse_document_frequency(self, term: str) -> float:
         document_frequency = self.document_frequency(term)

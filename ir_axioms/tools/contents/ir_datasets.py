@@ -45,7 +45,7 @@ class IrdsQueryTextContents(FallbackTextContentsMixin[Query], TextContents[Query
             return irds_load(self.dataset)
 
     @cached_property
-    def _queries(self) -> Mapping[str, GenericQuery]:
+    def _queries(self) -> Mapping[str, str]:
         queries: Iterable[GenericQuery] = self._dataset.queries_iter()
         return {query.query_id: query.default_text() for query in queries}
 

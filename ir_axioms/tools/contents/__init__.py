@@ -36,6 +36,11 @@ from ir_axioms.tools.contents.simple import (  # noqa: F401
 class ContentsModule(Module):
     def configure(self, binder: Binder) -> None:
         binder.bind(
+            interface=TextContents[HasText],
+            to=SimpleTextContents,  # type: ignore
+            scope=singleton,
+        )
+        binder.bind(
             interface=TextContents[Query],
             to=SimpleTextContents,  # type: ignore
             scope=singleton,

@@ -23,20 +23,20 @@ class EstimatorAxiom(Axiom[Input, Output], ABC):
 
 class ScikitLearnEstimator(Protocol):
     def fit(self, X: ndarray, y: ndarray) -> Self:
-        pass
+        ...
 
     def predict(self, X: ndarray) -> ndarray:
-        pass
+        ...
 
 
 @dataclass(frozen=True)
 class ScikitLearnEstimatorAxiom(EstimatorAxiom[Input, Output], ABC):
-    axioms: Sequence[Axiom]
+    axioms: Sequence[Axiom[Input, Output]]
     estimator: ScikitLearnEstimator
 
     def fit(
         self,
-        target: Axiom,
+        target: Axiom[Input, Output],
         inputs_outputs: Iterable[tuple[Input, Sequence[Output]]],
     ) -> None:
         num_axioms = len(self.axioms)
