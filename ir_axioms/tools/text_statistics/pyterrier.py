@@ -1,27 +1,16 @@
+from typing import TYPE_CHECKING
+
 from ir_axioms.utils.libraries import is_pyterrier_installed
 
-if is_pyterrier_installed():
-
+if is_pyterrier_installed() or TYPE_CHECKING:
     from dataclasses import dataclass
     from functools import cached_property
     from pathlib import Path
     from typing import Union, Any, Mapping, Iterable, Optional, TypeVar
 
-    from pyterrier.java import (
-        required as pt_java_required,
-        autoclass as pt_java_autoclass,
-    )
-    from pyterrier.terrier import IndexFactory
-
     from ir_axioms.model import Document
     from ir_axioms.tools.text_statistics.base import TextStatistics
-
-    @pt_java_required
-    def autoclass(*args, **kwargs) -> Any:
-        return pt_java_autoclass(*args, **kwargs)
-
-    Index = autoclass("org.terrier.structures.Index")
-    IndexRef = autoclass("org.terrier.querying.IndexRef")
+    from ir_axioms.utils.pyterrier import Index, IndexRef
 
     DocumentType = TypeVar("DocumentType", bound=Document)
 
@@ -31,14 +20,16 @@ if is_pyterrier_installed():
 
         @cached_property
         def _index(self) -> Any:
+            from pyterrier.terrier import IndexFactory
+
             if isinstance(self.index_location, Index):
                 return self.index_location
             elif isinstance(self.index_location, IndexRef):
-                return IndexFactory.of(self.index_location)
+                return IndexFactory.of(self.index_location)  # type: ignore
             elif isinstance(self.index_location, str):
-                return IndexFactory.of(self.index_location)
+                return IndexFactory.of(self.index_location)  # type: ignore
             elif isinstance(self.index_location, Path):
-                return IndexFactory.of(str(self.index_location.absolute()))
+                return IndexFactory.of(str(self.index_location.absolute()))  # type: ignore
             else:
                 raise ValueError(
                     f"Cannot load index from location {self.index_location}."

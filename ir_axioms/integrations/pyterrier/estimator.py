@@ -1,58 +1,65 @@
+from typing import TYPE_CHECKING
+
 from ir_axioms.utils.libraries import is_pyterrier_installed
 
-if is_pyterrier_installed():
+if is_pyterrier_installed() or TYPE_CHECKING:
     from dataclasses import dataclass, field
-    from functools import cached_property, cache
+    from functools import cached_property
+    from itertools import groupby
     from pathlib import Path
-    from typing import Sequence, Union, Optional, Any, cast
+    from typing import Sequence, Union, Optional, cast
 
     from ir_datasets import Dataset
     from pandas import DataFrame
     from pyterrier import Transformer, Estimator
-    from pyterrier.datasets import IRDSDataset
-    from pyterrier.java import (
-        required as pt_java_required,
-        autoclass as pt_java_autoclass,
-    )
 
-    from ir_axioms.axiom import Axiom, EstimatorAxiom, ORACLE
-    from ir_axioms.axiom.estimator import ScikitLearnEstimator, ScikitLearnEstimatorAxiom
+    from ir_axioms.axiom.base import Axiom
+    from ir_axioms.axiom.retrieval.simple import ORACLE
+    from ir_axioms.axiom.estimator import (
+        EstimatorAxiom,
+        ScikitLearnEstimator,
+        ScikitLearnEstimatorAxiom,
+    )
+    from ir_axioms.integrations.pyterrier.transformers import KwikSortReranker
     from ir_axioms.integrations.pyterrier.utils import (
         inject_pyterrier,
         require_columns,
         load_documents,
         load_queries,
     )
-    from ir_axioms.integrations.pyterrier.transformers import KwikSortReranker
     from ir_axioms.model import JudgedRankedDocument, Document, JudgedDocument, Query
     from ir_axioms.tools import PivotSelection, RandomPivotSelection
+    from ir_axioms.utils.pyterrier import (
+        Index,
+        IndexRef,
+        Tokeniser,
+        EnglishTokeniser,
+    )
 
-    @pt_java_required
-    def autoclass(*args, **kwargs) -> Any:
-        return pt_java_autoclass(*args, **kwargs)
+    def _get_oracle() -> Axiom[Query, JudgedDocument]:
+        """
+        Returns the oracle axiom for the estimator.
+        """
+        from ir_axioms.axiom.retrieval.simple import ORACLE
 
-    Index = autoclass("org.terrier.structures.Index")
-    IndexRef = autoclass("org.terrier.querying.IndexRef")
-    Tokeniser = autoclass("org.terrier.indexing.tokenisation.Tokeniser")
-    EnglishTokeniser = autoclass("org.terrier.indexing.tokenisation.EnglishTokeniser")
+        return ORACLE()
 
     @dataclass(frozen=True, kw_only=True)
     class EstimatorKwikSortReranker(Estimator):
         name = "EstimatorKwikSortReranker"
 
         axioms: Sequence[Axiom[Query, Document]]
-        oracle: Axiom[Query, JudgedDocument] = ORACLE()
+        oracle: Axiom[Query, JudgedDocument] = field(default_factory=_get_oracle)
         estimator: ScikitLearnEstimator
         pivot_selection: PivotSelection = RandomPivotSelection()
         index: Union[Index, IndexRef, Path, str]  # type: ignore
-        dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
+        dataset: Optional[Union[Dataset, str]] = None
         text_field: Optional[str] = "text"
         tokeniser: Tokeniser = field(  # type: ignore
             default_factory=lambda: EnglishTokeniser()
         )
         verbose: bool = False
 
-        @cache
         def _inject(self) -> None:
             inject_pyterrier(
                 index_location=self.index,
@@ -62,7 +69,7 @@ if is_pyterrier_installed():
             )
 
         @cached_property
-        def _estimator_axiom(self) -> EstimatorAxiom:
+        def _estimator_axiom(self) -> EstimatorAxiom[Query, Document]:
             return ScikitLearnEstimatorAxiom(
                 axioms=self.axioms,
                 estimator=self.estimator,
@@ -74,52 +81,61 @@ if is_pyterrier_installed():
                 axiom=self._estimator_axiom,
                 index=self.index,
                 dataset=self.dataset,
-                contents_accessor=self.contents_accessor,
                 pivot_selection=self.pivot_selection,
                 tokeniser=self.tokeniser,
-                cache_dir=self.cache_dir,
                 verbose=self.verbose,
             )
 
         def fit(
             self,
-            results_train: DataFrame,
-            qrels_train: DataFrame,
-            _results_validation: Optional[DataFrame] = None,
-            _qrels_validation: Optional[DataFrame] = None,
+            topics_or_res_tr: DataFrame,
+            qrels_tr: DataFrame,
+            topics_or_res_va: Optional[DataFrame] = None,
+            qrels_va: Optional[DataFrame] = None,
         ) -> Transformer:
             """
             Train the model with the given ranking.
             """
-            require_columns(results_train, {"qid", "query", "docno", "rank", "score"})
-            require_columns(qrels_train, {"qid", "docno", "label"})
+            require_columns(
+                topics_or_res_tr, {"qid", "query", "docno", "rank", "score"}
+            )
+            require_columns(qrels_tr, {"qid", "docno", "label"})
 
-            results_train = results_train.merge(
-                qrels_train, on=["qid", "docno"], how="inner"
+            topics_or_res_tr = topics_or_res_tr.merge(
+                qrels_tr, on=["qid", "docno"], how="inner"
             )
 
-            if len(results_train.index) == 0:
+            if len(topics_or_res_tr.index) == 0:
                 raise ValueError("No results to fit to")
 
-            queries = load_queries(results_train)
+            queries = load_queries(topics_or_res_tr)
             # Because we joined with qrels before, it is safe to assume
             # that each document is judged.
             documents: Sequence[JudgedRankedDocument] = cast(
                 Sequence[JudgedRankedDocument],
-                load_documents(results_train, self.contents_accessor),
+                load_documents(topics_or_res_tr, text_column=self.text_field),
             )
 
             query_document_pairs = list(zip(queries, documents))
+            query_document_batches = [
+                (
+                    query,
+                    [query_document[1] for query_document in query_documents],
+                )
+                for query, query_documents in groupby(
+                    query_document_pairs, key=lambda x: x[0]
+                )
+            ]
 
             # Inject the Terrier tooling.
             self._inject()
 
-            self._estimator_axiom.fit(ORACLE(), query_document_pairs, self.filter_pairs)
+            self._estimator_axiom.fit(ORACLE(), query_document_batches)
 
             return self
 
-        def transform(self, topics_or_res: DataFrame) -> DataFrame:
-            return self._reranker.transform(topics_or_res)
+        def transform(self, inp: DataFrame) -> DataFrame:
+            return self._reranker.transform(inp)
 
 else:
     EstimatorKwikSortReranker = NotImplemented  # type: ignore

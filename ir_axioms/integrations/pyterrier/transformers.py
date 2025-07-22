@@ -1,8 +1,8 @@
-from functools import cache
-from typing import Iterable
+from typing import TYPE_CHECKING
+
 from ir_axioms.utils.libraries import is_pyterrier_installed
 
-if is_pyterrier_installed():
+if is_pyterrier_installed() or TYPE_CHECKING:
     from abc import abstractmethod, ABC
     from dataclasses import dataclass, field
     from itertools import product
@@ -18,6 +18,7 @@ if is_pyterrier_installed():
         Any,
         cast,
         ClassVar,
+        Iterable,
     )
 
     from ir_datasets import Dataset
@@ -25,15 +26,10 @@ if is_pyterrier_installed():
     from pandas import DataFrame
     from pandas.core.groupby import DataFrameGroupBy
     from pyterrier import Transformer
-    from pyterrier.datasets import IRDSDataset
-    from pyterrier.java import (
-        required as pt_java_required,
-        autoclass as pt_java_autoclass,
-    )
     from tqdm.auto import tqdm
 
     from ir_axioms.logging import logger
-    from ir_axioms.axiom import Axiom
+    from ir_axioms.axiom.base import Axiom
     from ir_axioms.integrations.pyterrier.utils import (
         inject_pyterrier,
         require_columns,
@@ -41,15 +37,12 @@ if is_pyterrier_installed():
     )
     from ir_axioms.model import Query, RankedDocument, ScoredDocument, Document
     from ir_axioms.tools import PivotSelection, RandomPivotSelection
-
-    @pt_java_required
-    def autoclass(*args, **kwargs) -> Any:
-        return pt_java_autoclass(*args, **kwargs)
-
-    Index = autoclass("org.terrier.structures.Index")
-    IndexRef = autoclass("org.terrier.querying.IndexRef")
-    Tokeniser = autoclass("org.terrier.indexing.tokenisation.Tokeniser")
-    EnglishTokeniser = autoclass("org.terrier.indexing.tokenisation.EnglishTokeniser")
+    from ir_axioms.utils.pyterrier import (
+        Index,
+        IndexRef,
+        Tokeniser,
+        EnglishTokeniser,
+    )
 
     @dataclass(frozen=True, kw_only=True)
     class _PerGroupTransformer(Transformer, ABC):
@@ -72,11 +65,11 @@ if is_pyterrier_installed():
             }
 
         @final
-        def transform(self, topics_or_res: DataFrame) -> DataFrame:
-            require_columns(topics_or_res, self.group_columns)
+        def transform(self, inp: DataFrame) -> DataFrame:
+            require_columns(inp, self.group_columns)
 
-            query_rankings: DataFrameGroupBy = topics_or_res.groupby(
-                by=list(self._all_group_columns(topics_or_res)),
+            query_rankings: DataFrameGroupBy = inp.groupby(
+                by=list(self._all_group_columns(inp)),
                 as_index=False,
                 sort=False,
             )
@@ -86,10 +79,10 @@ if is_pyterrier_installed():
                     desc=self.description,
                     unit=self.unit,
                 )
-                query_rankings = query_rankings.progress_apply(self.transform_group)
+                inp = query_rankings.progress_apply(self.transform_group)  # type: ignore
             else:
-                query_rankings = query_rankings.apply(self.transform_group)
-            return query_rankings.reset_index(drop=True)
+                inp = query_rankings.apply(self.transform_group)
+            return inp.reset_index(drop=True)
 
     @dataclass(frozen=True, kw_only=True)
     class _AxiomTransformer(_PerGroupTransformer, ABC):
@@ -98,13 +91,12 @@ if is_pyterrier_installed():
         unit = "query"
 
         index: Union[Index, IndexRef, Path, str]  # type: ignore
-        dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
+        dataset: Optional[Union[Dataset, str]] = None
         text_field: Optional[str] = "text"
         tokeniser: Tokeniser = field(  # type: ignore
             default_factory=lambda: EnglishTokeniser()
         )
 
-        @cache
         def _inject(self) -> None:
             inject_pyterrier(
                 index_location=self.index,
@@ -128,7 +120,7 @@ if is_pyterrier_installed():
             query = Query(topics_or_res.iloc[0]["query"])
 
             # Load document list.
-            documents = load_documents(topics_or_res)
+            documents = load_documents(topics_or_res, text_column=self.text_field)
 
             # Inject the Terrier tooling.
             self._inject()
@@ -250,13 +242,12 @@ if is_pyterrier_installed():
             self,
             query: Query,
             documents: Sequence[RankedDocument],
-            results: DataFrame,
+            topics_or_res: DataFrame,
         ) -> DataFrame:
-
             # Result cross product.
-            results_pairs = results.merge(
-                results,
-                on=list(self._all_group_columns(results)),
+            results_pairs = topics_or_res.merge(
+                topics_or_res,
+                on=list(self._all_group_columns(topics_or_res)),
                 suffixes=("_a", "_b"),
             )
 

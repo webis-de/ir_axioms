@@ -1,41 +1,35 @@
-from typing import Iterable
+from typing import TYPE_CHECKING
+
 from ir_axioms.utils.libraries import is_pyterrier_installed
 
-if is_pyterrier_installed():
+if is_pyterrier_installed() or TYPE_CHECKING:
     from dataclasses import dataclass, field
     from functools import reduce, cached_property
     from math import nan
     from operator import or_
     from pathlib import Path
-    from typing import Sequence, Optional, Union, Literal, Any
+    from typing import Sequence, Optional, Union, Literal, Iterable
 
     from ir_datasets import Dataset
     from pandas import DataFrame, concat
     from pyterrier import Transformer
-    from pyterrier.java import (
-        required as pt_java_required,
-        autoclass as pt_java_autoclass,
-    )
-    from pyterrier.datasets import IRDSDataset
     from tqdm.auto import tqdm
 
-    from ir_axioms.axiom import Axiom, ORIG, ORACLE
+    from ir_axioms.axiom.base import Axiom
+    from ir_axioms.axiom.retrieval.simple import ORIG, ORACLE
+    from ir_axioms.integrations.pyterrier.transformers import AxiomaticPreferences
     from ir_axioms.integrations.pyterrier.utils import (
         FilterTopicsTransformer,
         FilterQrelsTransformer,
         JoinQrelsTransformer,
         AddNameTransformer,
     )
-    from ir_axioms.integrations.pyterrier.transformers import AxiomaticPreferences
-
-    @pt_java_required
-    def autoclass(*args, **kwargs) -> Any:
-        return pt_java_autoclass(*args, **kwargs)
-
-    Index = autoclass("org.terrier.structures.Index")
-    IndexRef = autoclass("org.terrier.querying.IndexRef")
-    Tokeniser = autoclass("org.terrier.indexing.tokenisation.Tokeniser")
-    EnglishTokeniser = autoclass("org.terrier.indexing.tokenisation.EnglishTokeniser")
+    from ir_axioms.utils.pyterrier import (
+        Index,
+        IndexRef,
+        Tokeniser,
+        EnglishTokeniser,
+    )
 
     @dataclass(frozen=True, kw_only=True)
     class AxiomaticExperiment:
@@ -49,7 +43,7 @@ if is_pyterrier_installed():
         depth: Optional[int] = 10
         filter_by_qrels: bool = True
         filter_by_topics: bool = False
-        dataset: Optional[Union[Dataset, str, IRDSDataset]] = None
+        dataset: Optional[Union[Dataset, str]] = None
         text_field: Optional[str] = "text"
         tokeniser: Tokeniser = field(  # type: ignore
             default_factory=lambda: EnglishTokeniser()
@@ -74,14 +68,7 @@ if is_pyterrier_installed():
                     raise ValueError("Number of axioms and names must match.")
                 names = self.axiom_names
             else:
-                names = [
-                    (
-                        axiom.name
-                        if (hasattr(axiom, "name") and axiom.name is not NotImplemented)
-                        else str(axiom)
-                    )
-                    for axiom in self.ir_axioms
-                ]
+                names = [str(axiom) for axiom in self.axioms]
             return names
 
         @cached_property

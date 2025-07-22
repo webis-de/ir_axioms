@@ -19,9 +19,9 @@ T = TypeVar("T")
 
 @dataclass(frozen=True, kw_only=True)
 class FallbackTextContentsMixin(TextContents[T]):
-    simple_text_contents: TextContents[HasText]
+    fallback_text_contents: TextContents[HasText]
 
     def contents(self, input: T) -> str:
         if isinstance(input, HasText):
-            return self.simple_text_contents.contents(input)
+            return self.fallback_text_contents.contents(input)
         return super().contents(input)  # type: ignore[safe-super]

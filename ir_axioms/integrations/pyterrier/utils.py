@@ -1,19 +1,16 @@
+from typing import TYPE_CHECKING
+
 from ir_axioms.utils.libraries import is_pyterrier_installed
 
-if is_pyterrier_installed():
+if is_pyterrier_installed() or TYPE_CHECKING:
     from dataclasses import dataclass
     from pathlib import Path
-    from typing import Set, Optional, Sequence, Callable, Any, Union, cast
+    from typing import Set, Optional, Sequence, Union
 
-    from injector import singleton
+    from injector import singleton, inject
     from ir_datasets import Dataset
     from pandas import DataFrame, Series
     from pyterrier import Transformer
-    from pyterrier.datasets import IRDSDataset
-    from pyterrier.java import (
-        required as pt_java_required,
-        autoclass as pt_java_autoclass,
-    )
 
     from ir_axioms.dependency_injection import injector
     from ir_axioms.model import (
@@ -26,7 +23,6 @@ if is_pyterrier_installed():
     )
     from ir_axioms.tools import (
         TextContents,
-        SimpleTextContents,
         IrdsQueryTextContents,
         IrdsDocumentTextContents,
         TerrierDocumentTextContents,
@@ -37,21 +33,19 @@ if is_pyterrier_installed():
         IndexStatistics,
         TerrierIndexStatistics,
     )
-
-    @pt_java_required
-    def autoclass(*args, **kwargs) -> Any:
-        return pt_java_autoclass(*args, **kwargs)
-
-    Index = autoclass("org.terrier.structures.Index")
-    IndexRef = autoclass("org.terrier.querying.IndexRef")
-    Tokeniser = autoclass("org.terrier.indexing.tokenisation.Tokeniser")
-    EnglishTokeniser = autoclass("org.terrier.indexing.tokenisation.EnglishTokeniser")
+    from ir_axioms.tools.contents.simple import HasText
+    from ir_axioms.utils.pyterrier import (
+        Index,
+        IndexRef,
+        Tokeniser,
+        EnglishTokeniser,
+    )
 
     def inject_pyterrier(
         index_location: Union[Index, IndexRef, Path, str],  # type: ignore
         text_field: Optional[str] = "text",
         tokeniser: Tokeniser = EnglishTokeniser(),  # type: ignore
-        dataset: Optional[Union[Dataset, str, IRDSDataset]] = None,
+        dataset: Optional[Union[Dataset, str]] = None,
     ) -> None:
         injector.binder.bind(
             interface=TextStatistics,
@@ -70,39 +64,51 @@ if is_pyterrier_installed():
         )
 
         if text_field is not None:
-            injector.binder.bind(
-                interface=TextContents[Document],
-                to=TerrierDocumentTextContents(
-                    simple_text_contents=injector.get(SimpleTextContents),
+
+            @inject
+            def _make_terrier_document_text_contents(
+                fallback_text_contents: TextContents[HasText],
+            ) -> TextContents[Document]:
+                return TerrierDocumentTextContents(
+                    fallback_text_contents=fallback_text_contents,
                     index_location=index_location,
                     text_field=text_field,
-                ),
+                )
+
+            injector.binder.bind(
+                interface=TextContents[Document],
+                to=_make_terrier_document_text_contents,
                 scope=singleton,
             )
 
         if dataset is not None:
+
+            @inject
+            def _make_irds_query_text_contents(
+                fallback_text_contents: TextContents[HasText],
+            ) -> TextContents[Query]:
+                return IrdsQueryTextContents(
+                    fallback_text_contents=fallback_text_contents,
+                    dataset=dataset,
+                )
+
+            @inject
+            def _make_irds_document_text_contents(
+                fallback_text_contents: TextContents[HasText],
+            ) -> TextContents[Document]:
+                return IrdsDocumentTextContents(
+                    fallback_text_contents=fallback_text_contents,
+                    dataset=dataset,
+                )
+
             injector.binder.bind(
                 interface=TextContents[Query],
-                to=IrdsQueryTextContents(
-                    simple_text_contents=injector.get(SimpleTextContents),
-                    dataset=(
-                        dataset
-                        if not isinstance(dataset, IRDSDataset)
-                        else cast(Dataset, dataset.irds_ref)
-                    ),
-                ),
+                to=_make_irds_query_text_contents,
                 scope=singleton,
             )
             injector.binder.bind(
                 interface=TextContents[Document],
-                to=IrdsDocumentTextContents(
-                    simple_text_contents=injector.get(SimpleTextContents),
-                    dataset=(
-                        dataset
-                        if not isinstance(dataset, IRDSDataset)
-                        else cast(Dataset, dataset.irds_ref)
-                    ),
-                ),
+                to=_make_irds_document_text_contents,
                 scope=singleton,
             )
 
@@ -125,8 +131,6 @@ if is_pyterrier_installed():
         text_column: Optional[str] = "text",
     ) -> Sequence[RankedScoredDocument]:
         require_columns(ranking, {"docno", "rank", "score"})
-
-        parser: Callable[[Series], RankedScoredDocument]
 
         if "label" in ranking.columns:
             if text_column is not None:
@@ -184,8 +188,8 @@ if is_pyterrier_installed():
 
         topics: DataFrame
 
-        def transform(self, ranking: DataFrame) -> DataFrame:
-            return ranking[ranking["qid"].isin(self.topics["qid"])]
+        def transform(self, inp: DataFrame) -> DataFrame:
+            return inp[inp["qid"].isin(self.topics["qid"])]
 
     @dataclass(frozen=True)
     class FilterQrelsTransformer(Transformer):
@@ -195,10 +199,10 @@ if is_pyterrier_installed():
 
         qrels: DataFrame
 
-        def transform(self, ranking: DataFrame) -> DataFrame:
-            return ranking[
-                ranking["qid"].isin(self.qrels["qid"])
-                & ranking["docno"].isin(self.qrels["docno"])
+        def transform(self, inp: DataFrame) -> DataFrame:
+            return inp[
+                inp["qid"].isin(self.qrels["qid"])
+                & inp["docno"].isin(self.qrels["docno"])
             ]
 
     @dataclass(frozen=True)
@@ -209,10 +213,10 @@ if is_pyterrier_installed():
 
         qrels: DataFrame
 
-        def transform(self, ranking: DataFrame) -> DataFrame:
+        def transform(self, inp: DataFrame) -> DataFrame:
             qrels = self.qrels
             require_columns(qrels, {"qid", "docno", "label"})
-            return ranking.merge(self.qrels, on=["qid", "docno"], how="left")
+            return inp.merge(self.qrels, on=["qid", "docno"], how="left")
 
     @dataclass(frozen=True)
     class AddNameTransformer(Transformer):
@@ -222,9 +226,9 @@ if is_pyterrier_installed():
 
         system_name: str
 
-        def transform(self, res: DataFrame) -> DataFrame:
-            res["name"] = self.system_name
-            return res
+        def transform(self, inp: DataFrame) -> DataFrame:
+            inp["name"] = self.system_name
+            return inp
 
 else:
     inject_pyterrier = NotImplemented

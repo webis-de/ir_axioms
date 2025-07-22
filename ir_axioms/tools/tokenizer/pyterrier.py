@@ -1,29 +1,21 @@
+from typing import TYPE_CHECKING
+
 from ir_axioms.utils.libraries import is_pyterrier_installed
 
-if is_pyterrier_installed():
-
+if is_pyterrier_installed() or TYPE_CHECKING:
     from dataclasses import dataclass, field
     from functools import cached_property
     from re import compile as re_compile
     from typing import Sequence, Any
 
-    from pyterrier.java import (
-        required as pt_java_required,
-        autoclass as pt_java_autoclass,
-        J,
-    )
-
     from ir_axioms.tools.tokenizer.base import TermTokenizer
-
-    @pt_java_required
-    def autoclass(*args, **kwargs) -> Any:
-        return pt_java_autoclass(*args, **kwargs)
-
-    Tokeniser = autoclass("org.terrier.indexing.tokenisation.Tokeniser")
-    EnglishTokeniser = autoclass("org.terrier.indexing.tokenisation.EnglishTokeniser")
-    TermPipelineAccessor = autoclass("org.terrier.terms.TermPipelineAccessor")
-    BaseTermPipelineAccessor = autoclass("org.terrier.terms.BaseTermPipelineAccessor")
-    ApplicationSetup = autoclass("org.terrier.utility.ApplicationSetup")
+    from ir_axioms.utils.pyterrier import (
+        pt_java_required,
+        Tokeniser,
+        EnglishTokeniser,
+        BaseTermPipelineAccessor,
+        ApplicationSetup,
+    )
 
     _TERM_PIPELINE_PATTERN = re_compile(r"\s*,\s*")
 
@@ -49,6 +41,8 @@ if is_pyterrier_installed():
             ]
 
         def terms(self, text: str) -> Sequence[str]:
+            from pyterrier.java import J
+
             reader = J.StringReader(text)
             terms = [
                 str(term)
