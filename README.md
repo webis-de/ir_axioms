@@ -13,23 +13,35 @@
 
 Axiomatic constraints for information retrieval and retrieval-augmented generation.
 
-_Note: If you're looking out for `ir_axioms`<1.0, please [go here]()._
+`ir_axioms` is a Python framework for experimenting with axioms in information retrieval in a declarative way.
+It includes reference implementations of many commonly used traditional retrieval axioms as well as axioms for retrieval-augmented generation.
+The library is well integrated with the [PyTerrier](https://github.com/terrier-org/pyterrier) framework and supports [Pyserini](https://github.com/castorini/pyserini) retrieval indices too.
+Use-cases of `ir_axioms` include search-result re-ranking, analyses of (neural) retrieval systems, and analyses of generated RAG answers.
+
+_Note: If you're looking out for `ir_axioms`<1.0, please [go here](https://github.com/webis-de/ir_axioms/tree/legacy)._
+
+## Publications
+
+Read more about the [`ir_axioms` framework](https://webis.de/publications.html?q=axiom#bondarenko_2022d) and the new [RAG axioms](https://webis.de/publications.html?q=axiom#merker_2025b) in these publications:
+
+- Alexander Bondarenko, Maik Fröbe, Jan Heinrich Reimer, Benno Stein, Michael Völske, and Matthias Hagen. [Axiomatic Retrieval Experimentation with `ir_axioms`](https://webis.de/publications.html?q=axiom#bondarenko_2022d).
+- Jan Heinrich Merker, Maik Fröbe, Benno Stein, Martin Potthast, and Matthias Hagen. [Axioms for Retrieval-Augmented Generation](https://webis.de/publications.html?q=axiom#merker_2025b).
 
 ## Installation
 
 1. Install [Python 3.11](https://python.org/downloads/) or later.
 2. Create and activate a virtual environment:
 
-    ```shell
-    python3 -m venv venv/
-    source venv/bin/activate
-    ```
+   ```shell
+   python3 -m venv venv/
+   source venv/bin/activate
+   ```
 
 3. Install project dependencies:
 
-    ```shell
-    pip install -e .
-    ```
+   ```shell
+   pip install -e .
+   ```
 
 ## Usage
 
@@ -38,8 +50,6 @@ Run the CLI with:
 ```shell
 axioms --help
 ```
-
-TODO: Explain commands to replicate experiments.
 
 ## Development
 
