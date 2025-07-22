@@ -124,6 +124,7 @@ exclude = [
     ".venv",
     "notebooks",
     "data",
+    "experiments",  # TODO: Re-enable this once the experiments are cleaned up.
 ]
 
 [tool.mypy]

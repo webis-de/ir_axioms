@@ -28,6 +28,7 @@ class FastTextTermSimilarity(TermSimilarity):
         model_path = hf_hub_download(
             repo_id=self.model_name,
             filename="model.bin",
+            revision="main",
         )
         return load_model(model_path)
 
