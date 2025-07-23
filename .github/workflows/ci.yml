@@ -40,7 +40,7 @@ jobs:
           cache: pip
           cache-dependency-path: pyproject.toml
       - name: 🧰 Install dependencies
-        run: pip install .[tests,spacy]
+        run: pip install .[tests]
       - name: 🔍 Check Python code
         run: ruff check .
   python-typing:
@@ -56,7 +56,7 @@ jobs:
           cache: pip
           cache-dependency-path: pyproject.toml
       - name: 🧰 Install dependencies
-        run: pip install .[tests,spacy]
+        run: pip install .[tests]
       - name: 🔍 Check Python static typing
         run: mypy .
   python-security:
@@ -72,7 +72,7 @@ jobs:
           cache: pip
           cache-dependency-path: pyproject.toml
       - name: 🧰 Install dependencies
-        run: pip install .[tests,spacy]
+        run: pip install .[tests]
       - name: 🔍 Check Python code security
         run: bandit -c pyproject.toml -r .
   python-test:
@@ -88,7 +88,9 @@ jobs:
           cache: pip
           cache-dependency-path: pyproject.toml
       - name: 🧰 Install dependencies
-        run: pip install .[tests,spacy]
+        run: pip install .[tests]
+      - name: 🧰 Install spaCy model
+        run: python -m spacy download en_core_web_sm
       - name: 🧪 Test Python code
         run: pytest --cov --cov-report=xml .
       - name: 📤 Upload coverage to Codecov
