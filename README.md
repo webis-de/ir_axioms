@@ -29,6 +29,28 @@ Read more about the [`ir_axioms` framework](https://webis.de/publications.html?q
 
 ## Installation
 
+1. Install the package from PyPI:
+
+   ```shell
+   pip install ir_axioms>=1.0
+   ```
+
+2. Install spaCy model:
+
+   ```shell
+   python -m spacy download en_core_web_sm
+   ```
+
+## Usage
+
+Run the CLI with:
+
+```shell
+ir_axioms --help
+```
+
+## Development
+
 1. Install [Python 3.11](https://python.org/downloads/) or later.
 2. Create and activate a virtual environment:
 
@@ -40,34 +62,23 @@ Read more about the [`ir_axioms` framework](https://webis.de/publications.html?q
 3. Install project dependencies:
 
    ```shell
-   pip install -e .
+   pip install -e .[tests]
    ```
 
-## Usage
+4. Install spaCy model:
 
-Run the CLI with:
+   ```shell
+   python -m spacy download en_core_web_sm
+   ```
 
-```shell
-axioms --help
-```
+5. After having implemented a new feature, please check the code format, inspect common LINT errors, and run all unit tests with the following commands:
 
-## Development
-
-Refer to the general [installation instructions](#installation) to set up the development environment and install the dependencies.
-Then, also install the test dependencies:
-
-```shell
-pip install -e .[tests]
-```
-
-After having implemented a new feature, please check the code format, inspect common LINT errors, and run all unit tests with the following commands:
-
-```shell
-ruff check .                   # Code format and LINT
-mypy .                         # Static typing
-bandit -c pyproject.toml -r .  # Security
-pytest .                       # Unit tests
-```
+   ```shell
+   ruff check .                   # Code format and LINT
+   mypy .                         # Static typing
+   bandit -c pyproject.toml -r .  # Security
+   pytest .                       # Unit tests
+   ```
 
 ## Contribute
 
