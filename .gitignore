@@ -271,4 +271,6 @@ cython_debug/
 !.vscode/*.code-snippets
 
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,intellij
-ir_axioms/modules/wiki-news-300d-1M.magnitude
+
+data/
+tag*/

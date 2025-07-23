@@ -1,314 +1,203 @@
 from abc import ABC, abstractmethod
-from inspect import isabstract
-from math import nan
-from typing import Union, Callable, Sequence, Optional
+from pathlib import Path
+from typing import Generic, Literal, Sequence, Optional, final
 
-from joblib import delayed, Parallel
-from numpy import ndarray, array, stack
-from typing_extensions import final
+from numpy import float_, array
+from tqdm.auto import tqdm
 
-from ir_axioms import registry
-from ir_axioms.model import Query, RankedDocument, IndexContext
-from ir_axioms.modules.pivot import PivotSelection, RandomPivotSelection
+from ir_axioms.model import Input, Output, Preference, PreferenceMatrix
+from ir_axioms.tools.pivot import PivotSelection, RandomPivotSelection
+from ir_axioms.precondition.base import Precondition
 
 
-class Axiom(ABC):
+class Axiom(ABC, Generic[Input, Output]):
     """
-    Base class for all axioms.
-    Implements the various operators
-    ``+``, ``-``, ``*``, ``/``, ``%``, ``&``, ``~``
-    as well as ``rerank()`` for re-ranking with KwikSort,
-    ``preferences()`` for collecting all preferences for a ranking,
-    and other methods for evaluating rankings
-    in comparison to the axiom's preferences.
-    """
+    An axiom describes a pairwise constraint between two outputs given the same input, as expressed as a preference.
 
-    name: str
-    """
-    The axiom classes unique, short name, describing its behavior.
-    """
+    Subclasses must implement the ``preference()`` method that determines the pairwise preference between two outputs, and can optionally also override ``preference_matrix()`` to batch-compute a full preference matrix of arbitrarily many outputs more efficiently.
 
-    def __init_subclass__(cls, **kwargs):
-        # Automatically register this subclass to the global axiom registry.
-        if (
-                not isabstract(cls) and
-                hasattr(cls, "name") and
-                cls.name is not NotImplemented
-        ):
-            registry[cls.name] = cls
+    This base class also exposes various operators (i.e., ``+``, ``-``, ``*``, ``/``, ``%``, ``&``, ``~``) for combining and manipulating axioms, as well as ``rerank()`` for KwikSort re-ranking the outputs, and other methods for evaluating rankings of outputs in comparison to the axiom's preferences.
+    """
 
     @abstractmethod
     def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ) -> float:
+        self,
+        input: Input,
+        output1: Output,
+        output2: Output,
+    ) -> Preference:
         """
-        Return whether to prefer the first document (return value > 0),
-        the second document (return value < 0), or neither (return value = 0),
-        when retrieving a query, given a reranking context.
+        Compute the pairwise preference between two outputs for the same input.
+        The function should return a positive value if `output1` is to be prefered, a negative value if `output2` is to be prefered, and zero if there is no preference or if some precondition was not met.
 
-        Note that the order of ``document1`` and ``document2``
-        in the original ranking is *only* determined
-        by their ``rank`` attributes,
-        not by their order in the ``preference()`` function invocation.
+        Note that the preference should be independent of the order of ``output1`` and ``output2``, i.e., if the inputs are flipped, the output should be flipped as well.
 
-        :param context: Reranking context for accessing index statistics
-        and retrieval scores.
-        :param query: Query for the original ranking
-        :param document1: Document from an original ranking.
-        :param document2: Document from an original ranking.
-        :return: >0 if ``document1`` should be preferred,
-        <0 if ``document2`` should be preferred,
-        or 0 if neither document should be preferred over the other.
+        :param input: Common input for both outputs.
+        :param output1: One output for the common input.
+        :param output2: Another output for the common input.
+        :return: >0 if ``output1`` should be preferred,
+        <0 if ``output2`` should be preferred,
+        or 0 if neither of the outputs should be preferred over the other.
         """
         pass
 
-    def __add__(self, other: "AxiomLike") -> "Axiom":
-        if isinstance(other, Axiom):
-            from ir_axioms.axiom.arithmetic import SumAxiom
-            return SumAxiom([self, other])
-        elif isinstance(other, (float, int, str)):
-            from ir_axioms.axiom.conversion import to_axiom
-            return self + to_axiom(other)
-        else:
-            return NotImplemented
+    def preferences(
+        self,
+        input: Input,
+        outputs: Sequence[Output],
+    ) -> PreferenceMatrix:
+        """
+        Batch-compute the preferences for a sequence of potential outputs.
+        While the naive default implementation just delegates to `preference()`, it might make sense to override it to avoid computating certain costly features again and again for the same output.
 
-    def __radd__(self, other: "AxiomLike") -> "Axiom":
+        :param input: Common input for all outputs.
+        :param outputs: The outputs for the common input.
+        :return: A preference matrix, where the ij-th entry corresponds to the preference between the i-th and j-th output.
+        """
+
+        return array(
+            list(
+                tqdm(
+                    (
+                        self.preference(
+                            input=input,
+                            output1=output1,
+                            output2=output2,
+                        )
+                        for output1 in outputs
+                        for output2 in outputs
+                    ),
+                    desc="Preferences",
+                    total=len(outputs) * len(outputs),
+                )
+            ),
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
+
+    def __add__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
+        from ir_axioms.axiom.arithmetic import SumAxiom
+
+        return SumAxiom(axioms=[self, other])
+
+    def __radd__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         return self + other
 
-    def plus(self, other: "AxiomLike") -> "Axiom":
-        return self + other
-
-    def __sub__(self, other: "AxiomLike") -> "Axiom":
+    def __sub__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         return self + -other
 
-    def __rsub__(self, other: "AxiomLike") -> "Axiom":
+    def __rsub__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         return -self + other
 
-    def minus(self, other: "AxiomLike") -> "Axiom":
-        return self - other
+    def __mul__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
+        from ir_axioms.axiom.arithmetic import ProductAxiom
 
-    def __mul__(self, other: "AxiomLike") -> "Axiom":
-        if isinstance(other, Axiom):
-            from ir_axioms.axiom.arithmetic import ProductAxiom
-            return ProductAxiom([self, other])
-        elif isinstance(other, (float, int, str)):
-            from ir_axioms.axiom.conversion import to_axiom
-            return self * to_axiom(other)
-        else:
-            return NotImplemented
+        return ProductAxiom(axioms=[self, other])
 
-    def __rmul__(self, other: "AxiomLike") -> "Axiom":
+    def __rmul__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         return self * other
 
-    def times(self, other: "AxiomLike") -> "Axiom":
-        return self * other
-
-    def weighted(self, weight: float) -> "Axiom":
-        return self * weight
-
-    def __truediv__(self, other: "AxiomLike") -> "Axiom":
-        if isinstance(other, Axiom):
-            from ir_axioms.axiom.arithmetic import MultiplicativeInverseAxiom
-            return self * MultiplicativeInverseAxiom(other)
-        elif isinstance(other, (float, int, str)):
-            from ir_axioms.axiom.conversion import to_axiom
-            return self / to_axiom(other)
-        else:
-            return NotImplemented
-
-    def __rtruediv__(self, other: "AxiomLike") -> "Axiom":
+    def __truediv__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         from ir_axioms.axiom.arithmetic import MultiplicativeInverseAxiom
-        return MultiplicativeInverseAxiom(self) * other
 
-    def divide(self, other: "AxiomLike") -> "Axiom":
-        return self / other
+        return self * MultiplicativeInverseAxiom(axiom=other)
 
-    def __mod__(self, other: "AxiomLike") -> "Axiom":
-        if isinstance(other, Axiom):
-            from ir_axioms.axiom.arithmetic import VoteAxiom
-            return VoteAxiom([self, other])
-        elif isinstance(other, (float, int, str)):
-            from ir_axioms.axiom.conversion import to_axiom
-            return self % to_axiom(other)
-        else:
-            return NotImplemented
+    def __rtruediv__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
+        from ir_axioms.axiom.arithmetic import MultiplicativeInverseAxiom
 
-    def __rmod__(self, other: "AxiomLike") -> "Axiom":
+        return MultiplicativeInverseAxiom(axiom=self) * other
+
+    def __mod__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
+        from ir_axioms.axiom.arithmetic import VoteAxiom
+
+        return VoteAxiom(axioms=[self, other])
+
+    def __rmod__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         return self % other
 
-    def majority_vote(self, other: "AxiomLike") -> "Axiom":
+    def majority_vote(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         return self % other
 
-    def __and__(self, other: "AxiomLike") -> "Axiom":
-        if isinstance(other, Axiom):
-            from ir_axioms.axiom.arithmetic import AndAxiom
-            return AndAxiom([self, other])
-        elif isinstance(other, (float, int, str)):
-            from ir_axioms.axiom.conversion import to_axiom
-            return self & to_axiom(other)
-        else:
-            return NotImplemented
+    def __and__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
+        from ir_axioms.axiom.arithmetic import ConjunctionAxiom
 
-    def __rand__(self, other: "AxiomLike") -> "Axiom":
+        return ConjunctionAxiom(axioms=[self, other])
+
+    def __rand__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         return self & other
 
-    def __or__(self, other: "AxiomLike") -> "Axiom":
-        if isinstance(other, Axiom):
-            from ir_axioms.axiom.arithmetic import CascadeAxiom
-            return CascadeAxiom([self, other])
-        elif isinstance(other, (float, int, str)):
-            from ir_axioms.axiom.conversion import to_axiom
-            return self | to_axiom(other)
-        else:
-            return NotImplemented
+    def __or__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
+        from ir_axioms.axiom.arithmetic import CascadeAxiom
 
-    def __ror__(self, other: "AxiomLike") -> "Axiom":
-        if isinstance(other, Axiom):
-            return other | self
-        elif isinstance(other, (float, int, str)):
-            from ir_axioms.axiom.conversion import to_axiom
-            return to_axiom(other) | self
-        else:
-            return NotImplemented
+        return CascadeAxiom(axioms=[self, other])
 
-    def __neg__(self) -> "Axiom":
-        return self * -1
+    def __ror__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
+        return other | self
 
-    def __pos__(self) -> "Axiom":
+    def __neg__(self) -> "Axiom[Input, Output]":
+        from ir_axioms.axiom.arithmetic import UniformAxiom
+
+        return self * UniformAxiom(scalar=-1)
+
+    def __pos__(self) -> "Axiom[Input, Output]":
         """
         Return the normalized preference of this axiom,
         replacing positive values with 1 and negative values with -1.
         """
         from ir_axioms.axiom.arithmetic import NormalizedAxiom
-        return NormalizedAxiom(self)
 
-    def normalized(self) -> "Axiom":
+        return NormalizedAxiom(axiom=self)
+
+    def normalized(self) -> "Axiom[Input, Output]":
         """
         Return the normalized preference of this axiom,
         replacing positive values with 1 and negative values with -1.
         """
         return +self
 
-    def __invert__(self) -> "Axiom":
+    def cached(self, cache_path: Path) -> "Axiom[Input, Output]":
         """
-        Cache this axiom's preferences in the context's cache directory,
-        meaning the ``preference()`` method will only be called once
-        for each query-documents tuple.
-        """
-        return self.cached()
-
-    def cached(self) -> "Axiom":
-        """
-        Cache this axiom's preferences in the context's cache directory,
+        Cache this axiom's preferences in the given cache path,
         meaning the ``preference()`` method will only be called once
         for each query-documents tuple.
         """
         from ir_axioms.axiom.cache import CachedAxiom
-        return CachedAxiom(self)
 
-    @final
-    def rerank_kwiksort(
-            self,
-            context: IndexContext,
-            query: Query,
-            ranking: Sequence[RankedDocument],
-            pivot_selection: PivotSelection = RandomPivotSelection(),
-    ) -> Sequence[RankedDocument]:
-        from ir_axioms.modules.ranking import kwiksort, reset_score
+        return CachedAxiom(axiom=self, cache_path=cache_path)
 
-        ranking = kwiksort(self, query, context, ranking, pivot_selection)
-        ranking = reset_score(ranking)
-        return ranking
-
-    def _filtered_preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument,
-            filter_pairs: Optional[Callable[
-                [RankedDocument, RankedDocument],
-                bool
-            ]]
-    ) -> float:
+    def parallel(self, n_jobs: Optional[int] = None) -> "Axiom[Input, Output]":
         """
-        Return the axiom's preference if there is no filter or
-        the filter matches the pair.
+        Parallelize preference matrix computation of this axiom.
         """
-        if filter_pairs is None or filter_pairs(document1, document2):
-            return self.preference(context, query, document1, document2)
-        else:
-            return nan
+        from ir_axioms.axiom.parallel import ParallelAxiom
 
-    def _parallel_preference_matrix(
-            self,
-            n_jobs: int,
-            context: IndexContext,
-            query: Query,
-            ranking: Sequence[RankedDocument],
-            filter_pairs: Optional[Callable[
-                [RankedDocument, RankedDocument],
-                bool
-            ]] = None
-    ) -> ndarray:
-        @delayed
-        def document_preference(
-                document1: RankedDocument,
-                document2: RankedDocument
-        ) -> float:
-            return self._filtered_preference(
-                context,
-                query,
-                document1,
-                document2,
-                filter_pairs,
-            )
+        return ParallelAxiom(axiom=self, n_jobs=n_jobs)
 
-        with Parallel(n_jobs=n_jobs) as parallel:
-            preferences: Sequence[float] = parallel(
-                document_preference(document1, document2)
-                for document1 in ranking
-                for document2 in ranking
-            )
+    def as_precondition(
+        self,
+        expected_sign: Literal[1, 0, -1] = 0,
+        strip_preconditions: bool = True,
+    ) -> Precondition[Input, Output]:
+        from ir_axioms.precondition.axiom import AxiomPrecondition
 
-        return array(preferences).reshape(
-            len(ranking),
-            len(ranking)
+        return AxiomPrecondition(
+            axiom=self,
+            expected_sign=expected_sign,
+            strip_preconditions=strip_preconditions,
         )
 
     @final
-    def preference_matrix(
-            self,
-            context: IndexContext,
-            query: Query,
-            ranking: Sequence[RankedDocument],
-            filter_pairs: Optional[Callable[
-                [RankedDocument, RankedDocument],
-                bool
-            ]] = None,
-            parallel_jobs: int = 1,
-    ) -> ndarray:
-        if parallel_jobs != 1:
-            return self._parallel_preference_matrix(
-                parallel_jobs,
-                context,
-                query,
-                ranking,
-                filter_pairs
-            )
-        return stack(tuple(
-            array(tuple(
-                self.preference(context, query, document1, document2)
-                if filter_pairs is None or filter_pairs(document1, document2)
-                else nan
-                for document2 in ranking
-            ))
-            for document1 in ranking
-        ))
+    def rerank_kwiksort(
+        self,
+        input: Input,
+        ranking: Sequence[Output],
+        pivot_selection: PivotSelection[Input, Output] = RandomPivotSelection(),
+    ) -> Sequence[Output]:
+        from ir_axioms.algorithms.ranking import kwiksort
 
-
-AxiomLike = Union[Axiom, str, int, float]
+        ranking = kwiksort(
+            axiom=self,
+            input=input,
+            vertices=ranking,
+            pivot_selection=pivot_selection,
+        )
+        return ranking

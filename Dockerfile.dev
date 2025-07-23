@@ -1,6 +1,0 @@
-FROM webis/ir_axioms:latest
-
-RUN cd /workspace/ && \
-	rm -R build/ LICENSE README.md ir_axioms* scripts/ tests/ \
-	&& /venv/bin/pip3 install -e .[test]
-

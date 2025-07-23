@@ -1,89 +1,111 @@
 from dataclasses import dataclass
-from random import Random
-from typing import Any, Optional
+from functools import cached_property
+from typing import Any, Optional, Sequence, TypeVar, Protocol, Final
 
-from cached_property import cached_property
+from numpy import zeros, floating
+from numpy.random import Generator, default_rng
 
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.axiom.utils import strictly_less, strictly_greater
-from ir_axioms.model import (
-    Query, RankedDocument, IndexContext, JudgedRankedDocument
-)
+from ir_axioms.dependency_injection import injector
+from ir_axioms.model import Preference, PreferenceMatrix
+from ir_axioms.utils.lazy import lazy_inject
 
 
-@dataclass(frozen=True)
-class NopAxiom(Axiom):
-    name = "NOP"
+@dataclass(frozen=True, kw_only=True)
+class NopAxiom(Axiom[Any, Any]):
 
     def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ):
+        self,
+        input: Any,
+        output1: Any,
+        output2: Any,
+    ) -> Preference:
         return 0
 
-
-@dataclass(frozen=True)
-class OriginalAxiom(Axiom):
-    name = "ORIG"
-
-    def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ):
-        return strictly_less(document1.rank, document2.rank)
+    def preferences(
+        self,
+        input: Any,
+        outputs: Sequence[Any],
+    ) -> PreferenceMatrix:
+        return zeros((len(outputs), len(outputs)))
 
 
-@dataclass(frozen=True)
-class OracleAxiom(Axiom):
-    name = "ORACLE"
-
-    def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ) -> float:
-        if (
-                not isinstance(document1, JudgedRankedDocument) or
-                not isinstance(document2, JudgedRankedDocument)
-        ):
-            raise ValueError(
-                f"Expected both documents to be "
-                f"instances of {JudgedRankedDocument}, "
-                f"but were {type(document1)} and {type(document2)}."
-            )
-        return strictly_greater(document1.relevance, document2.relevance)
+NOP: Final = lazy_inject(NopAxiom, injector)
 
 
-@dataclass(frozen=True)
-class RandomAxiom(Axiom):
-    name = "RANDOM"
-
+@dataclass(frozen=True, kw_only=True)
+class RandomAxiom(Axiom[Any, Any]):
     seed: Optional[Any] = None
 
     @cached_property
-    def _random(self) -> Random:
-        return Random(self.seed)
+    def _generator(self) -> Generator:
+        return default_rng(seed=self.seed)  # nosec: B311
 
     def preference(
-            self,
-            context: IndexContext,
-            query: Query,
-            document1: RankedDocument,
-            document2: RankedDocument
-    ):
-        return self._random.randint(-1, 1)
+        self,
+        input: Any,
+        output1: Any,
+        output2: Any,
+    ) -> Preference:
+        return self._generator.integers(-1, 1)
+
+    def preferences(
+        self,
+        input: Any,
+        outputs: Sequence[Any],
+    ) -> PreferenceMatrix:
+        return self._generator.integers(-1, 1, (len(outputs), len(outputs))).astype(
+            floating
+        )
 
 
-# Aliases for shorter names:
-NOP = NopAxiom
-ORIG = OriginalAxiom
-ORACLE = OracleAxiom
-RANDOM = RandomAxiom
+RANDOM: Final = lazy_inject(RandomAxiom, injector)
+
+
+_T_contra = TypeVar("_T_contra", contravariant=True)
+
+
+class _SupportsComparison(Protocol[_T_contra]):
+    def __lt__(self, other: _T_contra, /) -> bool: ...
+    def __gt__(self, other: _T_contra, /) -> bool: ...
+
+
+_SupportsComparisonT = TypeVar("_SupportsComparisonT", bound=_SupportsComparison)
+
+
+@dataclass(frozen=True, kw_only=True)
+class GreaterThanAxiom(Axiom[Any, _SupportsComparisonT]):
+
+    def preference(
+        self,
+        input: Any,
+        output1: _SupportsComparisonT,
+        output2: _SupportsComparisonT,
+    ) -> Preference:
+        if output1 > output2:
+            return 1
+        elif output1 < output2:
+            return -1
+        return 0
+
+
+GT: Final = lazy_inject(GreaterThanAxiom, injector)
+
+
+@dataclass(frozen=True, kw_only=True)
+class LessThanAxiom(Axiom[Any, _SupportsComparisonT]):
+
+    def preference(
+        self,
+        input: Any,
+        output1: _SupportsComparisonT,
+        output2: _SupportsComparisonT,
+    ) -> Preference:
+        if output1 < output2:
+            return 1
+        elif output1 > output2:
+            return -1
+        return 0
+
+
+LT: Final = lazy_inject(LessThanAxiom, injector)

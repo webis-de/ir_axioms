@@ -1,5 +1,4 @@
-from ir_axioms.cli import cli
+from ir_axioms.cli import app
 
 if __name__ == "__main__":
-    # pylint: disable=E1120
-    cli()
+    app()

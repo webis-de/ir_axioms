@@ -1,102 +1,180 @@
-from ir_axioms.axiom import (
-    argumentative, arithmetic, base, cache, conversion, length_norm,
-    lower_bound, proximity, query_aspects, retrieval_score, term_frequency,
-    term_similarity, simple, trec, estimator, preconditions
+# Re-export from sub-modules.
+
+from ir_axioms.axiom.generation import (  # noqa: F401
+    WordLengthDeviationCoherenceAxiom,
+    COH1,
+    SubjectVerbClosenessCoherenceAxiom,
+    COH2,
+    LanguageToolGrammarErrorProportionClarityAxiom,
+    CLAR1,
+    FleschReadingEaseClarityAxiom,
+    CLAR2,
+    AspectSimilaritySentenceCountConsistencyAxiom,
+    CONS1,
+    RougeConsistencyAxiom,
+    CONS2,
+    EntityContradictionConsistencyAxiom,
+    CONS3,
+    CitationSentenceCorrectnessAxiom,
+    CORR1,
+    AspectCountCoverageAxiom,
+    COV1,
+    AspectRedundancyCoverageAxiom,
+    COV2,
+    AspectSimilaritySentenceCountCoverageAxiom,
+    COV3,
+    GenerativeArgumentativeUnitsCountAxiom,
+    GEN_ArgUC,
+    GenerativeQueryTermOccurrenceInArgumentativeUnitsAxiom,
+    GEN_QTArg,
+    GenerativeQueryTermPositionInArgumentativeUnitsAxiom,
+    GEN_QTPArg,
+    GenerativeAverageSentenceLengthAxiom,
+    GEN_aSL,
+    GenerativeLnc1Axiom,
+    GEN_LNC1,
+    GenerativeTfLncAxiom,
+    GEN_TF_LNC,
+    GenerativeProx1Axiom,
+    GEN_PROX1,
+    GenerativeProx2Axiom,
+    GEN_PROX2,
+    GenerativeProx3Axiom,
+    GEN_PROX3,
+    GenerativeProx4Axiom,
+    GEN_PROX4,
+    GenerativeProx5Axiom,
+    GEN_PROX5,
+    GenerativeRegAxiom,
+    GEN_REG,
+    GenerativeAntiRegAxiom,
+    GEN_ANTI_REG,
+    GenerativeAndAxiom,
+    GEN_AND,
+    GenerativeLenAndAxiom,
+    GEN_LEN_AND,
+    GenerativeModifiedAndAxiom,
+    GEN_M_AND,
+    GenerativeDivAxiom,
+    GEN_DIV,
+    GenerativeLenDivAxiom,
+    GEN_LEN_DIV,
+    GenerativeTfc1Axiom,
+    GEN_TFC1,
+    GenerativeStmc1Axiom,
+    GEN_STMC1,
+    GenerativeStmc2Axiom,
+    GEN_STMC2,
+    TrecRagCrowdAxiom,
+    TrecRagLlmOrigAxiom,
+    TrecRagNuggetAxiom,
 )
 
-# Re-export from child modules.
-ArgumentativeUnitsCountAxiom = argumentative.ArgumentativeUnitsCountAxiom
-QueryTermOccurrenceInArgumentativeUnitsAxiom = (
-    argumentative.QueryTermOccurrenceInArgumentativeUnitsAxiom
+
+from ir_axioms.axiom.retrieval import (  # noqa: F401
+    ArgumentativeUnitsCountAxiom,
+    ArgUC,
+    QueryTermOccurrenceInArgumentativeUnitsAxiom,
+    QTArg,
+    QueryTermPositionInArgumentativeUnitsAxiom,
+    QTPArg,
+    AverageSentenceLengthAxiom,
+    aSLDoc,
+    aSL,
+    Lnc1Axiom,
+    LNC1,
+    TfLncAxiom,
+    TF_LNC,
+    Lb1Axiom,
+    LB1,
+    Prox1Axiom,
+    PROX1,
+    Prox2Axiom,
+    PROX2,
+    Prox3Axiom,
+    PROX3,
+    Prox4Axiom,
+    PROX4,
+    Prox5Axiom,
+    PROX5,
+    RegAxiom,
+    REG,
+    AntiRegAxiom,
+    ANTI_REG,
+    AspectRegAxiom,
+    ASPECT_REG,
+    AndAxiom,
+    AND,
+    LenAndAxiom,
+    LEN_AND,
+    ModifiedAndAxiom,
+    M_AND,
+    LenModifiedAndAxiom,
+    LEN_M_AND,
+    DivAxiom,
+    DIV,
+    LenDivAxiom,
+    LEN_DIV,
+    OriginalAxiom,
+    ORIG,
+    OracleAxiom,
+    ORACLE,
+    Tfc1Axiom,
+    TFC1,
+    Tfc3Axiom,
+    TFC3,
+    ModifiedTdcAxiom,
+    M_TDC,
+    LenModifiedTdcAxiom,
+    LEN_M_TDC,
+    Stmc1Axiom,
+    STMC1,
+    Stmc2Axiom,
+    STMC2,
+    TrecOracleAxiom,
 )
-QueryTermPositionInArgumentativeUnitsAxiom = (
-    argumentative.QueryTermPositionInArgumentativeUnitsAxiom
+
+
+from ir_axioms.axiom.arithmetic import (  # noqa: F401
+    UniformAxiom,
+    SumAxiom,
+    ProductAxiom,
+    MultiplicativeInverseAxiom,
+    ConjunctionAxiom,
+    VoteAxiom,
+    MajorityVoteAxiom,
+    NormalizedAxiom,
 )
-AverageSentenceLengthAxiom = argumentative.AverageSentenceLengthAxiom
-ArgUC = argumentative.ArgUC
-QTArg = argumentative.QTArg
-QTPArg = argumentative.QTPArg
-aSLDoc = argumentative.aSLDoc
-aSL = argumentative.aSL
 
-UniformAxiom = arithmetic.UniformAxiom
-SumAxiom = arithmetic.SumAxiom
-ProductAxiom = arithmetic.ProductAxiom
-MultiplicativeInverseAxiom = arithmetic.MultiplicativeInverseAxiom
-AndAxiom = arithmetic.AndAxiom
-VoteAxiom = arithmetic.VoteAxiom
-MajorityVoteAxiom = arithmetic.MajorityVoteAxiom
-NormalizedAxiom = arithmetic.NormalizedAxiom
+from ir_axioms.axiom.base import (  # noqa: F401
+    Axiom,
+)
 
-Axiom = base.Axiom
-AxiomLike = base.AxiomLike
+from ir_axioms.axiom.cache import (  # noqa: F401
+    CachedAxiom,
+)
 
-CachedAxiom = cache.CachedAxiom
+from ir_axioms.axiom.estimator import (  # noqa: F401
+    EstimatorAxiom,
+    ScikitLearnEstimator,
+    ScikitLearnEstimatorAxiom,
+)
 
-to_axiom = conversion.to_axiom
-to_axioms = conversion.to_axioms
-AutoAxiom = conversion.AutoAxiom
+from ir_axioms.axiom.parallel import (  # noqa: F401
+    ParallelAxiom,
+)
 
-EstimatorAxiom = estimator.EstimatorAxiom
+from ir_axioms.axiom.precondition import (  # noqa: F401
+    PreconditionMixin,
+)
 
-LNC1 = length_norm.LNC1
-TF_LNC = length_norm.TF_LNC
-
-LEN = preconditions.LEN
-LEN_Mixin = preconditions.LEN_Mixin
-
-LB1 = lower_bound.LB1
-
-PROX1 = proximity.PROX1
-PROX2 = proximity.PROX2
-PROX3 = proximity.PROX3
-PROX4 = proximity.PROX4
-PROX5 = proximity.PROX5
-
-REG = query_aspects.REG
-REG_fastText = query_aspects.REG_fastText
-REG_f = query_aspects.REG_f
-ANTI_REG = query_aspects.ANTI_REG
-ANTI_REG_fastText = query_aspects.ANTI_REG_fastText
-ANTI_REG_f = query_aspects.ANTI_REG_f
-ASPECT_REG = query_aspects.ASPECT_REG
-ASPECT_REG_fastText = query_aspects.ASPECT_REG_fastText
-ASPECT_REG_f = query_aspects.ASPECT_REG_f
-AND = query_aspects.AND
-LEN_AND = query_aspects.LEN_AND
-M_AND = query_aspects.M_AND
-LEN_M_AND = query_aspects.LEN_M_AND
-DIV = query_aspects.DIV
-LEN_DIV = query_aspects.LEN_DIV
-
-RetrievalScoreAxiom = retrieval_score.RetrievalScoreAxiom
-RS_TF = retrieval_score.RS_TF
-RS_TF_IDF = retrieval_score.RS_TF_IDF
-RS_BM25 = retrieval_score.RS_BM25
-RS_PL2 = retrieval_score.RS_PL2
-RS_QL = retrieval_score.RS_QL
-RS = retrieval_score.RS
-
-NopAxiom = simple.NopAxiom
-OriginalAxiom = simple.OriginalAxiom
-OracleAxiom = simple.OracleAxiom
-RandomAxiom = simple.RandomAxiom
-NOP = simple.NOP
-ORIG = simple.ORIG
-ORACLE = simple.ORACLE
-RANDOM = simple.RANDOM
-
-TFC1 = term_frequency.TFC1
-TFC3 = term_frequency.TFC3
-M_TDC = term_frequency.M_TDC
-LEN_M_TDC = term_frequency.LEN_M_TDC
-
-TrecOracleAxiom = trec.TrecOracleAxiom
-TREC = trec.TREC
-
-STMC1 = term_similarity.STMC1
-STMC1_fastText = term_similarity.STMC1_fastText
-STMC1_f = term_similarity.STMC1_f
-STMC2 = term_similarity.STMC2
-STMC2_fastText = term_similarity.STMC2_fastText
-STMC2_f = term_similarity.STMC2_f
+from ir_axioms.axiom.simple import (  # noqa: F401
+    NopAxiom,
+    NOP,
+    RandomAxiom,
+    RANDOM,
+    GreaterThanAxiom,
+    GT,
+    LessThanAxiom,
+    LT,
+)

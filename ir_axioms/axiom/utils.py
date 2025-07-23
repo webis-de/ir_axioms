@@ -1,27 +1,43 @@
-from typing import TypeVar, Union
-
-T = TypeVar("T")
+from typing import Union, TypeVar, Protocol, Sized
 
 
-def strictly_greater(x: T, y: T) -> float:
+_T_contra = TypeVar("_T_contra", contravariant=True)
+
+
+class _SupportsComparison(Protocol[_T_contra]):
+    def __lt__(self, other: _T_contra, /) -> bool: ...
+    def __gt__(self, other: _T_contra, /) -> bool: ...
+
+
+_SupportsComparisonT = TypeVar("_SupportsComparisonT", bound=_SupportsComparison)
+
+
+def strictly_greater(x: _SupportsComparisonT, y: _SupportsComparisonT) -> float:
     if x > y:
         return 1
-    elif y > x:
+    elif x < y:
         return -1
     return 0
 
 
-def strictly_less(x: T, y: T) -> float:
-    if y > x:
+def strictly_less(x: _SupportsComparisonT, y: _SupportsComparisonT) -> float:
+    if x < y:
         return 1
     elif x > y:
         return -1
     return 0
 
 
+def strictly_more(x: Sized, y: Sized) -> float:
+    return strictly_greater(len(x), len(y))
+
+
+def strictly_fewer(x: Sized, y: Sized) -> float:
+    return strictly_less(len(x), len(y))
+
+
 def approximately_equal(
-        *items: Union[int, float],
-        margin_fraction: float = 0.1
+    *items: Union[int, float], margin_fraction: float = 0.1
 ) -> bool:
     """
     True if all numeric args are
@@ -42,4 +58,4 @@ def approximately_equal(
     boundary_min = min(boundaries)
     boundary_max = max(boundaries)
 
-    return all(boundary_min < item < boundary_max for item in items)
+    return all(boundary_min <= item <= boundary_max for item in items)
