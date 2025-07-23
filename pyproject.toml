@@ -83,7 +83,7 @@ experiments =[
     "xgboost~=2.1",
 ]
 pyserini =[
-    "pyserini~=0.43",
+    "pyserini~=1.2",
 ]
 pyterrier =[
     "python-terrier~=0.13.0",
