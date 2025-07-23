@@ -95,28 +95,28 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-  # python-publish:
-  #   name: 🚀 Publish Python wheels
-  #   if: github.event_name == 'push' && endsWith(github.event.base_ref, 'main') && startsWith(github.ref, 'refs/tags')
-  #   needs:
-  #   - python-build
-  #   - python-code-check
-  #   - python-typing
-  #   - python-security
-  #   - python-test
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     id-token: write
-  #   steps:
-  #   - name: 📥 Check-out
-  #     uses: actions/checkout@v4
-  #   - name: 📥 Download Python wheels
-  #     uses: actions/download-artifact@v4
-  #     with:
-  #       name: wheels
-  #       path: dist
-  #   - name: 🚀 Publish Python wheels
-  #     uses: pypa/gh-action-pypi-publish@release/v1
+  python-publish:
+    name: 🚀 Publish Python wheels
+    if: github.event_name == 'push' && endsWith(github.event.base_ref, 'main') && startsWith(github.ref, 'refs/tags')
+    needs:
+    - python-build
+    - python-code-check
+    - python-typing
+    - python-security
+    - python-test
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+    - name: 📥 Check-out
+      uses: actions/checkout@v4
+    - name: 📥 Download Python wheels
+      uses: actions/download-artifact@v4
+      with:
+        name: wheels
+        path: dist
+    - name: 🚀 Publish Python wheels
+      uses: pypa/gh-action-pypi-publish@release/v1
   github-release:
     name: 🚀 Create GitHub release
     if: github.event_name == 'push' && endsWith(github.event.base_ref, 'main') && startsWith(github.ref, 'refs/tags')
@@ -126,7 +126,7 @@ jobs:
       - python-typing
       - python-security
       - python-test
-    # - python-publish
+      - python-publish
     permissions:
       contents: write
     runs-on: ubuntu-latest
