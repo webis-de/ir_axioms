@@ -5,7 +5,7 @@ from tests.util import inject_documents
 
 def test_stmc1():
     query = TextQuery("q1", "blue car moves")
-    document1 = TextDocument("d1", "blue auto goes through the city")
+    document1 = TextDocument("d1", "blue auto runs through the city")
     document2 = TextDocument("d2", "red airplane flies in the sky")
 
     inject_documents([document1, document2])
