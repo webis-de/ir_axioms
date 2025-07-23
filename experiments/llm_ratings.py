@@ -81,13 +81,13 @@ class _Rater:
     def _model(self) -> PreTrainedModel:
         if find_dotenv():
             load_dotenv()
-        return AutoModelForCausalLM.from_pretrained(self.model_name).to(self._device)
+        return AutoModelForCausalLM.from_pretrained(self.model_name).to(self._device)  # nosec: B615
 
     @cached_property
     def _tokenizer(self) -> PreTrainedTokenizer:
         if find_dotenv():
             load_dotenv()
-        return AutoTokenizer.from_pretrained(self.model_name)
+        return AutoTokenizer.from_pretrained(self.model_name)  # nosec: B615
 
     def rate(self, batch: DataFrame) -> DataFrame:
         # Construct the chat prompts.

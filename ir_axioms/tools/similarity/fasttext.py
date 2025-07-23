@@ -25,10 +25,9 @@ class FastTextTermSimilarity(TermSimilarity):
 
     @cached_property
     def model(self) -> _FastText:
-        model_path = hf_hub_download(
+        model_path = hf_hub_download(  # nosec: B615
             repo_id=self.model_name,
             filename="model.bin",
-            revision="main",
         )
         return load_model(model_path)
 

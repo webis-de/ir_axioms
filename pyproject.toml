@@ -64,7 +64,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 tests =[
-    "bandit[toml]~=1.7",
+    "bandit[toml]~=1.8",
     "mypy~=1.13",
     "pytest~=8.3",
     "pytest-cov~=6.0",
