@@ -78,9 +78,6 @@ pyserini = [
 pyterrier = [
     "python-terrier~=0.13.0",
 ]
-spacy = [
-    "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl",
-]
 
 [project.urls]
 "Homepage" = "https://github.com/webis-de/ir_axioms"
