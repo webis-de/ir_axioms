@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from math import isclose
 from typing import Final, Union
 
-from injector import inject
+from injector import inject, NoInject
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.dependency_injection import injector
@@ -17,7 +17,7 @@ class Lb1Axiom(Axiom[Query, ScoredDocument]):
     text_contents: TextContents[Union[Query, Document]]
     term_tokenizer: TermTokenizer
     text_statistics: TextStatistics[Document]
-    margin_fraction: float = 0.1
+    margin_fraction: NoInject[float] = 0.1
 
     def preference(
         self,

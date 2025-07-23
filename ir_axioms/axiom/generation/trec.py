@@ -97,7 +97,11 @@ class TrecRagNuggetAxiom(Axiom[GenerationInput, GenerationOutput]):
                 + 0.5 * df2_okay["assignment_score"].sum()
             ) / (len(df2_vital) + 0.5 * len(df2_okay))
 
-        if isclose(score1, score2, rel_tol=self.margin_fraction,):
+        if isclose(
+            score1,
+            score2,
+            rel_tol=self.margin_fraction,
+        ):
             return 0
 
         return strictly_greater(score1, score2)

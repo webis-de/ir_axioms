@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from math import isclose, nan
 from typing import Final, Union, Sequence
 
-from injector import inject
+from injector import inject, NoInject
 from numpy import array, float_
 from tqdm.auto import tqdm
 
@@ -93,7 +93,7 @@ class Stmc2Axiom(Axiom[Query, Document]):
     term_tokenizer: TermTokenizer
     term_similarity: TermSimilarity
     text_statistics: TextStatistics[Document]
-    margin_fraction: float = 0.2
+    margin_fraction: NoInject[float] = 0.2
 
     def preference(
         self,

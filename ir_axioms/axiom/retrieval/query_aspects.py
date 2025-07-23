@@ -262,7 +262,7 @@ class AspectRegAxiom(Axiom[Query, Document]):
     term_tokenizer: TermTokenizer
     index_statistics: IndexStatistics
     term_similarity: TermSimilarity
-    term_discriminator_margin_fraction: float = 0.1
+    term_discriminator_margin_fraction: NoInject[float] = 0.1
 
     def preference(
         self,

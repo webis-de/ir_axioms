@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from math import isclose
 from typing import AbstractSet, Final, Mapping, Sequence, Union
 
-from injector import inject
+from injector import inject, NoInject
 from numpy import array, float_
 from tqdm.auto import tqdm
 
@@ -20,7 +20,7 @@ class Lnc1Axiom(Axiom[Query, Document]):
     text_contents: TextContents[Union[Query, Document]]
     term_tokenizer: TermTokenizer
     text_statistics: TextStatistics[Document]
-    margin_fraction: float = 0.1
+    margin_fraction: NoInject[float] = 0.1
 
     def preference(
         self,

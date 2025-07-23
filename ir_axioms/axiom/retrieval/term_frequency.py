@@ -25,7 +25,7 @@ class Tfc1Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
     term_tokenizer: TermTokenizer
     text_statistics: TextStatistics[Document]
     precondition: NoInject[Precondition[Query, Document]] = field(default_factory=LEN)
-    margin_fraction: float = 0.1
+    margin_fraction: NoInject[float] = 0.1
 
     def _preference(
         self,
@@ -65,7 +65,6 @@ class Tfc1Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
         input: Query,
         outputs: Sequence[Document],
     ) -> PreferenceMatrix:
-
         query_terms = self.term_tokenizer.terms(
             self.text_contents.contents(input),
         )
@@ -103,7 +102,7 @@ class Tfc3Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
     index_statistics: IndexStatistics
     text_statistics: TextStatistics[Document]
     precondition: NoInject[Precondition[Query, Document]] = field(default_factory=LEN)
-    margin_fraction: float = 0.1
+    margin_fraction: NoInject[float] = 0.1
 
     def preference(
         self,

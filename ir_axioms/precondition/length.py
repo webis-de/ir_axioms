@@ -3,7 +3,7 @@ from itertools import product
 from math import isclose
 from typing import Final, Sequence, TypeVar
 
-from injector import inject
+from injector import inject, NoInject
 from numpy import array, bool_
 from tqdm.auto import tqdm
 
@@ -21,7 +21,7 @@ Input = TypeVar("Input")
 class LenPrecondition(Precondition[Input, Document]):
     text_contents: TextContents[Document]
     term_tokenizer: TermTokenizer
-    margin_fraction: float = 0.1
+    margin_fraction: NoInject[float] = 0.1
 
     def precondition(
         self,
