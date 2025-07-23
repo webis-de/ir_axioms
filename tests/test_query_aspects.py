@@ -130,8 +130,8 @@ def test_len_and():
 
 def test_len_m_and_false_precondition():
     query = TextQuery("q1", "q1 q2 q3")
-    document1 = TextDocument("d1", "q3 b q1 q2 q2 q2 q1 q1 q2")
-    document2 = TextDocument("d2", "a b a b q1 q2 q2 q2 q1 q1 q2")
+    document1 = TextDocument("d1", "q3 bar q1 q2 q2 q2 q1 q1 q2")
+    document2 = TextDocument("d2", "foo bar foo bar q1 q2 q2 q2 q1 q1 q2")
 
     inject_documents([document1, document2])
 
