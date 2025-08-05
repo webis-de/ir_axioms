@@ -3,7 +3,7 @@ from ir_axioms.model import TextQuery, ScoredTextDocument
 
 
 def test_lb1() -> None:
-    query = TextQuery("q1", "test query words")
+    query = TextQuery(id="q1", text="test query words")
     document1 = ScoredTextDocument(
         id="d1",
         text="test document that contains query words and phrases",
