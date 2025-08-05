@@ -1,4 +1,4 @@
-from numpy import ones
+from numpy import ones, full, zeros
 from pytest import approx
 
 from ir_axioms.axiom import UniformAxiom, VoteAxiom
@@ -14,6 +14,7 @@ def test_uniform() -> None:
 
     assert axiom.preference(query, document1, document2) == 1
     assert axiom.preference(query, document2, document1) == 1
+
     assert (axiom.preferences(query, [document1, document2]) == ones((2, 2))).all()
 
 
@@ -30,7 +31,8 @@ def test_sum() -> None:
 
     assert axiom.preference(query, document1, document2) == 6
     assert axiom.preference(query, document2, document1) == 6
-    # TODO: Test `preferences()`.
+
+    assert (axiom.preferences(query, [document1, document2]) == full((2, 2), 6)).all()
 
 
 def test_product() -> None:
@@ -47,6 +49,8 @@ def test_product() -> None:
     assert axiom.preference(query, document1, document2) == 6
     assert axiom.preference(query, document2, document1) == 6
 
+    assert (axiom.preferences(query, [document1, document2]) == full((2, 2), 6)).all()
+
 
 def test_multiplicative_inverse() -> None:
     query = Query(id="q1")
@@ -57,6 +61,8 @@ def test_multiplicative_inverse() -> None:
 
     assert axiom.preference(query, document1, document2) == approx(0.5)
     assert axiom.preference(query, document2, document1) == approx(0.5)
+
+    assert (axiom.preferences(query, [document1, document2]) == full((2, 2), 0.5)).all()
 
 
 def test_and() -> None:
@@ -75,6 +81,9 @@ def test_and() -> None:
     assert axiom4.preference(query, document2, document1) == 1
     assert axiom5.preference(query, document1, document2) == 0
     assert axiom5.preference(query, document2, document1) == 0
+
+    assert (axiom4.preferences(query, [document1, document2]) == ones((2, 2))).all()
+    assert (axiom5.preferences(query, [document1, document2]) == zeros((2, 2))).all()
 
 
 def test_majority_vote() -> None:
@@ -97,6 +106,10 @@ def test_majority_vote() -> None:
     assert axiom6.preference(query, document1, document2) == 0
     assert axiom6.preference(query, document2, document1) == 0
 
+    assert (axiom4.preferences(query, [document1, document2]) == ones((2, 2))).all()
+    assert (axiom5.preferences(query, [document1, document2]) == ones((2, 2))).all()
+    assert (axiom6.preferences(query, [document1, document2]) == zeros((2, 2))).all()
+
 
 def test_cascade() -> None:
     query = Query(id="q1")
@@ -110,12 +123,13 @@ def test_cascade() -> None:
     axiom4 = axiom1 | axiom2
     axiom5 = axiom1 | axiom3
 
-    assert axiom1.preference(query, document1, document2) == 0
-    assert axiom1.preference(query, document2, document1) == 0
     assert axiom4.preference(query, document1, document2) == 1
     assert axiom4.preference(query, document2, document1) == 1
     assert axiom5.preference(query, document1, document2) == 2
     assert axiom5.preference(query, document2, document1) == 2
+
+    assert (axiom4.preferences(query, [document1, document2]) == ones((2, 2))).all()
+    assert (axiom5.preferences(query, [document1, document2]) == full((2, 2), 2)).all()
 
 
 def test_normalize() -> None:
@@ -130,3 +144,6 @@ def test_normalize() -> None:
     assert axiom1.preference(query, document2, document1) == 2
     assert axiom2.preference(query, document1, document2) == 1
     assert axiom2.preference(query, document2, document1) == 1
+
+    assert (axiom1.preferences(query, [document1, document2]) == full((2, 2), 2)).all()
+    assert (axiom2.preferences(query, [document1, document2]) == full((2, 2), 1)).all()
