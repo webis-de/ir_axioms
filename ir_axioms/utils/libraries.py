@@ -27,3 +27,13 @@ def is_keybert_installed() -> bool:
     except ImportError:
         return False
         return False
+
+
+def is_sentence_transformers_installed() -> bool:
+    """Check if Sentence Transformers is installed."""
+    try:
+        import sentence_transformers  # noqa: F401
+
+        return True
+    except ImportError:
+        return False
