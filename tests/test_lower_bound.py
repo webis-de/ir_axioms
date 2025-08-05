@@ -1,18 +1,19 @@
 from ir_axioms.axiom import LB1
 from ir_axioms.model import TextQuery, ScoredTextDocument
-from tests.util import inject_documents
 
 
-def test_lb1():
+def test_lb1() -> None:
     query = TextQuery("q1", "test query words")
     document1 = ScoredTextDocument(
-        "d1", "test document that contains query words and phrases", 1.00
+        id="d1",
+        text="test document that contains query words and phrases",
+        score=1.00,
     )
     document2 = ScoredTextDocument(
-        "d2", "test document that contains words and phrases", 1.01
+        id="d2",
+        text="test document that contains words and phrases",
+        score=1.01,
     )
-
-    inject_documents([document1, document2])
 
     ax1 = LB1()
 

@@ -1,14 +1,11 @@
 from ir_axioms.axiom import STMC1, STMC2
 from ir_axioms.model import TextQuery, TextDocument
-from tests.util import inject_documents
 
 
-def test_stmc1():
-    query = TextQuery("q1", "blue car moves")
-    document1 = TextDocument("d1", "blue auto runs through the city")
-    document2 = TextDocument("d2", "red airplane flies in the sky")
-
-    inject_documents([document1, document2])
+def test_stmc1() -> None:
+    query = TextQuery(id="q1", text="blue car moves")
+    document1 = TextDocument(id="d1", text="blue auto runs through the city")
+    document2 = TextDocument(id="d2", text="red airplane flies in the sky")
 
     axiom = STMC1()
 
@@ -17,12 +14,10 @@ def test_stmc1():
     assert axiom.preference(query, document2, document1) == -1
 
 
-def test_stmc2():
-    query = TextQuery("q1", "car")
-    document1 = TextDocument("d1", "car key")
-    document2 = TextDocument("d2", "auto auto auto auto")
-
-    inject_documents([document1, document2])
+def test_stmc2() -> None:
+    query = TextQuery(id="q1", text="car")
+    document1 = TextDocument(id="d1", text="car key")
+    document2 = TextDocument(id="d2", text="auto auto auto auto")
 
     axiom = STMC2()
 
@@ -31,13 +26,13 @@ def test_stmc2():
     assert axiom.preference(query, document2, document1) == -1
 
 
-def test_stmc2_equal():
-    query = TextQuery("q1", "dog breed")
-    document1 = TextDocument("d1", "dog fire orange key")
-    document2 = TextDocument("d2", "animal animal animal animal time key key key")
-    document3 = TextDocument("d3", "dog animal time key key")
-
-    inject_documents([document1, document2])
+def test_stmc2_equal() -> None:
+    query = TextQuery(id="q1", text="dog breed")
+    document1 = TextDocument(id="d1", text="dog fire orange key")
+    document2 = TextDocument(
+        id="d2", text="animal animal animal animal time key key key"
+    )
+    document3 = TextDocument(id="d3", text="dog animal time key key")
 
     axiom = STMC2()
 

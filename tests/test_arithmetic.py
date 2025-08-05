@@ -5,7 +5,7 @@ from ir_axioms.axiom import UniformAxiom, VoteAxiom
 from ir_axioms.model import Query, Document
 
 
-def test_uniform():
+def test_uniform() -> None:
     query = Query(id="q1")
     document1 = Document(id="d1")
     document2 = Document(id="d2")
@@ -17,7 +17,7 @@ def test_uniform():
     assert (axiom.preferences(query, [document1, document2]) == ones((2, 2))).all()
 
 
-def test_sum():
+def test_sum() -> None:
     query = Query(id="q1")
     document1 = Document(id="d1")
     document2 = Document(id="d2")
@@ -33,7 +33,7 @@ def test_sum():
     # TODO: Test `preferences()`.
 
 
-def test_product():
+def test_product() -> None:
     query = Query(id="q1")
     document1 = Document(id="d1")
     document2 = Document(id="d2")
@@ -48,7 +48,7 @@ def test_product():
     assert axiom.preference(query, document2, document1) == 6
 
 
-def test_multiplicative_inverse():
+def test_multiplicative_inverse() -> None:
     query = Query(id="q1")
     document1 = Document(id="d1")
     document2 = Document(id="d2")
@@ -59,7 +59,7 @@ def test_multiplicative_inverse():
     assert axiom.preference(query, document2, document1) == approx(0.5)
 
 
-def test_and():
+def test_and() -> None:
     query = Query(id="q1")
     document1 = Document(id="d1")
     document2 = Document(id="d2")
@@ -77,7 +77,7 @@ def test_and():
     assert axiom5.preference(query, document2, document1) == 0
 
 
-def test_majority_vote():
+def test_majority_vote() -> None:
     query = Query(id="q1")
     document1 = Document(id="d1")
     document2 = Document(id="d2")
@@ -98,7 +98,7 @@ def test_majority_vote():
     assert axiom6.preference(query, document2, document1) == 0
 
 
-def test_cascade():
+def test_cascade() -> None:
     query = Query(id="q1")
     document1 = Document(id="d1")
     document2 = Document(id="d2")
@@ -118,7 +118,7 @@ def test_cascade():
     assert axiom5.preference(query, document2, document1) == 2
 
 
-def test_normalize():
+def test_normalize() -> None:
     query = Query(id="q1")
     document1 = Document(id="d1")
     document2 = Document(id="d2")
