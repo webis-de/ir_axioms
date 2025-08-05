@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from functools import reduce
 from math import isclose, ceil
 from operator import mul
-from typing import Any, Iterable, Sequence
+from typing import Iterable, Sequence
 
 from numpy import full, stack, zeros
 from tqdm.auto import tqdm
@@ -12,7 +12,7 @@ from ir_axioms.model import Input, Output, Preference, PreferenceMatrix
 
 
 @dataclass(frozen=True, kw_only=True)
-class UniformAxiom(Axiom[Any, Any]):
+class UniformAxiom(Axiom[Input, Output]):
     scalar: float
 
     def preference(
@@ -110,8 +110,6 @@ class MultiplicativeInverseAxiom(Axiom[Input, Output]):
 
 @dataclass(frozen=True, kw_only=True)
 class ConjunctionAxiom(Axiom[Input, Output]):
-    # TODO: And is a special case of majority vote with a majority of 1.0
-    #   We might want to merge both classes eventually.
     axioms: Iterable[Axiom[Input, Output]]
 
     def preference(
@@ -130,7 +128,18 @@ class ConjunctionAxiom(Axiom[Input, Output]):
         else:
             return 0
 
-    # TODO: Add batched preference computation.
+    def preferences(
+        self,
+        input: Input,
+        outputs: Sequence[Output],
+    ) -> PreferenceMatrix:
+        preferences = stack(
+            [axiom.preferences(input, outputs) for axiom in self.axioms]
+        )
+        aggregated_preferences = zeros((len(outputs), len(outputs)))
+        aggregated_preferences += (preferences > 0).all(axis=0) * 1
+        aggregated_preferences += (preferences < 0).all(axis=0) * -1
+        return aggregated_preferences
 
     def __and__(self, other: Axiom[Input, Output]) -> Axiom[Input, Output]:
         # Avoid chaining operators.
@@ -203,8 +212,12 @@ class VoteAxiom(Axiom[Input, Output]):
         # Number of observed negative votes.
         negative_votes = (preferences < 0).sum(axis=0)
 
-        mask_positive = (positive_votes > negative_votes) & (positive_votes >= minimum_votes)
-        mask_negative = (negative_votes > positive_votes) & (negative_votes >= minimum_votes)
+        mask_positive = (positive_votes > negative_votes) & (
+            positive_votes >= minimum_votes
+        )
+        mask_negative = (negative_votes > positive_votes) & (
+            negative_votes >= minimum_votes
+        )
 
         aggregated_preferences = zeros((len(outputs), len(outputs)))
         aggregated_preferences += mask_positive * 1
@@ -242,8 +255,6 @@ class CascadeAxiom(Axiom[Input, Output]):
             preference for preference in preferences if preference != 0
         )
         return next(decisive_preferences, 0)
-
-    # TODO: Add batched preference computation.
 
     def __or__(self, other: Axiom[Input, Output]) -> Axiom[Input, Output]:
         # Avoid chaining operators.
