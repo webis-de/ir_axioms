@@ -40,7 +40,6 @@ dependencies = [
     "python-dotenv~=1.0",
     "rouge-score~=0.1.2",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
     "scikit-learn~=1.4",
-    "sentence-transformers>=4.0,<6.0",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
     "spacy~=3.7",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
     "targer-api~=1.1",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
     "textacy~=0.13.0",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
@@ -77,7 +76,10 @@ pyterrier = [
     "python-terrier~=0.13.0",
 ]
 keybert = [
-    "keybert>=0.8.5,<0.10.0",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
+    "keybert>=0.8.5,<0.10.0",
+]
+sbert = [
+    "sentence-transformers>=4.0,<6.0",
 ]
 
 [project.urls]

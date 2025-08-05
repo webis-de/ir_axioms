@@ -41,6 +41,17 @@ Read more about the [`ir_axioms` framework](https://webis.de/publications.html?q
    python -m spacy download en_core_web_sm
    ```
 
+### Optional Dependencies
+
+| Tag | Description |
+|:--|:--|
+| `pyserini` | Use index statistics, document contents, and tokenization from Pyserini/Anserini indices. |
+| `pyterrier` | Use index statistics, document contents, and tokenization from PyTerrier/Terrier indices. Apply KwikSort re-ranking to PyTerrier pipelines. Run axiomatic analyses. |
+| `keybert` | Use KeyBERT for aspect extraction (must be enabled manually). |
+| `sbert` | Use Sentence Transformers for sentence similarity (enabled automatically). |
+
+Note: To reproduce our results from ICTIR'25, please use these extras: `pyterrier,keybert,sbert`
+
 ## Usage
 
 Run the CLI with:
