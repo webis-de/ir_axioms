@@ -17,7 +17,6 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering",
@@ -32,7 +31,6 @@ dependencies = [
     "injector~=0.22.0",
     "ir-datasets~=0.5.9",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
     "joblib~=1.4",
-    "keybert>=0.8.5,<0.10.0",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
     "language-tool-python~=2.8",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
     "more-itertools~=10.5",
     "negspacy~=1.0",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
@@ -77,6 +75,9 @@ pyserini = [
 ]
 pyterrier = [
     "python-terrier~=0.13.0",
+]
+keybert = [
+    "keybert>=0.8.5,<0.10.0",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
 ]
 
 [project.urls]

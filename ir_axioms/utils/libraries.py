@@ -16,3 +16,14 @@ def is_pyserini_installed() -> bool:
         return True
     except ImportError:
         return False
+
+
+def is_keybert_installed() -> bool:
+    """Check if KeyBERT is installed."""
+    try:
+        import keybert  # noqa: F401
+
+        return True
+    except ImportError:
+        return False
+        return False
