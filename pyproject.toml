@@ -142,5 +142,9 @@ skips = ["**/test_*.py"]
 
 [tool.pytest.ini_options]
 log_cli = true
+filterwarnings =[
+    "ignore:Importing 'parser.split_arg_string' is deprecated:DeprecationWarning",
+    "ignore:Attempted to get latest version of terrier-assemblies:UserWarning",
+]
 
 [tool.setuptools_scm]
