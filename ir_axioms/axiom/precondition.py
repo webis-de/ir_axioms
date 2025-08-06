@@ -47,8 +47,8 @@ class PreconditionMixin(Axiom[Input, Output], ABC):
             outputs=outputs,
         )
         if not mask.any():
-            return zeros_like(mask)
-        # TODO: We could try to isolate the non-masked entries here, and only compute preferences where at least one output of the tuple is not masked.
+            return zeros_like(mask).astype(float)
+        # ADDITION: We could try to isolate the non-masked entries here, and only compute preferences where at least one output of the tuple is not masked.
         preferences = super().preferences(
             input=input,
             outputs=outputs,

@@ -42,44 +42,46 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     )
 
     def inject_pyterrier(
-        index_location: Union[Index, IndexRef, Path, str],  # type: ignore
+        index_location: Optional[Union[Index, IndexRef, Path, str]] = None,  # type: ignore
         text_field: Optional[str] = "text",
         tokeniser: Tokeniser = EnglishTokeniser(),  # type: ignore
         dataset: Optional[Union[Dataset, str]] = None,
     ) -> None:
         injector.binder.bind(
-            interface=TextStatistics,
-            to=TerrierTextStatistics(index_location=index_location),
-            scope=singleton,
-        )
-        injector.binder.bind(
             interface=TermTokenizer,
             to=TerrierTermTokenizer(tokeniser=tokeniser),
             scope=singleton,
         )
-        injector.binder.bind(
-            interface=IndexStatistics,
-            to=TerrierIndexStatistics(index_location=index_location),
-            scope=singleton,
-        )
 
-        if text_field is not None:
-
-            @inject
-            def _make_terrier_document_text_contents(
-                fallback_text_contents: TextContents[HasText],
-            ) -> TextContents[Document]:
-                return TerrierDocumentTextContents(
-                    fallback_text_contents=fallback_text_contents,
-                    index_location=index_location,
-                    text_field=text_field,
-                )
-
+        if index_location is not None:
             injector.binder.bind(
-                interface=TextContents[Document],
-                to=_make_terrier_document_text_contents,
+                interface=TextStatistics,
+                to=TerrierTextStatistics(index_location=index_location),
                 scope=singleton,
             )
+            injector.binder.bind(
+                interface=IndexStatistics,
+                to=TerrierIndexStatistics(index_location=index_location),
+                scope=singleton,
+            )
+
+            if text_field is not None:
+
+                @inject
+                def _make_terrier_document_text_contents(
+                    fallback_text_contents: TextContents[HasText],
+                ) -> TextContents[Document]:
+                    return TerrierDocumentTextContents(
+                        fallback_text_contents=fallback_text_contents,
+                        index_location=index_location,
+                        text_field=text_field,
+                    )
+
+                injector.binder.bind(
+                    interface=TextContents[Document],
+                    to=_make_terrier_document_text_contents,
+                    scope=singleton,
+                )
 
         if dataset is not None:
 

@@ -187,7 +187,7 @@ class Prox1Axiom(Axiom[Query, Document]):
 
         return strictly_greater(average2, average1)
 
-    # TODO: Come up with a better way to batch-compute preference-matrices.
+    # ADDITION: Come up with a better way to batch-compute preference-matrices.
     # The largest hurdle seems to be the overlapping terms computation.
 
 
@@ -342,7 +342,7 @@ class Prox3Axiom(Axiom[Query, Document]):
             ),
         )
 
-    # TODO: Come up with a better way to batch-compute preference-matrices.
+    # ADDITION: Come up with a better way to batch-compute preference-matrices.
 
 
 PROX3: Final = lazy_inject(Prox3Axiom, injector)
@@ -393,8 +393,6 @@ class Prox4Axiom(Axiom[Query, Document]):
         else:
             return strictly_greater(count1, count2)
 
-    # TODO: Come up with a better way to batch-compute preference-matrices.
-
 
 PROX4: Final = lazy_inject(Prox4Axiom, injector)
 
@@ -441,13 +439,13 @@ class Prox5Axiom(Axiom[Query, Document]):
 
         return strictly_less(smallest_span1, smallest_span2)
 
-    # TODO: Come up with a better way to batch-compute preference-matrices.
+    # ADDITION: Come up with a better way to batch-compute preference-matrices.
 
 
 PROX5: Final = lazy_inject(Prox5Axiom, injector)
 
 
-# TODO: QPHRA axiom:
+# ADDITION: QPHRA axiom:
 #  For queries with highlighted phrases (e.g., via double quotes),
 #  prefer documents containing all the query phrases over
 #  documents not containing all phrases. [hagen:2016d]

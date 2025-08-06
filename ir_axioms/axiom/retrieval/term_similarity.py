@@ -159,7 +159,7 @@ class Stmc2Axiom(Axiom[Query, Document]):
 
         return 0
 
-    # TODO: Come up with a better way to batch-compute preference-matrices.
+    # ADDITION: Come up with a better way to batch-compute preference-matrices.
     # The largest hurdle seems to be the max similarity pairs computation.
 
 

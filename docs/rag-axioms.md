@@ -21,8 +21,8 @@ Several frameworks describe utility dimensions of retrieval-augmented generation
   - [answer relevance / response relevancy](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/answer_relevance/) (≃ deep coverage)
   - [faithfulness](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/) (≃ external consistency)
   - context relevance (≃ broad coverage)
-  - [multi-modal faithfulness](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/multi_modal_faithfulness/) (only textual context considered yet; submit a [pull request](#TODO))
-  - [multi-modal relevance](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/multi_modal_relevance/) (only textual context considered yet; submit a [pull request](#TODO))
+  - [multi-modal faithfulness](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/multi_modal_faithfulness/) (only textual context considered yet; submit a [pull request](https://github.com/webis-de/ir_axioms/compare))
+  - [multi-modal relevance](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/multi_modal_relevance/) (only textual context considered yet; submit a [pull request](https://github.com/webis-de/ir_axioms/compare))
 - [Hashemi et al.](https://aclanthology.org/2024.acl-long.745v2) (LLM Rubric):
   - satisfaction
   - naturalness (≃ language clarity / content clarity)
@@ -73,9 +73,9 @@ The [above axioms](#axioms-for-utility-dimensions) not yet completely cover all 
 - Content clarity axioms based on discourse structure
 - More aspects of stylistic coherence
 - Penalize too many tense switches
-- Prefer response with easier coreference resolution
+- Prefer response with easier co-reference resolution
 - Consider other citation format or URLs for citation count
 - Axioms for multi-modal outputs (e.g., generated images)
 
 We are happy to collaborate to get more diverse axioms implemented.
-Please [create a pull request](#todo) to propose new ideas and refer to our [guide on axiom development](./axiom-development.md) to realize an idea as code.
+Please [create a pull request](https://github.com/webis-de/ir_axioms/compare) to propose new ideas and refer to our [guide on axiom development](./axiom-development.md) to realize an idea as code.

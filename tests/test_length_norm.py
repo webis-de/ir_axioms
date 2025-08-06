@@ -1,14 +1,11 @@
 from ir_axioms.axiom import LNC1, TF_LNC
 from ir_axioms.model import TextQuery, TextDocument
-from tests.util import inject_documents
 
 
-def test_lnc1():
-    query = TextQuery("q1", "q1 q2 q3")
-    document1 = TextDocument("d1", "q1 q2 q3 w w w w w w w")
-    document2 = TextDocument("d2", "q1 q2 q3 w w w w w w w w")
-
-    inject_documents([document1, document2])
+def test_lnc1() -> None:
+    query = TextQuery(id="q1", text="q1 q2 q3")
+    document1 = TextDocument(id="d1", text="q1 q2 q3 w w w w w w w")
+    document2 = TextDocument(id="d2", text="q1 q2 q3 w w w w w w w w")
 
     axiom = LNC1()
 
@@ -17,13 +14,11 @@ def test_lnc1():
     assert axiom.preference(query, document2, document1) == -1
 
 
-def test_tf_lnc():
-    query = TextQuery("q1", "q1 q2 q3")
-    document1 = TextDocument("d1", "q1 q1 q2 x y")
-    document2 = TextDocument("d2", "q1 q2 x y")
-    document3 = TextDocument("d3", "q1 q1 q1 x y")
-
-    inject_documents([document1, document2])
+def test_tf_lnc() -> None:
+    query = TextQuery(id="q1", text="q1 q2 q3")
+    document1 = TextDocument(id="d1", text="q1 q1 q2 x y")
+    document2 = TextDocument(id="d2", text="q1 q2 x y")
+    document3 = TextDocument(id="d3", text="q1 q1 q1 x y")
 
     axiom = TF_LNC()
 

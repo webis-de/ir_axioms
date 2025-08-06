@@ -6,10 +6,8 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     from dataclasses import dataclass, field
     from functools import cached_property
     from itertools import groupby
-    from pathlib import Path
-    from typing import Sequence, Union, Optional, cast
+    from typing import Sequence, Optional, cast
 
-    from ir_datasets import Dataset
     from pandas import DataFrame
     from pyterrier import Transformer, Estimator
 
@@ -22,19 +20,12 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     )
     from ir_axioms.integrations.pyterrier.transformers import KwikSortReranker
     from ir_axioms.integrations.pyterrier.utils import (
-        inject_pyterrier,
         require_columns,
         load_documents,
         load_queries,
     )
     from ir_axioms.model import JudgedRankedDocument, Document, JudgedDocument, Query
     from ir_axioms.tools import PivotSelection, RandomPivotSelection
-    from ir_axioms.utils.pyterrier import (
-        Index,
-        IndexRef,
-        Tokeniser,
-        EnglishTokeniser,
-    )
 
     def _get_oracle() -> Axiom[Query, JudgedDocument]:
         """
@@ -52,21 +43,8 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         oracle: Axiom[Query, JudgedDocument] = field(default_factory=_get_oracle)
         estimator: ScikitLearnEstimator
         pivot_selection: PivotSelection = RandomPivotSelection()
-        index: Union[Index, IndexRef, Path, str]  # type: ignore
-        dataset: Optional[Union[Dataset, str]] = None
         text_field: Optional[str] = "text"
-        tokeniser: Tokeniser = field(  # type: ignore
-            default_factory=lambda: EnglishTokeniser()
-        )
         verbose: bool = False
-
-        def _inject(self) -> None:
-            inject_pyterrier(
-                index_location=self.index,
-                text_field=self.text_field,
-                tokeniser=self.tokeniser,
-                dataset=self.dataset,
-            )
 
         @cached_property
         def _estimator_axiom(self) -> EstimatorAxiom[Query, Document]:
@@ -79,10 +57,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         def _reranker(self) -> Transformer:
             return KwikSortReranker(
                 axiom=self._estimator_axiom,
-                index=self.index,
-                dataset=self.dataset,
                 pivot_selection=self.pivot_selection,
-                tokeniser=self.tokeniser,
                 verbose=self.verbose,
             )
 
@@ -126,9 +101,6 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                     query_document_pairs, key=lambda x: x[0]
                 )
             ]
-
-            # Inject the Terrier tooling.
-            self._inject()
 
             self._estimator_axiom.fit(ORACLE(), query_document_batches)
 

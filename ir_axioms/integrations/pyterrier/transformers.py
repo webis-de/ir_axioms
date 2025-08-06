@@ -4,12 +4,10 @@ from ir_axioms.utils.libraries import is_pyterrier_installed
 
 if is_pyterrier_installed() or TYPE_CHECKING:
     from abc import abstractmethod, ABC
-    from dataclasses import dataclass, field
+    from dataclasses import dataclass
     from itertools import product
     from logging import DEBUG
-    from pathlib import Path
     from typing import (
-        Union,
         Optional,
         Set,
         Sequence,
@@ -21,7 +19,6 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         Iterable,
     )
 
-    from ir_datasets import Dataset
     from numpy import apply_along_axis, stack, ndarray, array
     from pandas import DataFrame
     from pandas.core.groupby import DataFrameGroupBy
@@ -31,18 +28,11 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     from ir_axioms.logging import logger
     from ir_axioms.axiom.base import Axiom
     from ir_axioms.integrations.pyterrier.utils import (
-        inject_pyterrier,
         require_columns,
         load_documents,
     )
     from ir_axioms.model import Query, RankedDocument, ScoredDocument, Document
     from ir_axioms.tools import PivotSelection, RandomPivotSelection
-    from ir_axioms.utils.pyterrier import (
-        Index,
-        IndexRef,
-        Tokeniser,
-        EnglishTokeniser,
-    )
 
     @dataclass(frozen=True, kw_only=True)
     class _PerGroupTransformer(Transformer, ABC):
@@ -90,20 +80,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         optional_group_columns = {"qid", "name"}
         unit = "query"
 
-        index: Union[Index, IndexRef, Path, str]  # type: ignore
-        dataset: Optional[Union[Dataset, str]] = None
         text_field: Optional[str] = "text"
-        tokeniser: Tokeniser = field(  # type: ignore
-            default_factory=lambda: EnglishTokeniser()
-        )
-
-        def _inject(self) -> None:
-            inject_pyterrier(
-                index_location=self.index,
-                text_field=self.text_field,
-                tokeniser=self.tokeniser,
-                dataset=self.dataset,
-            )
 
         @final
         def transform_group(self, topics_or_res: DataFrame) -> DataFrame:
@@ -121,9 +98,6 @@ if is_pyterrier_installed() or TYPE_CHECKING:
 
             # Load document list.
             documents = load_documents(topics_or_res, text_column=self.text_field)
-
-            # Inject the Terrier tooling.
-            self._inject()
 
             return self.transform_query_ranking(query, documents, topics_or_res)
 

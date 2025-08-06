@@ -5,10 +5,10 @@ from ir_axioms.axiom import TrecOracleAxiom
 from ir_axioms.model import Query, Document
 
 
-def test_trec_oracle():
-    query = Query("q1")
-    document1 = Document("d1")
-    document2 = Document("d2")
+def test_trec_oracle() -> None:
+    query = Query(id="q1")
+    document1 = Document(id="d1")
+    document2 = Document(id="d2")
 
     qrels = TrecQrel()
     qrels.qrels_data = DataFrame(

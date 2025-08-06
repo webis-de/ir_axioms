@@ -3,14 +3,12 @@ from typing import TYPE_CHECKING
 from ir_axioms.utils.libraries import is_pyterrier_installed
 
 if is_pyterrier_installed() or TYPE_CHECKING:
-    from dataclasses import dataclass, field
+    from dataclasses import dataclass
     from functools import reduce, cached_property
     from math import nan
     from operator import or_
-    from pathlib import Path
-    from typing import Sequence, Optional, Union, Literal, Iterable
+    from typing import Sequence, Optional, Literal, Iterable
 
-    from ir_datasets import Dataset
     from pandas import DataFrame, concat
     from pyterrier import Transformer
     from tqdm.auto import tqdm
@@ -24,12 +22,6 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         JoinQrelsTransformer,
         AddNameTransformer,
     )
-    from ir_axioms.utils.pyterrier import (
-        Index,
-        IndexRef,
-        Tokeniser,
-        EnglishTokeniser,
-    )
 
     @dataclass(frozen=True, kw_only=True)
     class AxiomaticExperiment:
@@ -37,17 +29,12 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         names: Optional[Sequence[str]] = None
         topics: DataFrame
         qrels: DataFrame
-        index: Union[Index, IndexRef, Path, str]  # type: ignore
         axioms: Sequence[Axiom]
         axiom_names: Optional[Sequence[str]] = None
         depth: Optional[int] = 10
         filter_by_qrels: bool = True
         filter_by_topics: bool = False
-        dataset: Optional[Union[Dataset, str]] = None
         text_field: Optional[str] = "text"
-        tokeniser: Tokeniser = field(  # type: ignore
-            default_factory=lambda: EnglishTokeniser()
-        )
         parallel_jobs: int = 1
         parallel_backend: Literal["joblib", "ray"] = "joblib"
         verbose: bool = False
@@ -115,10 +102,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             pipeline = pipeline >> AxiomaticPreferences(
                 axioms=self._all_axioms,
                 axiom_names=self._all_axiom_names,
-                index=self.index,
-                dataset=self.dataset,
                 text_field=self.text_field,
-                tokeniser=self.tokeniser,
                 verbose=self.verbose,
             )
             # Parallelize computation.

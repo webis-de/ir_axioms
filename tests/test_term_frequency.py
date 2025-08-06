@@ -4,13 +4,11 @@ from ir_axioms.precondition import LEN
 from tests.util import inject_documents
 
 
-def test_tfc1():
-    query = TextQuery("q1", "w1 w2")
-    document1 = TextDocument("d1", "w1 w1 w2 w3")
-    document2 = TextDocument("d2", "w1 w2 w1 w1")
-    document3 = TextDocument("d2", "w1 w2 w1 w1")
-
-    inject_documents([document1, document2, document3])
+def test_tfc1() -> None:
+    query = TextQuery(id="q1", text="w1 w2")
+    document1 = TextDocument(id="d1", text="w1 w1 w2 w3")
+    document2 = TextDocument(id="d2", text="w1 w2 w1 w1")
+    document3 = TextDocument(id="d3", text="w1 w2 w1 w1")
 
     axiom = TFC1()
 
@@ -24,11 +22,11 @@ def test_tfc1():
     assert axiom.preference(query, document3, document2) == 0
 
 
-def test_tfc3():
-    query = TextQuery("q1", "w1 w2 w3")
-    document1 = TextDocument("d1", "w1 w2 w2")
-    document2 = TextDocument("d2", "w2 w3 w1")
-    document3 = TextDocument("d3", "w3 w1 w1")
+def test_tfc3() -> None:
+    query = TextQuery(id="q1", text="w1 w2 w3")
+    document1 = TextDocument(id="d1", text="w1 w2 w2")
+    document2 = TextDocument(id="d2", text="w2 w3 w1")
+    document3 = TextDocument(id="d3", text="w3 w1 w1")
 
     inject_documents([document1, document2, document3])
 
@@ -42,13 +40,15 @@ def test_tfc3():
     assert axiom.preference(query, document2, document1) == 1
 
 
-def test_m_tdc():
-    query = TextQuery("q1", "test query words phrases")
+def test_m_tdc() -> None:
+    query = TextQuery(id="q1", text="test query words phrases")
     document1 = TextDocument(
-        "d1", "this is the test document and contains words and phrases"
+        id="d1",
+        text="this is the test document and contains words and phrases",
     )
     document2 = TextDocument(
-        "d2", "another document contains query words but is not very words"
+        id="d2",
+        text="another document contains query words but is not very words",
     )
 
     inject_documents([document1, document2])
@@ -60,13 +60,15 @@ def test_m_tdc():
     assert axiom.preference(query, document2, document1) == -1
 
 
-def test_len_m_tdc_false_precondition():
-    query = TextQuery("q1", "test query words phrases")
+def test_len_m_tdc_false_precondition() -> None:
+    query = TextQuery(id="q1", text="test query words phrases")
     document1 = TextDocument(
-        "d1", "this is the test document and contains words and phrases a b c d"
+        id="d1",
+        text="this is the test document and contains words and phrases a b c d",
     )
     document2 = TextDocument(
-        "d2", "another document contains query words but is not very words"
+        id="d2",
+        text="another document contains query words but is not very words",
     )
 
     inject_documents([document1, document2])
@@ -79,13 +81,15 @@ def test_len_m_tdc_false_precondition():
     assert axiom.preference(query, document2, document1) == 0
 
 
-def test_len_m_tdc():
+def test_len_m_tdc() -> None:
     query = TextQuery("q1", "test query words phrases")
     document1 = TextDocument(
-        "d1", "this is the test document and contains words and phrases"
+        id="d1",
+        text="this is the test document and contains words and phrases",
     )
     document2 = TextDocument(
-        "d2", "another document contains query words but is not very words"
+        id="d2",
+        text="another document contains query words but is not very words",
     )
 
     inject_documents([document1, document2])

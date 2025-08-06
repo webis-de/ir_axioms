@@ -6,7 +6,7 @@ from typing import Optional, Sequence
 class GenerationInput:
     id: Optional[str] = None
     text: str
-    context: Optional[Sequence[str]] = None  # TODO: Would it make more sense to move this to the output?
+    context: Optional[Sequence[str]] = None
     reference_output: Optional["GenerationOutput"] = None
 
 
@@ -14,3 +14,5 @@ class GenerationInput:
 class GenerationOutput:
     id: Optional[str] = None
     text: str
+    context: Optional[Sequence[str]] = None
+    """Override context from input if necessary."""
