@@ -67,7 +67,7 @@ experiments = [
     "seaborn~=0.13.2",
     "transformers~=4.48",
     "typing-extensions~=4.12",
-    "xgboost~=2.1",
+    "xgboost>=2.1,<4.0",
 ]
 pyserini = [
     "pyserini>=0.43,<2.0",
