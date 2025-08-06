@@ -1,7 +1,7 @@
 from numpy import ones, full, zeros
 from pytest import approx
 
-from ir_axioms.axiom import UniformAxiom, VoteAxiom
+from ir_axioms.axiom import UniformAxiom, VoteAxiom, Axiom
 from ir_axioms.model import Query, Document
 
 
@@ -10,7 +10,7 @@ def test_uniform() -> None:
     document1 = Document(id="d1")
     document2 = Document(id="d2")
 
-    axiom = UniformAxiom(scalar=1)
+    axiom: Axiom[Query, Document] = UniformAxiom(scalar=1)
 
     assert axiom.preference(query, document1, document2) == 1
     assert axiom.preference(query, document2, document1) == 1
@@ -23,9 +23,9 @@ def test_sum() -> None:
     document1 = Document(id="d1")
     document2 = Document(id="d2")
 
-    axiom1 = UniformAxiom(scalar=1)
-    axiom2 = UniformAxiom(scalar=2)
-    axiom3 = UniformAxiom(scalar=3)
+    axiom1: Axiom[Query, Document] = UniformAxiom(scalar=1)
+    axiom2: Axiom[Query, Document] = UniformAxiom(scalar=2)
+    axiom3: Axiom[Query, Document] = UniformAxiom(scalar=3)
 
     axiom = axiom1 + axiom2 + axiom3
 
@@ -40,9 +40,9 @@ def test_product() -> None:
     document1 = Document(id="d1")
     document2 = Document(id="d2")
 
-    axiom1 = UniformAxiom(scalar=1)
-    axiom2 = UniformAxiom(scalar=2)
-    axiom3 = UniformAxiom(scalar=3)
+    axiom1: Axiom[Query, Document] = UniformAxiom(scalar=1)
+    axiom2: Axiom[Query, Document] = UniformAxiom(scalar=2)
+    axiom3: Axiom[Query, Document] = UniformAxiom(scalar=3)
 
     axiom = axiom1 * axiom2 * axiom3
 
@@ -57,7 +57,9 @@ def test_multiplicative_inverse() -> None:
     document1 = Document(id="d1")
     document2 = Document(id="d2")
 
-    axiom = UniformAxiom(scalar=1) / UniformAxiom(scalar=2)
+    axiom1: Axiom[Query, Document] = UniformAxiom(scalar=1)
+    axiom2: Axiom[Query, Document] = UniformAxiom(scalar=2)
+    axiom = axiom1 / axiom2
 
     assert axiom.preference(query, document1, document2) == approx(0.5)
     assert axiom.preference(query, document2, document1) == approx(0.5)
@@ -70,9 +72,9 @@ def test_and() -> None:
     document1 = Document(id="d1")
     document2 = Document(id="d2")
 
-    axiom1 = UniformAxiom(scalar=1)
-    axiom2 = UniformAxiom(scalar=2)
-    axiom3 = UniformAxiom(scalar=0)
+    axiom1: Axiom[Query, Document] = UniformAxiom(scalar=1)
+    axiom2: Axiom[Query, Document] = UniformAxiom(scalar=2)
+    axiom3: Axiom[Query, Document] = UniformAxiom(scalar=0)
 
     axiom4 = axiom1 & axiom2
     axiom5 = axiom1 & axiom2 & axiom3
@@ -91,9 +93,9 @@ def test_majority_vote() -> None:
     document1 = Document(id="d1")
     document2 = Document(id="d2")
 
-    axiom1 = UniformAxiom(scalar=1)
-    axiom2 = UniformAxiom(scalar=2)
-    axiom3 = UniformAxiom(scalar=0)
+    axiom1: Axiom[Query, Document] = UniformAxiom(scalar=1)
+    axiom2: Axiom[Query, Document] = UniformAxiom(scalar=2)
+    axiom3: Axiom[Query, Document] = UniformAxiom(scalar=0)
 
     axiom4 = axiom1 % axiom2 % axiom3
     axiom5 = VoteAxiom(axioms=[axiom1, axiom2, axiom3], minimum_votes=0.5)
@@ -116,9 +118,9 @@ def test_cascade() -> None:
     document1 = Document(id="d1")
     document2 = Document(id="d2")
 
-    axiom1 = UniformAxiom(scalar=0)
-    axiom2 = UniformAxiom(scalar=1)
-    axiom3 = UniformAxiom(scalar=2)
+    axiom1: Axiom[Query, Document] = UniformAxiom(scalar=0)
+    axiom2: Axiom[Query, Document] = UniformAxiom(scalar=1)
+    axiom3: Axiom[Query, Document] = UniformAxiom(scalar=2)
 
     axiom4 = axiom1 | axiom2
     axiom5 = axiom1 | axiom3
@@ -137,7 +139,7 @@ def test_normalize() -> None:
     document1 = Document(id="d1")
     document2 = Document(id="d2")
 
-    axiom1 = UniformAxiom(scalar=2)
+    axiom1: Axiom[Query, Document] = UniformAxiom(scalar=2)
     axiom2 = +axiom1
 
     assert axiom1.preference(query, document1, document2) == 2
