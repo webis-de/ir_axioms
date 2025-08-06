@@ -54,7 +54,7 @@ tests = [
     "mypy~=1.13",
     "pytest~=8.3",
     "pytest-cov~=6.0",
-    "ruff~=0.11.0",
+    "ruff~=0.12.7",
     "types-tqdm~=4.66",
 ]
 experiments = [
