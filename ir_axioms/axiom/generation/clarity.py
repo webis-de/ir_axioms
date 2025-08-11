@@ -167,7 +167,7 @@ class LanguageToolGrammarErrorProportionClarityAxiom(
     Prefer text with a lower proportion of characters covered by grammar errors.
     """
 
-    enabled_categories: Final[NoInject[Iterable[_LanguageToolCategory]]] = frozenset(
+    enabled_categories: NoInject[Iterable[_LanguageToolCategory]] = frozenset(
         {"GRAMMAR"}
     )
 

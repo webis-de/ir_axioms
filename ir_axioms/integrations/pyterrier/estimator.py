@@ -110,4 +110,4 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             return self._reranker.transform(inp)
 
 else:
-    EstimatorKwikSortReranker = NotImplemented  # type: ignore
+    EstimatorKwikSortReranker = NotImplemented

@@ -41,4 +41,4 @@ if is_pyserini_installed() or TYPE_CHECKING:
             return term_frequencies
 
 else:
-    AnseriniTextStatistics = NotImplemented  # type: ignore
+    AnseriniTextStatistics = NotImplemented

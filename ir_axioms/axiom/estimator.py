@@ -22,11 +22,9 @@ class EstimatorAxiom(Axiom[Input, Output], ABC):
 
 
 class ScikitLearnEstimator(Protocol):
-    def fit(self, X: ndarray, y: ndarray) -> Self:
-        ...
+    def fit(self, X: ndarray, y: ndarray) -> Self: ...
 
-    def predict(self, X: ndarray) -> ndarray:
-        ...
+    def predict(self, X: ndarray) -> ndarray: ...
 
 
 @dataclass(frozen=True)
@@ -56,6 +54,7 @@ class ScikitLearnEstimatorAxiom(EstimatorAxiom[Input, Output], ABC):
                 for axiom in self.axioms
             ]
         )
+        # TODO: Remove debugging prints.
         print(preferences_x.shape)
         preferences_x = preferences_x.reshape((num_axioms, -1))
         print(preferences_x.shape)

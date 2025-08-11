@@ -237,7 +237,7 @@ else:
     require_columns = NotImplemented
     load_documents = NotImplemented
     load_queries = NotImplemented
-    FilterTopicsTransformer = NotImplemented  # type: ignore
-    FilterQrelsTransformer = NotImplemented  # type: ignore
-    JoinQrelsTransformer = NotImplemented  # type: ignore
-    AddNameTransformer = NotImplemented  # type: ignore
+    FilterTopicsTransformer = NotImplemented
+    FilterQrelsTransformer = NotImplemented
+    JoinQrelsTransformer = NotImplemented
+    AddNameTransformer = NotImplemented

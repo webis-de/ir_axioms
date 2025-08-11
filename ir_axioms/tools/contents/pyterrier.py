@@ -8,16 +8,21 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     from pathlib import Path
     from typing import Union, Sequence, Any
 
+    from typing_extensions import TypeAlias  # type: ignore
+
     from ir_axioms.model.retrieval import Document
     from ir_axioms.tools.contents.base import TextContents
     from ir_axioms.tools.contents.simple import FallbackTextContentsMixin
     from ir_axioms.utils.pyterrier import Index, IndexRef
 
+    _Index: TypeAlias = Index  # type: ignore
+    _IndexRef: TypeAlias = IndexRef  # type: ignore
+
     @dataclass(frozen=True, kw_only=True)
     class TerrierDocumentTextContents(
         FallbackTextContentsMixin[Document], TextContents[Document]
     ):
-        index_location: Union[Index, IndexRef, Path, str]  # type: ignore
+        index_location: Union[_Index, _IndexRef, Path, str]
         text_field: str = "text"
 
         @cached_property
@@ -73,4 +78,4 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             return self._document_contents(input.id)
 
 else:
-    TerrierDocumentTextContents = NotImplemented  # type: ignore
+    TerrierDocumentTextContents = NotImplemented

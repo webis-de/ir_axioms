@@ -30,4 +30,4 @@ if is_pyserini_installed() or TYPE_CHECKING:
             return document.contents()
 
 else:
-    AnseriniDocumentTextContents = NotImplemented  # type: ignore
+    AnseriniDocumentTextContents = NotImplemented

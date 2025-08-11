@@ -11,6 +11,7 @@ if is_pyserini_installed() or TYPE_CHECKING:
         from pyserini.index import LuceneIndexReader
         from pyserini.search.lucene import LuceneSearcher
     else:
+        # Do not load the types in runtype, as importing will immediately start the JRE.
         Analyzer: TypeAlias = Any
         LuceneIndexReader: TypeAlias = Any
         LuceneSearcher: TypeAlias = Any
@@ -35,3 +36,7 @@ if is_pyserini_installed() or TYPE_CHECKING:
             return LuceneSearcher(str(index_dir.absolute()))
         else:
             return LuceneSearcher(index_dir)
+else:
+    default_analyzer = NotImplemented
+    get_index_reader = NotImplemented
+    get_searcher = NotImplemented

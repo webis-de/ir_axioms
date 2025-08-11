@@ -265,6 +265,6 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             return results_pairs
 
 else:
-    KwikSortReranker = NotImplemented  # type: ignore
-    AggregatedAxiomaticPreferences = NotImplemented  # type: ignore
-    AxiomaticPreferences = NotImplemented  # type: ignore
+    KwikSortReranker = NotImplemented
+    AggregatedAxiomaticPreferences = NotImplemented
+    AxiomaticPreferences = NotImplemented

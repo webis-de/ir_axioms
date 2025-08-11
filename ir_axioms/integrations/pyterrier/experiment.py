@@ -269,4 +269,4 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             return pref
 
 else:
-    AxiomaticExperiment = NotImplemented  # type: ignore
+    AxiomaticExperiment = NotImplemented
