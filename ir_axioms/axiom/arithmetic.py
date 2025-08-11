@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from functools import reduce
 from math import isclose, ceil
 from operator import mul
-from typing import Iterable, Sequence
+from typing import Iterable, Sequence, Any
 
 from numpy import full, stack, zeros
 from tqdm.auto import tqdm
@@ -12,21 +12,21 @@ from ir_axioms.model import Input, Output, Preference, PreferenceMatrix
 
 
 @dataclass(frozen=True, kw_only=True)
-class UniformAxiom(Axiom[Input, Output]):
+class UniformAxiom(Axiom[Any, Any]):
     scalar: float
 
     def preference(
         self,
-        input: Input,
-        output1: Output,
-        output2: Output,
+        input: Any,
+        output1: Any,
+        output2: Any,
     ) -> Preference:
         return self.scalar
 
     def preferences(
         self,
-        input: Input,
-        outputs: Sequence[Output],
+        input: Any,
+        outputs: Sequence[Any],
     ) -> PreferenceMatrix:
         return full((len(outputs), len(outputs)), self.scalar)
 
