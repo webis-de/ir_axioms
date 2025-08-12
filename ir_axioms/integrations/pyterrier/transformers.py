@@ -142,9 +142,9 @@ if is_pyterrier_installed() or TYPE_CHECKING:
 
             # Flatten the result to have one row per document.
             # Shape: |documents| x (|aggregations| * |axioms|)
-            features = list(aggregated_preferences.reshape(
-                (aggregated_preferences.shape[0], -1)
-            ))
+            features = list(
+                aggregated_preferences.reshape((aggregated_preferences.shape[0], -1))
+            )
 
             res["features"] = features  # TODO: Check if this works.
             return res
@@ -223,9 +223,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
 
             # Flatten the result to have one row per document pair.
             # Shape: |axioms| x (|documents| * |documents|)
-            preferences = preferences.reshape(
-                (preferences.shape[0], -1)
-            )
+            preferences = preferences.reshape((preferences.shape[0], -1))
 
             # Sanity checks.
             if not len(self._axiom_names) == len(preferences):
