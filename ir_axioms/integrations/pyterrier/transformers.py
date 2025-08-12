@@ -237,7 +237,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
 
             # Insert preferences into result data frame.
             for axiom_name, axiom_preferences in zip(self._axiom_names, preferences):
-                res[f"{axiom_name}_preferences"] = axiom_preferences
+                res[f"{axiom_name}_preference"] = axiom_preferences
 
             return res
 
@@ -257,7 +257,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                     sort=False,
                 )
                 for axiom_name in self._axiom_names:
-                    inp[f"{axiom_name}_preferences"] = None
+                    inp[f"{axiom_name}_preference"] = None
                 return inp
             return concat(
                 [

@@ -14,9 +14,6 @@ class _DocumentIdAxiom(Axiom[Any, Document]):
     def preference(self, input: Any, output1: Document, output2: Document) -> float:
         return strictly_greater(output1.id, output2.id)
 
-    def __str__(self) -> str:
-        return "_DOC_ID"
-
 
 _DOC_ID = _DocumentIdAxiom()
 
@@ -77,6 +74,7 @@ def test_axiomatic_preferences_empty_input() -> None:
 
     axiomatic_preferences = AxiomaticPreferences(
         axioms=[_DOC_ID],
+        axiom_names=["_DOC_ID"],
         text_field="text",
     )
 
@@ -104,6 +102,7 @@ def test_axiomatic_preferences_compute() -> None:
 
     axiomatic_preferences = AxiomaticPreferences(
         axioms=[_DOC_ID],
+        axiom_names=["_DOC_ID"],
         text_field="text",
     )
 
