@@ -11,10 +11,10 @@ from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
 from math import isclose, nan
-from typing import Final, Union, Sequence, Any, TYPE_CHECKING, Iterable
+from typing import Final, Union, Sequence, Any, Iterable
 
 from injector import inject, NoInject
-from negspacy.negation import Negex
+from negspacy.negation import Negex  # noqa: F401  # Ignore the unused import warning, since the import is needed to add it as a spaCy pipeline.
 from negspacy.termsets import termset
 from numpy import array, float_, zeros
 from numpy.typing import NDArray
@@ -187,7 +187,7 @@ class RougeConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
         contents1 = self.text_contents.contents(output1)
         contents2 = self.text_contents.contents(output2)
 
-        rouge1: dict[str, Score] = self._rouge_scorer.score_multi(
+        rouge1: dict[str, Score] = self._rouge_scorer.score(
             target=context,
             prediction=contents1,
         )
@@ -270,8 +270,6 @@ class EntityContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
     # TODO: Migrate to tool injected by DI.
     @cached_property
     def _language(self) -> Language:
-        if TYPE_CHECKING:
-            Negex  # To ignore the unused import warning.
         language = spacy_load(name=self.language_name)
         neg_termset = termset("en")
         language.add_pipe(
