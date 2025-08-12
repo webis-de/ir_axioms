@@ -50,9 +50,11 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 tests = [
+    "approvaltests~=15.1",
     "bandit[toml]~=1.8",
     "mypy~=1.13",
     "pytest~=8.3",
+    "pytest-approvaltests~=0.2.4",
     "pytest-cov~=6.0",
     "ruff~=0.11.0",
     "types-tqdm~=4.66",
@@ -148,6 +150,11 @@ log_cli = true
 filterwarnings =[
     "ignore:Importing 'parser.split_arg_string' is deprecated:DeprecationWarning",
     "ignore:Attempted to get latest version of terrier-assemblies:UserWarning",
+]
+addopts = [
+    # "--approvaltests-use-reporter=PythonNativeReporter",
+    "--approvaltests-add-reporter=code",
+    "--approvaltests-add-reporter-args=-d",
 ]
 
 [tool.setuptools_scm]
