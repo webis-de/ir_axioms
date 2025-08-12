@@ -1,0 +1,7 @@
+qid,docno,score,rank
+q1,doc3,0,0
+q1,doc2,-1,1
+q1,doc1,-2,2
+q2,doc6,0,0
+q2,doc5,-1,1
+q2,doc4,-2,2
