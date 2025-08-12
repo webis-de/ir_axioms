@@ -1,50 +1,43 @@
 from dataclasses import dataclass
-from typing import Any, TypeVar
+from typing import Any
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_less, strictly_greater
-from ir_axioms.dependency_injection import injector
-from ir_axioms.model import ScoredDocument, RankedDocument, JudgedDocument
+from ir_axioms.model import Document
 from ir_axioms.utils.lazy import lazy_inject
 
 
-_RankedOrScoredDocument = TypeVar(
-    "_RankedOrScoredDocument", RankedDocument, ScoredDocument
-)
-
-
 @dataclass(frozen=True, kw_only=True)
-class OriginalAxiom(Axiom[Any, _RankedOrScoredDocument]):
-
+class OriginalAxiom(Axiom[Any, Document]):
     def preference(
         self,
         input: Any,
-        output1: _RankedOrScoredDocument,
-        output2: _RankedOrScoredDocument,
+        output1: Document,
+        output2: Document,
     ) -> float:
-        if isinstance(output1, ScoredDocument) and isinstance(output2, ScoredDocument):
+        if output1.score is not None and output2.score is not None:
             return strictly_greater(output1.score, output2.score)
-        elif isinstance(output1, RankedDocument) and isinstance(
-            output2, RankedDocument
-        ):
+        elif output1.rank is not None and output2.rank is not None:
             return strictly_less(output1.rank, output2.rank)
         else:
-            raise ValueError("Can only compare RankedDocument's or ScoredDocument's.")
+            raise ValueError("Can only compare ranked or scored documents.")
 
 
 ORIG = lazy_inject(OriginalAxiom)
 
 
 @dataclass(frozen=True, kw_only=True)
-class OracleAxiom(Axiom[Any, JudgedDocument]):
-
+class OracleAxiom(Axiom[Any, Document]):
     def preference(
         self,
         input: Any,
-        output1: JudgedDocument,
-        output2: JudgedDocument,
+        output1: Document,
+        output2: Document,
     ) -> float:
-        return strictly_greater(output1.relevance, output2.relevance)
+        if output1.relevance is not None and output2.relevance is not None:
+            return strictly_greater(output1.relevance, output2.relevance)
+        else:
+            raise ValueError("Can only compare judged documents.")
 
 
 ORACLE = lazy_inject(OracleAxiom)

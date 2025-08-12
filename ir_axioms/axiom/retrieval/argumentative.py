@@ -142,7 +142,7 @@ class _TargerMixin:
     ) -> Dict[str, ArgumentSentences]:
         return analyze_text(
             contents,
-            model_or_models=self.models,
+            model_or_models=set(self.models),
             api_url=self.api_url,
             cache_dir=self.cache_dir,
         )

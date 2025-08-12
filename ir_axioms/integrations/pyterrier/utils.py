@@ -114,7 +114,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             else None,
             score=float(row["score"]) if "score" in row.keys() else None,
             rank=int(row["rank"]) if "rank" in row.keys() else None,
-            relevance=float(row["relevance"]) if "relevance" in row.keys() else None,
+            relevance=float(row["label"]) if "label" in row.keys() else None,
         )
 
     def load_documents(
