@@ -6,7 +6,7 @@ if is_pyserini_installed() or TYPE_CHECKING:
     from pathlib import Path
     from typing import Optional, Union
 
-    from injector import singleton, inject
+    from injector import singleton
     from ir_datasets import Dataset
 
     from ir_axioms.dependency_injection import injector
@@ -26,7 +26,6 @@ if is_pyserini_installed() or TYPE_CHECKING:
         IndexStatistics,
         AnseriniIndexStatistics,
     )
-    from ir_axioms.tools.contents.simple import HasText
     from ir_axioms.utils.pyserini import Analyzer, default_analyzer
 
     def inject_pyserini(
@@ -61,50 +60,27 @@ if is_pyserini_installed() or TYPE_CHECKING:
             )
 
             if text_contents:
-
-                @inject
-                def _make_terrier_document_text_contents(
-                    fallback_text_contents: TextContents[HasText],
-                ) -> TextContents[Document]:
-                    return AnseriniDocumentTextContents(
-                        fallback_text_contents=fallback_text_contents,
-                        index_dir=index_dir,
-                    )
-
                 injector.binder.bind(
                     interface=TextContents[Document],
-                    to=_make_terrier_document_text_contents,
+                    to=AnseriniDocumentTextContents(
+                        index_dir=index_dir,
+                    ),
                     scope=singleton,
                 )
 
         if dataset is not None:
-
-            @inject
-            def _make_irds_query_text_contents(
-                fallback_text_contents: TextContents[HasText],
-            ) -> TextContents[Query]:
-                return IrdsQueryTextContents(
-                    fallback_text_contents=fallback_text_contents,
-                    dataset=dataset,
-                )
-
-            @inject
-            def _make_irds_document_text_contents(
-                fallback_text_contents: TextContents[HasText],
-            ) -> TextContents[Document]:
-                return IrdsDocumentTextContents(
-                    fallback_text_contents=fallback_text_contents,
-                    dataset=dataset,
-                )
-
             injector.binder.bind(
                 interface=TextContents[Query],
-                to=_make_irds_query_text_contents,
+                to=IrdsQueryTextContents(
+                    dataset=dataset,
+                ),
                 scope=singleton,
             )
             injector.binder.bind(
                 interface=TextContents[Document],
-                to=_make_irds_document_text_contents,
+                to=IrdsDocumentTextContents(
+                    dataset=dataset,
+                ),
                 scope=singleton,
             )
 

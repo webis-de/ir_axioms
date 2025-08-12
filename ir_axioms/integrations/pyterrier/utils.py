@@ -5,22 +5,16 @@ from ir_axioms.utils.libraries import is_pyterrier_installed
 if is_pyterrier_installed() or TYPE_CHECKING:
     from dataclasses import dataclass
     from pathlib import Path
-    from typing import Set, Optional, Sequence, Union
+    from typing import Set, Optional, Sequence, Union, Mapping, Hashable, Any
 
-    from injector import singleton, inject
+    from injector import singleton
     from ir_datasets import Dataset
     from pandas import DataFrame, Series
     from pyterrier import Transformer
+    from typing_extensions import TypeAlias  # type: ignore
 
     from ir_axioms.dependency_injection import injector
-    from ir_axioms.model import (
-        RankedScoredDocument,
-        RankedScoredTextDocument,
-        JudgedRankedScoredTextDocument,
-        JudgedRankedScoredDocument,
-        Query,
-        Document,
-    )
+    from ir_axioms.model import Query, Document
     from ir_axioms.tools import (
         TextContents,
         IrdsQueryTextContents,
@@ -33,7 +27,6 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         IndexStatistics,
         TerrierIndexStatistics,
     )
-    from ir_axioms.tools.contents.simple import HasText
     from ir_axioms.utils.pyterrier import (
         Index,
         IndexRef,
@@ -41,10 +34,14 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         EnglishTokeniser,
     )
 
+    _Index: TypeAlias = Index  # type: ignore
+    _IndexRef: TypeAlias = IndexRef  # type: ignore
+    _Tokeniser: TypeAlias = Tokeniser  # type: ignore
+
     def inject_pyterrier(
-        index_location: Optional[Union[Index, IndexRef, Path, str]] = None,  # type: ignore
+        index_location: Optional[Union[_Index, _IndexRef, Path, str]] = None,
         text_field: Optional[str] = "text",
-        tokeniser: Tokeniser = EnglishTokeniser(),  # type: ignore
+        tokeniser: _Tokeniser = EnglishTokeniser(),
         dataset: Optional[Union[Dataset, str]] = None,
     ) -> None:
         injector.binder.bind(
@@ -66,51 +63,28 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             )
 
             if text_field is not None:
-
-                @inject
-                def _make_terrier_document_text_contents(
-                    fallback_text_contents: TextContents[HasText],
-                ) -> TextContents[Document]:
-                    return TerrierDocumentTextContents(
-                        fallback_text_contents=fallback_text_contents,
-                        index_location=index_location,
-                        text_field=text_field,
-                    )
-
                 injector.binder.bind(
                     interface=TextContents[Document],
-                    to=_make_terrier_document_text_contents,
+                    to=TerrierDocumentTextContents(
+                        index_location=index_location,
+                        text_field=text_field,
+                    ),
                     scope=singleton,
                 )
 
         if dataset is not None:
-
-            @inject
-            def _make_irds_query_text_contents(
-                fallback_text_contents: TextContents[HasText],
-            ) -> TextContents[Query]:
-                return IrdsQueryTextContents(
-                    fallback_text_contents=fallback_text_contents,
-                    dataset=dataset,
-                )
-
-            @inject
-            def _make_irds_document_text_contents(
-                fallback_text_contents: TextContents[HasText],
-            ) -> TextContents[Document]:
-                return IrdsDocumentTextContents(
-                    fallback_text_contents=fallback_text_contents,
-                    dataset=dataset,
-                )
-
             injector.binder.bind(
                 interface=TextContents[Query],
-                to=_make_irds_query_text_contents,
+                to=IrdsQueryTextContents(
+                    dataset=dataset,
+                ),
                 scope=singleton,
             )
             injector.binder.bind(
                 interface=TextContents[Document],
-                to=_make_irds_document_text_contents,
+                to=IrdsDocumentTextContents(
+                    dataset=dataset,
+                ),
                 scope=singleton,
             )
 
@@ -128,59 +102,40 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                 f"{', '.join(missing_columns)})."
             )
 
+    def load_document(
+        row: Union[Series, Mapping[Hashable, Any]],
+        text_column: Optional[str] = "text",
+    ) -> Document:
+        return Document(
+            id=str(row["docno"]),
+            text=str(row[text_column])
+            if text_column is not None and text_column in row.keys()
+            else None,
+            score=float(row["score"]) if "score" in row.keys() else None,
+            rank=int(row["rank"]) if "rank" in row.keys() else None,
+            relevance=float(row["relevance"]) if "relevance" in row.keys() else None,
+        )
+
     def load_documents(
         ranking: DataFrame,
         text_column: Optional[str] = "text",
-    ) -> Sequence[RankedScoredDocument]:
-        require_columns(ranking, {"docno", "rank", "score"})
+    ) -> Sequence[Document]:
+        return [
+            load_document(
+                row=row,
+                text_column=text_column,
+            )
+            for _, row in ranking.iterrows()
+        ]
 
-        if "label" in ranking.columns:
-            if text_column is not None:
-
-                def parser(row: Series) -> RankedScoredDocument:
-                    return JudgedRankedScoredTextDocument(
-                        id=str(row["docno"]),
-                        text=str(row[text_column]),
-                        score=float(row["score"]),
-                        rank=int(row["rank"]),
-                        relevance=float(row["label"]),
-                    )
-
-            else:
-
-                def parser(row: Series) -> RankedScoredDocument:
-                    return JudgedRankedScoredDocument(
-                        id=str(row["docno"]),
-                        score=float(row["score"]),
-                        rank=int(row["rank"]),
-                        relevance=float(row["label"]),
-                    )
-
-        else:
-            if text_column is not None:
-
-                def parser(row: Series) -> RankedScoredDocument:
-                    return RankedScoredTextDocument(
-                        id=str(row["docno"]),
-                        text=str(row[text_column]),
-                        score=float(row["score"]),
-                        rank=int(row["rank"]),
-                    )
-
-            else:
-
-                def parser(row: Series) -> RankedScoredDocument:
-                    return RankedScoredDocument(
-                        id=str(row["docno"]),
-                        score=float(row["score"]),
-                        rank=int(row["rank"]),
-                    )
-
-        return [parser(row) for _, row in ranking.iterrows()]
+    def load_query(row: Union[Series, Mapping[Hashable, Any]]) -> Query:
+        return Query(
+            id=str(row["qid"]),
+            text=str(row["query"]) if "query" in row.keys() else None,
+        )
 
     def load_queries(ranking: DataFrame) -> Sequence[Query]:
-        require_columns(ranking, {"query"})
-        return [Query(row["query"]) for _, row in ranking.iterrows()]
+        return [load_query(row=row) for _, row in ranking.iterrows()]
 
     @dataclass(frozen=True)
     class FilterTopicsTransformer(Transformer):
@@ -235,7 +190,9 @@ if is_pyterrier_installed() or TYPE_CHECKING:
 else:
     inject_pyterrier = NotImplemented
     require_columns = NotImplemented
+    load_document = NotImplemented
     load_documents = NotImplemented
+    load_query = NotImplemented
     load_queries = NotImplemented
     FilterTopicsTransformer = NotImplemented
     FilterQrelsTransformer = NotImplemented

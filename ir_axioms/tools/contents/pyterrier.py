@@ -12,16 +12,13 @@ if is_pyterrier_installed() or TYPE_CHECKING:
 
     from ir_axioms.model.retrieval import Document
     from ir_axioms.tools.contents.base import TextContents
-    from ir_axioms.tools.contents.simple import FallbackTextContentsMixin
     from ir_axioms.utils.pyterrier import Index, IndexRef
 
     _Index: TypeAlias = Index  # type: ignore
     _IndexRef: TypeAlias = IndexRef  # type: ignore
 
     @dataclass(frozen=True, kw_only=True)
-    class TerrierDocumentTextContents(
-        FallbackTextContentsMixin[Document], TextContents[Document]
-    ):
+    class TerrierDocumentTextContents(TextContents[Document]):
         index_location: Union[_Index, _IndexRef, Path, str]
         text_field: str = "text"
 
@@ -75,6 +72,8 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             return contents
 
         def contents(self, input: Document) -> str:
+            if input.text is not None:
+                return input.text
             return self._document_contents(input.id)
 
 else:
