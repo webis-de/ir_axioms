@@ -6,14 +6,12 @@ from numpy import zeros, floating
 from numpy.random import Generator, default_rng
 
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.dependency_injection import injector
 from ir_axioms.model import Preference, PreferenceMatrix
 from ir_axioms.utils.lazy import lazy_inject
 
 
 @dataclass(frozen=True, kw_only=True)
 class NopAxiom(Axiom[Any, Any]):
-
     def preference(
         self,
         input: Any,
@@ -30,7 +28,7 @@ class NopAxiom(Axiom[Any, Any]):
         return zeros((len(outputs), len(outputs)))
 
 
-NOP: Final = lazy_inject(NopAxiom, injector)
+NOP: Final = lazy_inject(NopAxiom)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -59,7 +57,7 @@ class RandomAxiom(Axiom[Any, Any]):
         )
 
 
-RANDOM: Final = lazy_inject(RandomAxiom, injector)
+RANDOM: Final = lazy_inject(RandomAxiom)
 
 
 _T_contra = TypeVar("_T_contra", contravariant=True)
@@ -75,7 +73,6 @@ _SupportsComparisonT = TypeVar("_SupportsComparisonT", bound=_SupportsComparison
 
 @dataclass(frozen=True, kw_only=True)
 class GreaterThanAxiom(Axiom[Any, _SupportsComparisonT]):
-
     def preference(
         self,
         input: Any,
@@ -89,12 +86,11 @@ class GreaterThanAxiom(Axiom[Any, _SupportsComparisonT]):
         return 0
 
 
-GT: Final = lazy_inject(GreaterThanAxiom, injector)
+GT: Final = lazy_inject(GreaterThanAxiom)
 
 
 @dataclass(frozen=True, kw_only=True)
 class LessThanAxiom(Axiom[Any, _SupportsComparisonT]):
-
     def preference(
         self,
         input: Any,
@@ -108,4 +104,4 @@ class LessThanAxiom(Axiom[Any, _SupportsComparisonT]):
         return 0
 
 
-LT: Final = lazy_inject(LessThanAxiom, injector)
+LT: Final = lazy_inject(LessThanAxiom)

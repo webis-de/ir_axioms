@@ -16,7 +16,6 @@ index 144e118..b1a0c66 100644
 +
 +from axioms.axiom.base import Axiom
 +from axioms.axiom.precondition import PreconditionMixin
-+from axioms.dependency_injection import injector
 +from axioms.precondition.base import Precondition
 +from axioms.precondition.length import LEN
 +from axioms.axiom.utils import strictly_greater
@@ -126,7 +125,7 @@ index 144e118..b1a0c66 100644
 -@dataclass(frozen=True)
 -class TFC1(LEN_Mixin, _TFC1):
 -    name = "TFC1"
-+TFC1: Final = lazy_inject(Tfc1Axiom, injector)
++TFC1: Final = lazy_inject(Tfc1Axiom)
  
  
 -@dataclass(frozen=True)
@@ -303,7 +302,7 @@ index 144e118..b1a0c66 100644
 +        ).reshape((len(outputs), len(outputs)))
 +
 +
-+TFC3: Final = lazy_inject(Tfc3Axiom, injector)
++TFC3: Final = lazy_inject(Tfc3Axiom)
  
  
  def _single_different_term_frequency(
@@ -446,7 +445,7 @@ index 144e118..b1a0c66 100644
 -@dataclass(frozen=True)
 -class LEN_M_TDC(LEN_Mixin, M_TDC):
 -    name = "LEN-M-TDC"
-+M_TDC: Final = lazy_inject(ModifiedTdcAxiom, injector)
++M_TDC: Final = lazy_inject(ModifiedTdcAxiom)
 +
 +
 +@inject
@@ -455,4 +454,4 @@ index 144e118..b1a0c66 100644
 +    precondition: NoInject[Precondition[Query, Document]] = field(default_factory=LEN)
 +
 +
-+LEN_M_TDC: Final = lazy_inject(LenModifiedTdcAxiom, injector)
++LEN_M_TDC: Final = lazy_inject(LenModifiedTdcAxiom)

@@ -32,7 +32,7 @@ class OriginalAxiom(Axiom[Any, _RankedOrScoredDocument]):
             raise ValueError("Can only compare RankedDocument's or ScoredDocument's.")
 
 
-ORIG = lazy_inject(OriginalAxiom, injector)
+ORIG = lazy_inject(OriginalAxiom)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -47,4 +47,4 @@ class OracleAxiom(Axiom[Any, JudgedDocument]):
         return strictly_greater(output1.relevance, output2.relevance)
 
 
-ORACLE = lazy_inject(OracleAxiom, injector)
+ORACLE = lazy_inject(OracleAxiom)

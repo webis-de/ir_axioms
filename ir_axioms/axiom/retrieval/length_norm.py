@@ -7,7 +7,6 @@ from numpy import array, float_
 from tqdm.auto import tqdm
 
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.dependency_injection import injector
 from ir_axioms.axiom.utils import strictly_fewer, strictly_greater
 from ir_axioms.model import PreferenceMatrix, Query, Document, Preference
 from ir_axioms.tools import TextContents, TermTokenizer, TextStatistics
@@ -52,7 +51,7 @@ class Lnc1Axiom(Axiom[Query, Document]):
         return strictly_fewer(document1_terms, document2_terms)
 
 
-LNC1: Final = lazy_inject(Lnc1Axiom, injector)
+LNC1: Final = lazy_inject(Lnc1Axiom)
 
 
 @inject
@@ -170,4 +169,4 @@ class TfLncAxiom(Axiom[Query, Document]):
         ).reshape((len(outputs), len(outputs)))
 
 
-TF_LNC: Final = lazy_inject(TfLncAxiom, injector)
+TF_LNC: Final = lazy_inject(TfLncAxiom)

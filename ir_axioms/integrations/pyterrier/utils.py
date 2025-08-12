@@ -7,13 +7,13 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     from pathlib import Path
     from typing import Set, Optional, Sequence, Union, Mapping, Hashable, Any
 
-    from injector import singleton
+    from injector import singleton, Injector
     from ir_datasets import Dataset
     from pandas import DataFrame, Series
     from pyterrier import Transformer
     from typing_extensions import TypeAlias  # type: ignore
 
-    from ir_axioms.dependency_injection import injector
+    from ir_axioms.dependency_injection import injector as _default_injector
     from ir_axioms.model import Query, Document
     from ir_axioms.tools import (
         TextContents,
@@ -43,6 +43,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         text_field: Optional[str] = "text",
         tokeniser: _Tokeniser = EnglishTokeniser(),
         dataset: Optional[Union[Dataset, str]] = None,
+        injector: Injector = _default_injector,
     ) -> None:
         injector.binder.bind(
             interface=TermTokenizer,

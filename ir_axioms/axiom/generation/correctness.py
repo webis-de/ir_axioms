@@ -15,7 +15,6 @@ within the scope of the user's information need?
 # Topical correctness:
 # - [ ] Topical relevance/alignment (-> use retrieval axioms?)
 
-
 from dataclasses import dataclass
 from math import isclose
 from re import compile as re_compile
@@ -27,7 +26,6 @@ from tqdm.auto import tqdm
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_less
-from ir_axioms.dependency_injection import injector
 from ir_axioms.model.base import Preference, PreferenceMatrix
 from ir_axioms.model.generation import GenerationOutput
 from ir_axioms.tools import (
@@ -131,4 +129,4 @@ class CitationSentenceCorrectnessAxiom(Axiom[Any, GenerationOutput]):
         ).reshape((len(outputs), len(outputs)))
 
 
-CORR1: Final = lazy_inject(CitationSentenceCorrectnessAxiom, injector)
+CORR1: Final = lazy_inject(CitationSentenceCorrectnessAxiom)

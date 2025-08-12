@@ -7,7 +7,6 @@ from injector import inject, NoInject
 from numpy import array, bool_
 from tqdm.auto import tqdm
 
-from ir_axioms.dependency_injection import injector
 from ir_axioms.model import Document, Mask, MaskMatrix
 from ir_axioms.precondition.base import Precondition
 from ir_axioms.tools import TextContents, TermTokenizer
@@ -66,4 +65,4 @@ class LenPrecondition(Precondition[Input, Document]):
         ).reshape((len(outputs), len(outputs)))
 
 
-LEN: Final = lazy_inject(LenPrecondition, injector)
+LEN: Final = lazy_inject(LenPrecondition)

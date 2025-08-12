@@ -5,7 +5,6 @@ from typing import Final, Union
 from injector import inject, NoInject
 
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.dependency_injection import injector
 from ir_axioms.model import Query, Document, ScoredDocument, Preference
 from ir_axioms.tools import TextContents, TermTokenizer, TextStatistics
 from ir_axioms.utils.lazy import lazy_inject
@@ -56,4 +55,4 @@ class Lb1Axiom(Axiom[Query, ScoredDocument]):
             return 0
 
 
-LB1: Final = lazy_inject(Lb1Axiom, injector)
+LB1: Final = lazy_inject(Lb1Axiom)

@@ -6,10 +6,10 @@ if is_pyserini_installed() or TYPE_CHECKING:
     from pathlib import Path
     from typing import Optional, Union
 
-    from injector import singleton
+    from injector import singleton, Injector
     from ir_datasets import Dataset
 
-    from ir_axioms.dependency_injection import injector
+    from ir_axioms.dependency_injection import injector as _default_injector
     from ir_axioms.model import (
         Query,
         Document,
@@ -33,6 +33,7 @@ if is_pyserini_installed() or TYPE_CHECKING:
         analyzer: Optional[Analyzer] = None,
         text_contents: bool = False,
         dataset: Optional[Union[Dataset, str]] = None,
+        injector: Injector = _default_injector,
     ) -> None:
         analyzer_ = analyzer if analyzer is not None else default_analyzer()
         injector.binder.bind(

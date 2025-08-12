@@ -26,7 +26,6 @@ from tqdm.auto import tqdm
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_greater, strictly_less
-from ir_axioms.dependency_injection import injector
 from ir_axioms.model.base import Preference, PreferenceMatrix
 from ir_axioms.model.generation import GenerationInput, GenerationOutput
 from ir_axioms.tools import (
@@ -150,7 +149,7 @@ class AspectSimilaritySentenceCountConsistencyAxiom(
         ).reshape((len(outputs), len(outputs)))
 
 
-CONS1: Final = lazy_inject(AspectSimilaritySentenceCountConsistencyAxiom, injector)
+CONS1: Final = lazy_inject(AspectSimilaritySentenceCountConsistencyAxiom)
 
 
 @inject
@@ -253,7 +252,7 @@ class RougeConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
         ).reshape((len(outputs), len(outputs)))
 
 
-CONS2: Final = lazy_inject(RougeConsistencyAxiom, injector)
+CONS2: Final = lazy_inject(RougeConsistencyAxiom)
 
 
 @inject
@@ -366,4 +365,4 @@ class EntityContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
         ).reshape((len(outputs), len(outputs)))
 
 
-CONS3: Final = lazy_inject(EntityContradictionConsistencyAxiom, injector)
+CONS3: Final = lazy_inject(EntityContradictionConsistencyAxiom)

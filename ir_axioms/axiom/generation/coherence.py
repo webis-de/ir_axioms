@@ -21,7 +21,6 @@ from textacy.extract.triples import subject_verb_object_triples
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_less
-from ir_axioms.dependency_injection import injector
 from ir_axioms.model.base import Preference, PreferenceMatrix
 from ir_axioms.model.generation import GenerationOutput
 from ir_axioms.tools import (
@@ -130,7 +129,7 @@ class WordLengthDeviationCoherenceAxiom(Axiom[Any, GenerationOutput]):
         ).reshape((len(outputs), len(outputs)))
 
 
-COH1: Final = lazy_inject(WordLengthDeviationCoherenceAxiom, injector)
+COH1: Final = lazy_inject(WordLengthDeviationCoherenceAxiom)
 
 
 @inject
@@ -248,7 +247,7 @@ class SubjectVerbClosenessCoherenceAxiom(Axiom[Any, GenerationOutput]):
         ).reshape((len(outputs), len(outputs)))
 
 
-COH2: Final = lazy_inject(SubjectVerbClosenessCoherenceAxiom, injector)
+COH2: Final = lazy_inject(SubjectVerbClosenessCoherenceAxiom)
 
 
 # TODO: Topic position and stess position by looking up if noun chunks appear in the beginning or end of the sentence.

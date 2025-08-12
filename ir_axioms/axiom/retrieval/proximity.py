@@ -12,7 +12,6 @@ from tqdm.auto import tqdm
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_less, strictly_greater
-from ir_axioms.dependency_injection import injector
 from ir_axioms.model import Query, Document, Preference, PreferenceMatrix
 from ir_axioms.tools import TextContents, TermTokenizer
 from ir_axioms.utils.lazy import lazy_inject
@@ -191,7 +190,7 @@ class Prox1Axiom(Axiom[Query, Document]):
     # The largest hurdle seems to be the overlapping terms computation.
 
 
-PROX1: Final = lazy_inject(Prox1Axiom, injector)
+PROX1: Final = lazy_inject(Prox1Axiom)
 
 
 @inject
@@ -280,7 +279,7 @@ class Prox2Axiom(Axiom[Query, Document]):
         ).reshape(len(outputs), len(outputs))
 
 
-PROX2: Final = lazy_inject(Prox2Axiom, injector)
+PROX2: Final = lazy_inject(Prox2Axiom)
 
 
 def _find_index(
@@ -345,7 +344,7 @@ class Prox3Axiom(Axiom[Query, Document]):
     # ADDITION: Come up with a better way to batch-compute preference-matrices.
 
 
-PROX3: Final = lazy_inject(Prox3Axiom, injector)
+PROX3: Final = lazy_inject(Prox3Axiom)
 
 
 @inject
@@ -394,7 +393,7 @@ class Prox4Axiom(Axiom[Query, Document]):
             return strictly_greater(count1, count2)
 
 
-PROX4: Final = lazy_inject(Prox4Axiom, injector)
+PROX4: Final = lazy_inject(Prox4Axiom)
 
 
 @inject
@@ -442,7 +441,7 @@ class Prox5Axiom(Axiom[Query, Document]):
     # ADDITION: Come up with a better way to batch-compute preference-matrices.
 
 
-PROX5: Final = lazy_inject(Prox5Axiom, injector)
+PROX5: Final = lazy_inject(Prox5Axiom)
 
 
 # ADDITION: QPHRA axiom:

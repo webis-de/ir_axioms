@@ -27,7 +27,6 @@ from ir_axioms.axiom.retrieval import (
     Stmc1Axiom,
     Stmc2Axiom,
 )
-from ir_axioms.dependency_injection import injector
 from ir_axioms.model import (
     GenerationInput,
     GenerationOutput,
@@ -87,191 +86,187 @@ class _RetrievalAxiomWrapper(Axiom[GenerationInput, GenerationOutput]):
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeArgumentativeUnitsCountAxiom(_RetrievalAxiomWrapper):
-    axiom: ArgumentativeUnitsCountAxiom
+    axiom: ArgumentativeUnitsCountAxiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_ArgUC: Final = lazy_inject(GenerativeArgumentativeUnitsCountAxiom, injector)
+GEN_ArgUC: Final = lazy_inject(GenerativeArgumentativeUnitsCountAxiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeQueryTermOccurrenceInArgumentativeUnitsAxiom(_RetrievalAxiomWrapper):
-    axiom: QueryTermOccurrenceInArgumentativeUnitsAxiom
+    axiom: QueryTermOccurrenceInArgumentativeUnitsAxiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_QTArg: Final = lazy_inject(
-    GenerativeQueryTermOccurrenceInArgumentativeUnitsAxiom, injector
-)
+GEN_QTArg: Final = lazy_inject(GenerativeQueryTermOccurrenceInArgumentativeUnitsAxiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeQueryTermPositionInArgumentativeUnitsAxiom(_RetrievalAxiomWrapper):
-    axiom: QueryTermPositionInArgumentativeUnitsAxiom
+    axiom: QueryTermPositionInArgumentativeUnitsAxiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_QTPArg: Final = lazy_inject(
-    GenerativeQueryTermPositionInArgumentativeUnitsAxiom, injector
-)
+GEN_QTPArg: Final = lazy_inject(GenerativeQueryTermPositionInArgumentativeUnitsAxiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeAverageSentenceLengthAxiom(_RetrievalAxiomWrapper):
-    axiom: AverageSentenceLengthAxiom
+    axiom: AverageSentenceLengthAxiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_aSL: Final = lazy_inject(GenerativeAverageSentenceLengthAxiom, injector)
+GEN_aSL: Final = lazy_inject(GenerativeAverageSentenceLengthAxiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeLnc1Axiom(_RetrievalAxiomWrapper):
-    axiom: Lnc1Axiom
+    axiom: Lnc1Axiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_LNC1: Final = lazy_inject(GenerativeLnc1Axiom, injector)
+GEN_LNC1: Final = lazy_inject(GenerativeLnc1Axiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeTfLncAxiom(_RetrievalAxiomWrapper):
-    axiom: TfLncAxiom
+    axiom: TfLncAxiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_TF_LNC: Final = lazy_inject(GenerativeTfLncAxiom, injector)
+GEN_TF_LNC: Final = lazy_inject(GenerativeTfLncAxiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeProx1Axiom(_RetrievalAxiomWrapper):
-    axiom: Prox1Axiom
+    axiom: Prox1Axiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_PROX1: Final = lazy_inject(GenerativeProx1Axiom, injector)
+GEN_PROX1: Final = lazy_inject(GenerativeProx1Axiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeProx2Axiom(_RetrievalAxiomWrapper):
-    axiom: Prox2Axiom
+    axiom: Prox2Axiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_PROX2: Final = lazy_inject(GenerativeProx2Axiom, injector)
+GEN_PROX2: Final = lazy_inject(GenerativeProx2Axiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeProx3Axiom(_RetrievalAxiomWrapper):
-    axiom: Prox3Axiom
+    axiom: Prox3Axiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_PROX3: Final = lazy_inject(GenerativeProx3Axiom, injector)
+GEN_PROX3: Final = lazy_inject(GenerativeProx3Axiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeProx4Axiom(_RetrievalAxiomWrapper):
-    axiom: Prox4Axiom
+    axiom: Prox4Axiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_PROX4: Final = lazy_inject(GenerativeProx4Axiom, injector)
+GEN_PROX4: Final = lazy_inject(GenerativeProx4Axiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeProx5Axiom(_RetrievalAxiomWrapper):
-    axiom: Prox5Axiom
+    axiom: Prox5Axiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_PROX5: Final = lazy_inject(GenerativeProx5Axiom, injector)
+GEN_PROX5: Final = lazy_inject(GenerativeProx5Axiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeRegAxiom(_RetrievalAxiomWrapper):
-    axiom: RegAxiom
+    axiom: RegAxiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_REG: Final = lazy_inject(GenerativeRegAxiom, injector)
+GEN_REG: Final = lazy_inject(GenerativeRegAxiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeAntiRegAxiom(_RetrievalAxiomWrapper):
-    axiom: AntiRegAxiom
+    axiom: AntiRegAxiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_ANTI_REG: Final = lazy_inject(GenerativeAntiRegAxiom, injector)
+GEN_ANTI_REG: Final = lazy_inject(GenerativeAntiRegAxiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeAndAxiom(_RetrievalAxiomWrapper):
-    axiom: AndAxiom
+    axiom: AndAxiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_AND: Final = lazy_inject(GenerativeAndAxiom, injector)
+GEN_AND: Final = lazy_inject(GenerativeAndAxiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeLenAndAxiom(_RetrievalAxiomWrapper):
-    axiom: LenAndAxiom
+    axiom: LenAndAxiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_LEN_AND: Final = lazy_inject(GenerativeLenAndAxiom, injector)
+GEN_LEN_AND: Final = lazy_inject(GenerativeLenAndAxiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeModifiedAndAxiom(_RetrievalAxiomWrapper):
-    axiom: ModifiedAndAxiom
+    axiom: ModifiedAndAxiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_M_AND: Final = lazy_inject(GenerativeModifiedAndAxiom, injector)
+GEN_M_AND: Final = lazy_inject(GenerativeModifiedAndAxiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeDivAxiom(_RetrievalAxiomWrapper):
-    axiom: DivAxiom
+    axiom: DivAxiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_DIV: Final = lazy_inject(GenerativeDivAxiom, injector)
+GEN_DIV: Final = lazy_inject(GenerativeDivAxiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeLenDivAxiom(_RetrievalAxiomWrapper):
-    axiom: LenDivAxiom
+    axiom: LenDivAxiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_LEN_DIV: Final = lazy_inject(GenerativeLenDivAxiom, injector)
+GEN_LEN_DIV: Final = lazy_inject(GenerativeLenDivAxiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeTfc1Axiom(_RetrievalAxiomWrapper):
-    axiom: Tfc1Axiom
+    axiom: Tfc1Axiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_TFC1: Final = lazy_inject(GenerativeTfc1Axiom, injector)
+GEN_TFC1: Final = lazy_inject(GenerativeTfc1Axiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeStmc1Axiom(_RetrievalAxiomWrapper):
-    axiom: Stmc1Axiom
+    axiom: Stmc1Axiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_STMC1: Final = lazy_inject(GenerativeStmc1Axiom, injector)
+GEN_STMC1: Final = lazy_inject(GenerativeStmc1Axiom)
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerativeStmc2Axiom(_RetrievalAxiomWrapper):
-    axiom: Stmc2Axiom
+    axiom: Stmc2Axiom  # pyright: ignore[reportIncompatibleVariableOverride]
 
 
-GEN_STMC2: Final = lazy_inject(GenerativeStmc2Axiom, injector)
+GEN_STMC2: Final = lazy_inject(GenerativeStmc2Axiom)
