@@ -3,9 +3,10 @@ from pytest import fixture, FixtureRequest
 
 from ir_axioms.axiom import (
     Axiom,
-    ArgUC,
-    QTArg,
-    QTPArg,
+    # NOTE: Disabled argument axiom tests for requiring internet connection.
+    # ArgUC,
+    # QTArg,
+    # QTPArg,
     aSL,
     LNC1,
     TF_LNC,
@@ -37,9 +38,10 @@ from tests.util import inject_documents
 
 @fixture(
     params=[
-        ArgUC,
-        QTArg,
-        QTPArg,
+        # NOTE: Disabled argument axiom tests for requiring internet connection.
+        # ArgUC,
+        # QTArg,
+        # QTPArg,
         aSL,
         LNC1,
         TF_LNC,
