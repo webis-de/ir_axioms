@@ -1,0 +1,9 @@
+qid,docno_a,score_a,rank_a,label_a,name_a,docno_b,score_b,rank_b,label_b,name_b,ORIG_preference,ORACLE_preference,_DOC_ID_preference
+q1,doc2,0.5,0,0,test_system,doc2,0.5,0,0,test_system,0.0,0.0,0.0
+q1,doc2,0.5,0,0,test_system,doc1,0.3,1,1,test_system,1.0,-1.0,1.0
+q1,doc1,0.3,1,1,test_system,doc2,0.5,0,0,test_system,-1.0,1.0,-1.0
+q1,doc1,0.3,1,1,test_system,doc1,0.3,1,1,test_system,0.0,0.0,0.0
+q2,doc1,0.4,0,1,test_system,doc1,0.4,0,1,test_system,0.0,0.0,0.0
+q2,doc1,0.4,0,1,test_system,doc2,0.2,1,0,test_system,1.0,1.0,-1.0
+q2,doc2,0.2,1,0,test_system,doc1,0.4,0,1,test_system,-1.0,-1.0,1.0
+q2,doc2,0.2,1,0,test_system,doc2,0.2,1,0,test_system,0.0,0.0,0.0

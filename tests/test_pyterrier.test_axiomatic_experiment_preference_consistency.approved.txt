@@ -1,0 +1,4 @@
+axiom,ORIG_consistency,ORACLE_consistency
+ORIG,1.0,0.5
+ORACLE,0.5,1.0
+_DOC_ID,0.5,0.0
