@@ -1,177 +1,119 @@
 from typing import TYPE_CHECKING
-
 from ir_axioms.utils.libraries import is_pyterrier_installed
 
 if is_pyterrier_installed() or TYPE_CHECKING:
-    from abc import abstractmethod, ABC
-    from dataclasses import dataclass
+    from dataclasses import dataclass, field
+    from functools import cached_property, reduce
     from itertools import product
-    from logging import DEBUG
+    from operator import mul
+    from statistics import mean
     from typing import (
         Optional,
-        Set,
         Sequence,
         Callable,
-        final,
         Any,
-        cast,
-        ClassVar,
-        Iterable,
+        Mapping,
+        Hashable,
     )
 
-    from numpy import apply_along_axis, stack, ndarray, array
-    from pandas import DataFrame
-    from pandas.core.groupby import DataFrameGroupBy
+    from numpy import apply_along_axis, stack, ndarray
+    from pandas import DataFrame, concat
     from pyterrier import Transformer
+    from pyterrier.model import query_columns, add_ranks
     from tqdm.auto import tqdm
 
-    from ir_axioms.logging import logger
     from ir_axioms.axiom.base import Axiom
     from ir_axioms.integrations.pyterrier.utils import (
         require_columns,
         load_documents,
+        load_query,
     )
-    from ir_axioms.model import Query, RankedDocument, ScoredDocument, Document
+    from ir_axioms.model import Query, Document
     from ir_axioms.tools import PivotSelection, RandomPivotSelection
 
     @dataclass(frozen=True, kw_only=True)
-    class _PerGroupTransformer(Transformer, ABC):
-        group_columns: ClassVar[Set[str]]
-        optional_group_columns: ClassVar[Set[str]] = set()
-        description: ClassVar[Optional[str]] = None
-        unit: ClassVar[str] = "it"
-
-        verbose: bool = False
-
-        @abstractmethod
-        def transform_group(self, topics_or_res: DataFrame) -> DataFrame:
-            pass
-
-        def _all_group_columns(self, topics_or_res: DataFrame) -> Set[str]:
-            return self.group_columns | {
-                column
-                for column in self.optional_group_columns
-                if column in topics_or_res.columns
-            }
-
-        @final
-        def transform(self, inp: DataFrame) -> DataFrame:
-            require_columns(inp, self.group_columns)
-
-            query_rankings: DataFrameGroupBy = inp.groupby(
-                by=list(self._all_group_columns(inp)),
-                as_index=False,
-                sort=False,
-            )
-            if self.verbose:
-                # Show progress during reranking queries.
-                tqdm.pandas(
-                    desc=self.description,
-                    unit=self.unit,
-                )
-                inp = query_rankings.progress_apply(self.transform_group)  # type: ignore
-            else:
-                inp = query_rankings.apply(self.transform_group)
-            return inp.reset_index(drop=True)
-
-    @dataclass(frozen=True, kw_only=True)
-    class _AxiomTransformer(_PerGroupTransformer, ABC):
-        group_columns = {"query"}
-        optional_group_columns = {"qid", "name"}
-        unit = "query"
-
-        text_field: Optional[str] = "text"
-
-        @final
-        def transform_group(self, topics_or_res: DataFrame) -> DataFrame:
-            require_columns(topics_or_res, {"query", "docno", "rank", "score"})
-
-            if len(topics_or_res.index) == 0:
-                # Empty ranking, skip reranking.
-                return topics_or_res
-
-            # Convert query.
-            # As we grouped per query, we don't expect multiple queries here.
-            if topics_or_res["query"].nunique() > 1:
-                raise RuntimeError("Expected only one query in this data frame.")
-            query = Query(topics_or_res.iloc[0]["query"])
-
-            # Load document list.
-            documents = load_documents(topics_or_res, text_column=self.text_field)
-
-            return self.transform_query_ranking(query, documents, topics_or_res)
-
-        @abstractmethod
-        def transform_query_ranking(
-            self,
-            query: Query,
-            documents: Sequence[RankedDocument],
-            topics_or_res: DataFrame,
-        ) -> DataFrame:
-            pass
-
-    @dataclass(frozen=True, kw_only=True)
-    class KwikSortReranker(_AxiomTransformer):
-        name = "KwikSortReranker"
-        description = "Rerank with KwikSort"
-
+    class KwikSortReranker(Transformer):
         axiom: Axiom[Query, Document]
         pivot_selection: PivotSelection = RandomPivotSelection()
+        text_field: Optional[str] = "text"
+        verbose: bool = False
 
-        def transform_query_ranking(
-            self,
-            query: Query,
-            documents: Sequence[Document],
-            topics_or_res: DataFrame,
+        def _transform_group(
+            self, group_keys: Mapping[Hashable, Any], res: DataFrame
         ) -> DataFrame:
+            # Convert query and documents.
+            query = load_query(group_keys)
+            documents = load_documents(res, text_column=self.text_field)
+
             # Rerank documents.
-            reranked_documents = self.axiom.rerank_kwiksort(
+            documents = self.axiom.rerank_kwiksort(
                 input=query,
                 ranking=documents,
                 pivot_selection=self.pivot_selection,
             )
 
-            # Convert reranked documents back to data frame.
-            reranked_data: dict[str, Any] = {
-                "docno": [doc.id for doc in reranked_documents],
-            }
-            if all(isinstance(doc, RankedDocument) for doc in reranked_documents):
-                reranked_data["rank"] = [
-                    cast(RankedDocument, doc).rank for doc in reranked_documents
-                ]
-            if all(isinstance(doc, ScoredDocument) for doc in reranked_documents):
-                reranked_data["score"] = [
-                    cast(ScoredDocument, doc).score for doc in reranked_documents
-                ]
-            reranked = DataFrame(reranked_data)
-
             # Remove original scores and ranks.
-            original_ranking = topics_or_res.copy()
-            del original_ranking["rank"]
-            del original_ranking["score"]
+            res.drop(
+                columns=set(["rank", "score"]).intersection(res.columns), inplace=True
+            )
 
-            # Merge with new scores.
-            reranked = reranked.merge(original_ranking, on="docno")
-            return reranked
+            # Add re-ranked scores and ranks.
+            ranks = DataFrame(
+                [
+                    {"docno": document.id, "score": -rank}
+                    for rank, document in enumerate(documents)
+                ]
+            )
+            res = res.merge(ranks, on="docno")
+            res = add_ranks(res, single_query=True)
+            res = res.sort_values(by="rank")
 
-    @dataclass(frozen=True, kw_only=True)
-    class AggregatedAxiomaticPreferences(_AxiomTransformer):
-        name = "AggregatedAxiomaticPreferences"
-        description = "Aggregate axiom preferences"
+            return res
 
+        def transform(self, inp: DataFrame) -> DataFrame:
+            require_columns(inp, {"qid", "docno"})
+            query_cols = list(query_columns(inp))
+            query_rankings = inp.groupby(
+                by=query_cols,
+                group_keys=True,
+                sort=False,
+            )
+            if len(query_rankings) == 0:
+                return inp
+            return concat(
+                [
+                    self._transform_group(
+                        group_keys=dict(zip(query_cols, grouping)),
+                        res=ranking,
+                    )
+                    for grouping, ranking in tqdm(
+                        query_rankings,
+                        desc="KwikSort re-rank",
+                        unit="query",
+                        disable=not self.verbose,
+                    )
+                ]
+            )
+
+    @dataclass(frozen=True)
+    class AggregatedAxiomaticPreferences(Transformer):
         axioms: Sequence[Axiom[Query, Document]]
-        aggregations: Sequence[Callable[[Sequence[float]], float]]
+        aggregations: Sequence[Callable[[Sequence[float]], float]] = field(
+            default_factory=lambda: [max, min, mean]
+        )
+        text_field: Optional[str] = "text"
+        verbose: bool = False
 
-        def transform_query_ranking(
-            self,
-            query: Query,
-            documents: Sequence[Document],
-            topics_or_res: DataFrame,
+        def _transform_group(
+            self, group_keys: Mapping[Hashable, Any], res: DataFrame
         ) -> DataFrame:
-            aggregations = self.aggregations
+            # Convert query and documents.
+            query = load_query(group_keys)
+            documents = load_documents(res, text_column=self.text_field)
 
+            # Compute the axiomatic preference matrices.
             # Shape: |documents| x |documents| x |axioms|
-            features: ndarray = stack(
+            preferences: ndarray = stack(
                 tuple(
                     # Shape: |documents| x |documents|
                     axiom.preferences(
@@ -180,89 +122,159 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                     )
                     for axiom in self.axioms
                 ),
-                -1,
+                axis=-1,
             )
 
+            # Aggregate the preferences.
             # Shape: |documents| x |axioms| x |aggregations|
-            features = stack(
+            aggregated_preferences = stack(
                 tuple(
                     # Shape: |documents| x |axioms|
                     apply_along_axis(
                         lambda preferences: aggregation(preferences.tolist()),
                         0,
-                        features,
+                        preferences,
                     )
-                    for aggregation in aggregations
+                    for aggregation in self.aggregations
                 ),
-                -1,
+                axis=-1,
             )
 
+            # Flatten the result to have one row per document.
             # Shape: |documents| x (|aggregations| * |axioms|)
-            features = features.reshape((features.shape[0], -1))
+            features = list(aggregated_preferences.reshape(
+                (aggregated_preferences.shape[0], -1)
+            ))
 
-            topics_or_res["features"] = list(map(array, features))
-            return topics_or_res
+            res["features"] = features  # TODO: Check if this works.
+            return res
 
-    @dataclass(frozen=True, kw_only=True)
-    class AxiomaticPreferences(_AxiomTransformer):
-        name = "AxiomaticPreferences"
-        description = "Compute axiom preferences"
+        def transform(self, inp: DataFrame) -> DataFrame:
+            require_columns(inp, {"qid", "docno"})
+            query_cols = list(query_columns(inp))
+            query_rankings = inp.groupby(
+                by=query_cols,
+                group_keys=True,
+                sort=False,
+            )
+            if len(query_rankings) == 0:
+                inp["features"] = None
+                return inp
+            return concat(
+                [
+                    self._transform_group(
+                        group_keys=dict(zip(query_cols, grouping)),
+                        res=ranking,
+                    )
+                    for grouping, ranking in tqdm(
+                        query_rankings,
+                        desc="Aggregate axiom preferences",
+                        unit="query",
+                        disable=not self.verbose,
+                    )
+                ]
+            )
 
+    @dataclass(frozen=True)
+    class AxiomaticPreferences(Transformer):
         axioms: Sequence[Axiom]
         axiom_names: Optional[Sequence[str]] = None
+        text_field: Optional[str] = "text"
         verbose: bool = False
 
-        def transform_query_ranking(
-            self,
-            query: Query,
-            documents: Sequence[RankedDocument],
-            topics_or_res: DataFrame,
-        ) -> DataFrame:
-            # Result cross product.
-            results_pairs = topics_or_res.merge(
-                topics_or_res,
-                on=list(self._all_group_columns(topics_or_res)),
-                suffixes=("_a", "_b"),
-            )
-
-            # Document pairs.
-            document_pairs: Iterable[tuple[Document, Document]] = list(
-                product(documents, documents)
-            )
-
-            # Compute axiom preferences.
-            axioms: Iterable[Axiom[Query, Document]] = self.axioms
-            if self.verbose and 0 < logger.level <= DEBUG:
-                axioms = tqdm(
-                    axioms,
-                    desc="Axiom preferences",
-                    unit="axiom",
-                )
-
-            names: Sequence[str]
+        @cached_property
+        def _axiom_names(self) -> Sequence[str]:
+            # Get axiom names.
             if self.axiom_names is not None:
                 if len(self.axiom_names) != len(self.axioms):
                     raise ValueError("Number of axioms and names must match.")
-                names = self.axiom_names
+                return self.axiom_names
             else:
-                names = [str(axiom) for axiom in axioms]
+                return [str(axiom) for axiom in self.axioms]
 
-            columns = [f"{name}_preference" for name in names]
+        def _transform_group(
+            self, group_keys: Mapping[Hashable, Any], res: DataFrame
+        ) -> DataFrame:
+            # Convert query and documents.
+            query = load_query(group_keys)
+            documents = load_documents(res, text_column=self.text_field)
 
-            for column, axiom in zip(columns, axioms):
-                if self.verbose and 0 < logger.level <= DEBUG:
-                    # Very verbose progress bars.
-                    document_pairs = tqdm(
-                        document_pairs,
-                        desc="Axiom preference",
-                        unit="pair",
+            # Result cross product.
+            res = res.merge(
+                res,
+                on=list(query_columns(res)),
+                suffixes=("_a", "_b"),
+                sort=False,
+            )
+
+            # Compute the axiomatic preference matrices.
+            # Shape: |axioms| x |documents| x |documents|
+            preferences: ndarray = stack(
+                tuple(
+                    # Shape: |documents| x |documents|
+                    axiom.preferences(
+                        input=query,
+                        outputs=documents,
                     )
-                results_pairs[column] = [
-                    axiom.preference(query, document1, document2)
-                    for document1, document2 in document_pairs
-                ]
+                    for axiom in self.axioms
+                ),
+                axis=0,
+            )
 
-            return results_pairs
+            # Flatten the result to have one row per document pair.
+            # Shape: |axioms| x (|documents| * |documents|)
+            preferences = preferences.reshape(
+                (preferences.shape[0], -1)
+            )
+
+            # Sanity checks.
+            if not len(self._axiom_names) == len(preferences):
+                raise ValueError(
+                    f"Number of axioms ({len(preferences)}) does not match number of names ({len(self._axiom_names)})."
+                )
+            if not reduce(mul, preferences.shape[1:]) == len(res):
+                raise ValueError(
+                    f"Number of document pairs ({len(res)}) does not match number of preferences ({product(preferences.shape[1:])})."
+                )
+
+            # Insert preferences into result data frame.
+            for axiom_name, axiom_preferences in zip(self._axiom_names, preferences):
+                res[f"{axiom_name}_preferences"] = axiom_preferences
+
+            return res
+
+        def transform(self, inp: DataFrame) -> DataFrame:
+            require_columns(inp, {"qid", "docno"})
+            query_cols = list(query_columns(inp))
+            query_rankings = inp.groupby(
+                by=query_cols,
+                group_keys=True,
+                sort=False,
+            )
+            if len(query_rankings) == 0:
+                inp = inp.merge(
+                    inp,
+                    on=query_cols,
+                    suffixes=("_a", "_b"),
+                    sort=False,
+                )
+                for axiom_name in self._axiom_names:
+                    inp[f"{axiom_name}_preferences"] = None
+                return inp
+            return concat(
+                [
+                    self._transform_group(
+                        group_keys=dict(zip(query_cols, grouping)),
+                        res=ranking,
+                    )
+                    for grouping, ranking in tqdm(
+                        query_rankings,
+                        desc="Compute axiom preferences",
+                        unit="query",
+                        disable=not self.verbose,
+                    )
+                ]
+            )
 
 else:
     KwikSortReranker = NotImplemented
