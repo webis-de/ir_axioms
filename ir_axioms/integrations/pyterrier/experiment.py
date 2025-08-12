@@ -40,11 +40,10 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         verbose: bool = False
 
         @cached_property
-        def _all_axioms(self) -> Sequence[Axiom]:
+        def _additional_axioms(self) -> Sequence[Axiom]:
             return [
                 ORIG(),
                 ORACLE(),
-                *self.axioms,
             ]
 
         @cached_property
@@ -59,12 +58,8 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             return names
 
         @cached_property
-        def _all_axiom_names(self) -> Sequence[str]:
-            return [
-                ORIG.__name__,
-                ORACLE.__name__,
-                *self._axiom_names,
-            ]
+        def _additional_axiom_names(self) -> Sequence[str]:
+            return ["ORIG", "ORACLE"]
 
         @cached_property
         def _retrieval_system_names(self) -> Sequence[str]:
@@ -100,8 +95,14 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             pipeline = pipeline >> AddNameTransformer(name)
             # Compute preferences
             pipeline = pipeline >> AxiomaticPreferences(
-                axioms=self._all_axioms,
-                axiom_names=self._all_axiom_names,
+                axioms=[
+                    *self._additional_axioms,
+                    *self.axioms,
+                ],
+                axiom_names=[
+                    *self._additional_axiom_names,
+                    *self._axiom_names,
+                ],
                 text_field=self.text_field,
                 verbose=self.verbose,
             )
@@ -173,7 +174,10 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                     "axiom == ORIG": len(pref[pref[f"{axiom_name}_preference"] > 0]),
                     "axiom != ORIG": len(pref[pref[f"{axiom_name}_preference"] < 0]),
                 }
-                for axiom_name in self._all_axiom_names
+                for axiom_name in [
+                    *self._additional_axiom_names,
+                    *self._axiom_names,
+                ]
             ]
             return DataFrame(distributions)
 
@@ -246,7 +250,10 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                         for system in systems
                     },
                 }
-                for axiom_name in self._all_axiom_names
+                for axiom_name in [
+                    *self._additional_axiom_names,
+                    *self._axiom_names,
+                ]
             ]
             return DataFrame(distributions)
 
@@ -261,7 +268,10 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             # Preferences that have at least one correct axiom preference.
             axiom_hint = [
                 pref[f"{axiom_name}_preference"] > 0
-                for axiom_name in self._all_axiom_names
+                for axiom_name in [
+                    *self._additional_axiom_names,
+                    *self._axiom_names,
+                ]
             ]
             axiom_hinted = reduce(or_, axiom_hint)
             pref = pref[axiom_hinted]
