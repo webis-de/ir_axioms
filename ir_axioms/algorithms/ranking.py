@@ -35,7 +35,9 @@ def kwiksort(
             raise RuntimeError(
                 f"Tie during reranking. "
                 f"Document {vertex} has same preference "
-                f"and rank as pivot document {pivot}."
+                f"as pivot document {pivot}. "
+                f"Consider using a ORIG axiom as fallback, "
+                f"to break ties."
             )
 
     vertices_left_sorted = kwiksort(
