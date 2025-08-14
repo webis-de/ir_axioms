@@ -26,7 +26,7 @@ dependencies = [
     "cached-property~=2.0",
     "cyclopts~=3.0",
     "fasttext~=0.9.3",
-    "huggingface-hub[hf_xet]>=0.30.1,<0.34.0",
+    "huggingface-hub[hf_xet]>=0.30.1,<0.35.0",
     "injector~=0.22.0",
     "ir-datasets~=0.5.9",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
     "joblib~=1.4",
@@ -53,7 +53,7 @@ tests = [
     "mypy~=1.13",
     "pytest~=8.3",
     "pytest-cov~=6.0",
-    "ruff~=0.11.0",
+    "ruff~=0.12.7",
     "types-tqdm~=4.66",
 ]
 experiments = [
@@ -62,11 +62,11 @@ experiments = [
     "jupyter~=1.1",
     "lightgbm~=4.5",
     "ragas~=0.3.0",
-    "ray[default,data]~=2.44.1",
+    "ray[default,data]~=2.48",
     "seaborn~=0.13.2",
     "transformers~=4.48",
     "typing-extensions~=4.12",
-    "xgboost~=2.1",
+    "xgboost>=2.1,<4.0",
 ]
 pyserini = [
     "pyserini>=0.43,<2.0",
@@ -92,7 +92,7 @@ ir-axioms = "ir_axioms.cli:app"
 
 [build-system]
 requires = [
-    "setuptools~=78.1",
+    "setuptools~=80.9",
     "setuptools-scm~=8.0",
 ]
 build-backend = "setuptools.build_meta"
