@@ -146,7 +146,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                 aggregated_preferences.reshape((aggregated_preferences.shape[0], -1))
             )
 
-            res["features"] = features  # TODO: Check if this works.
+            res["features"] = features
             return res
 
         def transform(self, inp: DataFrame) -> DataFrame:
