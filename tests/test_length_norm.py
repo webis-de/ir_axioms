@@ -1,11 +1,11 @@
 from ir_axioms.axiom import LNC1, TF_LNC
-from ir_axioms.model import TextQuery, TextDocument
+from ir_axioms.model import Query, Document
 
 
 def test_lnc1() -> None:
-    query = TextQuery(id="q1", text="q1 q2 q3")
-    document1 = TextDocument(id="d1", text="q1 q2 q3 w w w w w w w")
-    document2 = TextDocument(id="d2", text="q1 q2 q3 w w w w w w w w")
+    query = Query(id="q1", text="q1 q2 q3")
+    document1 = Document(id="d1", text="q1 q2 q3 w w w w w w w")
+    document2 = Document(id="d2", text="q1 q2 q3 w w w w w w w w")
 
     axiom = LNC1()
 
@@ -15,10 +15,10 @@ def test_lnc1() -> None:
 
 
 def test_tf_lnc() -> None:
-    query = TextQuery(id="q1", text="q1 q2 q3")
-    document1 = TextDocument(id="d1", text="q1 q1 q2 x y")
-    document2 = TextDocument(id="d2", text="q1 q2 x y")
-    document3 = TextDocument(id="d3", text="q1 q1 q1 x y")
+    query = Query(id="q1", text="q1 q2 q3")
+    document1 = Document(id="d1", text="q1 q1 q2 x y")
+    document2 = Document(id="d2", text="q1 q2 x y")
+    document3 = Document(id="d3", text="q1 q1 q1 x y")
 
     axiom = TF_LNC()
 

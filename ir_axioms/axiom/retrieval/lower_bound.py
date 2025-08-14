@@ -5,14 +5,14 @@ from typing import Final, Union
 from injector import inject, NoInject
 
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.model import Query, Document, ScoredDocument, Preference
+from ir_axioms.model import Query, Document, Preference
 from ir_axioms.tools import TextContents, TermTokenizer, TextStatistics
 from ir_axioms.utils.lazy import lazy_inject
 
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class Lb1Axiom(Axiom[Query, ScoredDocument]):
+class Lb1Axiom(Axiom[Query, Document]):
     text_contents: TextContents[Union[Query, Document]]
     term_tokenizer: TermTokenizer
     text_statistics: TextStatistics[Document]
@@ -21,9 +21,12 @@ class Lb1Axiom(Axiom[Query, ScoredDocument]):
     def preference(
         self,
         input: Query,
-        output1: ScoredDocument,
-        output2: ScoredDocument,
+        output1: Document,
+        output2: Document,
     ) -> Preference:
+        if output1.score is None or output2.score is None:
+            raise ValueError("Can only compare scored documents.")
+
         if not isclose(
             output1.score,
             output2.score,

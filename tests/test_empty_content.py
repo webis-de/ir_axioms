@@ -32,7 +32,7 @@ from ir_axioms.axiom import (
     STMC1,
     STMC2,
 )
-from ir_axioms.model import TextQuery, ScoredTextDocument
+from ir_axioms.model import Query, Document
 from tests.util import inject_documents
 
 
@@ -73,9 +73,9 @@ def axiom_fn(request: FixtureRequest) -> Callable[[], Axiom]:
 
 
 def test_empty_query(axiom_fn: Callable[[], Axiom]) -> None:
-    query = TextQuery(id="q1", text="")
-    document1 = ScoredTextDocument(id="d1", text="w1 w2 w3", score=2)
-    document2 = ScoredTextDocument(id="d2", text="w1 w2 w3", score=1)
+    query = Query(id="q1", text="")
+    document1 = Document(id="d1", text="w1 w2 w3", score=2)
+    document2 = Document(id="d2", text="w1 w2 w3", score=1)
 
     inject_documents([document1, document2])
 
@@ -85,9 +85,9 @@ def test_empty_query(axiom_fn: Callable[[], Axiom]) -> None:
 
 
 def test_empty_document1(axiom_fn: Callable[[], Axiom]) -> None:
-    query = TextQuery(id="q1", text="w1 w2 w3")
-    document1 = ScoredTextDocument(id="d1", text="", score=2)
-    document2 = ScoredTextDocument(id="d2", text="w1 w2 w3", score=1)
+    query = Query(id="q1", text="w1 w2 w3")
+    document1 = Document(id="d1", text="", score=2)
+    document2 = Document(id="d2", text="w1 w2 w3", score=1)
 
     inject_documents([document1, document2])
 
@@ -98,9 +98,9 @@ def test_empty_document1(axiom_fn: Callable[[], Axiom]) -> None:
 
 
 def test_empty_document2(axiom_fn: Callable[[], Axiom]):
-    query = TextQuery("q1", "w1 w2 w3")
-    document1 = ScoredTextDocument("d1", "w1 w2 w3", 2)
-    document2 = ScoredTextDocument("d2", "", 1)
+    query = Query("q1", "w1 w2 w3")
+    document1 = Document("d1", "w1 w2 w3", 2)
+    document2 = Document("d2", "", 1)
 
     inject_documents([document1, document2])
 
@@ -111,9 +111,9 @@ def test_empty_document2(axiom_fn: Callable[[], Axiom]):
 
 
 def test_empty_documents(axiom_fn: Callable[[], Axiom]):
-    query = TextQuery("q1", "w1 w2 w3")
-    document1 = ScoredTextDocument("d1", "", 2)
-    document2 = ScoredTextDocument("d2", "", 1)
+    query = Query("q1", "w1 w2 w3")
+    document1 = Document("d1", "", 2)
+    document2 = Document("d2", "", 1)
 
     inject_documents([document1, document2])
 
