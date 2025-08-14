@@ -2,7 +2,7 @@ from bisect import bisect_left
 from collections import Counter as counter, defaultdict
 from dataclasses import dataclass
 from itertools import combinations
-from math import inf
+from math import inf  # pyright: ignore[reportShadowedImports]
 from statistics import mean
 from typing import Counter, Final, AbstractSet, Sequence, Union
 

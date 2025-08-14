@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from math import isclose, nan
+from math import isclose, nan  # pyright: ignore[reportShadowedImports]
 from typing import Final, Union, Sequence
 
 from injector import inject, NoInject

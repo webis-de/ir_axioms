@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from functools import lru_cache
-from math import nan
+from math import nan  # pyright: ignore[reportShadowedImports]
 from pathlib import Path
 from statistics import mean
 from typing import Any, Final, Iterable, Dict, Optional, Sequence, Union
@@ -142,7 +142,7 @@ class _TargerMixin:
     ) -> Dict[str, ArgumentSentences]:
         return analyze_text(
             contents,
-            model_or_models=set(self.models),
+            set(self.models),
             api_url=self.api_url,
             cache_dir=self.cache_dir,
         )

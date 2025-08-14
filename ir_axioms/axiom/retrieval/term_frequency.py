@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from itertools import chain, combinations
-from math import isclose
+from math import isclose  # pyright: ignore[reportShadowedImports]
 from typing import AbstractSet, Final, Sequence, Union
 
 from injector import inject, NoInject

@@ -1,6 +1,5 @@
 from typing import Any
 
-# from numpy import allclose
 from pytest import approx
 from sklearn.linear_model import LinearRegression
 
