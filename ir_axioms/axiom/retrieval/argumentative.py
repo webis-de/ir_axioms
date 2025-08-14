@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from functools import lru_cache
-from math import nan
+from math import nan  # pyright: ignore[reportShadowedImports]
 from pathlib import Path
 from statistics import mean
 from typing import Any, Final, Iterable, Dict, Optional, Sequence, Union
@@ -13,7 +13,6 @@ from tqdm.auto import tqdm
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.precondition import PreconditionMixin
-from ir_axioms.dependency_injection import injector
 from ir_axioms.precondition.base import Precondition
 from ir_axioms.precondition.length import LEN
 from ir_axioms.axiom.utils import strictly_greater, strictly_less
@@ -143,7 +142,7 @@ class _TargerMixin:
     ) -> Dict[str, ArgumentSentences]:
         return analyze_text(
             contents,
-            model_or_models=self.models,
+            set(self.models),
             api_url=self.api_url,
             cache_dir=self.cache_dir,
         )
@@ -189,7 +188,7 @@ class ArgumentativeUnitsCountAxiom(
         return strictly_greater(count1, count2)
 
 
-ArgUC: Final = lazy_inject(ArgumentativeUnitsCountAxiom, injector)
+ArgUC: Final = lazy_inject(ArgumentativeUnitsCountAxiom)
 
 
 @inject
@@ -242,7 +241,7 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(
         return strictly_greater(count1, count2)
 
 
-QTArg: Final = lazy_inject(QueryTermOccurrenceInArgumentativeUnitsAxiom, injector)
+QTArg: Final = lazy_inject(QueryTermOccurrenceInArgumentativeUnitsAxiom)
 
 
 @inject
@@ -335,7 +334,7 @@ class QueryTermPositionInArgumentativeUnitsAxiom(
         return strictly_less(position1, position2)
 
 
-QTPArg: Final = lazy_inject(QueryTermPositionInArgumentativeUnitsAxiom, injector)
+QTPArg: Final = lazy_inject(QueryTermPositionInArgumentativeUnitsAxiom)
 
 
 @inject
@@ -422,5 +421,5 @@ class AverageSentenceLengthAxiom(
         ).reshape((len(outputs), len(outputs)))
 
 
-aSLDoc: Final = lazy_inject(AverageSentenceLengthAxiom, injector)
+aSLDoc: Final = lazy_inject(AverageSentenceLengthAxiom)
 aSL: Final = aSLDoc

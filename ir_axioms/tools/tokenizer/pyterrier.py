@@ -8,6 +8,8 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     from re import compile as re_compile
     from typing import Sequence, Any
 
+    from typing_extensions import TypeAlias  # type: ignore
+
     from ir_axioms.tools.tokenizer.base import TermTokenizer
     from ir_axioms.utils.pyterrier import (
         pt_java_required,
@@ -17,14 +19,14 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         ApplicationSetup,
     )
 
+    _Tokeniser: TypeAlias = Tokeniser  # type: ignore
+
     _TERM_PIPELINE_PATTERN = re_compile(r"\s*,\s*")
 
     @pt_java_required
     @dataclass(frozen=True, kw_only=True)
     class TerrierTermTokenizer(TermTokenizer):
-        tokeniser: Tokeniser = field(  # type: ignore
-            default_factory=lambda: EnglishTokeniser()
-        )
+        tokeniser: _Tokeniser = field(default_factory=lambda: EnglishTokeniser())
         # TODO: Add optional index location arg to guess tokenizer and term pipelines from index configuration.
 
         @cached_property
@@ -60,4 +62,4 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             return terms
 
 else:
-    TerrierTermTokenizer = NotImplemented  # type: ignore
+    TerrierTermTokenizer = NotImplemented

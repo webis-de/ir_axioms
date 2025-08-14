@@ -8,12 +8,17 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     from pathlib import Path
     from typing import Union, Any
 
+    from typing_extensions import TypeAlias  # type: ignore
+
     from ir_axioms.tools.index_statistics import IndexStatistics
     from ir_axioms.utils.pyterrier import Index, IndexRef
 
+    _Index: TypeAlias = Index  # type: ignore
+    _IndexRef: TypeAlias = IndexRef  # type: ignore
+
     @dataclass(frozen=True, kw_only=True)
     class TerrierIndexStatistics(IndexStatistics):
-        index_location: Union[Index, IndexRef, Path, str]  # type: ignore
+        index_location: Union[_Index, _IndexRef, Path, str]
 
         @cached_property
         def _index(self) -> Any:
@@ -56,4 +61,4 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                 return document_frequency
 
 else:
-    TerrierIndexStatistics = NotImplemented  # type: ignore
+    TerrierIndexStatistics = NotImplemented

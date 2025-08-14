@@ -45,7 +45,7 @@ def test_lazy() -> None:
     assert b2.bar == "two"
     assert isclose(b2.baz, 2.0)
 
-    C = lazy_inject(B, injector)
+    C = lazy_inject(B, injector=injector)
 
     c1 = C()
     assert c1.foo == 2

@@ -75,15 +75,16 @@ class TrecRagNuggetAxiom(Axiom[GenerationInput, GenerationOutput]):
         if len(df1) == 0 or len(df2) == 0:
             return 0
 
-        if self.score_type == "all":
+        score_type: TrecRagNuggetScoreType = self.score_type
+        if score_type == "all":
             score1 = df1["assignment_score"].sum() / len(df1)
             score2 = df2["assignment_score"].sum() / len(df2)
-        elif self.score_type == "vital":
+        elif score_type == "vital":
             df1 = df1[df1["importance"] == "vital"]
             df2 = df2[df2["importance"] == "vital"]
             score1 = df1["assignment_score"].sum() / len(df1)
             score2 = df2["assignment_score"].sum() / len(df2)
-        elif self.score_type == "weighted":
+        elif score_type == "weighted":
             df1_vital = df1[df1["importance"] == "vital"]
             df2_vital = df2[df2["importance"] == "vital"]
             df1_okay = df1[df1["importance"] != "vital"]
@@ -96,6 +97,8 @@ class TrecRagNuggetAxiom(Axiom[GenerationInput, GenerationOutput]):
                 df2_vital["assignment_score"].sum()
                 + 0.5 * df2_okay["assignment_score"].sum()
             ) / (len(df2_vital) + 0.5 * len(df2_okay))
+        else:
+            raise ValueError(f"Unknown score type: {score_type}")
 
         if isclose(
             score1,

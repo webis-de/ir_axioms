@@ -1,15 +1,15 @@
 from ir_axioms.axiom import LB1
-from ir_axioms.model import TextQuery, ScoredTextDocument
+from ir_axioms.model import Query, Document
 
 
 def test_lb1() -> None:
-    query = TextQuery(id="q1", text="test query words")
-    document1 = ScoredTextDocument(
+    query = Query(id="q1", text="test query words")
+    document1 = Document(
         id="d1",
         text="test document that contains query words and phrases",
         score=1.00,
     )
-    document2 = ScoredTextDocument(
+    document2 = Document(
         id="d2",
         text="test document that contains words and phrases",
         score=1.01,

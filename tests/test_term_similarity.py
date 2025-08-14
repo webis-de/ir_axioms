@@ -1,11 +1,11 @@
 from ir_axioms.axiom import STMC1, STMC2
-from ir_axioms.model import TextQuery, TextDocument
+from ir_axioms.model import Query, Document
 
 
 def test_stmc1() -> None:
-    query = TextQuery(id="q1", text="blue car moves")
-    document1 = TextDocument(id="d1", text="blue auto runs through the city")
-    document2 = TextDocument(id="d2", text="red airplane flies in the sky")
+    query = Query(id="q1", text="blue car moves")
+    document1 = Document(id="d1", text="blue auto runs through the city")
+    document2 = Document(id="d2", text="red airplane flies in the sky")
 
     axiom = STMC1()
 
@@ -15,9 +15,9 @@ def test_stmc1() -> None:
 
 
 def test_stmc2() -> None:
-    query = TextQuery(id="q1", text="car")
-    document1 = TextDocument(id="d1", text="car key")
-    document2 = TextDocument(id="d2", text="auto auto auto auto")
+    query = Query(id="q1", text="car")
+    document1 = Document(id="d1", text="car key")
+    document2 = Document(id="d2", text="auto auto auto auto")
 
     axiom = STMC2()
 
@@ -27,12 +27,10 @@ def test_stmc2() -> None:
 
 
 def test_stmc2_equal() -> None:
-    query = TextQuery(id="q1", text="dog breed")
-    document1 = TextDocument(id="d1", text="dog fire orange key")
-    document2 = TextDocument(
-        id="d2", text="animal animal animal animal time key key key"
-    )
-    document3 = TextDocument(id="d3", text="dog animal time key key")
+    query = Query(id="q1", text="dog breed")
+    document1 = Document(id="d1", text="dog fire orange key")
+    document2 = Document(id="d2", text="animal animal animal animal time key key key")
+    document3 = Document(id="d3", text="dog animal time key key")
 
     axiom = STMC2()
 

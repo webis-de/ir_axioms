@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from typing import Collection
-from injector import inject
+from injector import inject, Injector
 
-from ir_axioms.dependency_injection import injector
-from ir_axioms.model import Document, TextDocument
+from ir_axioms.dependency_injection import injector as _default_injector
+from ir_axioms.model import Document
 from ir_axioms.tools import IndexStatistics, TextContents, TermTokenizer
 
 
@@ -34,7 +34,10 @@ class InMemoryIndexStatistics(IndexStatistics):
         )
 
 
-def inject_documents(documents: Collection[TextDocument]) -> None:
+def inject_documents(
+    documents: Collection[Document],
+    injector: Injector = _default_injector,
+) -> None:
     injector.binder.bind(
         interface=IndexStatistics,
         to=InMemoryIndexStatistics,

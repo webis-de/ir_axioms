@@ -7,7 +7,6 @@ from tqdm.auto import tqdm
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.precondition import PreconditionMixin
-from ir_axioms.dependency_injection import injector
 from ir_axioms.precondition.base import Precondition
 from ir_axioms.precondition.length import LEN
 from ir_axioms.axiom.utils import strictly_greater, approximately_equal
@@ -137,7 +136,7 @@ class RegAxiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
         ).reshape((len(outputs), len(outputs)))
 
 
-REG: Final = lazy_inject(RegAxiom, injector)
+REG: Final = lazy_inject(RegAxiom)
 
 
 @inject
@@ -242,7 +241,7 @@ class AntiRegAxiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
         ).reshape((len(outputs), len(outputs)))
 
 
-ANTI_REG: Final = lazy_inject(AntiRegAxiom, injector)
+ANTI_REG: Final = lazy_inject(AntiRegAxiom)
 
 
 @inject
@@ -337,7 +336,7 @@ class AspectRegAxiom(Axiom[Query, Document]):
         )
 
 
-ASPECT_REG: Final = lazy_inject(AspectRegAxiom, injector)
+ASPECT_REG: Final = lazy_inject(AspectRegAxiom)
 
 
 @inject
@@ -399,7 +398,7 @@ class AndAxiom(Axiom[Query, Document]):
         ).reshape((len(outputs), len(outputs)))
 
 
-AND: Final = lazy_inject(AndAxiom, injector)
+AND: Final = lazy_inject(AndAxiom)
 
 
 @inject
@@ -408,7 +407,7 @@ class LenAndAxiom(PreconditionMixin[Query, Document], AndAxiom):
     precondition: NoInject[Precondition[Query, Document]] = field(default_factory=LEN)
 
 
-LEN_AND: Final = lazy_inject(LenAndAxiom, injector)
+LEN_AND: Final = lazy_inject(LenAndAxiom)
 
 
 @inject
@@ -475,7 +474,7 @@ class ModifiedAndAxiom(Axiom[Query, Document]):
         ).reshape((len(outputs), len(outputs)))
 
 
-M_AND: Final = lazy_inject(ModifiedAndAxiom, injector)
+M_AND: Final = lazy_inject(ModifiedAndAxiom)
 
 
 @inject
@@ -484,7 +483,7 @@ class LenModifiedAndAxiom(PreconditionMixin[Query, Document], ModifiedAndAxiom):
     precondition: NoInject[Precondition[Query, Document]] = field(default_factory=LEN)
 
 
-LEN_M_AND: Final = lazy_inject(LenModifiedAndAxiom, injector)
+LEN_M_AND: Final = lazy_inject(LenModifiedAndAxiom)
 
 
 @inject
@@ -556,7 +555,7 @@ class DivAxiom(Axiom[Query, Document]):
         ).reshape((len(outputs), len(outputs)))
 
 
-DIV: Final = lazy_inject(DivAxiom, injector)
+DIV: Final = lazy_inject(DivAxiom)
 
 
 @inject
@@ -565,4 +564,4 @@ class LenDivAxiom(PreconditionMixin[Query, Document], DivAxiom):
     precondition: NoInject[Precondition[Query, Document]] = field(default_factory=LEN)
 
 
-LEN_DIV: Final = lazy_inject(LenDivAxiom, injector)
+LEN_DIV: Final = lazy_inject(LenDivAxiom)

@@ -63,7 +63,7 @@ Follow these steps to adding new axioms to this project:
         ], dtype=float_).reshape((len(outputs), len(outputs)))
     ```
 
-1. Make the axiom available under a short name: `YOU = lazy_inject(YourAxiom, injector)`
+1. Make the axiom available under a short name: `YOU = lazy_inject(YourAxiom)`
 
 1. Check out the [example evaluation notebook](../experiments/ictir.ipynb) to evaluate the axiom.
 

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from math import isclose, nan
+from math import isclose, nan  # pyright: ignore[reportShadowedImports]
 from typing import Final, Union, Sequence
 
 from injector import inject, NoInject
@@ -8,7 +8,6 @@ from tqdm.auto import tqdm
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_greater
-from ir_axioms.dependency_injection import injector
 from ir_axioms.model import Query, Document, Preference, PreferenceMatrix
 from ir_axioms.tools import TextContents, TermTokenizer, TermSimilarity, TextStatistics
 from ir_axioms.utils.lazy import lazy_inject
@@ -76,7 +75,7 @@ class Stmc1Axiom(Axiom[Query, Document]):
         ).reshape((len(outputs), len(outputs)))
 
 
-STMC1: Final = lazy_inject(Stmc1Axiom, injector)
+STMC1: Final = lazy_inject(Stmc1Axiom)
 
 
 def _safe_ratio(a: float, b: float) -> float:
@@ -163,4 +162,4 @@ class Stmc2Axiom(Axiom[Query, Document]):
     # The largest hurdle seems to be the max similarity pairs computation.
 
 
-STMC2: Final = lazy_inject(Stmc2Axiom, injector)
+STMC2: Final = lazy_inject(Stmc2Axiom)

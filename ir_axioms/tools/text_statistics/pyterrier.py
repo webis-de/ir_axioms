@@ -6,20 +6,23 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     from dataclasses import dataclass
     from functools import cached_property
     from pathlib import Path
-    from typing import Union, Any, Mapping, Iterable, Optional, TypeVar
+    from typing import Union, Any, Mapping, Iterable, Optional
+
+    from typing_extensions import TypeAlias  # type: ignore
 
     from ir_axioms.model import Document
     from ir_axioms.tools.text_statistics.base import TextStatistics
     from ir_axioms.utils.pyterrier import Index, IndexRef
 
-    DocumentType = TypeVar("DocumentType", bound=Document)
+    _Index: TypeAlias = Index  # type: ignore
+    _IndexRef: TypeAlias = IndexRef  # type: ignore
 
     @dataclass(frozen=True, kw_only=True)
-    class TerrierTextStatistics(TextStatistics[DocumentType]):
-        index_location: Union[Index, IndexRef, Path, str]  # type: ignore
+    class TerrierTextStatistics(TextStatistics[Document]):
+        index_location: Union[_Index, _IndexRef, Path, str]
 
         @cached_property
-        def _index(self) -> Any:
+        def _index(self) -> _Index:
             from pyterrier.terrier import IndexFactory
 
             if isinstance(self.index_location, Index):
@@ -66,7 +69,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         def _lexicon(self) -> Any:
             return self._index.getLexicon()
 
-        def term_counts(self, document: DocumentType) -> Mapping[str, int]:
+        def term_counts(self, document: Document) -> Mapping[str, int]:
             docid: int = self._meta_index.getDocument("docno", document.id)
             document_entry: Any = self._document_index.getDocumentEntry(docid)
             postings: Optional[Iterable[Any]] = self._direct_index.getPostings(
@@ -82,4 +85,4 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             }
 
 else:
-    TerrierTextStatistics = NotImplemented  # type: ignore
+    TerrierTextStatistics = NotImplemented

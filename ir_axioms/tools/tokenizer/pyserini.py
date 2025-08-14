@@ -17,4 +17,4 @@ if is_pyserini_installed() or TYPE_CHECKING:
             return self.analyzer.analyze(text)
 
 else:
-    AnseriniTermTokenizer = NotImplemented  # type: ignore
+    AnseriniTermTokenizer = NotImplemented

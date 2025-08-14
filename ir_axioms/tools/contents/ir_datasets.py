@@ -8,13 +8,10 @@ from ir_datasets.indices import Docstore
 
 from ir_axioms.model.retrieval import Document, Query
 from ir_axioms.tools.contents.base import TextContents
-from ir_axioms.tools.contents.simple import FallbackTextContentsMixin
 
 
 @dataclass(frozen=True, kw_only=True)
-class IrdsDocumentTextContents(
-    FallbackTextContentsMixin[Document], TextContents[Document]
-):
+class IrdsDocumentTextContents(TextContents[Document]):
     dataset: Union[Dataset, str]
 
     @cached_property
@@ -29,12 +26,14 @@ class IrdsDocumentTextContents(
         return self._dataset.docs_store()
 
     def contents(self, input: Document) -> str:
+        if input.text is not None:
+            return input.text
         irds_document: GenericDoc = self._documents_store.get(input.id)
         return irds_document.default_text()
 
 
 @dataclass(frozen=True, kw_only=True)
-class IrdsQueryTextContents(FallbackTextContentsMixin[Query], TextContents[Query]):
+class IrdsQueryTextContents(TextContents[Query]):
     dataset: Union[Dataset, str]
 
     @cached_property
@@ -50,4 +49,6 @@ class IrdsQueryTextContents(FallbackTextContentsMixin[Query], TextContents[Query
         return {query.query_id: query.default_text() for query in queries}
 
     def contents(self, input: Query) -> str:
+        if input.text is not None:
+            return input.text
         return self._queries[input.id]

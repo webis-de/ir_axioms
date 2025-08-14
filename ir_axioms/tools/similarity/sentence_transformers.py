@@ -1,6 +1,8 @@
+from typing import TYPE_CHECKING
+
 from ir_axioms.utils.libraries import is_sentence_transformers_installed
 
-if is_sentence_transformers_installed():
+if is_sentence_transformers_installed() or TYPE_CHECKING:
     from dataclasses import dataclass
     from functools import cached_property
     from math import nan
@@ -67,4 +69,4 @@ if is_sentence_transformers_installed():
             ).reshape((len(sentences1), len(sentences2)))
 
 else:
-    SentenceTransformersSentenceSimilarity = NotImplemented  # type: ignore
+    SentenceTransformersSentenceSimilarity = NotImplemented

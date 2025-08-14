@@ -8,6 +8,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     from pyterrier.java import autoclass as pt_java_autoclass
 
     if TYPE_CHECKING:
+        # Fix the wrong typing of PyTerrier's required decorator.
         T = TypeVar("T")
 
         def pt_java_required(fn: T) -> T:

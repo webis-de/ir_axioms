@@ -23,7 +23,6 @@ from textacy.text_stats import flesch_reading_ease
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_less
-from ir_axioms.dependency_injection import injector
 from ir_axioms.model import PreferenceMatrix
 from ir_axioms.model.base import Preference
 from ir_axioms.model.generation import GenerationOutput
@@ -167,12 +166,12 @@ class LanguageToolGrammarErrorProportionClarityAxiom(
     Prefer text with a lower proportion of characters covered by grammar errors.
     """
 
-    enabled_categories: Final[NoInject[Iterable[_LanguageToolCategory]]] = frozenset(
+    enabled_categories: NoInject[Iterable[_LanguageToolCategory]] = frozenset(
         {"GRAMMAR"}
     )
 
 
-CLAR1: Final = lazy_inject(LanguageToolGrammarErrorProportionClarityAxiom, injector)
+CLAR1: Final = lazy_inject(LanguageToolGrammarErrorProportionClarityAxiom)
 
 
 @inject
@@ -246,4 +245,4 @@ class FleschReadingEaseClarityAxiom(Axiom[Any, GenerationOutput]):
         ).reshape((len(outputs), len(outputs)))
 
 
-CLAR2: Final = lazy_inject(FleschReadingEaseClarityAxiom, injector)
+CLAR2: Final = lazy_inject(FleschReadingEaseClarityAxiom)

@@ -12,8 +12,7 @@ from ir_axioms.model import Preference, PreferenceMatrix
 
 
 class SupportsRepr(Protocol):
-    def __repr__(self) -> str:
-        pass
+    def __repr__(self) -> str: ...
 
 
 _Input = TypeVar("_Input", bound=SupportsRepr)

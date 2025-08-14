@@ -1,35 +1,35 @@
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Sequence
+from typing import Sequence, Any
 
 from numpy import full
 
 from ir_axioms.axiom import Axiom
-from ir_axioms.model import Input, Output, Preference, PreferenceMatrix
+from ir_axioms.model import Preference, PreferenceMatrix
 
 
 @dataclass(kw_only=True)
-class _MutableUniformAxiom(Axiom[Input, Output]):
+class _MutableUniformAxiom(Axiom[Any, Any]):
     scalar: float
 
     def preference(
         self,
-        input: Input,
-        output1: Output,
-        output2: Output,
+        input: Any,
+        output1: Any,
+        output2: Any,
     ) -> Preference:
         return self.scalar
 
     def preferences(
         self,
-        input: Input,
-        outputs: Sequence[Output],
+        input: Any,
+        outputs: Sequence[Any],
     ) -> PreferenceMatrix:
         return full((len(outputs), len(outputs)), self.scalar)
 
 
-def test_cache():
+def test_cache() -> Any:
     input = "i1"
     output1 = "o1"
     output2 = "o2"

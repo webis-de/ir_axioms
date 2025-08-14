@@ -6,5 +6,4 @@ T = TypeVar("T", contravariant=True)
 
 @runtime_checkable
 class TextContents(Generic[T], Protocol):
-    def contents(self, input: T) -> str:
-        pass
+    def contents(self, input: T) -> str: ...
