@@ -91,8 +91,6 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                 pipeline = pipeline >> FilterQrelsTransformer(self.qrels)
             # Add relevance labels.
             pipeline = pipeline >> JoinQrelsTransformer(self.qrels)
-            # Add system name.
-            pipeline = pipeline >> AddNameTransformer(name)
             # Compute preferences
             pipeline = pipeline >> AxiomaticPreferences(
                 axioms=[
@@ -112,6 +110,8 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                     self.parallel_jobs,
                     self.parallel_backend,
                 )
+            # Add system name.
+            pipeline = pipeline >> AddNameTransformer(name)
             return pipeline
 
         @cached_property
