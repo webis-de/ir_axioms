@@ -1,4 +1,0 @@
-axiom,axiom == 0,axiom == ORIG,axiom != ORIG
-ORIG,0,2,0
-ORACLE,0,1,1
-_DOC_ID,0,1,1
