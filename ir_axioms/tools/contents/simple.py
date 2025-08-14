@@ -12,4 +12,4 @@ class SimpleTextContents(TextContents[HasText]):
     def contents(self, input: HasText) -> str:
         if input.text is not None:
             return input.text
-        raise RuntimeError(f"Could not get text contents from: {input}")
+        raise ValueError(f"Could not get text contents from: {input}")
