@@ -77,4 +77,4 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             return self._document_contents(input.id)
 
 else:
-    TerrierDocumentTextContents = NotImplemented
+    TerrierDocumentTextContents = NotImplemented  # type: ignore

@@ -19,7 +19,7 @@ from ir_axioms.tools.text_statistics.pyserini import (  # noqa: F401
 )
 
 from ir_axioms.tools.text_statistics.pyterrier import (  # noqa: F401
-    TerrierTextStatistics,
+    TerrierDocumentTextStatistics,
 )
 
 from ir_axioms.tools.text_statistics.simple import (  # noqa: F401

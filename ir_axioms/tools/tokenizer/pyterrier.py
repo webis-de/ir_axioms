@@ -62,4 +62,4 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             return terms
 
 else:
-    TerrierTermTokenizer = NotImplemented
+    TerrierTermTokenizer = NotImplemented  # type: ignore

@@ -18,7 +18,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     _IndexRef: TypeAlias = IndexRef  # type: ignore
 
     @dataclass(frozen=True, kw_only=True)
-    class TerrierTextStatistics(TextStatistics[Document]):
+    class TerrierDocumentTextStatistics(TextStatistics[Document]):
         index_location: Union[_Index, _IndexRef, Path, str]
 
         @cached_property
@@ -72,17 +72,19 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         def term_counts(self, document: Document) -> Mapping[str, int]:
             docid: int = self._meta_index.getDocument("docno", document.id)
             document_entry: Any = self._document_index.getDocumentEntry(docid)
-            postings: Optional[Iterable[Any]] = self._direct_index.getPostings(
-                document_entry
-            )
+            postings: Optional[Iterable[Any]]
+            postings = self._direct_index.getPostings(document_entry)
             if postings is None:
                 return {}
-            return {
-                self._lexicon.getLexiconEntry(
-                    posting.getId(),
-                ).getKey(): posting.getFrequency()
+            term_counts = {
+                str(
+                    self._lexicon.getLexiconEntry(
+                        posting.getId(),
+                    ).getKey()
+                ): posting.getFrequency()
                 for posting in postings
             }
+            return term_counts
 
 else:
-    TerrierTextStatistics = NotImplemented
+    TerrierDocumentTextStatistics = NotImplemented  # type: ignore

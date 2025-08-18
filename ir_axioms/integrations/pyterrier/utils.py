@@ -21,7 +21,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         IrdsDocumentTextContents,
         TerrierDocumentTextContents,
         TextStatistics,
-        TerrierTextStatistics,
+        TerrierDocumentTextStatistics,
         TermTokenizer,
         TerrierTermTokenizer,
         IndexStatistics,
@@ -53,22 +53,26 @@ if is_pyterrier_installed() or TYPE_CHECKING:
 
         if index_location is not None:
             injector.binder.bind(
-                interface=TextStatistics,
-                to=TerrierTextStatistics(index_location=index_location),
+                interface=IndexStatistics,
+                to=TerrierIndexStatistics(index_location=index_location),
                 scope=singleton,
             )
             injector.binder.bind(
-                interface=IndexStatistics,
-                to=TerrierIndexStatistics(index_location=index_location),
+                interface=TextStatistics[Document],
+                to=InstanceProvider(
+                    TerrierDocumentTextStatistics(index_location=index_location)
+                ),
                 scope=singleton,
             )
 
             if text_field is not None:
                 injector.binder.bind(
                     interface=TextContents[Document],
-                    to=TerrierDocumentTextContents(
-                        index_location=index_location,
-                        text_field=text_field,
+                    to=InstanceProvider(
+                        TerrierDocumentTextContents(
+                            index_location=index_location,
+                            text_field=text_field,
+                        )
                     ),
                     scope=singleton,
                 )
@@ -76,15 +80,19 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         if dataset is not None:
             injector.binder.bind(
                 interface=TextContents[Query],
-                to=IrdsQueryTextContents(
-                    dataset=dataset,
+                to=InstanceProvider(
+                    IrdsQueryTextContents(
+                        dataset=dataset,
+                    )
                 ),
                 scope=singleton,
             )
             injector.binder.bind(
                 interface=TextContents[Document],
-                to=IrdsDocumentTextContents(
-                    dataset=dataset,
+                to=InstanceProvider(
+                    IrdsDocumentTextContents(
+                        dataset=dataset,
+                    )
                 ),
                 scope=singleton,
             )
@@ -195,7 +203,7 @@ else:
     load_documents = NotImplemented
     load_query = NotImplemented
     load_queries = NotImplemented
-    FilterTopicsTransformer = NotImplemented
-    FilterQrelsTransformer = NotImplemented
-    JoinQrelsTransformer = NotImplemented
-    AddNameTransformer = NotImplemented
+    FilterTopicsTransformer = NotImplemented  # type: ignore
+    FilterQrelsTransformer = NotImplemented  # type: ignore
+    JoinQrelsTransformer = NotImplemented  # type: ignore
+    AddNameTransformer = NotImplemented  # type: ignore

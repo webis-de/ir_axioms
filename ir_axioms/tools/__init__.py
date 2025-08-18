@@ -51,7 +51,7 @@ from ir_axioms.tools.text_statistics import (  # noqa: F401
     TextStatistics,
     DocumentQueryTextStatistics,
     AnseriniTextStatistics,
-    TerrierTextStatistics,
+    TerrierDocumentTextStatistics,
     SimpleTextStatistics,
     TextStatisticsModule,
 )
