@@ -90,4 +90,4 @@ if is_pyserini_installed() or TYPE_CHECKING:
 
 
 else:
-    inject_pyserini = NotImplemented
+    inject_pyserini = NotImplemented  # type: ignore

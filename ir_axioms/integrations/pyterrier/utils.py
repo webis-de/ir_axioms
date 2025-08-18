@@ -200,12 +200,12 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             return inp
 
 else:
-    inject_pyterrier = NotImplemented
-    require_columns = NotImplemented
-    load_document = NotImplemented
-    load_documents = NotImplemented
-    load_query = NotImplemented
-    load_queries = NotImplemented
+    inject_pyterrier = NotImplemented  # type: ignore
+    require_columns = NotImplemented  # type: ignore
+    load_document = NotImplemented  # type: ignore
+    load_documents = NotImplemented  # type: ignore
+    load_query = NotImplemented  # type: ignore
+    load_queries = NotImplemented  # type: ignore
     FilterTopicsTransformer = NotImplemented  # type: ignore
     FilterQrelsTransformer = NotImplemented  # type: ignore
     JoinQrelsTransformer = NotImplemented  # type: ignore

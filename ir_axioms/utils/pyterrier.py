@@ -29,11 +29,11 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     ApplicationSetup = autoclass("org.terrier.utility.ApplicationSetup")
 
 else:
-    autoclass = NotImplemented
-    Index = NotImplemented
-    IndexRef = NotImplemented
-    Tokeniser = NotImplemented
-    EnglishTokeniser = NotImplemented
-    TermPipelineAccessor = NotImplemented
-    BaseTermPipelineAccessor = NotImplemented
-    ApplicationSetup = NotImplemented
+    autoclass = NotImplemented  # type: ignore
+    Index = NotImplemented  # type: ignore
+    IndexRef = NotImplemented  # type: ignore
+    Tokeniser = NotImplemented  # type: ignore
+    EnglishTokeniser = NotImplemented  # type: ignore
+    TermPipelineAccessor = NotImplemented  # type: ignore
+    BaseTermPipelineAccessor = NotImplemented  # type: ignore
+    ApplicationSetup = NotImplemented  # type: ignore
