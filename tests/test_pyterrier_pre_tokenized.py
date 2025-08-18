@@ -5,7 +5,6 @@ from typing import TypeVar, Any
 from injector import Injector
 from pandas import DataFrame
 from pandas.testing import assert_frame_equal
-from pyterrier import IterDictIndexer
 from pytest import fixture, approx, skip
 
 from ir_axioms.axiom import Tfc1Axiom
@@ -63,6 +62,11 @@ def index_path(
     document1: Document,
     document2: Document,
 ) -> Any:
+    if not is_pyterrier_installed():
+        skip("PyTerrier is not installed.")
+
+    from pyterrier import IterDictIndexer
+
     assert isinstance(document1.text, TokenizedString)
     assert isinstance(document2.text, TokenizedString)
 
@@ -95,6 +99,7 @@ _T = TypeVar("_T")
 def injector(index_path: Path) -> Injector:
     if not is_pyterrier_installed():
         skip("PyTerrier is not installed.")
+
     injector = Injector(parent=_default_injector)
     inject_pyterrier(
         index_location=index_path,
