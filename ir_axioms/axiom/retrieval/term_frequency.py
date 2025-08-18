@@ -46,7 +46,7 @@ class Tfc1Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
         output1: Document,
         output2: Document,
     ) -> Preference:
-        query_terms = self.term_tokenizer.terms(
+        query_terms = self.term_tokenizer.terms_unordered(
             self.text_contents.contents(input),
         )
 
@@ -64,7 +64,7 @@ class Tfc1Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
         input: Query,
         outputs: Sequence[Document],
     ) -> PreferenceMatrix:
-        query_terms = self.term_tokenizer.terms(
+        query_terms = self.term_tokenizer.terms_unordered(
             self.text_contents.contents(input),
         )
 
@@ -287,10 +287,9 @@ class ModifiedTdcAxiom(Axiom[Query, Document]):
         output1: Document,
         output2: Document,
     ) -> Preference:
-        query_terms = self.term_tokenizer.terms(
+        query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
-        query_unique_terms = set(query_terms)
 
         if not _single_different_term_frequency(
             query_unique_terms=query_unique_terms,

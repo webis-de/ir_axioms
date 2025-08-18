@@ -29,8 +29,16 @@ class LenPrecondition(Precondition[Input, Document]):
         output2: Document,
     ) -> Mask:
         return isclose(
-            len(self.term_tokenizer.terms(self.text_contents.contents(output1))),
-            len(self.term_tokenizer.terms(self.text_contents.contents(output2))),
+            len(
+                self.term_tokenizer.terms_unordered(
+                    self.text_contents.contents(output1)
+                )
+            ),
+            len(
+                self.term_tokenizer.terms_unordered(
+                    self.text_contents.contents(output2)
+                )
+            ),
             rel_tol=self.margin_fraction,
         )
 
@@ -40,7 +48,9 @@ class LenPrecondition(Precondition[Input, Document]):
         outputs: Sequence[Document],
     ) -> MaskMatrix:
         lengths = [
-            len(self.term_tokenizer.terms(self.text_contents.contents(output)))
+            len(
+                self.term_tokenizer.terms_unordered(self.text_contents.contents(output))
+            )
             for output in tqdm(
                 outputs,
                 desc="Lengths",

@@ -269,18 +269,15 @@ class AspectRegAxiom(Axiom[Query, Document]):
         output1: Document,
         output2: Document,
     ) -> Preference:
-        query_terms = self.term_tokenizer.terms(
+        query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
-        query_unique_terms = set(query_terms)
-        document1_terms = self.term_tokenizer.terms(
+        document1_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(output1),
         )
-        document1_unique_terms = set(document1_terms)
-        document2_terms = self.term_tokenizer.terms(
+        document2_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(output2),
         )
-        document2_unique_terms = set(document2_terms)
 
         if len(query_unique_terms) == 0:
             return 0

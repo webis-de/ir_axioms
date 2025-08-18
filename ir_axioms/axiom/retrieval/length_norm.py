@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from math import isclose  # pyright: ignore[reportShadowedImports]
-from typing import AbstractSet, Final, Mapping, Sequence, Union
+from typing import AbstractSet, Final, Mapping, Sequence, Union, Collection
 
 from injector import inject, NoInject
 from numpy import array, float_
@@ -40,10 +40,10 @@ class Lnc1Axiom(Axiom[Query, Document]):
         ):
             return 0
 
-        document1_terms = self.term_tokenizer.terms(
+        document1_terms = self.term_tokenizer.terms_unordered(
             self.text_contents.contents(output1),
         )
-        document2_terms = self.term_tokenizer.terms(
+        document2_terms = self.term_tokenizer.terms_unordered(
             self.text_contents.contents(output2),
         )
 
@@ -64,8 +64,8 @@ class TfLncAxiom(Axiom[Query, Document]):
     def _preference(
         self,
         query_unique_terms: AbstractSet[str],
-        document1_terms: Sequence[str],
-        document2_terms: Sequence[str],
+        document1_terms: Collection[str],
+        document2_terms: Collection[str],
         document1_term_frequencies: Mapping[str, float],
         document2_term_frequencies: Mapping[str, float],
     ) -> Preference:
@@ -96,10 +96,10 @@ class TfLncAxiom(Axiom[Query, Document]):
         query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
-        document1_terms = self.term_tokenizer.terms(
+        document1_terms = self.term_tokenizer.terms_unordered(
             self.text_contents.contents(output1),
         )
-        document2_terms = self.term_tokenizer.terms(
+        document2_terms = self.term_tokenizer.terms_unordered(
             self.text_contents.contents(output2),
         )
         document1_term_frequencies = {
@@ -127,7 +127,7 @@ class TfLncAxiom(Axiom[Query, Document]):
             self.text_contents.contents(input),
         )
         document_terms = [
-            self.term_tokenizer.terms(
+            self.term_tokenizer.terms_unordered(
                 self.text_contents.contents(output),
             )
             for output in tqdm(

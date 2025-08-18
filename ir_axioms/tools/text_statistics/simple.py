@@ -23,5 +23,5 @@ class SimpleTextStatistics(TextStatistics[T]):
         text = self.text_contents.contents(input=document)
         if isinstance(text, TokenizedString):
             return text.tokens
-        terms = self.term_tokenizer.terms(text)
+        terms = self.term_tokenizer.terms_unordered(text)
         return Counter(terms)
