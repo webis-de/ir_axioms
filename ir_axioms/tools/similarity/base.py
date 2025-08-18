@@ -16,8 +16,7 @@ from numpy.typing import NDArray
 
 @runtime_checkable
 class TermSimilarity(Protocol):
-    def similarity(self, term1: str, term2: str) -> float:
-        pass
+    def similarity(self, term1: str, term2: str) -> float: ...
 
     def similarities(self, terms: Sequence[str]) -> NDArray[float_]:
         return array(
@@ -87,8 +86,7 @@ class TermSimilarity(Protocol):
 
 @runtime_checkable
 class SentenceSimilarity(Protocol):
-    def similarity(self, sentence1: str, sentence2: str) -> float:
-        pass
+    def similarity(self, sentence1: str, sentence2: str) -> float: ...
 
     def self_similarities(self, sentences: Sequence[str]) -> NDArray[float_]:
         return array(

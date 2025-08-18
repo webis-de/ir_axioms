@@ -40,7 +40,7 @@ class TextStatisticsModule(Module):
                 text_contents=text_contents,
                 term_tokenizer=term_tokenizer,
             )
-        
+
         @inject
         def _make_simple_text_statistics_document(
             text_contents: TextContents[Document],
@@ -50,7 +50,7 @@ class TextStatisticsModule(Module):
                 text_contents=text_contents,
                 term_tokenizer=term_tokenizer,
             )
-        
+
         @inject
         def _make_simple_text_statistics_generation_input(
             text_contents: TextContents[GenerationInput],
@@ -60,7 +60,7 @@ class TextStatisticsModule(Module):
                 text_contents=text_contents,
                 term_tokenizer=term_tokenizer,
             )
-        
+
         @inject
         def _make_simple_text_statistics_generation_output(
             text_contents: TextContents[GenerationOutput],
