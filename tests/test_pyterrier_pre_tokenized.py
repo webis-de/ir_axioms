@@ -2,14 +2,25 @@ from math import log
 from pathlib import Path
 from typing import TypeVar, Any
 
-from injector import Injector, Provider
+from injector import Injector
+from pandas import DataFrame
+from pandas.testing import assert_frame_equal
 from pyterrier import IterDictIndexer
 from pytest import fixture, approx, skip
 
+from ir_axioms.axiom import Tfc1Axiom
 from ir_axioms.dependency_injection import injector as _default_injector
-from ir_axioms.integrations.pyterrier import inject_pyterrier
+from ir_axioms.integrations import inject_pyterrier, KwikSortReranker
 from ir_axioms.model import Query, Document, TokenizedString
-from ir_axioms.tools import IndexStatistics, TextStatistics, TextContents, TermTokenizer
+from ir_axioms.tools import (
+    IndexStatistics,
+    TextStatistics,
+    TextContents,
+    TermTokenizer,
+    MiddlePivotSelection,
+)
+from ir_axioms.utils.lazy import lazy_inject
+from ir_axioms.utils.libraries import is_pyterrier_installed
 
 
 @fixture
@@ -67,13 +78,10 @@ def index_path(
 _T = TypeVar("_T")
 
 
-class FailingProvider(Provider[_T]):
-    def get(self, injector: Injector) -> _T:
-        raise NotImplementedError
-
-
 @fixture
 def injector(index_path: Path) -> Injector:
+    if not is_pyterrier_installed():
+        skip("PyTerrier is not installed.")
     injector = Injector(parent=_default_injector)
     inject_pyterrier(
         index_location=index_path,
@@ -272,3 +280,62 @@ def test_term_frequency_document2(
     assert document_text_statistics.term_frequency(document2, "computer") == 0
     assert document_text_statistics.term_frequency(document2, "a") == approx(2 / 3)
     assert document_text_statistics.term_frequency(document2, "##3") == approx(1 / 3)
+
+
+def test_kwiksort_reranker(injector: Injector) -> None:
+    TFC1 = lazy_inject(Tfc1Axiom, injector=injector)
+
+    res = DataFrame(
+        [
+            {
+                "qid": "q1",
+                "query": "a ##3",
+                "query_toks": {"a": 1, "##3": 1},
+                "docno": "d1",
+                # "toks": {"a": 1, "##2": 2},
+            },
+            {
+                "qid": "q1",
+                "query": "a ##3",
+                "query_toks": {"a": 1, "##3": 1},
+                "docno": "d2",
+                # "toks": {"a": 2, "##3": 1},
+            },
+        ]
+    )
+
+    kwiksort = KwikSortReranker(
+        axiom=TFC1(),
+        pivot_selection=MiddlePivotSelection(),
+    )
+
+    actual = kwiksort.transform(res)
+    print(actual)
+    expected = DataFrame(
+        [
+            {
+                "qid": "q1",
+                "query": "a ##3",
+                "query_toks": {"a": 1, "##3": 1},
+                "docno": "d2",
+                # "toks": {"a": 2, "##3": 1},
+                "score": 0,
+                "rank": 0,
+            },
+            {
+                "qid": "q1",
+                "query": "a ##3",
+                "query_toks": {"a": 1, "##3": 1},
+                "docno": "d1",
+                # "toks": {"a": 1, "##2": 2},
+                "score": -1,
+                "rank": 1,
+            },
+        ]
+    )
+    print(expected)
+
+    assert_frame_equal(
+        actual.sort_values(by=["qid", "rank"]).reset_index(drop=True),
+        expected.sort_values(by=["qid", "rank"]).reset_index(drop=True),
+    )
