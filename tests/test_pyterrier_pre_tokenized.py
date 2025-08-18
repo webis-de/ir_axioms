@@ -26,14 +26,23 @@ from ir_axioms.utils.libraries import is_pyterrier_installed
 
 @fixture
 def query() -> Query:
-    return Query(id="q1", text=TokenizedString("a ##3", tokens={"a": 1, "##3": 1}))
+    return Query(
+        id="q1",
+        text=TokenizedString(
+            "a3",
+            tokens={"a": 1, "##3": 1},
+        ),
+    )
 
 
 @fixture
 def document1() -> Document:
     return Document(
         id="d1",
-        text=TokenizedString("a ##2 ##2", tokens={"a": 1, "##2": 2}),
+        text=TokenizedString(
+            "a22",
+            tokens={"a": 1, "##2": 2},
+        ),
     )
 
 
@@ -41,7 +50,10 @@ def document1() -> Document:
 def document2() -> Document:
     return Document(
         id="d2",
-        text=TokenizedString("a ##3 a", tokens={"a": 2, "##3": 1}),
+        text=TokenizedString(
+            "a3 a",
+            tokens={"a": 2, "##3": 1},
+        ),
     )
 
 
@@ -144,7 +156,7 @@ def test_contents_query(
     query_text_contents: TextContents[Query],
     query: Query,
 ) -> None:
-    assert query_text_contents.contents(query) == "a ##3"
+    assert query_text_contents.contents(query) == "a3"
 
 
 def test_terms_query(
@@ -171,14 +183,14 @@ def test_contents_document1(
     document_text_contents: TextContents[Document],
     document1: Document,
 ) -> None:
-    assert document_text_contents.contents(document1) == "a ##2 ##2"
+    assert document_text_contents.contents(document1) == "a22"
 
 
 def test_contents_document2(
     document_text_contents: TextContents[Document],
     document2: Document,
 ) -> None:
-    assert document_text_contents.contents(document2) == "a ##3 a"
+    assert document_text_contents.contents(document2) == "a3 a"
 
 
 def test_terms_document1(
@@ -294,17 +306,15 @@ def test_kwiksort_reranker(injector: Injector) -> None:
         [
             {
                 "qid": "q1",
-                "query": "a ##3",
+                "query": "a3",
                 "query_toks": {"a": 1, "##3": 1},
                 "docno": "d1",
-                # "toks": {"a": 1, "##2": 2},
             },
             {
                 "qid": "q1",
-                "query": "a ##3",
+                "query": "a3",
                 "query_toks": {"a": 1, "##3": 1},
                 "docno": "d2",
-                # "toks": {"a": 2, "##3": 1},
             },
         ]
     )
@@ -320,19 +330,17 @@ def test_kwiksort_reranker(injector: Injector) -> None:
         [
             {
                 "qid": "q1",
-                "query": "a ##3",
+                "query": "a3",
                 "query_toks": {"a": 1, "##3": 1},
                 "docno": "d2",
-                # "toks": {"a": 2, "##3": 1},
                 "score": 0,
                 "rank": 0,
             },
             {
                 "qid": "q1",
-                "query": "a ##3",
+                "query": "a3",
                 "query_toks": {"a": 1, "##3": 1},
                 "docno": "d1",
-                # "toks": {"a": 1, "##2": 2},
                 "score": -1,
                 "rank": 1,
             },
