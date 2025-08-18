@@ -53,7 +53,10 @@ class WordLengthDeviationCoherenceAxiom(Axiom[Any, GenerationOutput]):
         average_word_lengths1 = array(
             [
                 array(
-                    [len(word) for word in self.term_tokenizer.terms(sentence)]
+                    [
+                        len(word)
+                        for word in self.term_tokenizer.terms_unordered(sentence)
+                    ]
                 ).mean()
                 for sentence in self.sentence_tokenizer.sentences(
                     self.text_contents.contents(output1)
@@ -63,7 +66,10 @@ class WordLengthDeviationCoherenceAxiom(Axiom[Any, GenerationOutput]):
         average_word_lengths2 = array(
             [
                 array(
-                    [len(word) for word in self.term_tokenizer.terms(sentence)]
+                    [
+                        len(word)
+                        for word in self.term_tokenizer.terms_unordered(sentence)
+                    ]
                 ).mean()
                 for sentence in self.sentence_tokenizer.sentences(
                     self.text_contents.contents(output2)
@@ -91,7 +97,10 @@ class WordLengthDeviationCoherenceAxiom(Axiom[Any, GenerationOutput]):
             array(
                 [
                     array(
-                        [len(word) for word in self.term_tokenizer.terms(sentence)]
+                        [
+                            len(word)
+                            for word in self.term_tokenizer.terms_unordered(sentence)
+                        ]
                     ).mean()
                     for sentence in self.sentence_tokenizer.sentences(
                         self.text_contents.contents(output)

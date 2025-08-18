@@ -37,6 +37,6 @@ if is_pyserini_installed() or TYPE_CHECKING:
         else:
             return LuceneSearcher(index_dir)
 else:
-    default_analyzer = NotImplemented
-    get_index_reader = NotImplemented
-    get_searcher = NotImplemented
+    default_analyzer = NotImplemented  # type: ignore
+    get_index_reader = NotImplemented  # type: ignore
+    get_searcher = NotImplemented  # type: ignore

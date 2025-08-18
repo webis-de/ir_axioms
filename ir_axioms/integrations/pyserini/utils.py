@@ -26,6 +26,7 @@ if is_pyserini_installed() or TYPE_CHECKING:
         IndexStatistics,
         AnseriniIndexStatistics,
     )
+    from ir_axioms.utils.injection import reset_binding_scopes
     from ir_axioms.utils.pyserini import Analyzer, default_analyzer
 
     def inject_pyserini(
@@ -85,6 +86,8 @@ if is_pyserini_installed() or TYPE_CHECKING:
                 scope=singleton,
             )
 
+        reset_binding_scopes(injector)
+
 
 else:
-    inject_pyserini = NotImplemented
+    inject_pyserini = NotImplemented  # type: ignore

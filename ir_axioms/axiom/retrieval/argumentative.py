@@ -78,7 +78,7 @@ def _count_query_terms(
     query: Query,
 ) -> int:
     term_count = 0
-    for term in term_tokenizer.terms(text_contents.contents(query)):
+    for term in term_tokenizer.terms_unordered(text_contents.contents(query)):
         for sentence in sentences:
             for tag in sentence:
                 token = tag.token
@@ -100,7 +100,7 @@ def _query_term_position_in_argument(
 ) -> float:
     term_argument_position = []
     tags = [tag for sentence in sentences for tag in sentence]
-    for term in term_tokenizer.terms(text_contents.contents(query)):
+    for term in term_tokenizer.terms_unordered(text_contents.contents(query)):
         found: bool = False
         for i, tag in enumerate(tags):
             position = i + 1
@@ -125,7 +125,7 @@ def _average_sentence_length(
     sentences = sentence_tokenizer.sentences(text_contents.contents(document))
     if len(sentences) == 0:
         return nan
-    return mean(len(term_tokenizer.terms(sentence)) for sentence in sentences)
+    return mean(len(term_tokenizer.terms_unordered(sentence)) for sentence in sentences)
 
 
 # TODO: Migrate TARGER usage to `ArgumentExtractor` tool that can be injected.
@@ -297,12 +297,12 @@ class QueryTermPositionInArgumentativeUnitsAxiom(
             penalty = (
                 max(
                     len(
-                        self.term_tokenizer.terms(
+                        self.term_tokenizer.terms_unordered(
                             self.text_contents.contents(output1),
                         ),
                     ),
                     len(
-                        self.term_tokenizer.terms(
+                        self.term_tokenizer.terms_unordered(
                             self.text_contents.contents(output1),
                         ),
                     ),

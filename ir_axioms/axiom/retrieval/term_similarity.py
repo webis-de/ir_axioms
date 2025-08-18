@@ -111,10 +111,10 @@ class Stmc2Axiom(Axiom[Query, Document]):
         query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
-        document1_terms = self.term_tokenizer.terms(
+        document1_terms = self.term_tokenizer.terms_unordered(
             self.text_contents.contents(output1),
         )
-        document2_terms = self.term_tokenizer.terms(
+        document2_terms = self.term_tokenizer.terms_unordered(
             self.text_contents.contents(output2),
         )
 

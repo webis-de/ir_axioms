@@ -53,12 +53,10 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         def document_frequency(self, term: str) -> int:  # type: ignore
             entry = self._lexicon.getLexiconEntry(term)
             if entry is None or entry.getNumberOfEntries() == 0:
-                del entry
                 return 0
             else:
                 document_frequency = int(entry.getDocumentFrequency())
-                del entry
                 return document_frequency
 
 else:
-    TerrierIndexStatistics = NotImplemented
+    TerrierIndexStatistics = NotImplemented  # type: ignore

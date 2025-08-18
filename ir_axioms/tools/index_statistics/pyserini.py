@@ -38,4 +38,4 @@ if is_pyserini_installed() or TYPE_CHECKING:
             return document_frequency
 
 else:
-    AnseriniIndexStatistics = NotImplemented
+    AnseriniIndexStatistics = NotImplemented  # type: ignore

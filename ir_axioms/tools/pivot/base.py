@@ -6,5 +6,4 @@ Output = TypeVar("Output")
 
 @runtime_checkable
 class PivotSelection(Protocol, Generic[Input, Output]):
-    def select_pivot(self, input: Input, vertices: Sequence[Output]) -> Output:
-        pass
+    def select_pivot(self, input: Input, vertices: Sequence[Output]) -> Output: ...

@@ -19,6 +19,6 @@ class AverageTermSimilaritySentenceSimilarity(SentenceSimilarity):
     term_similarity: TermSimilarity
 
     def similarity(self, sentence1: str, sentence2: str) -> float:
-        terms1 = self.term_tokenizer.terms(sentence1)
-        terms2 = self.term_tokenizer.terms(sentence2)
+        terms1 = self.term_tokenizer.terms_unordered(sentence1)
+        terms2 = self.term_tokenizer.terms_unordered(sentence2)
         return self.term_similarity.average_similarity(terms1, terms2)

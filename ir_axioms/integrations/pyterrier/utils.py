@@ -7,26 +7,29 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     from pathlib import Path
     from typing import Set, Optional, Sequence, Union, Mapping, Hashable, Any
 
-    from injector import singleton, Injector
+    from frozendict import frozendict
+    from injector import singleton, Injector, InstanceProvider
     from ir_datasets import Dataset
     from pandas import DataFrame, Series
     from pyterrier import Transformer
+    from pyterrier.model import query_columns as _query_columns
     from typing_extensions import TypeAlias  # type: ignore
 
     from ir_axioms.dependency_injection import injector as _default_injector
-    from ir_axioms.model import Query, Document
+    from ir_axioms.model import Query, Document, TokenizedString
     from ir_axioms.tools import (
         TextContents,
         IrdsQueryTextContents,
         IrdsDocumentTextContents,
         TerrierDocumentTextContents,
         TextStatistics,
-        TerrierTextStatistics,
+        TerrierDocumentTextStatistics,
         TermTokenizer,
         TerrierTermTokenizer,
         IndexStatistics,
         TerrierIndexStatistics,
     )
+    from ir_axioms.utils.injection import reset_binding_scopes
     from ir_axioms.utils.pyterrier import (
         Index,
         IndexRef,
@@ -53,22 +56,26 @@ if is_pyterrier_installed() or TYPE_CHECKING:
 
         if index_location is not None:
             injector.binder.bind(
-                interface=TextStatistics,
-                to=TerrierTextStatistics(index_location=index_location),
+                interface=IndexStatistics,
+                to=TerrierIndexStatistics(index_location=index_location),
                 scope=singleton,
             )
             injector.binder.bind(
-                interface=IndexStatistics,
-                to=TerrierIndexStatistics(index_location=index_location),
+                interface=TextStatistics[Document],
+                to=InstanceProvider(
+                    TerrierDocumentTextStatistics(index_location=index_location)
+                ),
                 scope=singleton,
             )
 
             if text_field is not None:
                 injector.binder.bind(
                     interface=TextContents[Document],
-                    to=TerrierDocumentTextContents(
-                        index_location=index_location,
-                        text_field=text_field,
+                    to=InstanceProvider(
+                        TerrierDocumentTextContents(
+                            index_location=index_location,
+                            text_field=text_field,
+                        )
                     ),
                     scope=singleton,
                 )
@@ -76,18 +83,24 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         if dataset is not None:
             injector.binder.bind(
                 interface=TextContents[Query],
-                to=IrdsQueryTextContents(
-                    dataset=dataset,
+                to=InstanceProvider(
+                    IrdsQueryTextContents(
+                        dataset=dataset,
+                    )
                 ),
                 scope=singleton,
             )
             injector.binder.bind(
                 interface=TextContents[Document],
-                to=IrdsDocumentTextContents(
-                    dataset=dataset,
+                to=InstanceProvider(
+                    IrdsDocumentTextContents(
+                        dataset=dataset,
+                    )
                 ),
                 scope=singleton,
             )
+
+        reset_binding_scopes(injector)
 
     def require_columns(
         ranking: DataFrame,
@@ -103,15 +116,43 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                 f"{', '.join(missing_columns)})."
             )
 
+    def query_columns(df: DataFrame, qid: bool = True) -> Sequence[str]:
+        """
+        Return the columns that are used to identify a query in the ranking.
+
+        Note: This function patches the `query_columns` function from PyTerrier to also include the `query_toks` column.
+        Remove this patch, once https://github.com/terrier-org/pyterrier/issues/566 is resolved.
+        """
+        columns = _query_columns(df, qid=qid)
+        if "query_toks" in df.columns:
+            columns = [*columns, "query_toks"]
+        return columns
+
+    def ensure_query_columns_hashable(df: DataFrame) -> DataFrame:
+        for column in df.columns:
+            if all(isinstance(value, dict) for value in df[column]):
+                df[column] = df[column].map(frozendict)
+        return df
+
     def load_document(
         row: Union[Series, Mapping[Hashable, Any]],
         text_column: Optional[str] = "text",
     ) -> Document:
+        text = (
+            str(row[text_column])
+            if text_column is not None and text_column in row.keys()
+            else None
+        )
+        if "toks" in row.keys():
+            tokens: Mapping[str, int] = row["toks"]
+            if text is not None:
+                text = TokenizedString(
+                    value=text,
+                    tokens=tokens,
+                )
         return Document(
             id=str(row["docno"]),
-            text=str(row[text_column])
-            if text_column is not None and text_column in row.keys()
-            else None,
+            text=text,
             score=float(row["score"]) if "score" in row.keys() else None,
             rank=int(row["rank"]) if "rank" in row.keys() else None,
             relevance=float(row["label"]) if "label" in row.keys() else None,
@@ -130,9 +171,17 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         ]
 
     def load_query(row: Union[Series, Mapping[Hashable, Any]]) -> Query:
+        text = str(row["query"]) if "query" in row.keys() else None
+        if "query_toks" in row.keys():
+            tokens: Mapping[str, int] = row["query_toks"]
+            if text is not None:
+                text = TokenizedString(
+                    value=text,
+                    tokens=tokens,
+                )
         return Query(
             id=str(row["qid"]),
-            text=str(row["query"]) if "query" in row.keys() else None,
+            text=text,
         )
 
     def load_queries(ranking: DataFrame) -> Sequence[Query]:
@@ -189,13 +238,13 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             return inp
 
 else:
-    inject_pyterrier = NotImplemented
-    require_columns = NotImplemented
-    load_document = NotImplemented
-    load_documents = NotImplemented
-    load_query = NotImplemented
-    load_queries = NotImplemented
-    FilterTopicsTransformer = NotImplemented
-    FilterQrelsTransformer = NotImplemented
-    JoinQrelsTransformer = NotImplemented
-    AddNameTransformer = NotImplemented
+    inject_pyterrier = NotImplemented  # type: ignore
+    require_columns = NotImplemented  # type: ignore
+    load_document = NotImplemented  # type: ignore
+    load_documents = NotImplemented  # type: ignore
+    load_query = NotImplemented  # type: ignore
+    load_queries = NotImplemented  # type: ignore
+    FilterTopicsTransformer = NotImplemented  # type: ignore
+    FilterQrelsTransformer = NotImplemented  # type: ignore
+    JoinQrelsTransformer = NotImplemented  # type: ignore
+    AddNameTransformer = NotImplemented  # type: ignore

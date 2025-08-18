@@ -69,4 +69,4 @@ if is_sentence_transformers_installed() or TYPE_CHECKING:
             ).reshape((len(sentences1), len(sentences2)))
 
 else:
-    SentenceTransformersSentenceSimilarity = NotImplemented
+    SentenceTransformersSentenceSimilarity = NotImplemented  # type: ignore

@@ -15,12 +15,12 @@ class OriginalAxiom(Axiom[Any, Document]):
         output1: Document,
         output2: Document,
     ) -> float:
-        if output1.score is not None and output2.score is not None:
-            return strictly_greater(output1.score, output2.score)
-        elif output1.rank is not None and output2.rank is not None:
+        if output1.rank is not None and output2.rank is not None:
             return strictly_less(output1.rank, output2.rank)
+        elif output1.score is not None and output2.score is not None:
+            return strictly_greater(output1.score, output2.score)
         else:
-            raise ValueError("Can only compare ranked or scored documents.")
+            raise ValueError("Can only compare ranked and/or scored documents.")
 
 
 ORIG = lazy_inject(OriginalAxiom)

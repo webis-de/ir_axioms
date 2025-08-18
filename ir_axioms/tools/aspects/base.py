@@ -9,8 +9,7 @@ from typing import (
 
 @runtime_checkable
 class AspectExtraction(Protocol):
-    def aspects(self, text: str) -> AbstractSet[str]:
-        pass
+    def aspects(self, text: str) -> AbstractSet[str]: ...
 
     def iter_aspects(self, texts: Iterable[str]) -> Iterator[AbstractSet[str]]:
         for text in texts:

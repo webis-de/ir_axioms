@@ -19,11 +19,13 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     from numpy import apply_along_axis, stack, ndarray
     from pandas import DataFrame, concat
     from pyterrier import Transformer
-    from pyterrier.model import query_columns, add_ranks
+    from pyterrier.model import add_ranks
     from tqdm.auto import tqdm
 
     from ir_axioms.axiom.base import Axiom
     from ir_axioms.integrations.pyterrier.utils import (
+        query_columns,
+        ensure_query_columns_hashable,
         require_columns,
         load_documents,
         load_query,
@@ -72,6 +74,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
 
         def transform(self, inp: DataFrame) -> DataFrame:
             require_columns(inp, {"qid", "docno"})
+            inp = ensure_query_columns_hashable(inp)
             query_cols = list(query_columns(inp))
             query_rankings = inp.groupby(
                 by=query_cols,
@@ -151,6 +154,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
 
         def transform(self, inp: DataFrame) -> DataFrame:
             require_columns(inp, {"qid", "docno"})
+            inp = ensure_query_columns_hashable(inp)
             query_cols = list(query_columns(inp))
             query_rankings = inp.groupby(
                 by=query_cols,
@@ -202,7 +206,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             # Result cross product.
             res = res.merge(
                 res,
-                on=list(query_columns(res)),
+                on=list(group_keys.keys()),
                 suffixes=("_a", "_b"),
                 sort=False,
             )
@@ -243,6 +247,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
 
         def transform(self, inp: DataFrame) -> DataFrame:
             require_columns(inp, {"qid", "docno"})
+            inp = ensure_query_columns_hashable(inp)
             query_cols = list(query_columns(inp))
             query_rankings = inp.groupby(
                 by=query_cols,
@@ -275,6 +280,6 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             )
 
 else:
-    KwikSortReranker = NotImplemented
-    AggregatedAxiomaticPreferences = NotImplemented
-    AxiomaticPreferences = NotImplemented
+    KwikSortReranker = NotImplemented  # type: ignore
+    AggregatedAxiomaticPreferences = NotImplemented  # type: ignore
+    AxiomaticPreferences = NotImplemented  # type: ignore

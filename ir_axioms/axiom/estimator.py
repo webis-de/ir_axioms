@@ -23,7 +23,6 @@ class EstimatorAxiom(Axiom[Input, Output], ABC):
 
 class ScikitLearnEstimator(Protocol):
     def fit(self, X: ndarray, y: ndarray) -> Self: ...
-
     def predict(self, X: ndarray) -> ndarray: ...
 
 
