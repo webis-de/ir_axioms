@@ -9,6 +9,7 @@ from pyterrier import IterDictIndexer
 from pytest import fixture, approx, skip
 
 from ir_axioms.axiom import Tfc1Axiom
+from ir_axioms.precondition import NOP
 from ir_axioms.dependency_injection import injector as _default_injector
 from ir_axioms.integrations import inject_pyterrier, KwikSortReranker
 from ir_axioms.model import Query, Document, TokenizedString
@@ -284,6 +285,10 @@ def test_term_frequency_document2(
 
 def test_kwiksort_reranker(injector: Injector) -> None:
     TFC1 = lazy_inject(Tfc1Axiom, injector=injector)
+    axiom = TFC1(
+        precondition=NOP,
+        margin_fraction=0,
+    )
 
     res = DataFrame(
         [
@@ -305,7 +310,7 @@ def test_kwiksort_reranker(injector: Injector) -> None:
     )
 
     kwiksort = KwikSortReranker(
-        axiom=TFC1(),
+        axiom=axiom,
         pivot_selection=MiddlePivotSelection(),
     )
 
