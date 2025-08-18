@@ -35,3 +35,7 @@ from ir_axioms.model.generation import (  # noqa: F401
     GenerationInput,
     GenerationOutput,
 )
+
+from ir_axioms.model.utils import (  # noqa: F401
+    TokenizedString,
+)
