@@ -5,8 +5,9 @@ from ir_axioms.utils.libraries import is_pyterrier_installed
 if is_pyterrier_installed() or TYPE_CHECKING:
     from dataclasses import dataclass, field
     from functools import cached_property
+    from itertools import chain, repeat
     from re import compile as re_compile
-    from typing import Sequence, Any, AbstractSet
+    from typing import Sequence, Any, AbstractSet, Collection
 
     from typing_extensions import TypeAlias  # type: ignore
 
@@ -62,6 +63,17 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                     if term is not None
                 ]
             return terms
+
+        def terms_unordered(self, text: str) -> Collection[str]:
+            # If the text is a TokenizedString (e.g., from TerrierTextContents), we can directly use its tokens.
+            if isinstance(text, TokenizedString):
+                return list(
+                    chain.from_iterable(
+                        repeat(term, count) for term, count in text.tokens.items()
+                    )
+                )
+
+            return super().unique_terms(text)
 
         def unique_terms(self, text: str) -> AbstractSet[str]:
             # If the text is a TokenizedString (e.g., from TerrierTextContents), we can directly use its tokens.
