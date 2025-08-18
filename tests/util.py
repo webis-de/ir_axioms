@@ -28,7 +28,7 @@ class InMemoryIndexStatistics(IndexStatistics):
             1
             for document in self.document_collection.documents
             if term
-            in self.term_tokenizer.terms(
+            in self.term_tokenizer.unique_terms(
                 text=self.text_contents.contents(input=document),
             )
         )
