@@ -7,10 +7,12 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     from pathlib import Path
     from typing import Set, Optional, Sequence, Union, Mapping, Hashable, Any
 
+    from frozendict import frozendict
     from injector import singleton, Injector, InstanceProvider
     from ir_datasets import Dataset
     from pandas import DataFrame, Series
     from pyterrier import Transformer
+    from pyterrier.model import query_columns as _query_columns
     from typing_extensions import TypeAlias  # type: ignore
 
     from ir_axioms.dependency_injection import injector as _default_injector
@@ -113,6 +115,24 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                 f"{', '.join(columns)} (missing columns "
                 f"{', '.join(missing_columns)})."
             )
+
+    def query_columns(df: DataFrame, qid: bool = True) -> Sequence[str]:
+        """
+        Return the columns that are used to identify a query in the ranking.
+
+        Note: This function patches the `query_columns` function from PyTerrier to also include the `query_toks` column.
+        Remove this patch, once https://github.com/terrier-org/pyterrier/issues/566 is resolved.
+        """
+        columns = _query_columns(df, qid=qid)
+        if "query_toks" in df.columns:
+            columns = [*columns, "query_toks"]
+        return columns
+
+    def ensure_query_columns_hashable(df: DataFrame) -> DataFrame:
+        for column in df.columns:
+            if all(isinstance(value, dict) for value in df[column]):
+                df[column] = df[column].map(frozendict)
+        return df
 
     def load_document(
         row: Union[Series, Mapping[Hashable, Any]],
