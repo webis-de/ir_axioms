@@ -14,7 +14,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     from typing_extensions import TypeAlias  # type: ignore
 
     from ir_axioms.dependency_injection import injector as _default_injector
-    from ir_axioms.model import Query, Document
+    from ir_axioms.model import Query, Document, TokenizedString
     from ir_axioms.tools import (
         TextContents,
         IrdsQueryTextContents,
@@ -118,11 +118,21 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         row: Union[Series, Mapping[Hashable, Any]],
         text_column: Optional[str] = "text",
     ) -> Document:
+        text = (
+            str(row[text_column])
+            if text_column is not None and text_column in row.keys()
+            else None
+        )
+        if "toks" in row.keys():
+            tokens: Mapping[str, int] = row["toks"]
+            if text is not None:
+                text = TokenizedString(
+                    value=text,
+                    tokens=tokens,
+                )
         return Document(
             id=str(row["docno"]),
-            text=str(row[text_column])
-            if text_column is not None and text_column in row.keys()
-            else None,
+            text=text,
             score=float(row["score"]) if "score" in row.keys() else None,
             rank=int(row["rank"]) if "rank" in row.keys() else None,
             relevance=float(row["label"]) if "label" in row.keys() else None,
@@ -141,9 +151,17 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         ]
 
     def load_query(row: Union[Series, Mapping[Hashable, Any]]) -> Query:
+        text = str(row["query"]) if "query" in row.keys() else None
+        if "query_toks" in row.keys():
+            tokens: Mapping[str, int] = row["query_toks"]
+            if text is not None:
+                text = TokenizedString(
+                    value=text,
+                    tokens=tokens,
+                )
         return Query(
             id=str(row["qid"]),
-            text=str(row["query"]) if "query" in row.keys() else None,
+            text=text,
         )
 
     def load_queries(ranking: DataFrame) -> Sequence[Query]:
