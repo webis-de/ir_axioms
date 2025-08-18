@@ -94,7 +94,7 @@ ir-axioms = "ir_axioms.cli:app"
 [build-system]
 requires = [
     "setuptools~=80.9",
-    "setuptools-scm~=8.0",
+    "setuptools-scm>=8,<10",
 ]
 build-backend = "setuptools.build_meta"
 
