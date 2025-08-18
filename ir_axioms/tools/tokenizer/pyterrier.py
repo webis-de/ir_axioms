@@ -6,10 +6,11 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     from dataclasses import dataclass, field
     from functools import cached_property
     from re import compile as re_compile
-    from typing import Sequence, Any
+    from typing import Sequence, Any, AbstractSet
 
     from typing_extensions import TypeAlias  # type: ignore
 
+    from ir_axioms.model.utils import TokenizedString
     from ir_axioms.tools.tokenizer.base import TermTokenizer
     from ir_axioms.utils.pyterrier import (
         pt_java_required,
@@ -43,15 +44,16 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             ]
 
         def terms(self, text: str) -> Sequence[str]:
+            # ADDITION: Is there a way to restore the *sequence* of tokens from a TokenizedString (i.e., that contains a mapping of tokens to frequencies but no position information)?
+
             from pyterrier.java import J
 
-            reader = J.StringReader(text)
+            reader = J.StringReader(str(text))
             terms = [
                 str(term)
                 for term in self.tokeniser.tokenise(reader)  # type: ignore
                 if term is not None
             ]
-            del reader
 
             for pipeline in self._term_pipelines:
                 terms = [
@@ -60,6 +62,14 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                     if term is not None
                 ]
             return terms
+
+        def unique_terms(self, text: str) -> AbstractSet[str]:
+            # If the text is a TokenizedString (e.g., from TerrierTextContents), we can directly use its tokens.
+            if isinstance(text, TokenizedString):
+                return set(text.tokens.keys())
+
+            return super().unique_terms(text)
+
 
 else:
     TerrierTermTokenizer = NotImplemented  # type: ignore
