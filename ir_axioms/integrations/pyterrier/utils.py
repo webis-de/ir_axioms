@@ -7,7 +7,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     from pathlib import Path
     from typing import Set, Optional, Sequence, Union, Mapping, Hashable, Any
 
-    from injector import singleton, Injector
+    from injector import singleton, Injector, InstanceProvider
     from ir_datasets import Dataset
     from pandas import DataFrame, Series
     from pyterrier import Transformer
@@ -27,6 +27,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         IndexStatistics,
         TerrierIndexStatistics,
     )
+    from ir_axioms.utils.injection import reset_binding_scopes
     from ir_axioms.utils.pyterrier import (
         Index,
         IndexRef,
@@ -96,6 +97,8 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                 ),
                 scope=singleton,
             )
+
+        reset_binding_scopes(injector)
 
     def require_columns(
         ranking: DataFrame,
