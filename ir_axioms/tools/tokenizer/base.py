@@ -1,4 +1,4 @@
-from typing import Sequence, Protocol, runtime_checkable, AbstractSet
+from typing import Sequence, Protocol, runtime_checkable, AbstractSet, Collection
 
 
 @runtime_checkable
