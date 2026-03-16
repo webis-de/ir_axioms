@@ -23,6 +23,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     from tqdm.auto import tqdm
 
     from ir_axioms.axiom.base import Axiom
+    from ir_axioms.axiom.retrieval.simple import ORIG
     from ir_axioms.integrations.pyterrier.utils import (
         query_columns,
         ensure_query_columns_hashable,
@@ -40,6 +41,10 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         text_field: Optional[str] = "text"
         verbose: bool = False
 
+        @cached_property
+        def _axiom_with_fallback(self) -> Axiom[Query, Document]:
+            return self.axiom | ORIG()
+
         def _transform_group(
             self, group_keys: Mapping[Hashable, Any], res: DataFrame
         ) -> DataFrame:
@@ -48,7 +53,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             documents = load_documents(res, text_column=self.text_field)
 
             # Rerank documents.
-            documents = self.axiom.rerank_kwiksort(
+            documents = self._axiom_with_fallback.rerank_kwiksort(
                 input=query,
                 ranking=documents,
                 pivot_selection=self.pivot_selection,
