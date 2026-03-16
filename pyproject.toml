@@ -65,7 +65,7 @@ experiments = [
     "ragas~=0.3.0",
     "ray[default,data]~=2.48",
     "seaborn~=0.13.2",
-    "transformers~=4.48",
+    "transformers>=4.48,<6.0",
     "typing-extensions~=4.12",
     "xgboost>=2.1,<4.0",
 ]
