@@ -87,12 +87,12 @@ class _LanguageToolErrorProportionClarityAxiom(Axiom[Any, GenerationOutput]):
         characters_matched1 = {
             i
             for match in matches1
-            for i in range(match.offset, match.offset + match.errorLength)
+            for i in range(match.offset, match.offset + match.error_length)
         }
         characters_matched2 = {
             i
             for match in matches2
-            for i in range(match.offset, match.offset + match.errorLength)
+            for i in range(match.offset, match.offset + match.error_length)
         }
         num_characters_matched1 = len(characters_matched1)
         num_characters_matched2 = len(characters_matched2)
@@ -128,7 +128,7 @@ class _LanguageToolErrorProportionClarityAxiom(Axiom[Any, GenerationOutput]):
             {
                 i
                 for match in matches
-                for i in range(match.offset, match.offset + match.errorLength)
+                for i in range(match.offset, match.offset + match.error_length)
             }
             for matches in matches
         )
