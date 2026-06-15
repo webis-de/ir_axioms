@@ -1,0 +1,57 @@
+# IR-Axioms judge: no nuggets
+judge_class: "judges.ir_axioms.axiom_judge:IrAxiomJudge"
+
+create_nuggets: false
+judge: true
+augment_report: false
+
+settings:
+  filebase: "ir_axioms"
+
+  evaluation_measures:
+    GEN-TFC1:
+      description: Prefer responses with more query term occurrences.
+    GEN-LNC1:
+      description: Penalize longer responses for non-relevant terms.
+    GEN-REG:
+      description: Prefer responses covering more different query aspects.
+    GEN-AND:
+      description: Prefer responses containing all query terms.
+    GEN-STMC1:
+      description: Prefer responses with terms more similar to query terms.
+    GEN-STMC2:
+      description: Do not reward similar terms more than exact matches.
+    GEN-PROX1:
+      description: Prefer responses with shorter distance between query term pairs.
+    GEN-PROX2:
+      description: Prefer responses with earlier query term occurrences.
+    GEN-PROX3:
+      description: Prefer responses where the query occurs earlier as a phrase.
+    GEN-PROX4:
+      description: Prefer responses that contain all query terms in a shorter substring.
+    GEN-PROX5:
+      description: Prefer responses where the query terms are closer together on average.
+    GEN-TF-LNC:
+      description: Reward additional query terms more than document length is penalized.
+    COH1-0.75:
+      description: Prefer responses with less variance in avg. word length across sentences.
+    COH2-0.75:
+      description: Prefer responses with subject–verb pairs closer together.
+    COV1-SE-0.5:
+      description: Prefer responses with more extracted aspects.
+    COV2-SE-0.5:
+      description: Prefer responses with less redundant extracted aspects.
+    COV3-SE-0.5:
+      description: Prefer responses with more sentences covering aspects from the query.
+    CONS1-SE-0.5:
+      description: Prefer responses with  more sentences covering aspects from the context.
+    CONS2-0.5:
+      description: Prefer responses with higher text overlap with contexts.
+    CONS3-0.5:
+      description: Penalize aspects mentioned in contradictory phrases.
+    CORR1-0.75:
+      description: Prefer responses with more sentences referencing sources.
+    CLAR1-0.5:
+      description: Prefer responses with fewer grammar errors.
+    CLAR2-0.5:
+      description: Prefer responses with better readability.
