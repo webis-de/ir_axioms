@@ -87,7 +87,6 @@ ir_axioms --help
    ```shell
    ruff check .                   # Code format and LINT
    mypy .                         # Static typing
-   bandit -c pyproject.toml -r .  # Security
    pytest .                       # Unit tests
    ```
 
