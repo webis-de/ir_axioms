@@ -120,6 +120,18 @@ exclude = [
     "experiments",  # TODO: Re-enable this once the experiments are cleaned up.
 ]
 
+[tool.ruff.lint]
+select = [
+    "E4",
+    "E7",
+    "E9",
+    "F",
+    "S",  # Security issues
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/test_*.py" = ["S101"]
+
 [tool.mypy]
 exclude = [
     "build",
@@ -127,25 +139,14 @@ exclude = [
     ".venv",
     "notebooks",
     "data",
+    "trec-auto-judge"  # TODO: Migrate TREC AutoJudge code to a proper place.
 ]
 ignore_missing_imports = true
 disable_error_code = "type-abstract"
 
-[tool.bandit]
-exclude_dirs = [
-    "build",
-    "venv",
-    ".venv",
-    "notebooks",
-    "data",
-]
-
-[tool.bandit.assert_used]
-skips = ["**/test_*.py"]
-
 [tool.pytest.ini_options]
 log_cli = true
-filterwarnings =[
+filterwarnings = [
     "ignore:Importing 'parser.split_arg_string' is deprecated:DeprecationWarning",
     "ignore:Attempted to get latest version of terrier-assemblies:UserWarning",
 ]
