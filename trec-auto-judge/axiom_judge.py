@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-from typing import Any, Dict, List, Optional, Sequence, Type
+from typing import (
+    Any, Dict, 
+    # List,
+    Optional, Sequence, Type
+)
 
 from autojudge_base import (
     Report,
@@ -12,7 +16,7 @@ from autojudge_base import (
     Leaderboard,
     Qrels,
     Request,
-    LlmConfigProtocol,
+    # LlmConfigProtocol,
     NuggetBanks,
     NuggetBanksProtocol,
 )
@@ -23,7 +27,7 @@ from ir_axioms.tools import SpacyEntitiesAspectExtraction
 spacy_ent = SpacyEntitiesAspectExtraction()
 
 
-from ir_axioms.axiom import (
+from ir_axioms.axiom import (  # noqa: E402
     Axiom,
     # Adapted axioms
     GEN_TFC1,
@@ -41,12 +45,12 @@ from ir_axioms.axiom import (
     GEN_PROX5,
     GEN_aSL,
     # Generation-specific axioms
-    CLAR1,
-    CLAR2,
+    # CLAR1,
+    # CLAR2,
     CONS3,
     CONS2,
     CONS1,
-    CORR1,
+    # CORR1,
     COV1,
     COV2,
     COV3,
