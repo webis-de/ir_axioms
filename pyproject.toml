@@ -79,7 +79,7 @@ keybert = [
     "keybert>=0.8.5,<0.10.0",
 ]
 sbert = [
-    "sentence-transformers>=4.0,<6.0",
+    "sentence-transformers~=5.7",
 ]
 
 [project.urls]
