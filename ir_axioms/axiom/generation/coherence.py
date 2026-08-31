@@ -44,41 +44,34 @@ class WordLengthDeviationCoherenceAxiom(Axiom[Any, GenerationOutput]):
 
     margin_fraction: NoInject[float] = 0.0
 
+    def average_word_lengths_stdev(self, output: GenerationOutput):
+        sentences = self.sentence_tokenizer.sentences(self.text_contents.contents(output))
+        sentence_terms = [self.term_tokenizer.terms_unordered(i) for i in sentences]
+        sentence_terms = [i for i in sentence_terms if len(i) > 0]
+
+        average_word_lengths = array(
+            [
+                array(
+                    [
+                        len(word)
+                        for word in sentence
+                    ]
+                ).mean()
+                for sentence in sentence_terms
+            ]
+        )
+
+        return average_word_lengths.std()
+
+
     def preference(
         self,
         input: Any,
         output1: GenerationOutput,
         output2: GenerationOutput,
     ) -> Preference:
-        average_word_lengths1 = array(
-            [
-                array(
-                    [
-                        len(word)
-                        for word in self.term_tokenizer.terms_unordered(sentence)
-                    ]
-                ).mean()
-                for sentence in self.sentence_tokenizer.sentences(
-                    self.text_contents.contents(output1)
-                )
-            ]
-        )
-        average_word_lengths2 = array(
-            [
-                array(
-                    [
-                        len(word)
-                        for word in self.term_tokenizer.terms_unordered(sentence)
-                    ]
-                ).mean()
-                for sentence in self.sentence_tokenizer.sentences(
-                    self.text_contents.contents(output2)
-                )
-            ]
-        )
-
-        average_word_lengths_stdev1 = average_word_lengths1.std()
-        average_word_lengths_stdev2 = average_word_lengths2.std()
+        average_word_lengths_stdev1 = self.average_word_lengths_stdev(output1)
+        average_word_lengths_stdev2 = self.average_word_lengths_stdev(output2)
 
         if isclose(
             average_word_lengths_stdev1,
@@ -93,30 +86,7 @@ class WordLengthDeviationCoherenceAxiom(Axiom[Any, GenerationOutput]):
         input: Any,
         outputs: Sequence[GenerationOutput],
     ) -> PreferenceMatrix:
-        average_word_lengths = (
-            array(
-                [
-                    array(
-                        [
-                            len(word)
-                            for word in self.term_tokenizer.terms_unordered(sentence)
-                        ]
-                    ).mean()
-                    for sentence in self.sentence_tokenizer.sentences(
-                        self.text_contents.contents(output)
-                    )
-                ]
-            )
-            for output in tqdm(
-                outputs,
-                desc="Calculate average word lengths",
-                unit="output",
-            )
-        )
-
-        average_word_lengths_stdevs = [
-            average_word_lengths.std() for average_word_lengths in average_word_lengths
-        ]
+        average_word_lengths_stdevs = [self.average_word_lengths_stdev(i) for i in outputs]
 
         return array(
             [
@@ -159,41 +129,30 @@ class SubjectVerbClosenessCoherenceAxiom(Axiom[Any, GenerationOutput]):
             name=self.language_name,
         )
 
+    def avg_max_sv_distance(self, output: GenerationOutput):
+        doc = self._language(self.text_contents.contents(output))
+        svo_triples = subject_verb_object_triples(doc)
+        max_sv_distances = array(
+            [
+                max(
+                    abs(verb.i - subject.i)
+                    for subject in subject_toks
+                    for verb in verb_toks
+                )
+                for subject_toks, verb_toks, _ in svo_triples
+            ]
+        )
+
+        return max_sv_distances.mean()
+
     def preference(
         self,
         input: Any,
         output1: GenerationOutput,
         output2: GenerationOutput,
     ) -> Preference:
-        doc1 = self._language(self.text_contents.contents(output1))
-        doc2 = self._language(self.text_contents.contents(output2))
-
-        svo_triples1 = subject_verb_object_triples(doc1)
-        svo_triples2 = subject_verb_object_triples(doc2)
-
-        max_sv_distances1 = array(
-            [
-                max(
-                    abs(verb.i - subject.i)
-                    for subject in subject_toks
-                    for verb in verb_toks
-                )
-                for subject_toks, verb_toks, _ in svo_triples1
-            ]
-        )
-        max_sv_distances2 = array(
-            [
-                max(
-                    abs(verb.i - subject.i)
-                    for subject in subject_toks
-                    for verb in verb_toks
-                )
-                for subject_toks, verb_toks, _ in svo_triples2
-            ]
-        )
-
-        avg_max_sv_distance1 = max_sv_distances1.mean()
-        avg_max_sv_distance2 = max_sv_distances2.mean()
+        avg_max_sv_distance1 = self.avg_max_sv_distance(output1)
+        avg_max_sv_distance2 = self.avg_max_sv_distance(output2)
 
         if isclose(
             avg_max_sv_distance1,
@@ -208,35 +167,7 @@ class SubjectVerbClosenessCoherenceAxiom(Axiom[Any, GenerationOutput]):
         input: Any,
         outputs: Sequence[GenerationOutput],
     ) -> PreferenceMatrix:
-        docs = self._language.pipe(
-            self.text_contents.contents(output) for output in outputs
-        )
-
-        svo_triples = (subject_verb_object_triples(doc) for doc in docs)
-
-        max_sv_distances = (
-            array(
-                [
-                    max(
-                        abs(verb.i - subject.i)
-                        for subject in subject_toks
-                        for verb in verb_toks
-                    )
-                    for subject_toks, verb_toks, _ in svo_triples
-                ]
-            )
-            for svo_triples in svo_triples
-        )
-
-        avg_max_sv_distances = [
-            max_sv_distances.mean()
-            for max_sv_distances in tqdm(
-                max_sv_distances,
-                total=len(outputs),
-                desc="Calculate S-V distances",
-                unit="output",
-            )
-        ]
+        avg_max_sv_distances = [self.avg_max_sv_distance(i) for i in tqdm(outputs, desc="Calculate S-V distances", unit="output")]
 
         return array(
             [
