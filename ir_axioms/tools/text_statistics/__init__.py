@@ -5,24 +5,24 @@ from injector import Module, Binder, singleton, inject
 from ir_axioms.model import Document, Query, GenerationInput, GenerationOutput
 
 # Re-export from sub-modules.
-from ir_axioms.tools.text_statistics.base import (  # noqa: F401
+from ir_axioms.tools.text_statistics.base import (
     TextStatistics,
 )
 
-from ir_axioms.tools.text_statistics.combine import (  # noqa: F401
+from ir_axioms.tools.text_statistics.combine import (
     DocumentQueryTextStatistics,
     GenerationInputOutputTextStatistics,
 )
 
-from ir_axioms.tools.text_statistics.pyserini import (  # noqa: F401
+from ir_axioms.tools.text_statistics.pyserini import (
     AnseriniTextStatistics,
 )
 
-from ir_axioms.tools.text_statistics.pyterrier import (  # noqa: F401
+from ir_axioms.tools.text_statistics.pyterrier import (
     TerrierDocumentTextStatistics,
 )
 
-from ir_axioms.tools.text_statistics.simple import (  # noqa: F401
+from ir_axioms.tools.text_statistics.simple import (
     SimpleTextStatistics,
 )
 
@@ -101,3 +101,14 @@ class TextStatisticsModule(Module):
             to=GenerationInputOutputTextStatistics,
             scope=singleton,
         )
+
+
+__all__ = [
+    "TextStatistics",
+    "DocumentQueryTextStatistics",
+    "GenerationInputOutputTextStatistics",
+    "AnseriniTextStatistics",
+    "TerrierDocumentTextStatistics",
+    "SimpleTextStatistics",
+    "TextStatisticsModule",
+]

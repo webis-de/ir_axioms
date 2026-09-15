@@ -5,29 +5,29 @@ from injector import Module, Binder, singleton
 from ir_axioms.model import Document, Query, GenerationInput, GenerationOutput
 
 # Re-export from sub-modules.
-from ir_axioms.tools.contents.base import (  # noqa: F401
+from ir_axioms.tools.contents.base import (
     TextContents,
 )
 
-from ir_axioms.tools.contents.combine import (  # noqa: F401
+from ir_axioms.tools.contents.combine import (
     DocumentQueryTextContents,
     GenerationInputOutputTextContents,
 )
 
-from ir_axioms.tools.contents.ir_datasets import (  # noqa: F401
+from ir_axioms.tools.contents.ir_datasets import (
     IrdsDocumentTextContents,
     IrdsQueryTextContents,
 )
 
-from ir_axioms.tools.contents.pyserini import (  # noqa: F401
+from ir_axioms.tools.contents.pyserini import (
     AnseriniDocumentTextContents,
 )
 
-from ir_axioms.tools.contents.pyterrier import (  # noqa: F401
+from ir_axioms.tools.contents.pyterrier import (
     TerrierDocumentTextContents,
 )
 
-from ir_axioms.tools.contents.simple import (  # noqa: F401
+from ir_axioms.tools.contents.simple import (
     HasText,
     SimpleTextContents,
 )
@@ -70,3 +70,17 @@ class ContentsModule(Module):
             to=GenerationInputOutputTextContents,
             scope=singleton,
         )
+
+
+__all__ = [
+    "TextContents",
+    "DocumentQueryTextContents",
+    "GenerationInputOutputTextContents",
+    "IrdsDocumentTextContents",
+    "IrdsQueryTextContents",
+    "AnseriniDocumentTextContents",
+    "TerrierDocumentTextContents",
+    "HasText",
+    "SimpleTextContents",
+    "ContentsModule",
+]

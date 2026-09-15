@@ -4,24 +4,24 @@ from ir_axioms.utils.libraries import is_sentence_transformers_installed
 
 # Re-export from sub-modules.
 
-from ir_axioms.tools.similarity.base import (  # noqa: F401
+from ir_axioms.tools.similarity.base import (
     TermSimilarity,
     SentenceSimilarity,
 )
 
-from ir_axioms.tools.similarity.fasttext import (  # noqa: F401
+from ir_axioms.tools.similarity.fasttext import (
     FastTextTermSimilarity,
 )
 
-from ir_axioms.tools.similarity.wordnet import (  # noqa: F401
+from ir_axioms.tools.similarity.wordnet import (
     WordNetSynonymSetTermSimilarity,
 )
 
-from ir_axioms.tools.similarity.simple import (  # noqa: F401
+from ir_axioms.tools.similarity.simple import (
     AverageTermSimilaritySentenceSimilarity,
 )
 
-from ir_axioms.tools.similarity.sentence_transformers import (  # noqa: F401
+from ir_axioms.tools.similarity.sentence_transformers import (
     SentenceTransformersSentenceSimilarity,
 )
 
@@ -50,3 +50,14 @@ class SimilarityModule(Module):
                 to=SentenceTransformersSentenceSimilarity,
                 scope=singleton,
             )
+
+
+__all__ = [
+    "TermSimilarity",
+    "SentenceSimilarity",
+    "FastTextTermSimilarity",
+    "WordNetSynonymSetTermSimilarity",
+    "AverageTermSimilaritySentenceSimilarity",
+    "SentenceTransformersSentenceSimilarity",
+    "SimilarityModule",
+]
