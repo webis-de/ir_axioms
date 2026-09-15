@@ -19,7 +19,7 @@ from numpy import array, float_
 from tqdm.auto import tqdm
 from spacy import load as spacy_load
 from spacy.language import Language
-from textacy.text_stats import flesch_reading_ease
+from textacy.text_stats.readability import flesch_reading_ease
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_less
