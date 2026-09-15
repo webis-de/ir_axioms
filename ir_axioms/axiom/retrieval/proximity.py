@@ -246,6 +246,7 @@ class Prox2Axiom(Axiom[Query, Document]):
                 outputs,
                 desc="Tokenize documents",
                 unit="document",
+                disable=not self.verbose,
             )
         ]
         return array(

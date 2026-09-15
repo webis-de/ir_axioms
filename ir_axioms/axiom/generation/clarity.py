@@ -122,6 +122,7 @@ class _LanguageToolErrorProportionClarityAxiom(Axiom[Any, GenerationOutput]):
                 contents,
                 desc="Check grammar",
                 unit="output",
+                disable=not self.verbose,
             )
         )
         characters_matched = (
@@ -225,6 +226,7 @@ class FleschReadingEaseClarityAxiom(Axiom[Any, GenerationOutput]):
                 total=len(outputs),
                 desc="Flesch reading eases",
                 unit="output",
+                disable=not self.verbose,
             )
         ]
         return array(

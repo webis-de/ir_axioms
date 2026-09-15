@@ -122,6 +122,7 @@ class AspectSimilaritySentenceCountConsistencyAxiom(
                 sentences,
                 desc="Aspect-sentence similarities",
                 total=len(outputs),
+                disable=not self.verbose,
             )
         )
 
@@ -228,6 +229,7 @@ class RougeConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
                 desc="Compute ROUGE",
                 total=len(outputs),
                 unit="output",
+                disable=not self.verbose,
             )
         )
         rouge_l_sums = [rouge["rougeLsum"].fmeasure for rouge in rouges]
@@ -342,6 +344,7 @@ class EntityContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
                 outputs,
                 desc="Count contradictions",
                 unit="output",
+                disable=not self.verbose,
             )
         )
         contradictions = [self._contradictions_ratio(content) for content in contents]
