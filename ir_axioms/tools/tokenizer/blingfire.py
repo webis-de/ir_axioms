@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 
-from ir_axioms.utils.libraries import is_sentence_transformers_installed
+from ir_axioms.utils.libraries import is_blingfire_installed
 
-if is_sentence_transformers_installed() or TYPE_CHECKING:
+if is_blingfire_installed() or TYPE_CHECKING:
     from dataclasses import dataclass
     from typing import Sequence
 
