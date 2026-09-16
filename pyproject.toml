@@ -73,7 +73,7 @@ pyserini = [
     "pyserini>=0.43,<2.0",
 ]
 pyterrier = [
-    "python-terrier~=0.13.0",
+    "pyterrier~=1.0",
 ]
 keybert = [
     "keybert>=0.8.5,<0.10.0",
