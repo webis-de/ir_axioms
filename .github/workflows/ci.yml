@@ -40,7 +40,7 @@ jobs:
           cache: pip
           cache-dependency-path: pyproject.toml
       - name: 🧰 Install dependencies
-        run: pip install .[tests]
+        run: pip install .[tests,blingfire]
       - name: 🔍 Check Python code
         run: ruff check .
   python-typing:
@@ -56,7 +56,7 @@ jobs:
           cache: pip
           cache-dependency-path: pyproject.toml
       - name: 🧰 Install dependencies
-        run: pip install .[tests]
+        run: pip install .[tests,blingfire]
       - name: 🔍 Check Python static typing
         run: mypy .
   python-test:
@@ -72,7 +72,7 @@ jobs:
           cache: pip
           cache-dependency-path: pyproject.toml
       - name: 🧰 Install dependencies
-        run: pip install .[tests]
+        run: pip install .[tests,blingfire]
       - name: 🧰 Install spaCy model
         run: python -m spacy download en_core_web_sm
       - name: 🧪 Test Python code

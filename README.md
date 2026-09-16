@@ -47,8 +47,9 @@ Read more about the [`ir_axioms` framework](https://webis.de/publications.html?q
 |:--|:--|
 | `pyserini` | Use index statistics, document contents, and tokenization from Pyserini/Anserini indices. |
 | `pyterrier` | Use index statistics, document contents, and tokenization from PyTerrier/Terrier indices. Apply KwikSort re-ranking to PyTerrier pipelines. Run axiomatic analyses. |
-| `keybert` | Use KeyBERT for aspect extraction (must be enabled manually). |
-| `sbert` | Use Sentence Transformers for sentence similarity (enabled automatically). |
+| `keybert` | Use KeyBERT for aspect extraction (must be enabled manually if installed). |
+| `sbert` | Use Sentence Transformers for sentence similarity (enabled automatically if installed). |
+| `blingfire` | Use BlingFire for fast tokenization (enabled automatically if installed). |
 
 Note: To reproduce our results from ICTIR'25, please use these extras: `pyterrier,keybert,sbert`
 
