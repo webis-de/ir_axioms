@@ -81,6 +81,9 @@ keybert = [
 sbert = [
     "sentence-transformers~=5.7",
 ]
+blingfire = [
+    "blingfire~=0.1.8",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/webis-de/ir_axioms"
