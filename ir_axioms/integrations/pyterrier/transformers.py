@@ -225,7 +225,13 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                         input=query,
                         outputs=documents,
                     )
-                    for axiom in self.axioms
+                    for axiom in tqdm(
+                        self.axioms,
+                        desc="Compute axiom preferences",
+                        unit="axiom",
+                        disable=not self.verbose,
+                        maxinterval=0.2,
+                    )
                 ),
                 axis=0,
             )
@@ -280,6 +286,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                         desc="Compute axiom preferences",
                         unit="query",
                         disable=not self.verbose,
+                        maxinterval=0.2,
                     )
                 ]
             )
