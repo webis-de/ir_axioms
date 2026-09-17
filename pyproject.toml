@@ -27,11 +27,11 @@ dependencies = [
     "cyclopts>=3,<5",
     "fasttext~=0.9.3",
     "frozendict~=2.4",
-    "huggingface-hub[hf_xet]>=0.30.1,<1.2.0",
+    "huggingface-hub[hf_xet]>=0.30.1,<1.5.0",
     "injector>=0.22,<0.25",
     "ir-datasets~=0.5.9",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
     "joblib~=1.4",
-    "language-tool-python>=2.8,<4.0",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
+    "language-tool-python~=3.4",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
     "more-itertools~=10.5",
     "negspacy~=1.0",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
     "nltk~=3.9",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
@@ -73,13 +73,16 @@ pyserini = [
     "pyserini>=0.43,<2.0",
 ]
 pyterrier = [
-    "python-terrier~=0.13.0",
+    "pyterrier~=1.0",
 ]
 keybert = [
     "keybert>=0.8.5,<0.10.0",
 ]
 sbert = [
-    "sentence-transformers>=4.0,<6.0",
+    "sentence-transformers~=5.7",
+]
+blingfire = [
+    "blingfire~=0.1.8",
 ]
 
 [project.urls]
@@ -93,7 +96,7 @@ ir-axioms = "ir_axioms.cli:app"
 
 [build-system]
 requires = [
-    "setuptools~=80.9",
+    "setuptools>=80.9,<83.0",
     "setuptools-scm>=8,<10",
 ]
 build-backend = "setuptools.build_meta"
@@ -120,6 +123,18 @@ exclude = [
     "experiments",  # TODO: Re-enable this once the experiments are cleaned up.
 ]
 
+[tool.ruff.lint]
+select = [
+    "E4",
+    "E7",
+    "E9",
+    "F",
+    "S",  # Security issues
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/test_*.py" = ["S101"]
+
 [tool.mypy]
 exclude = [
     "build",
@@ -127,25 +142,14 @@ exclude = [
     ".venv",
     "notebooks",
     "data",
+    "trec-auto-judge"  # TODO: Migrate TREC AutoJudge code to a proper place.
 ]
 ignore_missing_imports = true
 disable_error_code = "type-abstract"
 
-[tool.bandit]
-exclude_dirs = [
-    "build",
-    "venv",
-    ".venv",
-    "notebooks",
-    "data",
-]
-
-[tool.bandit.assert_used]
-skips = ["**/test_*.py"]
-
 [tool.pytest.ini_options]
 log_cli = true
-filterwarnings =[
+filterwarnings = [
     "ignore:Importing 'parser.split_arg_string' is deprecated:DeprecationWarning",
     "ignore:Attempted to get latest version of terrier-assemblies:UserWarning",
 ]

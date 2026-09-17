@@ -106,6 +106,7 @@ class CitationSentenceCorrectnessAxiom(Axiom[Any, GenerationOutput]):
                 outputs,
                 desc="Find citations",
                 unit="output",
+                disable=not self.verbose,
             )
         )
         citation_coverages = [

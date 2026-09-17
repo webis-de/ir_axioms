@@ -15,7 +15,7 @@ class RandomPivotSelection(PivotSelection[Input, Output]):
 
     @cached_property
     def _random(self) -> Random:
-        return Random(self.seed)  # nosec: B311
+        return Random(self.seed)  # noqa: S311
 
     def select_pivot(self, input: Input, vertices: Sequence[Output]) -> Output:
         return vertices[self._random.randint(0, len(vertices) - 1)]

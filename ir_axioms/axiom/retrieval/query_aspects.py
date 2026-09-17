@@ -383,6 +383,7 @@ class AndAxiom(Axiom[Query, Document]):
                 total=len(outputs),
                 desc="Query term overlap",
                 unit="document",
+                disable=not self.verbose,
             )
         ]
         return array(
@@ -459,6 +460,7 @@ class ModifiedAndAxiom(Axiom[Query, Document]):
                 total=len(outputs),
                 desc="Query term overlap",
                 unit="document",
+                disable=not self.verbose,
             )
         ]
         return array(
@@ -540,6 +542,7 @@ class DivAxiom(Axiom[Query, Document]):
                 total=len(outputs),
                 desc="Vocabulary overlap",
                 unit="document",
+                disable=not self.verbose,
             )
         ]
         return array(

@@ -51,6 +51,7 @@ class ScikitLearnEstimatorAxiom(EstimatorAxiom[Input, Output], ABC):
                             inputs_outputs,
                             desc="Feature preferences",
                             unit="query",
+                            disable=not self.verbose,
                         )
                     ]
                 )
@@ -74,6 +75,7 @@ class ScikitLearnEstimatorAxiom(EstimatorAxiom[Input, Output], ABC):
                     inputs_outputs,
                     desc="Target preferences",
                     unit="query",
+                    disable=not self.verbose,
                 )
             ]
         )

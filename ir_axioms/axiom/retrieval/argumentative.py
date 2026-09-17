@@ -409,6 +409,7 @@ class AverageSentenceLengthAxiom(
                 total=len(outputs),
                 desc="Sentence lengths",
                 unit="document",
+                disable=not self.verbose,
             )
         ]
         return array(

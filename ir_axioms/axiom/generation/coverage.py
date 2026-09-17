@@ -78,6 +78,7 @@ class AspectCountCoverageAxiom(Axiom[Any, GenerationOutput]):
                 aspects,
                 desc="Extract aspects",
                 total=len(outputs),
+                disable=not self.verbose,
             )
         ]
 
@@ -155,6 +156,7 @@ class AspectRedundancyCoverageAxiom(Axiom[Any, GenerationOutput]):
                 aspects,
                 desc="Extract aspects",
                 total=len(outputs),
+                disable=not self.verbose,
             )
         )
         aggregate_similarities = [similarities.mean() for similarities in similarities]
@@ -259,6 +261,7 @@ class AspectSimilaritySentenceCountCoverageAxiom(
                 sentences,
                 desc="Aspect-sentence similarities",
                 total=len(outputs),
+                disable=not self.verbose,
             )
         )
 

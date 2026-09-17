@@ -11,6 +11,8 @@ if is_pyterrier_installed() or TYPE_CHECKING:
 
     from pandas import DataFrame, concat
     from pyterrier import Transformer
+    from pyterrier.apply import generic
+    from pyterrier.model import add_ranks
     from tqdm.auto import tqdm
 
     from ir_axioms.axiom.base import Axiom
@@ -72,17 +74,10 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                 names = [str(system) for system in self.retrieval_systems]
             return names
 
-        def _preferences_pipeline(
-            self,
-            system: Transformer,
-            name: str,
-        ) -> Transformer:
-            # Load original retrieval system.
-            pipeline = system
-            # Cutoff at rank k
-            if self.depth is not None:
-                # noinspection PyTypeChecker
-                pipeline = pipeline % self.depth
+        @cached_property
+        def _preferences_pipeline(self) -> Transformer:
+            # Reset ranks for consistent cutoffs across systems.
+            pipeline = generic(add_ranks)
             # Remove results with unknown topics.
             if self.filter_by_topics:
                 pipeline = pipeline >> FilterTopicsTransformer(self.topics)
@@ -110,6 +105,21 @@ if is_pyterrier_installed() or TYPE_CHECKING:
                     self.parallel_jobs,
                     self.parallel_backend,
                 )
+            return pipeline
+
+        def _build_preferences_pipeline(
+            self,
+            system: Transformer,
+            name: str,
+        ) -> Transformer:
+            # Load original retrieval system.
+            pipeline = system
+            # Cutoff at rank k
+            if self.depth is not None:
+                # noinspection PyTypeChecker
+                pipeline = pipeline % self.depth
+            # Apply preferences pipeline.
+            pipeline = pipeline >> self._preferences_pipeline
             # Add system name.
             pipeline = pipeline >> AddNameTransformer(name)
             return pipeline
@@ -139,7 +149,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             systems = self.retrieval_systems
             names = self._retrieval_system_names
             pipelines: Iterable[Transformer] = [
-                self._preferences_pipeline(system, name)
+                self._build_preferences_pipeline(system, name)
                 for system, name in zip(systems, names)
             ]
             if self.verbose:

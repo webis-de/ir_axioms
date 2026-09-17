@@ -111,6 +111,7 @@ class WordLengthDeviationCoherenceAxiom(Axiom[Any, GenerationOutput]):
                 outputs,
                 desc="Calculate average word lengths",
                 unit="output",
+                disable=not self.verbose,
             )
         )
 
@@ -235,6 +236,7 @@ class SubjectVerbClosenessCoherenceAxiom(Axiom[Any, GenerationOutput]):
                 total=len(outputs),
                 desc="Calculate S-V distances",
                 unit="output",
+                disable=not self.verbose,
             )
         ]
 

@@ -55,6 +55,7 @@ class LenPrecondition(Precondition[Input, Document]):
                 outputs,
                 desc="Lengths",
                 unit="document",
+                disable=not self.verbose,
             )
         ]
         return array(
@@ -69,6 +70,7 @@ class LenPrecondition(Precondition[Input, Document]):
                     total=len(lengths) * len(lengths),
                     desc="Compare lengths",
                     unit="pair",
+                    disable=not self.verbose,
                 )
             ],
             dtype=bool_,

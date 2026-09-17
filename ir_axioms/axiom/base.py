@@ -18,6 +18,7 @@ class Axiom(ABC, Generic[Input, Output]):
 
     This base class also exposes various operators (i.e., ``+``, ``-``, ``*``, ``/``, ``%``, ``&``, ``~``) for combining and manipulating axioms, as well as ``rerank()`` for KwikSort re-ranking the outputs, and other methods for evaluating rankings of outputs in comparison to the axiom's preferences.
     """
+    verbose: bool = False
 
     @abstractmethod
     def preference(
@@ -69,6 +70,7 @@ class Axiom(ABC, Generic[Input, Output]):
                     ),
                     desc="Preferences",
                     total=len(outputs) * len(outputs),
+                    disable=not self.verbose,
                 )
             ),
             dtype=float_,

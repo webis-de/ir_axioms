@@ -19,7 +19,7 @@ from numpy import array, float_
 from tqdm.auto import tqdm
 from spacy import load as spacy_load
 from spacy.language import Language
-from textacy.text_stats import flesch_reading_ease
+from textacy.text_stats.readability import flesch_reading_ease
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_less
@@ -87,12 +87,12 @@ class _LanguageToolErrorProportionClarityAxiom(Axiom[Any, GenerationOutput]):
         characters_matched1 = {
             i
             for match in matches1
-            for i in range(match.offset, match.offset + match.errorLength)
+            for i in range(match.offset, match.offset + match.error_length)
         }
         characters_matched2 = {
             i
             for match in matches2
-            for i in range(match.offset, match.offset + match.errorLength)
+            for i in range(match.offset, match.offset + match.error_length)
         }
         num_characters_matched1 = len(characters_matched1)
         num_characters_matched2 = len(characters_matched2)
@@ -122,13 +122,14 @@ class _LanguageToolErrorProportionClarityAxiom(Axiom[Any, GenerationOutput]):
                 contents,
                 desc="Check grammar",
                 unit="output",
+                disable=not self.verbose,
             )
         )
         characters_matched = (
             {
                 i
                 for match in matches
-                for i in range(match.offset, match.offset + match.errorLength)
+                for i in range(match.offset, match.offset + match.error_length)
             }
             for matches in matches
         )
@@ -225,6 +226,7 @@ class FleschReadingEaseClarityAxiom(Axiom[Any, GenerationOutput]):
                 total=len(outputs),
                 desc="Flesch reading eases",
                 unit="output",
+                disable=not self.verbose,
             )
         ]
         return array(

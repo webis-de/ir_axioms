@@ -135,6 +135,7 @@ class TfLncAxiom(Axiom[Query, Document]):
                 total=len(outputs),
                 desc="Tokenize",
                 unit="document",
+                disable=not self.verbose,
             )
         ]
         document_term_frequencies = [
@@ -147,6 +148,7 @@ class TfLncAxiom(Axiom[Query, Document]):
                 total=len(outputs),
                 desc="Term frequencies",
                 unit="document",
+                disable=not self.verbose,
             )
         ]
         return array(

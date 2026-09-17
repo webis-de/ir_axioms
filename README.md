@@ -1,6 +1,6 @@
 [![CI status](https://img.shields.io/github/actions/workflow/status/webis-de/ir_axioms/ci.yml?branch=main&style=flat-square)](https://github.com/webis-de/ir_axioms/actions/workflows/ci.yml)
 [![Code coverage](https://img.shields.io/codecov/c/github/webis-de/ir_axioms?style=flat-square)](https://codecov.io/github/webis-de/ir_axioms/)
-[![Maintenance](https://img.shields.io/maintenance/yes/2025?style=flat-square)](https://github.com/webis-de/ir_axioms/graphs/contributors)  
+[![Maintenance](https://img.shields.io/maintenance/yes/2026?style=flat-square)](https://github.com/webis-de/ir_axioms/graphs/contributors)  
 [![PyPI version](https://img.shields.io/pypi/v/ir-axioms?style=flat-square)](https://pypi.org/project/ir-axioms/)
 [![PyPI downloads](https://img.shields.io/pypi/dm/ir-axioms?style=flat-square)](https://pypi.org/project/ir-axioms/)
 [![Python versions](https://img.shields.io/pypi/pyversions/ir-axioms?style=flat-square)](https://pypi.org/project/ir-axioms/)  
@@ -47,8 +47,9 @@ Read more about the [`ir_axioms` framework](https://webis.de/publications.html?q
 |:--|:--|
 | `pyserini` | Use index statistics, document contents, and tokenization from Pyserini/Anserini indices. |
 | `pyterrier` | Use index statistics, document contents, and tokenization from PyTerrier/Terrier indices. Apply KwikSort re-ranking to PyTerrier pipelines. Run axiomatic analyses. |
-| `keybert` | Use KeyBERT for aspect extraction (must be enabled manually). |
-| `sbert` | Use Sentence Transformers for sentence similarity (enabled automatically). |
+| `keybert` | Use KeyBERT for aspect extraction (must be enabled manually if installed). |
+| `sbert` | Use Sentence Transformers for sentence similarity (enabled automatically if installed). |
+| `blingfire` | Use BlingFire for fast tokenization (enabled automatically if installed). |
 
 Note: To reproduce our results from ICTIR'25, please use these extras: `pyterrier,keybert,sbert`
 
@@ -87,7 +88,6 @@ ir_axioms --help
    ```shell
    ruff check .                   # Code format and LINT
    mypy .                         # Static typing
-   bandit -c pyproject.toml -r .  # Security
    pytest .                       # Unit tests
    ```
 

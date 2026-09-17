@@ -36,7 +36,7 @@ if is_sentence_transformers_installed() or TYPE_CHECKING:
 
         def self_similarities(self, sentences: Sequence[str]) -> NDArray[float_]:
             vectors = self.model.encode(
-                sentences=list(sentences),
+                inputs=list(sentences),
                 convert_to_numpy=True,
             )
             return array(

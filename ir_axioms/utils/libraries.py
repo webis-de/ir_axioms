@@ -37,3 +37,13 @@ def is_sentence_transformers_installed() -> bool:
         return True
     except ImportError:
         return False
+
+
+def is_blingfire_installed() -> bool:
+    """Check if BlingFire is installed."""
+    try:
+        import blingfire  # noqa: F401
+
+        return True
+    except ImportError:
+        return False
