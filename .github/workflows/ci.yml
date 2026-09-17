@@ -96,7 +96,7 @@ jobs:
     - name: 📥 Check-out
       uses: actions/checkout@v5
     - name: 📥 Download Python wheels
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         name: wheels
         path: dist
@@ -118,7 +118,7 @@ jobs:
       - name: 📥 Check-out
         uses: actions/checkout@v5
       - name: 📥 Download Python wheels
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: wheels
           path: dist
