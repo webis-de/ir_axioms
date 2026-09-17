@@ -197,6 +197,7 @@ class VoteAxiom(Axiom[Input, Output]):
                 for axiom in tqdm(
                     self.axioms,
                     desc="Compute preferences",
+                    disable=not self.verbose,
                 )
             ]
         )

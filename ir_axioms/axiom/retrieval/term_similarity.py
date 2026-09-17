@@ -62,6 +62,7 @@ class Stmc1Axiom(Axiom[Query, Document]):
                 total=len(outputs),
                 desc="Compute avg. similarities",
                 unit="document",
+                disable=not self.verbose,
             )
         ]
 

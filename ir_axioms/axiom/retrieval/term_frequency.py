@@ -77,6 +77,7 @@ class Tfc1Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
                 outputs,
                 desc="Sum term frequencies",
                 unit="document",
+                disable=not self.verbose,
             )
         ]
 
@@ -160,6 +161,7 @@ class Tfc3Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
                 combinations(query_unique_terms, 2),
                 desc="Query term pairs",
                 unit="pair",
+                disable=not self.verbose,
             )
             if isclose(
                 self.index_statistics.inverse_document_frequency(query_term1),
@@ -173,7 +175,12 @@ class Tfc3Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
                 query_term: self.text_statistics.term_frequency(output, query_term)
                 for query_term in considered_query_terms
             }
-            for output in tqdm(outputs, desc="Term frequencies", unit="document")
+            for output in tqdm(
+                outputs,
+                desc="Term frequencies",
+                unit="document",
+                disable=not self.verbose,
+            )
         ]
 
         return array(
@@ -235,6 +242,7 @@ class Tfc3Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
                     ),
                     desc="Compare",
                     unit="pair",
+                    disable=not self.verbose,
                 )
             ),
             dtype=float_,

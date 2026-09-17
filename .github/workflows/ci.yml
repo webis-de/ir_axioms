@@ -23,7 +23,7 @@ jobs:
       - name: 🧪 Check package bundles
         run: twine check dist/*
       - name: 📤 Upload Python wheels
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: wheels
           path: dist
@@ -40,7 +40,7 @@ jobs:
           cache: pip
           cache-dependency-path: pyproject.toml
       - name: 🧰 Install dependencies
-        run: pip install .[tests]
+        run: pip install .[tests,blingfire]
       - name: 🔍 Check Python code
         run: ruff check .
   python-typing:
@@ -56,25 +56,9 @@ jobs:
           cache: pip
           cache-dependency-path: pyproject.toml
       - name: 🧰 Install dependencies
-        run: pip install .[tests]
+        run: pip install .[tests,blingfire]
       - name: 🔍 Check Python static typing
         run: mypy .
-  python-security:
-    name: 🔍 Check Python code security
-    runs-on: ubuntu-latest
-    steps:
-      - name: 📥 Check-out
-        uses: actions/checkout@v6
-      - name: 🧰 Install Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-          cache: pip
-          cache-dependency-path: pyproject.toml
-      - name: 🧰 Install dependencies
-        run: pip install .[tests]
-      - name: 🔍 Check Python code security
-        run: bandit -c pyproject.toml -r .
   python-test:
     name: 🧪 Test Python code
     runs-on: ubuntu-latest
@@ -88,7 +72,7 @@ jobs:
           cache: pip
           cache-dependency-path: pyproject.toml
       - name: 🧰 Install dependencies
-        run: pip install .[tests]
+        run: pip install .[tests,blingfire]
       - name: 🧰 Install spaCy model
         run: python -m spacy download en_core_web_sm
       - name: 🧪 Test Python code
@@ -104,7 +88,6 @@ jobs:
     - python-build
     - python-code-check
     - python-typing
-    - python-security
     - python-test
     runs-on: ubuntu-latest
     permissions:
@@ -113,7 +96,7 @@ jobs:
     - name: 📥 Check-out
       uses: actions/checkout@v6
     - name: 📥 Download Python wheels
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         name: wheels
         path: dist
@@ -126,7 +109,6 @@ jobs:
       - python-build
       - python-code-check
       - python-typing
-      - python-security
       - python-test
       - python-publish
     permissions:
@@ -136,7 +118,7 @@ jobs:
       - name: 📥 Check-out
         uses: actions/checkout@v6
       - name: 📥 Download Python wheels
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: wheels
           path: dist

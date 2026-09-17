@@ -15,6 +15,7 @@ class Precondition(Generic[Input, Output], Protocol):
     """
     A precondition can be used to restrict an axiom's preference computation to only those outputs that meet a certain condition (e.g., similar length).
     """
+    verbose: bool = False
 
     def precondition(
         self,
@@ -58,6 +59,7 @@ class Precondition(Generic[Input, Output], Protocol):
                     ),
                     desc="Preconditions",
                     total=len(outputs) * len(outputs),
+                    disable=not self.verbose,
                 )
             )
         ).reshape((len(outputs), len(outputs)))

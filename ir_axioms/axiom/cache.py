@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from dbm import open as dbm_open
+from hashlib import blake2b
 from pathlib import Path
 from struct import pack, unpack
 from typing import Iterable, Iterator, Protocol, Sequence, Tuple, TypeVar
+from warnings import warn
 
 from numpy import array, float_, ndarray, isnan, nan
 from typing_extensions import TypeAlias  # type: ignore
@@ -24,6 +26,10 @@ class DbmCachedAxiom(Axiom[_Input, _Output]):
     axiom: Axiom[_Input, _Output]
     cache_path: Path
 
+    @staticmethod
+    def _key(input: _Input, output1: _Output, output2: _Output) -> bytes:
+        return blake2b(repr((input, output1, output2)).encode(encoding="utf-8")).digest()
+
     def _iter_preferences(
         self,
         inputs_outputs: Iterable[Tuple[_Input, _Output, _Output]],
@@ -32,9 +38,18 @@ class DbmCachedAxiom(Axiom[_Input, _Output]):
         self.cache_path.parent.mkdir(exist_ok=True, parents=True)
         with dbm_open(self.cache_path, flag="c") as cache:
             for input, output1, output2 in inputs_outputs:
-                key = repr((input, output1, output2)).encode(encoding="utf-8")
-                if key in cache:
-                    preference_bytes = cache[key]
+                key = self._key(input, output1, output2)
+                try:
+                    key_found = key in cache
+                except Exception as e:
+                    warn(f"Error while reading from axiom cache at: {self.cache_path}")
+                    raise e
+                if key_found:
+                    try:
+                        preference_bytes = cache[key]
+                    except Exception as e:
+                        warn(f"Error while reading from axiom cache at: {self.cache_path}")
+                        raise e
                     (preference,) = unpack("f", preference_bytes)
                     if isnan(preference):
                         raise RuntimeError(
@@ -46,7 +61,11 @@ class DbmCachedAxiom(Axiom[_Input, _Output]):
                 else:
                     preference = self.axiom.preference(input, output1, output2)
                     preference_bytes = pack("f", preference)
-                    cache[key] = preference_bytes
+                    try:
+                        cache[key] = preference_bytes
+                    except Exception as e:
+                        warn(f"Error while writing to axiom cache at: {self.cache_path}")
+                        raise e
                     yield preference
 
     def preference(
@@ -95,12 +114,16 @@ class DbmCachedAxiom(Axiom[_Input, _Output]):
         with dbm_open(self.cache_path, flag="c") as cache:
             for i1, output1 in enumerate(outputs):
                 for i2, output2 in enumerate(outputs):
-                    key = repr((input, output1, output2)).encode(encoding="utf-8")
+                    key = self._key(input, output1, output2)
                     preference = float(preferences[i1, i2])
                     if isnan(preference):
                         raise RuntimeError("Missing preferences.")
                     preference_bytes = pack("f", preference)
-                    cache[key] = preference_bytes
+                    try:
+                        cache[key] = preference_bytes
+                    except Exception as e:
+                        warn(f"Error while writing to axiom cache at: {self.cache_path}")
+                        raise e
         return preferences
 
     def cached(self, cache_path: Path) -> Axiom[_Input, _Output]:
