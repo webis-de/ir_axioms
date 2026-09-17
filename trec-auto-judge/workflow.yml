@@ -4,6 +4,7 @@ judge_class: "judges.ir_axioms.axiom_judge:IrAxiomJudge"
 create_nuggets: false
 judge: true
 augment_report: false
+uses_llm: false  # This judge makes no LLM calls, so the AutoJudge framework does not need to inject any LLM APIs.
 
 settings:
   filebase: "ir_axioms"
