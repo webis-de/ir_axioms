@@ -35,7 +35,6 @@ from ir_axioms.axiom import (  # noqa: E402
     GEN_TFC1,
     GEN_LNC1,
     GEN_TF_LNC,
-    GEN_REG,
     GEN_AND,
     GEN_DIV,
     GEN_STMC1,
@@ -66,7 +65,6 @@ axioms: dict[str, Axiom[GenerationInput, GenerationOutput]] = {
     # Generative Axioms
     "GEN-TFC1": GEN_TFC1(),
     "GEN-LNC1": GEN_LNC1(),
-    "GEN-REG": GEN_REG(),
     "GEN-AND": GEN_AND(),
     "GEN-DIV": GEN_DIV(),
     "GEN-STMC1": GEN_STMC1(),
