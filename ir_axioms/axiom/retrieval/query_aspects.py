@@ -67,13 +67,15 @@ class RegAxiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
         if len(min_average_similarity_terms) == 0:
             return 0
 
+        # Fetch each document's term frequencies once (avoids re-tokenizing the
+        # whole document once per term, which `term_frequency()` would do).
+        frequencies1 = self.text_statistics.term_frequencies(output1)
+        frequencies2 = self.text_statistics.term_frequencies(output2)
         term_frequencies1 = {
-            term: self.text_statistics.term_frequency(output1, term)
-            for term in min_average_similarity_terms
+            term: frequencies1.get(term, 0) for term in min_average_similarity_terms
         }
         term_frequencies2 = {
-            term: self.text_statistics.term_frequency(output2, term)
-            for term in min_average_similarity_terms
+            term: frequencies2.get(term, 0) for term in min_average_similarity_terms
         }
 
         if all(
@@ -104,13 +106,17 @@ class RegAxiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
         if len(min_average_similarity_terms) == 0:
             return zeros((len(outputs), len(outputs)), dtype=float_)
 
-        term_frequencies = [
-            {
-                term: self.text_statistics.term_frequency(output, term)
-                for term in min_average_similarity_terms
-            }
-            for output in outputs
-        ]
+        # Fetch each document's term frequencies once (avoids re-tokenizing the
+        # whole document once per term, which `term_frequency()` would do).
+        term_frequencies = []
+        for output in outputs:
+            frequencies = self.text_statistics.term_frequencies(output)
+            term_frequencies.append(
+                {
+                    term: frequencies.get(term, 0)
+                    for term in min_average_similarity_terms
+                }
+            )
 
         return array(
             [
@@ -172,13 +178,15 @@ class AntiRegAxiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
         if len(max_average_similarity_terms) == 0:
             return 0
 
+        # Fetch each document's term frequencies once (avoids re-tokenizing the
+        # whole document once per term, which `term_frequency()` would do).
+        frequencies1 = self.text_statistics.term_frequencies(output1)
+        frequencies2 = self.text_statistics.term_frequencies(output2)
         term_frequencies1 = {
-            term: self.text_statistics.term_frequency(output1, term)
-            for term in max_average_similarity_terms
+            term: frequencies1.get(term, 0) for term in max_average_similarity_terms
         }
         term_frequencies2 = {
-            term: self.text_statistics.term_frequency(output2, term)
-            for term in max_average_similarity_terms
+            term: frequencies2.get(term, 0) for term in max_average_similarity_terms
         }
 
         if all(
@@ -209,13 +217,17 @@ class AntiRegAxiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
         if len(max_average_similarity_terms) == 0:
             return zeros((len(outputs), len(outputs)), dtype=float_)
 
-        term_frequencies = [
-            {
-                term: self.text_statistics.term_frequency(output, term)
-                for term in max_average_similarity_terms
-            }
-            for output in outputs
-        ]
+        # Fetch each document's term frequencies once (avoids re-tokenizing the
+        # whole document once per term, which `term_frequency()` would do).
+        term_frequencies = []
+        for output in outputs:
+            frequencies = self.text_statistics.term_frequencies(output)
+            term_frequencies.append(
+                {
+                    term: frequencies.get(term, 0)
+                    for term in max_average_similarity_terms
+                }
+            )
 
         return array(
             [
