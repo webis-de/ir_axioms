@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from pathlib import Path
 from typing import (
     Any, Dict, 
     # List,
@@ -21,6 +22,7 @@ from autojudge_base import (
     NuggetBanksProtocol,
 )
 from collections import defaultdict
+from time import perf_counter
 from tqdm import tqdm
 from ir_axioms.model import GenerationInput, GenerationOutput
 from ir_axioms.tools import SpacyEntitiesAspectExtraction
@@ -111,6 +113,34 @@ def group_by_topic_id(rag_responses: Sequence[Report]) -> Dict[str, Dict[str, st
 
 LEADERBOARD_SPEC = LeaderboardSpec(measures=list(MeasureSpec(i) for i in axioms.keys()))
 
+# Accumulates total wall-clock time (seconds) spent per axiom, across all topics.
+axiom_timings: Dict[str, float] = defaultdict(float)
+
+
+def _axiom_timings_lines() -> list[str]:
+    lines = ["Axiom timing summary (total seconds, descending):"]
+    for name, seconds in sorted(
+        axiom_timings.items(), key=lambda kv: kv[1], reverse=True
+    ):
+        lines.append(f"  {name:20s} {seconds:10.3f}s")
+    return lines
+
+
+def print_axiom_timings() -> None:
+    if not axiom_timings:
+        return
+    print("\n" + "\n".join(_axiom_timings_lines()))
+
+
+def write_axiom_timings(out_dir: Optional[Path]) -> None:
+    if not axiom_timings:
+        return
+    out_dir = Path(out_dir) if out_dir else Path(".")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    timings_path = out_dir / "axiom_timings.txt"
+    timings_path.write_text("\n".join(_axiom_timings_lines()) + "\n")
+    print(f"\nAxiom timings written to {timings_path}")
+
 
 class IrAxiomJudge(AutoJudge):
     nugget_banks_type: Type[NuggetBanksProtocol] = NuggetBanks
@@ -124,7 +154,9 @@ class IrAxiomJudge(AutoJudge):
     def judge_for_topic(self, inp: GenerationInput, outp: Sequence[GenerationOutput]):
         ret = {i.id: {} for i in outp}
         for axiom_name, axiom in axioms.items():
+            start = perf_counter()
             preds = axiom.preferences(inp, outp)
+            axiom_timings[axiom_name] += perf_counter() - start
             for v, run in zip(preds, outp):
                 ret[run.id][axiom_name] = sum(v)/len(outp)
         return ret
@@ -161,6 +193,11 @@ class IrAxiomJudge(AutoJudge):
 
         leaderboard: Leaderboard = builder.build()
         LeaderboardVerification(leaderboard, on_missing="fix_aggregate", warn=True).all()
+        print_axiom_timings()
+        try:
+            write_axiom_timings(Path(kwargs.get("filebase")).parent)
+        except:
+            pass
         return leaderboard
 
 
