@@ -1,6 +1,14 @@
+from pytest import mark
+
 from ir_axioms.tools.tokenizer.blingfire import (
     BlingfireSentenceTokenizer,
     BlingfireTermTokenizer,
+)
+from ir_axioms.utils.libraries import is_blingfire_installed
+
+pytestmark = mark.skipif(
+    not is_blingfire_installed(),
+    reason="BlingFire is not installed.",
 )
 
 
