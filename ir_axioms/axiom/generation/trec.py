@@ -20,7 +20,7 @@ TrecRagNuggetScoreType: TypeAlias = Literal[
 
 @dataclass(frozen=True, kw_only=True)
 class TrecRagNuggetAxiom(Axiom[GenerationInput, GenerationOutput]):
-    assignments_path: Path = Path("data/nugget_assignment.20241108.jl")
+    assignments_path: Path = Path("data/nugget_assignment.20241108.jsonl")
     score_type: TrecRagNuggetScoreType = "all"
     strict: bool = False
     margin_fraction: float = 0.0
