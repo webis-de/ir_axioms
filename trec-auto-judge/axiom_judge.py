@@ -5,6 +5,7 @@ from typing import (
     # List,
     Optional, Sequence, Type
 )
+from warnings import warn
 
 from autojudge_base import (
     Report,
@@ -196,7 +197,8 @@ class IrAxiomJudge(AutoJudge):
         print_axiom_timings()
         try:
             write_axiom_timings(Path(kwargs.get("filebase")).parent)
-        except:
+        except Exception as e:
+            warn(e)
             pass
         return leaderboard
 
