@@ -81,6 +81,9 @@ keybert = [
 sbert = [
     "sentence-transformers~=5.7",
 ]
+model2vec = [
+    "model2vec~=0.9.0",
+]
 blingfire = [
     "blingfire~=0.1.8",
 ]

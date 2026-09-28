@@ -39,6 +39,16 @@ def is_sentence_transformers_installed() -> bool:
         return False
 
 
+def is_model2vec_installed() -> bool:
+    """Check if Model2Vec is installed."""
+    try:
+        import model2vec  # noqa: F401
+
+        return True
+    except ImportError:
+        return False
+
+
 def is_blingfire_installed() -> bool:
     """Check if BlingFire is installed."""
     try:

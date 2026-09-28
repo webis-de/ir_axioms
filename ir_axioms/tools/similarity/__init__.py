@@ -1,6 +1,9 @@
 from injector import Module, Binder, singleton
 
-from ir_axioms.utils.libraries import is_sentence_transformers_installed
+from ir_axioms.utils.libraries import (
+    is_model2vec_installed,
+    is_sentence_transformers_installed,
+)
 
 # Re-export from sub-modules.
 
@@ -19,6 +22,10 @@ from ir_axioms.tools.similarity.wordnet import (
 
 from ir_axioms.tools.similarity.simple import (
     AverageTermSimilaritySentenceSimilarity,
+)
+
+from ir_axioms.tools.similarity.model2vec import (
+    Model2VecSentenceSimilarity,
 )
 
 from ir_axioms.tools.similarity.sentence_transformers import (
@@ -44,6 +51,12 @@ class SimilarityModule(Module):
             to=AverageTermSimilaritySentenceSimilarity,
             scope=singleton,
         )
+        if is_model2vec_installed():
+            binder.bind(
+                interface=SentenceSimilarity,
+                to=Model2VecSentenceSimilarity,
+                scope=singleton,
+            )
         if is_sentence_transformers_installed():
             binder.bind(
                 interface=SentenceSimilarity,
@@ -58,6 +71,7 @@ __all__ = [
     "FastTextTermSimilarity",
     "WordNetSynonymSetTermSimilarity",
     "AverageTermSimilaritySentenceSimilarity",
+    "Model2VecSentenceSimilarity",
     "SentenceTransformersSentenceSimilarity",
     "SimilarityModule",
 ]

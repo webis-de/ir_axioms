@@ -43,6 +43,7 @@ from ir_axioms.tools.similarity import (
     SentenceSimilarity,
     FastTextTermSimilarity,
     WordNetSynonymSetTermSimilarity,
+    Model2VecSentenceSimilarity,
     SentenceTransformersSentenceSimilarity,
     SimilarityModule,
 )
@@ -107,6 +108,7 @@ __all__ = [
     "SentenceSimilarity",
     "FastTextTermSimilarity",
     "WordNetSynonymSetTermSimilarity",
+    "Model2VecSentenceSimilarity",
     "SentenceTransformersSentenceSimilarity",
     "SimilarityModule",
     "TextStatistics",
