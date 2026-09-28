@@ -32,12 +32,12 @@ def _template_minimum(package: str, fallback: str) -> str:
     import subprocess
     for remote in ("starterkit", "upstream"):
         try:
-            subprocess.run(
-                ["git", "fetch", "--quiet", remote, "main"],
+            subprocess.run(  # noqa: S603
+                ["git", "fetch", "--quiet", remote, "main"],  # noqa: S607
                 cwd=REPO, capture_output=True, timeout=10, check=False,
             )
-            out = subprocess.run(
-                ["git", "show", f"{remote}/main:pyproject.toml"],
+            out = subprocess.run(  # noqa: S603,S607
+                ["git", "show", f"{remote}/main:pyproject.toml"],  # noqa: S607
                 cwd=REPO, capture_output=True, text=True, check=True,
             ).stdout
             m = re.search(rf'"{re.escape(package)}\s*>=\s*([0-9][0-9a-zA-Z.]*)"', out)
