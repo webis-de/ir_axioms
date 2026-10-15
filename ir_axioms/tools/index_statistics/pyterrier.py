@@ -6,44 +6,27 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     from dataclasses import dataclass
     from functools import cached_property
     from pathlib import Path
-    from typing import Union, Any
+    from typing import Any
 
-    from typing_extensions import TypeAlias  # type: ignore
+    from pyterrier.terrier import TerrierIndex
 
     from ir_axioms.tools.index_statistics import IndexStatistics
-    from ir_axioms.utils.pyterrier import Index, IndexRef
-
-    _Index: TypeAlias = Index  # type: ignore
-    _IndexRef: TypeAlias = IndexRef  # type: ignore
 
     @dataclass(frozen=True, kw_only=True)
     class TerrierIndexStatistics(IndexStatistics):
-        index_location: Union[_Index, _IndexRef, Path, str]
+        index_location: TerrierIndex | Path | str | Any
 
         @cached_property
-        def _index(self) -> Any:
-            from pyterrier.terrier import IndexFactory
-
-            if isinstance(self.index_location, Index):
-                return self.index_location
-            elif isinstance(self.index_location, IndexRef):
-                return IndexFactory.of(self.index_location)  # type: ignore
-            elif isinstance(self.index_location, str):
-                return IndexFactory.of(self.index_location)  # type: ignore
-            elif isinstance(self.index_location, Path):
-                return IndexFactory.of(str(self.index_location.absolute()))  # type: ignore
-            else:
-                raise ValueError(
-                    f"Cannot load index from location {self.index_location}."
-                )
+        def _index(self) -> TerrierIndex:
+            return TerrierIndex.coerce(self.index_location)  # type: ignore
 
         @cached_property
         def _lexicon(self) -> Any:
-            return self._index.getLexicon()
+            return self._index.lexicon()
 
         @cached_property
         def _collection_statistics(self) -> Any:
-            return self._index.getCollectionStatistics()
+            return self._index.collection_statistics()
 
         @cached_property
         def document_count(self) -> int:  # type: ignore

@@ -5,7 +5,7 @@ from typing import TypeVar, Any
 from injector import Injector
 from pandas import DataFrame
 from pandas.testing import assert_frame_equal
-from pytest import fixture, approx, skip
+from pytest import fixture, approx, skip, mark
 
 from ir_axioms.axiom import Tfc1Axiom
 from ir_axioms.precondition import NOP
@@ -21,6 +21,12 @@ from ir_axioms.tools import (
 )
 from ir_axioms.utils.lazy import lazy_inject
 from ir_axioms.utils.libraries import is_pyterrier_installed
+
+# Skip if optional dependency is not installed.
+pytestmark = mark.skipif(
+    not is_pyterrier_installed(),
+    reason="PyTerrier is not installed.",
+)
 
 
 @fixture
@@ -62,18 +68,14 @@ def index_path(
     document1: Document,
     document2: Document,
 ) -> Any:
-    if not is_pyterrier_installed():
-        skip("PyTerrier is not installed.")
-
-    from pyterrier import IterDictIndexer
+    from pyterrier.terrier import TerrierIndex
 
     assert isinstance(document1.text, TokenizedString)
     assert isinstance(document2.text, TokenizedString)
 
-    indexer = IterDictIndexer(
-        str(tmp_path.resolve()),
+    index = TerrierIndex(tmp_path)
+    indexer = index.toks_indexer(
         meta={"docno": 20, "text": 5000},
-        pretokenised=True,
     )
     indexer.index(
         [
@@ -88,7 +90,7 @@ def index_path(
                 "text": document2.text,
             },
         ]
-    )  # pyright: ignore[reportOptionalCall]
+    )
     return tmp_path
 
 
@@ -97,9 +99,6 @@ _T = TypeVar("_T")
 
 @fixture
 def injector(index_path: Path) -> Injector:
-    if not is_pyterrier_installed():
-        skip("PyTerrier is not installed.")
-
     injector = Injector(parent=_default_injector)
     inject_pyterrier(
         index_location=index_path,
@@ -196,6 +195,22 @@ def test_contents_document2(
     document2: Document,
 ) -> None:
     assert document_text_contents.contents(document2) == "a3 a"
+
+
+def test_contents_document_from_index(
+    document_text_contents: TextContents[Document],
+    document1: Document,
+    document2: Document,
+) -> None:
+    contents1 = document_text_contents.contents(Document(id=document1.id))
+    contents2 = document_text_contents.contents(Document(id=document2.id))
+
+    assert contents1 == "a22"
+    assert contents2 == "a3 a"
+    assert isinstance(contents1, TokenizedString)
+    assert isinstance(contents2, TokenizedString)
+    assert contents1.tokens == {"a": 1, "##2": 2}
+    assert contents2.tokens == {"a": 2, "##3": 1}
 
 
 def test_terms_document1(

@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING
 from ir_axioms.utils.libraries import is_pyterrier_installed
 
 if is_pyterrier_installed() or TYPE_CHECKING:
+    from collections.abc import Sequence
     from dataclasses import dataclass, field
     from functools import cached_property
     from itertools import groupby
-    from typing import Sequence, Optional
     from warnings import warn
 
     from pandas import DataFrame
@@ -41,7 +41,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         target: Axiom[Query, Document] = field(default_factory=ORACLE)
         estimator: ScikitLearnEstimator
         pivot_selection: PivotSelection = RandomPivotSelection()
-        text_field: Optional[str] = "text"
+        text_field: str | None = "text"
         verbose: bool = False
 
         @cached_property
@@ -70,8 +70,8 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             self,
             topics_or_res_tr: DataFrame,
             qrels_tr: DataFrame,
-            topics_or_res_va: Optional[DataFrame] = None,
-            qrels_va: Optional[DataFrame] = None,
+            topics_or_res_va: DataFrame | None = None,
+            qrels_va: DataFrame | None = None,
         ) -> Transformer:
             """
             Train the model with the given rankings and qrels.

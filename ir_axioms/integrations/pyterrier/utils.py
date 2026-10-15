@@ -3,9 +3,10 @@ from typing import TYPE_CHECKING
 from ir_axioms.utils.libraries import is_pyterrier_installed
 
 if is_pyterrier_installed() or TYPE_CHECKING:
+    from collections.abc import Sequence, Mapping, Hashable
     from dataclasses import dataclass
     from pathlib import Path
-    from typing import Set, Optional, Sequence, Union, Mapping, Hashable, Any
+    from typing import Any
 
     from frozendict import frozendict
     from injector import singleton, Injector, InstanceProvider
@@ -13,7 +14,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     from pandas import DataFrame, Series
     from pyterrier import Transformer
     from pyterrier.model import query_columns as _query_columns
-    from typing_extensions import TypeAlias  # type: ignore
+    from pyterrier.terrier import TerrierTokeniser, TerrierIndex
 
     from ir_axioms.dependency_injection import injector as _default_injector
     from ir_axioms.model import Query, Document, TokenizedString
@@ -30,34 +31,32 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         TerrierIndexStatistics,
     )
     from ir_axioms.utils.injection import reset_binding_scopes
-    from ir_axioms.utils.pyterrier import (
-        Index,
-        IndexRef,
-        Tokeniser,
-        EnglishTokeniser,
-    )
-
-    _Index: TypeAlias = Index  # type: ignore
-    _IndexRef: TypeAlias = IndexRef  # type: ignore
-    _Tokeniser: TypeAlias = Tokeniser  # type: ignore
 
     def inject_pyterrier(
-        index_location: Optional[Union[_Index, _IndexRef, Path, str]] = None,
-        text_field: Optional[str] = "text",
-        tokeniser: _Tokeniser = EnglishTokeniser(),
-        dataset: Optional[Union[Dataset, str]] = None,
+        index_location: TerrierIndex | Path | str | Any | None = None,
+        text_field: str | None = "text",
+        tokeniser: TerrierTokeniser | Any | None = None,
+        dataset: Dataset | str | None = None,
         injector: Injector = _default_injector,
     ) -> None:
         injector.binder.bind(
             interface=TermTokenizer,
-            to=TerrierTermTokenizer(tokeniser=tokeniser),
+            to=InstanceProvider(
+                TerrierTermTokenizer(
+                    tokeniser=tokeniser,
+                    index_location=index_location,
+                )
+            ),
             scope=singleton,
         )
 
         if index_location is not None:
             injector.binder.bind(
                 interface=IndexStatistics,
-                to=TerrierIndexStatistics(index_location=index_location),
+                # Note: Wrap in a provider, as otherwise the injector's type check accesses the (lazy) properties and starts the JVM.
+                to=InstanceProvider(
+                    TerrierIndexStatistics(index_location=index_location)
+                ),
                 scope=singleton,
             )
             injector.binder.bind(
@@ -104,10 +103,10 @@ if is_pyterrier_installed() or TYPE_CHECKING:
 
     def require_columns(
         ranking: DataFrame,
-        expected_columns: Set[str],
+        expected_columns: set[str],
     ) -> None:
-        columns: Set[str] = set(ranking.columns)
-        missing_columns: Set[str] = expected_columns - columns
+        columns: set[str] = set(ranking.columns)
+        missing_columns: set[str] = expected_columns - columns
         if len(missing_columns) > 0:
             raise ValueError(
                 f"Expected columns "
@@ -135,8 +134,8 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         return df
 
     def load_document(
-        row: Union[Series, Mapping[Hashable, Any]],
-        text_column: Optional[str] = "text",
+        row: Series | Mapping[Hashable, Any],
+        text_column: str | None = "text",
     ) -> Document:
         text = (
             str(row[text_column])
@@ -160,7 +159,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
 
     def load_documents(
         ranking: DataFrame,
-        text_column: Optional[str] = "text",
+        text_column: str | None = "text",
     ) -> Sequence[Document]:
         return [
             load_document(
@@ -170,7 +169,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
             for _, row in ranking.iterrows()
         ]
 
-    def load_query(row: Union[Series, Mapping[Hashable, Any]]) -> Query:
+    def load_query(row: Series | Mapping[Hashable, Any]) -> Query:
         text = str(row["query"]) if "query" in row.keys() else None
         if "query_toks" in row.keys():
             tokens: Mapping[str, int] = row["query_toks"]

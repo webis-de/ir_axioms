@@ -2,19 +2,13 @@ from typing import TYPE_CHECKING
 from ir_axioms.utils.libraries import is_pyterrier_installed
 
 if is_pyterrier_installed() or TYPE_CHECKING:
+    from collections.abc import Sequence, Mapping, Callable, Hashable
     from dataclasses import dataclass, field
     from functools import cached_property, reduce
     from itertools import product
     from operator import mul
     from statistics import mean
-    from typing import (
-        Optional,
-        Sequence,
-        Callable,
-        Any,
-        Mapping,
-        Hashable,
-    )
+    from typing import Any
 
     from numpy import apply_along_axis, stack, ndarray
     from pandas import DataFrame, concat
@@ -38,7 +32,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     class KwikSortReranker(Transformer):
         axiom: Axiom[Query, Document]
         pivot_selection: PivotSelection = RandomPivotSelection()
-        text_field: Optional[str] = "text"
+        text_field: str | None = "text"
         verbose: bool = False
 
         @cached_property
@@ -109,7 +103,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         aggregations: Sequence[Callable[[Sequence[float]], float]] = field(
             default_factory=lambda: [max, min, mean]
         )
-        text_field: Optional[str] = "text"
+        text_field: str | None = "text"
         verbose: bool = False
 
         def _transform_group(
@@ -187,8 +181,8 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     @dataclass(frozen=True)
     class AxiomaticPreferences(Transformer):
         axioms: Sequence[Axiom]
-        axiom_names: Optional[Sequence[str]] = None
-        text_field: Optional[str] = "text"
+        axiom_names: Sequence[str] | None = None
+        text_field: str | None = "text"
         verbose: bool = False
 
         @cached_property

@@ -3,11 +3,12 @@ from typing import TYPE_CHECKING
 from ir_axioms.utils.libraries import is_pyterrier_installed
 
 if is_pyterrier_installed() or TYPE_CHECKING:
+    from collections.abc import Sequence, Iterable
     from dataclasses import dataclass
     from functools import reduce, cached_property
     from math import nan
     from operator import or_
-    from typing import Sequence, Optional, Literal, Iterable
+    from typing import Literal
 
     from pandas import DataFrame, concat
     from pyterrier import Transformer
@@ -28,15 +29,15 @@ if is_pyterrier_installed() or TYPE_CHECKING:
     @dataclass(frozen=True, kw_only=True)
     class AxiomaticExperiment:
         retrieval_systems: Sequence[Transformer]
-        names: Optional[Sequence[str]] = None
+        names: Sequence[str] | None = None
         topics: DataFrame
         qrels: DataFrame
         axioms: Sequence[Axiom]
-        axiom_names: Optional[Sequence[str]] = None
-        depth: Optional[int] = 10
+        axiom_names: Sequence[str] | None = None
+        depth: int | None = 10
         filter_by_qrels: bool = True
         filter_by_topics: bool = False
-        text_field: Optional[str] = "text"
+        text_field: str | None = "text"
         parallel_jobs: int = 1
         parallel_backend: Literal["joblib", "ray"] = "joblib"
         verbose: bool = False
@@ -209,7 +210,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         def _orig_consistency(
             self,
             axiom_name: str,
-            system: Optional[str] = None,
+            system: str | None = None,
         ) -> float:
             preferences = self.preferences.copy()
             # Non-zero axiom preferences.
