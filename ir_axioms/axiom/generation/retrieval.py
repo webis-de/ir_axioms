@@ -34,7 +34,6 @@ from ir_axioms.model import (
     PreferenceMatrix,
     Query,
     Document,
-    TextDocument,
 )
 from ir_axioms.utils.lazy import lazy_inject
 
@@ -53,11 +52,11 @@ class _RetrievalAxiomWrapper(Axiom[GenerationRequest, GenerationResponse]):
                 id=input.id if input.id is not None else "",
                 text=input.text if input.text is not None else "",
             ),
-            output1=TextDocument(
+            output1=Document(
                 id=output1.id if output1.id is not None else "",
                 text=output1.text if output1.text is not None else "",
             ),
-            output2=TextDocument(
+            output2=Document(
                 id=output2.id if output2.id is not None else "",
                 text=output2.text if output2.text is not None else "",
             ),
@@ -73,7 +72,7 @@ class _RetrievalAxiomWrapper(Axiom[GenerationRequest, GenerationResponse]):
             text=input.text if input.text is not None else "",
         )
         retrieval_outputs = [
-            TextDocument(
+            Document(
                 id=output.id if output.id is not None else "",
                 text=output.text if output.text is not None else "",
             )

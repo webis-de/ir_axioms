@@ -32,9 +32,9 @@ if is_sentence_transformers_installed() or TYPE_CHECKING:
             )
 
         def similarity(self, sentence1: str, sentence2: str) -> float:
-            return self.self_similarities([sentence1, sentence2])[0, 1]
+            return self.similarities([sentence1, sentence2])[0, 1]
 
-        def self_similarities(self, sentences: Sequence[str]) -> NDArray[float_]:
+        def similarities(self, sentences: Sequence[str]) -> NDArray[float_]:
             vectors = self.model.encode(
                 inputs=list(sentences),
                 convert_to_numpy=True,

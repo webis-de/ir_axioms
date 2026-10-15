@@ -129,8 +129,8 @@ class AspectRedundancyCoverageAxiom(Axiom[Any, GenerationResponse]):
             self.text_contents.contents(output2),
         )
 
-        similarities1 = self.sentence_similarity.self_similarities(list(aspects1))
-        similarities2 = self.sentence_similarity.self_similarities(list(aspects2))
+        similarities1 = self.sentence_similarity.similarities(list(aspects1))
+        similarities2 = self.sentence_similarity.similarities(list(aspects2))
 
         # TODO: Make aggregation configurable.
         aggregate_similarity1 = similarities1.mean()
