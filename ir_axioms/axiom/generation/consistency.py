@@ -103,8 +103,8 @@ class AspectSimilaritySentenceCountConsistencyAxiom(
     ) -> PreferenceMatrix:
         if input.context is None:
             return zeros((len(outputs), len(outputs)))
-        context_aspects = self.aspect_extraction.aspects(
-            self.text_contents.contents(input)
+        context_aspects = set(
+            chain.from_iterable(self.aspect_extraction.iter_aspects(input.context))
         )
         if len(context_aspects) == 0:
             return zeros((len(outputs), len(outputs)))
@@ -234,7 +234,6 @@ class RougeConsistencyAxiom(Axiom[GenerationRequest, GenerationResponse]):
         )
         rouge_l_sums = [rouge["rougeLsum"].fmeasure for rouge in rouges]
 
-        print(rouge_l_sums)
 
         return array(
             [
