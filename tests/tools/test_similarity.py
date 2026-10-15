@@ -109,8 +109,8 @@ def test_term_max_and_min_average_similarity_terms_empty() -> None:
     assert similarity.min_average_similarity_terms([]) == set()
 
 
-def test_sentence_self_similarities() -> None:
-    similarities = _JaccardSentenceSimilarity().self_similarities(["a b", "b c", "d"])
+def test_sentence_similarities() -> None:
+    similarities = _JaccardSentenceSimilarity().similarities(["a b", "b c", "d"])
 
     assert similarities.shape == (3, 3)
     assert similarities.diagonal() == approx([1.0, 1.0, 1.0])

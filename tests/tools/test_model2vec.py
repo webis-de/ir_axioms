@@ -28,11 +28,11 @@ def test_similarity_related_higher_than_unrelated() -> None:
     assert related > unrelated
 
 
-def test_self_similarities_shape_and_diagonal() -> None:
+def test_similarities_shape_and_diagonal() -> None:
     similarity = Model2VecSentenceSimilarity()
 
     sentences = ["Hello world.", "This is a test.", "Another sentence."]
-    similarities = similarity.self_similarities(sentences)
+    similarities = similarity.similarities(sentences)
 
     assert similarities.shape == (3, 3)
     assert similarities.diagonal() == approx([1.0, 1.0, 1.0])
