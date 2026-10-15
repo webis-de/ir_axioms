@@ -1,4 +1,5 @@
 from numpy import array
+from numpy.testing import assert_array_equal
 from pytest import raises
 
 from ir_axioms.axiom import DistanceAxiom, Axiom
@@ -10,16 +11,16 @@ def test_preferences() -> None:
     preferences = axiom.preferences("q1", [3, 1, 0])
 
     assert preferences.shape == (3, 3)
-    assert (
-        preferences
-        == array(
+    assert_array_equal(
+        preferences,
+        array(
             [
                 [0, 2, 3],
                 [-2, 0, 1],
                 [-3, -1, 0],
             ]
-        )
-    ).all()
+        ),
+    )
 
 
 def test_preferences_empty() -> None:
@@ -41,9 +42,9 @@ def test_batch_preferences() -> None:
     )
 
     assert preferences.shape == (2, 2, 2)
-    assert (
-        preferences
-        == array(
+    assert_array_equal(
+        preferences,
+        array(
             [
                 [
                     [0, 2],
@@ -54,8 +55,8 @@ def test_batch_preferences() -> None:
                     [3, 0],
                 ],
             ]
-        )
-    ).all()
+        ),
+    )
 
 
 def test_batch_preferences_matches_preferences() -> None:
@@ -68,7 +69,10 @@ def test_batch_preferences_matches_preferences() -> None:
     batch_preferences = axiom.batch_preferences(batch)
 
     for k, (input, outputs) in enumerate(batch):
-        assert (batch_preferences[k] == axiom.preferences(input, outputs)).all()
+        assert_array_equal(
+            batch_preferences[k],
+            axiom.preferences(input, outputs),
+        )
 
 
 def test_batch_preferences_empty() -> None:

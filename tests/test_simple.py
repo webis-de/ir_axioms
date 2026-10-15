@@ -2,6 +2,7 @@ from itertools import permutations, product
 from typing import Sequence
 
 from numpy import array
+from numpy.testing import assert_array_equal
 from pytest import mark
 
 from ir_axioms.axiom import NOP, ORIG, ORACLE, DistanceAxiom, Axiom
@@ -59,10 +60,10 @@ def test_distance_int() -> None:
     assert axiom.preference(None, 1, 3) == -2
     assert axiom.preference(None, 2, 2) == 0
 
-    assert (
-        axiom.preferences(None, [1, 3, 0])
-        == array([[0, -2, 1], [2, 0, 3], [-1, -3, 0]])
-    ).all()
+    assert_array_equal(
+        axiom.preferences(None, [1, 3, 0]),
+        array([[0, -2, 1], [2, 0, 3], [-1, -3, 0]]),
+    )
 
 
 def test_distance_float() -> None:
@@ -72,10 +73,10 @@ def test_distance_float() -> None:
     assert axiom.preference(None, 1.0, 3.5) == -2.5
     assert axiom.preference(None, 1.5, 1.5) == 0
 
-    assert (
-        axiom.preferences(None, [1.0, 3.0, 0.5])
-        == array([[0, -2, 0.5], [2, 0, 2.5], [-0.5, -2.5, 0]])
-    ).all()
+    assert_array_equal(
+        axiom.preferences(None, [1.0, 3.0, 0.5]),
+        array([[0, -2, 0.5], [2, 0, 2.5], [-0.5, -2.5, 0]]),
+    )
 
 
 _distance_values = mark.parametrize(
@@ -98,7 +99,10 @@ def test_distance_irreflexive(values: Sequence[float]) -> None:
     for value in values:
         assert axiom.preference(None, value, value) == 0
 
-    assert (axiom.preferences(None, values).diagonal() == 0).all()
+    assert_array_equal(
+        axiom.preferences(None, values).diagonal(),
+        0,
+    )
 
 
 @_distance_values
@@ -110,7 +114,10 @@ def test_distance_asymmetric(values: Sequence[float]) -> None:
             assert not axiom.preference(None, value2, value1) > 0
 
     preferences = axiom.preferences(None, values)
-    assert not ((preferences > 0) & (preferences.T > 0)).any()
+    assert_array_equal(
+        (preferences > 0) & (preferences.T > 0),
+        False,
+    )
 
 
 @_distance_values

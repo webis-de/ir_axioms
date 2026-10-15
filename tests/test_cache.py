@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 from typing import Sequence, Any
 
 from numpy import full
+from numpy.testing import assert_array_equal
 
 from ir_axioms.axiom import Axiom
 from ir_axioms.model import Preference, PreferenceMatrix
@@ -40,13 +41,19 @@ def test_cache() -> Any:
 
     assert axiom.preference(input, output1, output2) == 1
     assert axiom.preference(input, output2, output1) == 1
-    assert (axiom.preferences(input, [output1, output2]) == full((2, 2), 1)).all()
+    assert_array_equal(
+        axiom.preferences(input, [output1, output2]),
+        full((2, 2), 1),
+    )
 
     axiom.scalar = 2
 
     assert axiom.preference(input, output1, output2) == 2
     assert axiom.preference(input, output2, output1) == 2
-    assert (axiom.preferences(input, [output1, output2]) == full((2, 2), 2)).all()
+    assert_array_equal(
+        axiom.preferences(input, [output1, output2]),
+        full((2, 2), 2),
+    )
 
     with TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir) / "cache"
@@ -55,22 +62,24 @@ def test_cache() -> Any:
 
         assert cached_axiom.preference(input, output1, output2) == 2
         assert cached_axiom.preference(input, output2, output1) == 2
-        assert (
-            cached_axiom.preferences(input, [output1, output2]) == full((2, 2), 2)
-        ).all()
+        assert_array_equal(
+            cached_axiom.preferences(input, [output1, output2]), full((2, 2), 2)
+        )
 
         axiom.scalar = 3
 
         # The cached preferences should still show the old scalar value.
         assert cached_axiom.preference(input, output1, output2) == 2
         assert cached_axiom.preference(input, output2, output1) == 2
-        assert (
-            cached_axiom.preferences(input, [output1, output2]) == full((2, 2), 2)
-        ).all()
+        assert_array_equal(
+            cached_axiom.preferences(input, [output1, output2]),
+            full((2, 2), 2),
+        )
 
         # Newly computed preferences should pick up the new scalar value.
         assert cached_axiom.preference(input, output3, output4) == 3
         assert cached_axiom.preference(input, output4, output3) == 3
-        assert (
-            cached_axiom.preferences(input, [output3, output4]) == full((2, 2), 3)
-        ).all()
+        assert_array_equal(
+            cached_axiom.preferences(input, [output3, output4]),
+            full((2, 2), 3),
+        )
