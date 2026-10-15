@@ -269,7 +269,7 @@ class QueryTermPositionInArgumentativeUnitsAxiom(
 
     text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
-    penalty: int | None = 100000
+    penalty: NoInject[int | None] = 100000
     """
     Penalty for the average query term position,
     if a query term is not found in any argumentative unit for a document.
@@ -360,8 +360,8 @@ class AverageSentenceLengthAxiom(
     text_contents: TextContents[Document]
     term_tokenizer: TermTokenizer
     sentence_tokenizer: SentenceTokenizer
-    min_sentence_length: int = 12
-    max_sentence_length: int = 20
+    min_sentence_length: NoInject[int] = 12
+    max_sentence_length: NoInject[int] = 20
     precondition: NoInject[Precondition[Any, Document]] = field(default_factory=LEN)
 
     def preference(
