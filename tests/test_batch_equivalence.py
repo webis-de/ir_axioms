@@ -6,6 +6,34 @@ from pytest import fixture, mark, param
 
 from ir_axioms.axiom import (
     Axiom,
+    CLAR2,
+    COH1,
+    COH2,
+    CONS1,
+    CONS2,
+    CONS3,
+    CORR1,
+    COV1,
+    COV2,
+    COV3,
+    GEN_AND,
+    GEN_ANTI_REG,
+    GEN_DIV,
+    GEN_LEN_AND,
+    GEN_LEN_DIV,
+    GEN_LNC1,
+    GEN_M_AND,
+    GEN_PROX1,
+    GEN_PROX2,
+    GEN_PROX3,
+    GEN_PROX4,
+    GEN_PROX5,
+    GEN_REG,
+    GEN_STMC1,
+    GEN_STMC2,
+    GEN_TF_LNC,
+    GEN_TFC1,
+    GEN_aSL,
     AND,
     ANTI_REG,
     ASPECT_REG,
@@ -34,8 +62,9 @@ from ir_axioms.axiom import (
     aSLDoc,
 )
 from ir_axioms.dependency_injection import injector as _default_injector
-from ir_axioms.model import Query, Document
-from ir_axioms.tools import TermSimilarity
+from ir_axioms.model import Query, Document, GenerationRequest, GenerationResponse
+from ir_axioms.tools import SentenceSimilarity, TermSimilarity
+from ir_axioms.tools.similarity import AverageTermSimilaritySentenceSimilarity
 from ir_axioms.utils.injection import reset_binding_scopes
 from tests.util import inject_documents
 
@@ -132,6 +161,82 @@ _DOCUMENTS = [
 ]
 
 
+_REQUEST = GenerationRequest(
+    id="r1",
+    text="blue car fast",
+    context=[
+        "The Tesla Model S is a fast electric car.",
+        "Porsche built a blue car with a top speed of 300 km/h in 2019.",
+    ],
+)
+
+_RESPONSES = [
+    GenerationResponse(
+        id="g1",
+        text="The Tesla Model S is a fast car [1]. It is often blue [2].",
+    ),
+    GenerationResponse(
+        id="g2",
+        text="A blue car is fast. The Porsche reaches 300 km/h [1].",
+    ),
+    GenerationResponse(
+        id="g3",
+        text=(
+            "Porsche built a blue car in 2019. "
+            "Porsche built a red car in 2021. "
+            "Both cars are fast."
+        ),
+    ),
+    GenerationResponse(
+        id="g4",
+        text="Fast cars are fast. Blue cars are blue. Cars are cars.",
+    ),
+    GenerationResponse(
+        id="g5",
+        text="I do not know which car is fast.",
+    ),
+    GenerationResponse(
+        id="g6",
+        text=(
+            "The Tesla Model S, an electric car produced in California since 2012, "
+            "is notably fast, while many blue cars, including those built by "
+            "Porsche in Germany, reach a top speed of 300 km/h [3]."
+        ),
+    ),
+    GenerationResponse(
+        id="g7",
+        text="Blue car fast. Blue car fast blue car fast.",
+    ),
+    GenerationResponse(
+        id="g8",
+        text="See https://example.com for fast blue cars. The Model S is fast [2].",
+    ),
+    # Contradictory mentions of the same entity (for CONS3).
+    GenerationResponse(
+        id="g9",
+        text="Tesla sells blue cars in Germany. Tesla does not sell cars in Germany.",
+    ),
+    # Same query term frequencies but different lengths (for GEN_LNC1).
+    GenerationResponse(
+        id="g10",
+        text="blue car fast city",
+    ),
+    GenerationResponse(
+        id="g11",
+        text="blue car fast city blue car fast city",
+    ),
+    # Same length but different average sentence lengths (for GEN_aSL).
+    GenerationResponse(
+        id="g12",
+        text="The blue car is fast and the red car is slow but both are old.",
+    ),
+    GenerationResponse(
+        id="g13",
+        text="The blue car. Is fast. And the red car. Is slow. But both. Are old.",
+    ),
+]
+
+
 @fixture
 def injected_tools() -> Iterator[None]:
     """
@@ -144,6 +249,11 @@ def injected_tools() -> Iterator[None]:
     binder.bind(
         interface=TermSimilarity,
         to=_CharacterOverlapTermSimilarity(),
+    )
+    # Avoid downloading sentence embedding models.
+    binder.bind(
+        interface=SentenceSimilarity,
+        to=AverageTermSimilaritySentenceSimilarity,
     )
     reset_binding_scopes()
     yield
@@ -202,5 +312,63 @@ def test_batched_preferences_equal_pairwise_preferences(
         ],
         dtype=float_,
     ).reshape((len(documents), len(documents)))
+
+    assert_array_equal(batched, pairwise)
+
+
+@mark.parametrize(
+    "axiom_shorthand",
+    [
+        param(CLAR2, id="CLAR2"),
+        param(COH1, id="COH1"),
+        param(COH2, id="COH2"),
+        param(CONS1, id="CONS1"),
+        param(CONS2, id="CONS2"),
+        param(CONS3, id="CONS3"),
+        param(CORR1, id="CORR1"),
+        param(COV1, id="COV1"),
+        param(COV2, id="COV2"),
+        param(COV3, id="COV3"),
+        param(GEN_aSL, id="GEN_aSL"),
+        param(GEN_LNC1, id="GEN_LNC1"),
+        param(GEN_TF_LNC, id="GEN_TF_LNC"),
+        param(GEN_PROX1, id="GEN_PROX1"),
+        param(GEN_PROX2, id="GEN_PROX2"),
+        param(GEN_PROX3, id="GEN_PROX3"),
+        param(GEN_PROX4, id="GEN_PROX4"),
+        param(GEN_PROX5, id="GEN_PROX5"),
+        param(GEN_REG, id="GEN_REG"),
+        param(GEN_ANTI_REG, id="GEN_ANTI_REG"),
+        param(GEN_AND, id="GEN_AND"),
+        param(GEN_LEN_AND, id="GEN_LEN_AND"),
+        param(GEN_M_AND, id="GEN_M_AND"),
+        param(GEN_DIV, id="GEN_DIV"),
+        param(GEN_LEN_DIV, id="GEN_LEN_DIV"),
+        param(GEN_TFC1, id="GEN_TFC1"),
+        param(GEN_STMC1, id="GEN_STMC1"),
+        param(GEN_STMC2, id="GEN_STMC2"),
+        # CLAR1 is excluded, as it downloads and runs a LanguageTool server.
+        # GEN_ArgUC, GEN_QTArg, and GEN_QTPArg are excluded,
+        # as they query the remote TARGER API.
+    ],
+)
+def test_generation_batched_preferences_equal_pairwise_preferences(
+    injected_tools: None,
+    axiom_shorthand: Callable[..., Axiom[GenerationRequest, GenerationResponse]],
+) -> None:
+    axiom = axiom_shorthand()
+
+    request = _REQUEST
+    responses = _RESPONSES
+
+    batched = axiom.preferences(request, responses)
+    pairwise = array(
+        [
+            axiom.preference(request, response1, response2)
+            for response1 in responses
+            for response2 in responses
+        ],
+        dtype=float_,
+    ).reshape((len(responses), len(responses)))
 
     assert_array_equal(batched, pairwise)
