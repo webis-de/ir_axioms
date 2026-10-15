@@ -1,17 +1,10 @@
+from collections.abc import Iterable, Collection, Sequence, Set
 from itertools import product, combinations
-from typing import (
-    Iterable,
-    Dict,
-    Collection,
-    Tuple,
-    Sequence,
-    Protocol,
-    runtime_checkable,
-    AbstractSet,
-)
+from typing import Protocol, runtime_checkable
 
 from numpy import array, float_
 from numpy.typing import NDArray
+from typing_extensions import deprecated
 
 
 @runtime_checkable
@@ -31,8 +24,8 @@ class TermSimilarity(Protocol):
             dtype=float_,
         ).reshape((len(terms), len(terms)))
 
-    def similarity_sums(self, terms: Iterable[str]) -> Dict[str, float]:
-        similarity_sums: Dict[str, float] = {term: 0 for term in terms}
+    def similarity_sums(self, terms: Iterable[str]) -> dict[str, float]:
+        similarity_sums: dict[str, float] = {term: 0 for term in terms}
         for term1, term2 in combinations(similarity_sums.keys(), 2):
             similarity = self.similarity(term1, term2)
             similarity_sums[term1] += similarity
@@ -48,16 +41,16 @@ class TermSimilarity(Protocol):
             [self.similarity(term1, term2) for term1 in terms1 for term2 in terms2]
         ).mean()
 
-    def _pair_similarity(self, terms: Tuple[str, str]) -> float:
+    def _pair_similarity(self, terms: tuple[str, str]) -> float:
         term1, term2 = terms
         return self.similarity(term1, term2)
 
     def max_similarity_pairs(
         self, terms1: Collection[str], terms2: Collection[str]
-    ) -> AbstractSet[Tuple[str, str]]:
+    ) -> Set[tuple[str, str]]:
         if len(terms1) == 0 or len(terms2) == 0:
             return set()
-        most_similar_pairs: Sequence[Tuple[str, str]] = sorted(
+        most_similar_pairs: Sequence[tuple[str, str]] = sorted(
             product(set(terms1), set(terms2)),
             key=self._pair_similarity,
             reverse=True,
@@ -69,14 +62,14 @@ class TermSimilarity(Protocol):
             if self._pair_similarity(pair) >= max_similarity
         }
 
-    def max_average_similarity_terms(self, terms: Collection[str]) -> AbstractSet[str]:
+    def max_average_similarity_terms(self, terms: Collection[str]) -> Set[str]:
         if len(terms) == 0:
             return set()
         similarity_sums = self.similarity_sums(set(terms))
         max_similarity_sum = max(similarity_sums.values())
         return {term for term in terms if similarity_sums[term] >= max_similarity_sum}
 
-    def min_average_similarity_terms(self, terms: Collection[str]) -> AbstractSet[str]:
+    def min_average_similarity_terms(self, terms: Collection[str]) -> Set[str]:
         if len(terms) == 0:
             return set()
         similarity_sums = self.similarity_sums(set(terms))
@@ -88,7 +81,8 @@ class TermSimilarity(Protocol):
 class SentenceSimilarity(Protocol):
     def similarity(self, sentence1: str, sentence2: str) -> float: ...
 
-    def self_similarities(self, sentences: Sequence[str]) -> NDArray[float_]:
+    # TODO: Rename just similarities and create a depracated delegate for backwards compatibility.
+    def similarities(self, sentences: Sequence[str]) -> NDArray[float_]:
         return array(
             [
                 self.similarity(
@@ -100,6 +94,10 @@ class SentenceSimilarity(Protocol):
             ],
             dtype=float_,
         ).reshape((len(sentences), len(sentences)))
+
+    @deprecated("Use similarities instead.")
+    def self_similarities(self, sentences: Sequence[str]) -> NDArray[float_]:
+        return self.similarities(sentences)
 
     def paired_similarities(
         self, sentences1: Sequence[str], sentences2: Sequence[str]
