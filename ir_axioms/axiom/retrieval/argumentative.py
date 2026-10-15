@@ -117,7 +117,7 @@ def _query_term_position_in_argument(
 
 
 def _average_sentence_length(
-    text_contents: TextContents[Document],
+    text_contents: TextContents[Query | Document] | TextContents[Document],
     term_tokenizer: TermTokenizer,
     sentence_tokenizer: SentenceTokenizer,
     document: Document,
@@ -154,7 +154,7 @@ class _TargerMixin:
 
     def analyze_text(
         self,
-    text_contents: TextContents[Query] | TextContents[Query | Document],
+        text_contents: TextContents[Query | Document] | TextContents[Document],
         document: Document,
     ) -> dict[str, ArgumentSentences]:
         return self._analyze_text(text_contents.contents(document))
