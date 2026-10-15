@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from functools import cached_property
+from math import inf
 from statistics import StatisticsError
 from typing import AbstractSet, Iterator, Iterable
 from warnings import warn
@@ -26,7 +27,7 @@ class YakeAspectExtraction(AspectExtraction):
     ngram_range: tuple[int, int] = (1, 3)
     include_pos: Iterable[str] = ("NOUN", "PROPN", "ADJ")
     top_n: int = 10
-    threshold: float = 1.0
+    threshold: float = inf
 
     @cached_property
     def _language(self) -> Language:
