@@ -1,4 +1,5 @@
-from numpy import array, errstate, isnan, zeros
+from numpy import array, errstate, isnan, zeros, float_
+from numpy.testing import assert_array_equal
 from pytest import approx
 
 from ir_axioms.axiom import (
@@ -9,7 +10,7 @@ from ir_axioms.axiom import (
     UniformAxiom,
     VoteAxiom,
 )
-from ir_axioms.model import Query, Document
+from ir_axioms.model import Query, Document, Preference
 
 
 def test_uniform() -> None:
@@ -32,15 +33,15 @@ def test_negate() -> None:
     assert axiom2.preference(None, 3, 3) == 0
     assert -axiom2 is axiom1
 
-    assert (
-        axiom2.preferences(None, [3, 1])
-        == array(
+    assert_array_equal(
+        axiom2.preferences(None, [3, 1]),
+        array(
             [
                 [0, -2],
                 [2, 0],
             ]
-        )
-    ).all()
+        ),
+    )
 
 
 def test_sum() -> None:
@@ -51,15 +52,15 @@ def test_sum() -> None:
     assert axiom2.preference(None, 3, 1) == 6
     assert axiom2.preference(None, 1, 3) == -6
 
-    assert (
-        axiom2.preferences(None, [3, 1])
-        == array(
+    assert_array_equal(
+        axiom2.preferences(None, [3, 1]),
+        array(
             [
                 [0, 6],
                 [-6, 0],
             ]
-        )
-    ).all()
+        ),
+    )
 
 
 def test_sum_negation() -> None:
@@ -70,7 +71,10 @@ def test_sum_negation() -> None:
     assert axiom2.preference(None, 3, 1) == 0
     assert axiom2.preference(None, 1, 3) == 0
 
-    assert (axiom2.preferences(None, [3, 1]) == zeros((2, 2))).all()
+    assert_array_equal(
+        axiom2.preferences(None, [3, 1]),
+        zeros((2, 2)),
+    )
 
 
 def test_product() -> None:
@@ -81,15 +85,15 @@ def test_product() -> None:
     assert axiom2.preference(None, 3, 1) == 8
     assert axiom2.preference(None, 1, 3) == -8
 
-    assert (
-        axiom2.preferences(None, [3, 1])
-        == array(
+    assert_array_equal(
+        axiom2.preferences(None, [3, 1]),
+        array(
             [
                 [0, 8],
                 [-8, 0],
             ]
-        )
-    ).all()
+        ),
+    )
 
 
 def test_product_negation() -> None:
@@ -100,15 +104,15 @@ def test_product_negation() -> None:
     assert axiom2.preference(None, 3, 1) == -4
     assert axiom2.preference(None, 1, 3) == -4
 
-    assert (
-        axiom2.preferences(None, [3, 1])
-        == array(
+    assert_array_equal(
+        axiom2.preferences(None, [3, 1]),
+        array(
             [
                 [0, -4],
                 [-4, 0],
             ]
-        )
-    ).all()
+        ),
+    )
 
 
 def test_multiplicative_inverse() -> None:
@@ -148,17 +152,23 @@ def test_and() -> None:
     assert axiom5.preference(None, 3, 1) == 0
     assert axiom5.preference(None, 1, 3) == 0
 
-    assert (
-        axiom3.preferences(None, [3, 1])
-        == array(
+    assert_array_equal(
+        axiom3.preferences(None, [3, 1]),
+        array(
             [
                 [0, 1],
                 [-1, 0],
             ]
-        )
-    ).all()
-    assert (axiom4.preferences(None, [3, 1]) == zeros((2, 2))).all()
-    assert (axiom5.preferences(None, [3, 1]) == zeros((2, 2))).all()
+        ),
+    )
+    assert_array_equal(
+        axiom4.preferences(None, [3, 1]),
+        zeros((2, 2)),
+    )
+    assert_array_equal(
+        axiom5.preferences(None, [3, 1]),
+        zeros((2, 2)),
+    )
 
 
 def test_majority_vote() -> None:
@@ -176,25 +186,28 @@ def test_majority_vote() -> None:
     assert axiom5.preference(None, 3, 1) == 0
     assert axiom5.preference(None, 1, 3) == 0
 
-    assert (
-        axiom3.preferences(None, [3, 1])
-        == array(
+    assert_array_equal(
+        axiom3.preferences(None, [3, 1]),
+        array(
             [
                 [0, 1],
                 [-1, 0],
             ]
-        )
-    ).all()
-    assert (
-        axiom4.preferences(None, [3, 1])
-        == array(
+        ),
+    )
+    assert_array_equal(
+        axiom4.preferences(None, [3, 1]),
+        array(
             [
                 [0, 1],
                 [-1, 0],
             ]
-        )
-    ).all()
-    assert (axiom5.preferences(None, [3, 1]) == zeros((2, 2))).all()
+        ),
+    )
+    assert_array_equal(
+        axiom5.preferences(None, [3, 1]),
+        zeros((2, 2)),
+    )
 
 
 def test_cascade() -> None:
@@ -209,24 +222,53 @@ def test_cascade() -> None:
     assert axiom4.preference(None, 3, 1) == -2
     assert axiom4.preference(None, 1, 3) == 2
 
-    assert (
-        axiom3.preferences(None, [3, 1])
-        == array(
+    assert_array_equal(
+        axiom3.preferences(None, [3, 1]),
+        array(
             [
                 [0, 2],
                 [-2, 0],
             ]
-        )
-    ).all()
-    assert (
-        axiom4.preferences(None, [3, 1])
-        == array(
+        ),
+    )
+    assert_array_equal(
+        axiom4.preferences(None, [3, 1]),
+        array(
             [
                 [0, -2],
                 [2, 0],
             ]
-        )
-    ).all()
+        ),
+    )
+
+
+class _EvenAxiom(Axiom[None, int]):
+    """Prefer even numbers, but undecided between numbers of the same parity."""
+
+    def preference(self, input: None, output1: int, output2: int) -> Preference:
+        return (output2 % 2) - (output1 % 2)
+
+
+def test_cascade_preferences_equal_pairwise_preferences() -> None:
+    axiom = _EvenAxiom() | DistanceAxiom()
+    outputs = [3, 1, 4, 2, 3]
+
+    batched = axiom.preferences(None, outputs)
+    pairwise = array(
+        [
+            axiom.preference(None, output1, output2)
+            for output1 in outputs
+            for output2 in outputs
+        ],
+        dtype=float_,
+    ).reshape((len(outputs), len(outputs)))
+
+    assert_array_equal(batched, pairwise)
+    # Even numbers are preferred, otherwise larger numbers.
+    assert batched[2, 0] == 1
+    assert batched[0, 2] == -1
+    assert batched[0, 1] == 2
+    assert batched[2, 3] == 2
 
 
 def test_normalize() -> None:
@@ -239,21 +281,21 @@ def test_normalize() -> None:
     assert axiom2.preference(None, 1, 3) == -1
     assert axiom2.preference(None, 3, 3) == 0
 
-    assert (
-        axiom1.preferences(None, [3, 1])
-        == array(
+    assert_array_equal(
+        axiom1.preferences(None, [3, 1]),
+        array(
             [
                 [0, 2],
                 [-2, 0],
             ]
-        )
-    ).all()
-    assert (
-        axiom2.preferences(None, [3, 1])
-        == array(
+        ),
+    )
+    assert_array_equal(
+        axiom2.preferences(None, [3, 1]),
+        array(
             [
                 [0, 1],
                 [-1, 0],
             ]
-        )
-    ).all()
+        ),
+    )
