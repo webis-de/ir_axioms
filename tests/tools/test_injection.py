@@ -90,7 +90,7 @@ def test_interfaces_are_complete(injector: Injector) -> None:
 @mark.parametrize("interface", _INTERFACES, ids=str)
 def test_bindings_implement_interfaces(injector: Injector, interface: type) -> None:
     interface_origin = get_origin(interface) or interface
-    implementation = type(injector.get(interface))
+    implementation: type[Any] = type(injector.get(interface))
 
     assert isinstance(injector.get(interface), interface_origin)
 
