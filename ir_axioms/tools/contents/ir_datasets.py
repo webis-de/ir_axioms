@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Iterable, Mapping, Union
+from collections.abc import Iterator, Sequence, Iterable, Mapping
+from typing import Union
 
 from ir_datasets import Dataset, load as irds_load
 from ir_datasets.formats import GenericDoc, GenericQuery
@@ -12,7 +13,7 @@ from ir_axioms.tools.contents.base import TextContents
 
 @dataclass(frozen=True, kw_only=True)
 class IrdsDocumentTextContents(TextContents[Document]):
-    dataset: Union[Dataset, str]
+    dataset: Dataset | str
 
     @cached_property
     def _dataset(self) -> Dataset:
@@ -31,10 +32,25 @@ class IrdsDocumentTextContents(TextContents[Document]):
         irds_document: GenericDoc = self._documents_store.get(input.id)
         return irds_document.default_text()
 
+    def iter_contents(self, inputs: Iterable[Document]) -> Iterator[str]:
+        inputs = list(inputs)
+        missing_ids = {input.id for input in inputs if input.text is None}
+        irds_documents: Mapping[str, GenericDoc] = (
+            self._documents_store.get_many(missing_ids) if len(missing_ids) > 0 else {}
+        )
+        for input in inputs:
+            if input.text is not None:
+                yield input.text
+            elif input.id in irds_documents:
+                yield irds_documents[input.id].default_text()
+            else:
+                # Raise the same error as for a single missing document.
+                yield self.contents(input)
+
 
 @dataclass(frozen=True, kw_only=True)
 class IrdsQueryTextContents(TextContents[Query]):
-    dataset: Union[Dataset, str]
+    dataset: Dataset | str
 
     @cached_property
     def _dataset(self) -> Dataset:
