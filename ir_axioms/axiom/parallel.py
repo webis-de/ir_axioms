@@ -31,7 +31,6 @@ class ParallelAxiom(Axiom[Input, Output], Generic[Input, Output]):
         input: Input,
         outputs: Sequence[Output],
     ) -> PreferenceMatrix:
-
         @delayed
         def _preference(
             output1: Output,

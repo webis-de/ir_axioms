@@ -53,8 +53,10 @@ class PreconditionMixin(Axiom[Input, Output], ABC):
             input=input,
             outputs=outputs,
         )
-        return array(masked_array(
-            data=preferences,
-            mask=mask,
-            fill_value=0,
-        ))
+        return array(
+            masked_array(
+                data=preferences,
+                mask=mask,
+                fill_value=0,
+            )
+        )

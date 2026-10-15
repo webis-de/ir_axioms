@@ -28,7 +28,9 @@ class DbmCachedAxiom(Axiom[_Input, _Output]):
 
     @staticmethod
     def _key(input: _Input, output1: _Output, output2: _Output) -> bytes:
-        return blake2b(repr((input, output1, output2)).encode(encoding="utf-8")).digest()
+        return blake2b(
+            repr((input, output1, output2)).encode(encoding="utf-8")
+        ).digest()
 
     def _iter_preferences(
         self,
@@ -48,7 +50,9 @@ class DbmCachedAxiom(Axiom[_Input, _Output]):
                     try:
                         preference_bytes = cache[key]
                     except Exception as e:
-                        warn(f"Error while reading from axiom cache at: {self.cache_path}")
+                        warn(
+                            f"Error while reading from axiom cache at: {self.cache_path}"
+                        )
                         raise e
                     (preference,) = unpack("f", preference_bytes)
                     if isnan(preference):
@@ -64,7 +68,9 @@ class DbmCachedAxiom(Axiom[_Input, _Output]):
                     try:
                         cache[key] = preference_bytes
                     except Exception as e:
-                        warn(f"Error while writing to axiom cache at: {self.cache_path}")
+                        warn(
+                            f"Error while writing to axiom cache at: {self.cache_path}"
+                        )
                         raise e
                     yield preference
 
@@ -122,7 +128,9 @@ class DbmCachedAxiom(Axiom[_Input, _Output]):
                     try:
                         cache[key] = preference_bytes
                     except Exception as e:
-                        warn(f"Error while writing to axiom cache at: {self.cache_path}")
+                        warn(
+                            f"Error while writing to axiom cache at: {self.cache_path}"
+                        )
                         raise e
         return preferences
 
