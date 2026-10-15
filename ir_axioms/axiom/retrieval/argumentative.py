@@ -3,7 +3,7 @@ from functools import cached_property
 from math import nan  # pyright: ignore[reportShadowedImports]
 from pathlib import Path
 from statistics import mean
-from typing import Any, Final, Iterable, Dict, Optional, Sequence, Union
+from typing import Any, Final, Iterable, Sequence
 
 from injector import inject, NoInject
 from numpy import array, float_
@@ -72,7 +72,7 @@ def _is_claim_or_premise(tag: ArgumentTag) -> bool:
 
 
 def _count_query_terms(
-    text_contents: Union[TextContents[Query], TextContents[Union[Query, Document]]],
+    text_contents: TextContents[Query] | TextContents[Query | Document],
     term_tokenizer: TermTokenizer,
     sentences: ArgumentSentences,
     query: Query,
@@ -92,7 +92,7 @@ def _count_query_terms(
 
 
 def _query_term_position_in_argument(
-    text_contents: Union[TextContents[Query], TextContents[Union[Query, Document]]],
+    text_contents: TextContents[Query] | TextContents[Query | Document],
     term_tokenizer: TermTokenizer,
     sentences: ArgumentSentences,
     query: Query,
@@ -133,7 +133,7 @@ def _average_sentence_length(
 class _TargerMixin:
     models: NoInject[Iterable[str]] = DEFAULT_TARGER_MODELS
     api_url: NoInject[str] = DEFAULT_TARGER_API_URL
-    cache_dir: NoInject[Optional[Path]] = None
+    cache_dir: NoInject[Path | None] = None
 
     @cached_property
     def _analyzed_texts(self) -> dict[str, dict[str, ArgumentSentences]]:
@@ -154,11 +154,9 @@ class _TargerMixin:
 
     def analyze_text(
         self,
-        text_contents: Union[
-            TextContents[Document], TextContents[Union[Query, Document]]
-        ],
+    text_contents: TextContents[Query] | TextContents[Query | Document],
         document: Document,
-    ) -> Dict[str, ArgumentSentences]:
+    ) -> dict[str, ArgumentSentences]:
         return self._analyze_text(text_contents.contents(document))
 
 
@@ -205,7 +203,7 @@ class QueryTermOccurrenceInArgumentativeUnitsAxiom(
     Favor documents with more query terms in argumentative units.
     """
 
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
     precondition: NoInject[Precondition[Any, Document]] = field(default_factory=LEN)
 
@@ -269,9 +267,9 @@ class QueryTermPositionInArgumentativeUnitsAxiom(
             of WWW 2017. pp. 1291–1299. ACM.
     """
 
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
-    penalty: Optional[int] = 100000
+    penalty: int | None = 100000
     """
     Penalty for the average query term position,
     if a query term is not found in any argumentative unit for a document.
