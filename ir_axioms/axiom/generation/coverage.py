@@ -151,7 +151,7 @@ class AspectRedundancyCoverageAxiom(Axiom[Any, GenerationResponse]):
         contents = (self.text_contents.contents(output) for output in outputs)
         aspects = self.aspect_extraction.iter_aspects(contents)
         similarities = (
-            self.sentence_similarity.self_similarities(list(aspects))
+            self.sentence_similarity.similarities(list(aspects))
             for aspects in tqdm(
                 aspects,
                 desc="Extract aspects",
