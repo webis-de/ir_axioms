@@ -33,6 +33,11 @@ def _lb1_preference(
         return 0
 
 
+def _require_score(document: Document) -> float:
+    if document.score is None:
+        raise ValueError("Can only compare scored documents.")
+    return document.score
+
 @inject
 @dataclass(frozen=True, kw_only=True)
 class Lb1Axiom(Axiom[Query, Document]):
@@ -47,12 +52,9 @@ class Lb1Axiom(Axiom[Query, Document]):
         output1: Document,
         output2: Document,
     ) -> Preference:
-        if output1.score is None or output2.score is None:
-            raise ValueError("Can only compare scored documents.")
-
         if not isclose(
-            output1.score,
-            output2.score,
+            _require_score(output1),
+            _require_score(output2),
             rel_tol=self.margin_fraction,
         ):
             return 0
