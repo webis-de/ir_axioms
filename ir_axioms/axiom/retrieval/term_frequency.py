@@ -254,16 +254,15 @@ TFC3: Final = lazy_inject(Tfc3Axiom)
 
 def _single_different_term_frequency(
     query_unique_terms: AbstractSet,
-    text_statistics: TextStatistics[Document],
-    output1: Document,
-    output2: Document,
+    term_frequencies1: Mapping[str, float],
+    term_frequencies2: Mapping[str, float],
 ) -> bool:
     sum_term_frequency1 = 0.0
     sum_term_frequency2 = 0.0
     term_frequency_different = False
     for term in query_unique_terms:
-        count1 = text_statistics.term_frequency(output1, term)
-        count2 = text_statistics.term_frequency(output2, term)
+        count1 = term_frequencies1.get(term, 0)
+        count2 = term_frequencies2.get(term, 0)
         if count1 != count2:
             term_frequency_different = True
         sum_term_frequency1 += count1
@@ -298,12 +297,13 @@ class ModifiedTdcAxiom(Axiom[Query, Document]):
         query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
+        term_frequencies1 = self.text_statistics.term_frequencies(output1)
+        term_frequencies2 = self.text_statistics.term_frequencies(output2)
 
         if not _single_different_term_frequency(
             query_unique_terms=query_unique_terms,
-            text_statistics=self.text_statistics,
-            output1=output1,
-            output2=output2,
+            term_frequencies1=term_frequencies1,
+            term_frequencies2=term_frequencies2,
         ):
             return 0
 

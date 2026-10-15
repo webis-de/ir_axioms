@@ -146,6 +146,24 @@ def _closest_grouping_size_and_count(
     return min_occurrences, min_occurrences_count
 
 
+def _tokenize_documents(
+    text_contents: TextContents[Union[Query, Document]],
+    term_tokenizer: TermTokenizer,
+    outputs: Sequence[Document],
+    verbose: bool,
+) -> tuple[Sequence[Sequence[str]], Sequence[AbstractSet[str]]]:
+    document_terms = list(
+        tqdm(
+            term_tokenizer.iter_terms(text_contents.iter_contents(outputs)),
+            desc="Tokenize documents",
+            total=len(outputs),
+            unit="document",
+            disable=not verbose,
+        )
+    )
+    return document_terms, [set(terms) for terms in document_terms]
+
+
 @inject
 @dataclass(frozen=True, kw_only=True)
 class Prox1Axiom(Axiom[Query, Document]):
@@ -186,8 +204,39 @@ class Prox1Axiom(Axiom[Query, Document]):
 
         return strictly_greater(average2, average1)
 
-    # ADDITION: Come up with a better way to batch-compute preference-matrices.
-    # The largest hurdle seems to be the overlapping terms computation.
+    def preferences(
+        self,
+        input: Query,
+        outputs: Sequence[Document],
+    ) -> PreferenceMatrix:
+        query_unique_terms = self.term_tokenizer.unique_terms(
+            self.text_contents.contents(input),
+        )
+        document_terms, document_unique_terms = _tokenize_documents(
+            self.text_contents, self.term_tokenizer, outputs, self.verbose
+        )
+        # If both documents contain the same query term subset,
+        # the overlapping terms are just the query terms in each document.
+        averages = [
+            _average_between_query_terms(query_unique_terms & unique_terms, terms)
+            for terms, unique_terms in zip(document_terms, document_unique_terms)
+        ]
+        return array(
+            [
+                (
+                    strictly_greater(averages[i2], averages[i1])
+                    if _same_query_term_subset(
+                        query_terms=query_unique_terms,
+                        document1_terms=document_unique_terms[i1],
+                        document2_terms=document_unique_terms[i2],
+                    )
+                    else 0
+                )
+                for i1 in range(len(outputs))
+                for i2 in range(len(outputs))
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
 
 
 PROX1: Final = lazy_inject(Prox1Axiom)
