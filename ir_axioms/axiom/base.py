@@ -2,10 +2,16 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Generic, Literal, Sequence, Optional, final
 
-from numpy import float_, array
+from numpy import float_, array, stack, empty
 from tqdm.auto import tqdm
 
-from ir_axioms.model import Input, Output, Preference, PreferenceMatrix
+from ir_axioms.model import (
+    Input,
+    Output,
+    Preference,
+    PreferenceMatrix,
+    PreferenceMatrices,
+)
 from ir_axioms.tools.pivot import PivotSelection, RandomPivotSelection
 from ir_axioms.precondition.base import Precondition
 
@@ -18,6 +24,7 @@ class Axiom(ABC, Generic[Input, Output]):
 
     This base class also exposes various operators (i.e., ``+``, ``-``, ``*``, ``/``, ``%``, ``&``, ``~``) for combining and manipulating axioms, as well as ``rerank()`` for KwikSort re-ranking the outputs, and other methods for evaluating rankings of outputs in comparison to the axiom's preferences.
     """
+
     verbose: bool = False
 
     @abstractmethod
@@ -75,6 +82,39 @@ class Axiom(ABC, Generic[Input, Output]):
             ),
             dtype=float_,
         ).reshape((len(outputs), len(outputs)))
+
+    def batch_preferences(
+        self,
+        batch: Sequence[tuple[Input, Sequence[Output]]],
+    ) -> PreferenceMatrices:
+        """
+        Batch-compute the preference matrices for multiple inputs, each with its own sequence of outputs.
+        While the naive default implementation just delegates to `preferences()` for each input-outputs pair, it might make sense to override it to batch costly computations (e.g., model inference) across inputs.
+
+        :param batch: Pairs of an input and the outputs for that input.
+        :return: A stacked array of preference matrices, where the kij-th entry corresponds to the preference between the i-th and j-th output of the k-th input.
+        """
+
+        if len(batch) == 0:
+            return empty((0, 0, 0), dtype=float_)
+        num_outputs = len(batch[0][1])
+        if any(len(outputs) != num_outputs for _, outputs in batch):
+            raise ValueError("All sequences of outputs must have the same length.")
+
+        return stack(
+            [
+                self.preferences(
+                    input=input,
+                    outputs=outputs,
+                )
+                for input, outputs in tqdm(
+                    batch,
+                    desc="Batch preferences",
+                    total=len(batch),
+                    disable=not self.verbose,
+                )
+            ]
+        )
 
     def __add__(self, other: "Axiom[Input, Output]") -> "Axiom[Input, Output]":
         from ir_axioms.axiom.arithmetic import SumAxiom

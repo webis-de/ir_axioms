@@ -5,6 +5,7 @@ from ir_axioms.model.base import (
     Output,
     Preference,
     PreferenceMatrix,
+    PreferenceMatrices,
     Mask,
     MaskMatrix,
 )
@@ -45,6 +46,7 @@ __all__ = [
     "Output",
     "Preference",
     "PreferenceMatrix",
+    "PreferenceMatrices",
     "Mask",
     "MaskMatrix",
     "Query",

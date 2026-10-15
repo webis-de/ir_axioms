@@ -8,6 +8,7 @@ Output = TypeVar("Output", contravariant=True)
 
 Preference: TypeAlias = float
 PreferenceMatrix: TypeAlias = NDArray[floating]
+PreferenceMatrices: TypeAlias = NDArray[floating]
 
 Mask: TypeAlias = bool
 MaskMatrix: TypeAlias = NDArray[bool_]
