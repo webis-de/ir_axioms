@@ -263,6 +263,30 @@ class CascadeAxiom(Axiom[Input, Output]):
 
 
 @dataclass(frozen=True, kw_only=True)
+class NegatedAxiom(Axiom[Input, Output]):
+    axiom: Axiom[Input, Output]
+
+    def preference(
+        self,
+        input: Input,
+        output1: Output,
+        output2: Output,
+    ) -> Preference:
+        return -self.axiom.preference(input, output1, output2)
+
+    def preferences(
+        self,
+        input: Input,
+        outputs: Sequence[Output],
+    ) -> PreferenceMatrix:
+        return -self.axiom.preferences(input, outputs)
+
+    def __neg__(self) -> Axiom[Input, Output]:
+        # Double negation cancels out.
+        return self.axiom
+
+
+@dataclass(frozen=True, kw_only=True)
 class NormalizedAxiom(Axiom[Input, Output]):
     axiom: Axiom[Input, Output]
 

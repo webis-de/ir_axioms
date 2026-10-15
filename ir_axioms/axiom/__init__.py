@@ -143,6 +143,7 @@ from ir_axioms.axiom.arithmetic import (
     ConjunctionAxiom,
     VoteAxiom,
     MajorityVoteAxiom,
+    NegatedAxiom,
     NormalizedAxiom,
 )
 
@@ -314,6 +315,7 @@ __all__ = [
     "ConjunctionAxiom",
     "VoteAxiom",
     "MajorityVoteAxiom",
+    "NegatedAxiom",
     "NormalizedAxiom",
     "Axiom",
     "CachedAxiom",

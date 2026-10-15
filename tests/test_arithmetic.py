@@ -15,7 +15,23 @@ def test_uniform() -> None:
     assert axiom.preference(query, document1, document2) == 1
     assert axiom.preference(query, document2, document1) == 1
 
-    assert (axiom.preferences(query, [document1, document2]) == ones((2, 2))).all()
+
+def test_negate() -> None:
+    query = Query(id="q1")
+    document1 = Document(id="d1")
+    document2 = Document(id="d2")
+
+    axiom1: Axiom[Query, Document] = UniformAxiom(scalar=2)
+    axiom2 = -axiom1
+
+    assert axiom2.preference(query, document1, document2) == -2
+    assert axiom2.preference(query, document2, document1) == -2
+    assert axiom2.preference(query, document1, document1) == 0
+    assert -axiom2 is axiom1
+
+    assert (
+        axiom2.preferences(query, [document1, document2]) == array([[0, 2], [-2, 0]])
+    ).all()
 
 
 def test_sum() -> None:

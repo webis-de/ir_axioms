@@ -176,9 +176,9 @@ class Axiom(ABC, Generic[Input, Output]):
         return other | self
 
     def __neg__(self) -> "Axiom[Input, Output]":
-        from ir_axioms.axiom.arithmetic import UniformAxiom
+        from ir_axioms.axiom.arithmetic import NegatedAxiom
 
-        return self * UniformAxiom(scalar=-1)
+        return NegatedAxiom(axiom=self)
 
     def __pos__(self) -> "Axiom[Input, Output]":
         """
