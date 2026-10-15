@@ -4,7 +4,7 @@ from typing import AbstractSet, Iterator, Iterable
 
 from spacy import load as spacy_load
 from spacy.language import Language
-from textacy.extract.keyterms import yake
+from textacy.extract.keyterms.yake import yake
 
 from ir_axioms.tools.aspects.base import AspectExtraction
 
@@ -18,13 +18,14 @@ class YakeAspectExtraction(AspectExtraction):
 
     @cached_property
     def _language(self) -> Language:
-        return spacy_load(name=self.language_name, enable=["parser"])
+        # YAKE needs part-of-speech tags, lemmas, and sentence boundaries.
+        return spacy_load(name=self.language_name, exclude=["ner"])
 
-    def aspects(self, input: str) -> AbstractSet[str]:
-        document = self._language(input)
+    def aspects(self, text: str) -> AbstractSet[str]:
+        document = self._language(text)
         keyphrases = yake(
             doc=document,
-            ngrams=list(range(*self.ngram_range)),
+            ngrams=list(range(self.ngram_range[0], self.ngram_range[1] + 1)),
             topn=self.top_n,
         )
         return {phrase for phrase, score in keyphrases if score <= self.threshold}
@@ -34,7 +35,7 @@ class YakeAspectExtraction(AspectExtraction):
         keyphrases = (
             yake(
                 doc=document,
-                ngrams=list(range(*self.ngram_range)),
+                ngrams=list(range(self.ngram_range[0], self.ngram_range[1] + 1)),
                 topn=self.top_n,
             )
             for document in documents
