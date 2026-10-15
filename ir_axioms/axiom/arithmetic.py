@@ -58,6 +58,14 @@ class SumAxiom(Axiom[Input, Output]):
 
 @dataclass(frozen=True, kw_only=True)
 class ProductAxiom(Axiom[Input, Output]):
+    """
+    Multiply the preferences of the given axioms.
+
+    Notes:
+    - The product of axiom preferences does not necessarily preserve asymmetry, e.g., for ``axiom * -axiom``, the ij-th and ji-th entries are the same.
+    - The product of axiom preferences does not necessarily preserve transitivity, e.g., for ``axiom * axiom``, any negative preference value's sign is flipped, indicating a > b and b < a at the same time.
+    """
+
     axioms: Iterable[Axiom[Input, Output]]
 
     def preference(
@@ -86,6 +94,13 @@ class ProductAxiom(Axiom[Input, Output]):
 
 @dataclass(frozen=True, kw_only=True)
 class MultiplicativeInverseAxiom(Axiom[Input, Output]):
+    """
+    Invert the preferences of the given axiom (i.e., ``1 / preference``).
+
+    Notes:
+    - The multiplicative inverse of axiom preferences does not preserve irreflexivity, e.g., for any previously irreflexive axiom, the multiplicative inverse is undefined along the diagonal (division by zero).
+    """
+
     axiom: Axiom[Input, Output]
 
     def preference(
