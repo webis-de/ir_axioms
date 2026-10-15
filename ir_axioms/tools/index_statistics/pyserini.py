@@ -6,7 +6,6 @@ if is_pyserini_installed() or TYPE_CHECKING:
     from dataclasses import dataclass, field
     from functools import cached_property
     from pathlib import Path
-    from typing import Union
 
     from ir_axioms.tools.index_statistics.base import IndexStatistics
     from ir_axioms.utils.pyserini import (
@@ -18,7 +17,7 @@ if is_pyserini_installed() or TYPE_CHECKING:
 
     @dataclass(frozen=True, kw_only=True)
     class AnseriniIndexStatistics(IndexStatistics):
-        index_dir: Union[Path, str]
+        index_dir: Path | str
         analyzer: Analyzer = field(default_factory=default_analyzer)
 
         @cached_property
