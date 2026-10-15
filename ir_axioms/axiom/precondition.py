@@ -2,8 +2,7 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import Sequence
 
-from numpy import zeros_like, array
-from numpy.ma import masked_array
+from numpy import where, zeros_like
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.model import (
@@ -53,10 +52,5 @@ class PreconditionMixin(Axiom[Input, Output], ABC):
             input=input,
             outputs=outputs,
         )
-        return array(
-            masked_array(
-                data=preferences,
-                mask=mask,
-                fill_value=0,
-            )
-        )
+        # Only keep preferences where the precondition holds.
+        return where(mask, preferences, 0)
