@@ -126,3 +126,26 @@ def test_irds_document_unknown_id_raises() -> None:
 
     with raises(KeyError):
         contents.contents(Document(id="unknown"))
+
+
+def test_irds_document_iter_contents_matches_contents() -> None:
+    dataset = irds_load("cranfield")
+    contents = IrdsDocumentTextContents(dataset=dataset)
+    documents = [
+        Document(id="405"),
+        Document(id="3", text="override"),
+        Document(id="3"),
+        Document(id="405"),
+    ]
+
+    assert list(contents.iter_contents(documents)) == [
+        contents.contents(document) for document in documents
+    ]
+
+
+def test_irds_document_iter_contents_unknown_id_raises() -> None:
+    dataset = irds_load("cranfield")
+    contents = IrdsDocumentTextContents(dataset=dataset)
+
+    with raises(KeyError):
+        list(contents.iter_contents([Document(id="3"), Document(id="unknown")]))
