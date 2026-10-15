@@ -4,7 +4,7 @@ from ir_axioms.utils.libraries import is_pyserini_installed
 
 if is_pyserini_installed() or TYPE_CHECKING:
     from pathlib import Path
-    from typing import Any, TypeAlias, Union
+    from typing import Any, TypeAlias
 
     if TYPE_CHECKING:
         from pyserini.analysis import Analyzer
@@ -21,7 +21,7 @@ if is_pyserini_installed() or TYPE_CHECKING:
 
         return Analyzer(get_lucene_analyzer())
 
-    def get_index_reader(index_dir: Union[Path, str]) -> LuceneIndexReader:
+    def get_index_reader(index_dir: Path | str) -> LuceneIndexReader:
         from pyserini.index import LuceneIndexReader
 
         if isinstance(index_dir, Path):
@@ -29,7 +29,7 @@ if is_pyserini_installed() or TYPE_CHECKING:
         else:
             return LuceneIndexReader(index_dir)
 
-    def get_searcher(index_dir: Union[Path, str]) -> LuceneSearcher:
+    def get_searcher(index_dir: Path | str) -> LuceneSearcher:
         from pyserini.search.lucene import LuceneSearcher
 
         if isinstance(index_dir, Path):

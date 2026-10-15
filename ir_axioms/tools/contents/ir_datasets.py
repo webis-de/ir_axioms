@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from functools import cached_property
-from collections.abc import Iterator, Sequence, Iterable, Mapping
-from typing import Union
+from collections.abc import Iterator, Iterable, Mapping
 
 from ir_datasets import Dataset, load as irds_load
 from ir_datasets.formats import GenericDoc, GenericQuery
