@@ -302,15 +302,16 @@ class Prox2Axiom(Axiom[Query, Document]):
         return array(
             [
                 (
+                    # Prefer the document where query terms appear earlier.
                     strictly_greater(
                         sum(
-                            document_terms1.index(term)
+                            document_terms2.index(term)
                             for term in query_unique_terms
                             & set(document_terms1)
                             & set(document_terms2)
                         ),
                         sum(
-                            document_terms2.index(term)
+                            document_terms1.index(term)
                             for term in query_unique_terms
                             & set(document_terms1)
                             & set(document_terms2)
