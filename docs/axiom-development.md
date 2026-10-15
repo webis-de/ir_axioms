@@ -68,3 +68,22 @@ Follow these steps to adding new axioms to this project:
 1. Check out the [example evaluation notebook](../experiments/ictir.ipynb) to evaluate the axiom.
 
 Note: For further examples, refer to the [existing axiom implementations](../axioms/axiom/__init__.py).
+
+## Tool Bindings
+
+The `ToolsModule` binds the following tool interfaces. All bindings use the `singleton` scope, i.e., each interface resolves to the same instance within one `Injector`.
+
+| Interface | Default implementation |
+| :-- | :-- |
+| `AspectExtraction` | `SpacyNounChunksAspectExtraction` |
+| `PivotSelection` | `RandomPivotSelection` |
+| `TermTokenizer` | `BlingfireTermTokenizer` (if Blingfire installed) or `SpacyTermTokenizer` |
+| `SentenceTokenizer` | `BlingfireSentenceTokenizer` (if Blingfire installed) or `SpacySentenceTokenizer` |
+| `TermSimilarity` | `FastTextTermSimilarity` if fastText is installed, else `WordNetSynonymSetTermSimilarity` |
+| `SentenceSimilarity` | `SentenceTransformersSentenceSimilarity` (if SBERT installed) or `Model2VecSentenceSimilarity` (if model2vec installed) or `AverageTermSimilaritySentenceSimilarity` |
+| `TextContents[T]` for `HasText`, `Query`, `Document`, `GenerationRequest`, `GenerationResponse` | `SimpleTextContents` |
+| `TextContents[Union[Document, Query]]` | `DocumentQueryTextContents` |
+| `TextContents[Union[GenerationRequest, GenerationResponse]]` | `GenerationInputOutputTextContents` |
+| `TextStatistics[T]` for `Query`, `Document`, `GenerationRequest`, `GenerationResponse` | `SimpleTextStatistics` |
+| `TextStatistics[Union[Document, Query]]` | `DocumentQueryTextStatistics` |
+| `TextStatistics[Union[GenerationRequest, GenerationResponse]]` | `GenerationInputOutputTextStatistics` |
