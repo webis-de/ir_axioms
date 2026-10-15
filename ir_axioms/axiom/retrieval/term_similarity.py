@@ -1,4 +1,4 @@
-from collections.abc import Set, Mapping
+from collections.abc import Collection, Set, Mapping
 from dataclasses import dataclass
 from math import isclose, nan
 from typing import Final, Union, Sequence
@@ -184,8 +184,73 @@ class Stmc2Axiom(Axiom[Query, Document]):
             margin_fraction=self.margin_fraction,
         )
 
-    # ADDITION: Come up with a better way to batch-compute preference-matrices.
-    # The largest hurdle seems to be the max similarity pairs computation.
+    def _document_max_similarity_pairs(
+        self,
+        query_unique_terms: Set[str],
+        document_terms: Collection[str],
+    ) -> tuple[float, Set[tuple[str, str]]]:
+        """
+        Most similar pairs of a query term and a non-query term of one document,
+        along with their similarity.
+        """
+        return self.term_similarity.max_similarity_pairs(
+            query_unique_terms,
+            set(document_terms) - query_unique_terms,
+        )
+
+    def preferences(
+        self,
+        input: Query,
+        outputs: Sequence[Document],
+    ) -> PreferenceMatrix:
+        query_unique_terms = self.term_tokenizer.unique_terms(
+            self.text_contents.contents(input),
+        )
+        document_terms = list(
+            self.term_tokenizer.iter_terms_unordered(
+                self.text_contents.iter_contents(outputs),
+            )
+        )
+        term_frequencies = [
+            self.text_statistics.term_frequencies(output) for output in outputs
+        ]
+        # The most similar pairs over the union of two documents' non-query terms are the most similar pairs of whichever document has the higher maximum.
+        max_similarity_pairs = [
+            self._document_max_similarity_pairs(query_unique_terms, terms)
+            for terms in tqdm(
+                document_terms,
+                desc="Max. similarity pairs",
+                unit="document",
+                disable=not self.verbose,
+            )
+        ]
+
+        def pair_preference(i1: int, i2: int) -> Preference:
+            max_similarity1, pairs1 = max_similarity_pairs[i1]
+            max_similarity2, pairs2 = max_similarity_pairs[i2]
+            max_similarity = max(max_similarity1, max_similarity2)
+            pairs = {
+                # Include maximum similiarity pairs from each document whose max similarity matches the global maximum similarity.
+                *(pairs1 if max_similarity1 >= max_similarity else set()),
+                *(pairs2 if max_similarity2 >= max_similarity else set()),
+            }
+            return _stmc2_preference(
+                max_similarity_pairs=pairs,
+                document1_length=len(document_terms[i1]),
+                document2_length=len(document_terms[i2]),
+                term_frequencies1=term_frequencies[i1],
+                term_frequencies2=term_frequencies[i2],
+                margin_fraction=self.margin_fraction,
+            )
+
+        return array(
+            [
+                pair_preference(i1, i2)
+                for i1 in range(len(outputs))
+                for i2 in range(len(outputs))
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
 
 
 STMC2: Final = lazy_inject(Stmc2Axiom)
