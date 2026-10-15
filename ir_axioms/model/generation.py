@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from typing import Optional, Sequence, Type, TYPE_CHECKING
-from warnings import warn
+from typing import Optional, Sequence
+
+from typing_extensions import deprecated
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -15,6 +16,10 @@ class GenerationRequest:
     """Optional ground-truth refeerence response."""
 
 
+@deprecated("GenerationInput is deprecated; use GenerationRequest instead.")
+class GenerationInput(GenerationRequest): ...
+
+
 @dataclass(frozen=True, kw_only=True)
 class GenerationResponse:
     id: Optional[str] = None
@@ -25,40 +30,5 @@ class GenerationResponse:
     """Override context from input if necessary."""
 
 
-# Deprecation aliases for backward compatibility.
-def _deprecation_warning(cls: Type, replacement: Type) -> None:
-    warn(
-        f"{cls.__name__} is deprecated. Use {replacement.__name__} instead.",
-        DeprecationWarning,
-        stacklevel=3,
-    )
-
-
-if TYPE_CHECKING:
-    from typing_extensions import deprecated
-
-    @deprecated("GenerationInput is deprecated; use GenerationRequest instead.")
-    class GenerationInput(GenerationRequest): ...
-
-    @deprecated("GenerationInput is deprecated; use GenerationRequest instead.")
-    class GenerationOutput(GenerationResponse): ...
-
-else:
-    from typing import Any
-
-    def __getattr__(name: str) -> Any:
-        if name == "OldName":
-            warn(
-                "GenerationInput is deprecated; use GenerationRequest instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return GenerationRequest
-        if name == "GenerationOutput":
-            warn(
-                "GenerationOutput is deprecated; use GenerationResponse instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return GenerationResponse
-        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+@deprecated("GenerationInput is deprecated; use GenerationRequest instead.")
+class GenerationOutput(GenerationResponse): ...

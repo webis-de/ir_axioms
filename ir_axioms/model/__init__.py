@@ -33,8 +33,8 @@ from ir_axioms.model.retrieval import (
 from ir_axioms.model.generation import (
     GenerationRequest,
     GenerationResponse,
-    GenerationInput,
-    GenerationOutput,
+    GenerationInput,  # type: ignore[deprecated]
+    GenerationOutput,  # type: ignore[deprecated]
 )
 
 from ir_axioms.model.utils import (
