@@ -123,7 +123,7 @@ class ConjunctionAxiom(Axiom[Input, Output]):
         ]
         if all(preference > 0 for preference in preferences):
             return 1
-        elif all(preference > 0 for preference in preferences):
+        elif all(preference < 0 for preference in preferences):
             return -1
         else:
             return 0
