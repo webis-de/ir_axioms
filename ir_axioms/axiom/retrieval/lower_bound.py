@@ -38,6 +38,25 @@ def _require_score(document: Document) -> float:
         raise ValueError("Can only compare scored documents.")
     return document.score
 
+
+def _similar_scores(
+    scores: Sequence[float],
+    margin_fraction: float,
+) -> NDArray[bool_]:
+    """
+    Pairwise equivalent of `math.isclose(score1, score2, rel_tol=margin_fraction)`.
+    """
+    scores_column = array(scores, dtype=float_)[:, newaxis]
+    # NumPy's isclose is asymmetric, so check both directions (like math.isclose).
+    close_scores = numpy_isclose(
+        scores_column,
+        scores_column.T,
+        rtol=margin_fraction,
+        atol=0,
+    )
+    return close_scores | close_scores.T
+
+
 @inject
 @dataclass(frozen=True, kw_only=True)
 class Lb1Axiom(Axiom[Query, Document]):
