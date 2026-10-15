@@ -1,4 +1,8 @@
+from itertools import permutations, product
+from typing import Sequence
+
 from numpy import array
+from pytest import mark
 
 from ir_axioms.axiom import NOP, ORIG, ORACLE, DistanceAxiom, Axiom
 from ir_axioms.model import Query, Document
@@ -72,3 +76,54 @@ def test_distance_float() -> None:
         axiom.preferences(None, [1.0, 3.0, 0.5])
         == array([[0, -2, 0.5], [2, 0, 2.5], [-0.5, -2.5, 0]])
     ).all()
+
+
+_distance_values = mark.parametrize(
+    "values",
+    [
+        [-3, 0, 1, 2, 2, 5],
+        [-1.5, 0.0, 0.25, 2.5, 1000.0],
+    ],
+    ids=[
+        "int",
+        "float",
+    ],
+)
+
+
+@_distance_values
+def test_distance_irreflexive(values: Sequence[float]) -> None:
+    axiom: Axiom[None, float] = DistanceAxiom()
+
+    for value in values:
+        assert axiom.preference(None, value, value) == 0
+
+    assert (axiom.preferences(None, values).diagonal() == 0).all()
+
+
+@_distance_values
+def test_distance_asymmetric(values: Sequence[float]) -> None:
+    axiom: Axiom[None, float] = DistanceAxiom()
+
+    for value1, value2 in product(values, repeat=2):
+        if axiom.preference(None, value1, value2) > 0:
+            assert not axiom.preference(None, value2, value1) > 0
+
+    preferences = axiom.preferences(None, values)
+    assert not ((preferences > 0) & (preferences.T > 0)).any()
+
+
+@_distance_values
+def test_distance_transitive(values: Sequence[float]) -> None:
+    axiom: Axiom[None, float] = DistanceAxiom()
+
+    preferences = axiom.preferences(None, values)
+    for i, j, k in permutations(range(len(values)), 3):
+        value1, value2, value3 = values[i], values[j], values[k]
+        if (
+            axiom.preference(None, value1, value2) > 0
+            and axiom.preference(None, value2, value3) > 0
+        ):
+            assert axiom.preference(None, value1, value3) > 0
+        if preferences[i, j] > 0 and preferences[j, k] > 0:
+            assert preferences[i, k] > 0
