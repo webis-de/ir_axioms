@@ -1,3 +1,4 @@
+from math import inf
 from typing import Sequence
 
 from numpy import array
@@ -74,24 +75,28 @@ def test_term_average_similarity_empty_is_zero() -> None:
 def test_term_max_similarity_pairs() -> None:
     similarity = _FixedTermSimilarity()
 
-    pairs = similarity.max_similarity_pairs(["cat", "dog"], ["kitten"])
+    max_similarity, pairs = similarity.max_similarity_pairs(["cat", "dog"], ["kitten"])
 
+    assert max_similarity == similarity.similarity("cat", "kitten")
     assert pairs == {("cat", "kitten")}
 
 
 def test_term_max_similarity_pairs_returns_ties() -> None:
     similarity = _FixedTermSimilarity()
 
-    pairs = similarity.max_similarity_pairs(["cat", "dog"], ["cat", "dog"])
+    max_similarity, pairs = similarity.max_similarity_pairs(
+        ["cat", "dog"], ["cat", "dog"]
+    )
 
+    assert max_similarity == similarity.similarity("cat", "cat")
     assert pairs == {("cat", "cat"), ("dog", "dog")}
 
 
 def test_term_max_similarity_pairs_empty() -> None:
     similarity = _FixedTermSimilarity()
 
-    assert similarity.max_similarity_pairs([], ["cat"]) == set()
-    assert similarity.max_similarity_pairs(["cat"], []) == set()
+    assert similarity.max_similarity_pairs([], ["cat"]) == (-inf, set())
+    assert similarity.max_similarity_pairs(["cat"], []) == (-inf, set())
 
 
 def test_term_max_and_min_average_similarity_terms() -> None:

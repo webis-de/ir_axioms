@@ -1,5 +1,6 @@
 from collections.abc import Iterable, Collection, Sequence, Set
 from itertools import product, combinations
+from math import inf
 from typing import Protocol, runtime_checkable
 
 from numpy import array, float_
@@ -47,16 +48,20 @@ class TermSimilarity(Protocol):
 
     def max_similarity_pairs(
         self, terms1: Collection[str], terms2: Collection[str]
-    ) -> Set[tuple[str, str]]:
+    ) -> tuple[float, Set[tuple[str, str]]]:
+        """
+        Most similar pairs of terms from the two collections,
+        along with their similarity (or -inf if there are no pairs).
+        """
         if len(terms1) == 0 or len(terms2) == 0:
-            return set()
+            return -inf, set()
         most_similar_pairs: Sequence[tuple[str, str]] = sorted(
             product(set(terms1), set(terms2)),
             key=self._pair_similarity,
             reverse=True,
         )
         max_similarity = self._pair_similarity(most_similar_pairs[0])
-        return {
+        return max_similarity, {
             pair
             for pair in most_similar_pairs
             if self._pair_similarity(pair) >= max_similarity

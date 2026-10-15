@@ -165,7 +165,7 @@ class Stmc2Axiom(Axiom[Query, Document]):
         document_unique_terms = set(document1_terms) | set(document2_terms)
         non_query_terms = document_unique_terms - query_unique_terms
 
-        max_similarity_pairs = self.term_similarity.max_similarity_pairs(
+        _, max_similarity_pairs = self.term_similarity.max_similarity_pairs(
             query_unique_terms,
             non_query_terms,
         )
