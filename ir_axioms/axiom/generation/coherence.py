@@ -9,13 +9,15 @@ For a definition of this utility dimension, see: https://doi.org/10.1145/3626772
 
 from dataclasses import dataclass
 from functools import cached_property
-from math import isclose
+from math import isclose, nan
+from statistics import mean
 from typing import Final, Sequence, Any
 
 from injector import inject, NoInject
 from numpy import array, float_
 from spacy import load as spacy_load
 from spacy.language import Language
+from spacy.tokens import Doc
 from tqdm.auto import tqdm
 from textacy.extract.triples import subject_verb_object_triples
 
@@ -142,6 +144,17 @@ class WordLengthDeviationCoherenceAxiom(Axiom[Any, GenerationResponse]):
 COH1: Final = lazy_inject(WordLengthDeviationCoherenceAxiom)
 
 
+def _average_max_subject_verb_distance(document: Doc) -> float:
+    max_subject_verb_distances = [
+        max(abs(verb.i - subject.i) for subject in subject_toks for verb in verb_toks)
+        for subject_toks, verb_toks, _ in subject_verb_object_triples(document)
+    ]
+    if len(max_subject_verb_distances) == 0:
+        # Undefined without subject-verb-object triples.
+        return nan
+    return mean(max_subject_verb_distances)
+
+
 @inject
 @dataclass(frozen=True, kw_only=True)
 class SubjectVerbClosenessCoherenceAxiom(Axiom[Any, GenerationResponse]):
@@ -166,35 +179,12 @@ class SubjectVerbClosenessCoherenceAxiom(Axiom[Any, GenerationResponse]):
         output1: GenerationResponse,
         output2: GenerationResponse,
     ) -> Preference:
-        doc1 = self._language(self.text_contents.contents(output1))
-        doc2 = self._language(self.text_contents.contents(output2))
-
-        svo_triples1 = subject_verb_object_triples(doc1)
-        svo_triples2 = subject_verb_object_triples(doc2)
-
-        max_sv_distances1 = array(
-            [
-                max(
-                    abs(verb.i - subject.i)
-                    for subject in subject_toks
-                    for verb in verb_toks
-                )
-                for subject_toks, verb_toks, _ in svo_triples1
-            ]
+        avg_max_sv_distance1 = _average_max_subject_verb_distance(
+            self._language(self.text_contents.contents(output1))
         )
-        max_sv_distances2 = array(
-            [
-                max(
-                    abs(verb.i - subject.i)
-                    for subject in subject_toks
-                    for verb in verb_toks
-                )
-                for subject_toks, verb_toks, _ in svo_triples2
-            ]
+        avg_max_sv_distance2 = _average_max_subject_verb_distance(
+            self._language(self.text_contents.contents(output2))
         )
-
-        avg_max_sv_distance1 = max_sv_distances1.mean()
-        avg_max_sv_distance2 = max_sv_distances2.mean()
 
         if isclose(
             avg_max_sv_distance1,
@@ -213,26 +203,10 @@ class SubjectVerbClosenessCoherenceAxiom(Axiom[Any, GenerationResponse]):
             self.text_contents.contents(output) for output in outputs
         )
 
-        svo_triples = (subject_verb_object_triples(doc) for doc in docs)
-
-        max_sv_distances = (
-            array(
-                [
-                    max(
-                        abs(verb.i - subject.i)
-                        for subject in subject_toks
-                        for verb in verb_toks
-                    )
-                    for subject_toks, verb_toks, _ in svo_triples
-                ]
-            )
-            for svo_triples in svo_triples
-        )
-
         avg_max_sv_distances = [
-            max_sv_distances.mean()
-            for max_sv_distances in tqdm(
-                max_sv_distances,
+            _average_max_subject_verb_distance(doc)
+            for doc in tqdm(
+                docs,
                 total=len(outputs),
                 desc="Calculate S-V distances",
                 unit="output",
