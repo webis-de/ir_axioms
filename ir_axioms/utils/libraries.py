@@ -57,3 +57,13 @@ def is_blingfire_installed() -> bool:
         return True
     except ImportError:
         return False
+
+
+def is_fasttext_installed() -> bool:
+    """Check if fastText is installed."""
+    try:
+        import fasttext  # noqa: F401
+
+        return True
+    except ImportError:
+        return False

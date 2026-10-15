@@ -1,6 +1,7 @@
 from injector import Module, Binder, singleton
 
 from ir_axioms.utils.libraries import (
+    is_fasttext_installed,
     is_model2vec_installed,
     is_sentence_transformers_installed,
 )
@@ -40,11 +41,12 @@ class SimilarityModule(Module):
             to=WordNetSynonymSetTermSimilarity,
             scope=singleton,
         )
-        binder.bind(
-            interface=TermSimilarity,
-            to=FastTextTermSimilarity,
-            scope=singleton,
-        )
+        if is_fasttext_installed():
+            binder.bind(
+                interface=TermSimilarity,
+                to=FastTextTermSimilarity,
+                scope=singleton,
+            )
 
         binder.bind(
             interface=SentenceSimilarity,

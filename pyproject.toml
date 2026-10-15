@@ -25,9 +25,7 @@ dependencies = [
     "annotated-types~=0.7.0",
     "cached-property~=2.0",
     "cyclopts>=3,<5",
-    "fasttext~=0.9.3",
     "frozendict~=2.4",
-    "huggingface-hub[hf_xet]>=0.30.1,<1.5.0",
     "injector>=0.22,<0.25",
     "ir-datasets>=0.5.9,<0.7.0",  # TODO: Make this an optional dependency and expose dependent interfaces only if installed.
     "joblib~=1.4",
@@ -86,6 +84,10 @@ model2vec = [
 ]
 blingfire = [
     "blingfire~=0.1.8",
+]
+fasttext = [
+    "fasttext~=0.9.3",
+    "huggingface-hub[hf_xet]>=0.30.1,<1.5.0",
 ]
 
 [project.urls]

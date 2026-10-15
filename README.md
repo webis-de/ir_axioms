@@ -50,6 +50,7 @@ Read more about the [`ir_axioms` framework](https://webis.de/publications.html?q
 | `keybert` | Use KeyBERT for aspect extraction (must be enabled manually if installed). |
 | `sbert` | Use Sentence Transformers for sentence similarity (enabled automatically if installed). |
 | `blingfire` | Use BlingFire for fast tokenization (enabled automatically if installed). |
+| `fasttext` | Use fastText word vectors for term similarity (enabled automatically if installed). |
 
 Note: To reproduce our results from ICTIR'25, please use these extras: `pyterrier,keybert,sbert`
 
