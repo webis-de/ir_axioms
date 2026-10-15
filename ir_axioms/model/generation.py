@@ -16,7 +16,7 @@ class GenerationRequest:
     """Optional ground-truth refeerence response."""
 
 
-@deprecated("GenerationInput is deprecated; use GenerationRequest instead.")
+@deprecated("Use GenerationRequest instead.")
 class GenerationInput(GenerationRequest): ...
 
 
@@ -30,5 +30,5 @@ class GenerationResponse:
     """Override context from input if necessary."""
 
 
-@deprecated("GenerationInput is deprecated; use GenerationRequest instead.")
+@deprecated("Use GenerationRequest instead.")
 class GenerationOutput(GenerationResponse): ...

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from typing import Type, Any
-from warnings import warn
+from warnings import catch_warnings, simplefilter
+
+from typing_extensions import deprecated
 
 
 @dataclass(frozen=True)
@@ -25,40 +26,31 @@ class Document:
     """The true relevance label of the document."""
 
 
-# Deprecation aliases for backward compatibility.
-def _deprecation_warning(obj: Any, replacement: Type) -> None:
-    warn(
-        f"{type(obj).__name__} is deprecated. Use {replacement.__name__} instead.",
-        DeprecationWarning,
-        stacklevel=3,
-    )
-
-
+@deprecated("Use Query instead.")
 class TextQuery(Query):
     text: str
 
     def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(self, Query)
         super().__init__(*args, **kwargs)
         if self.text is None:
             raise ValueError(f"{type(self).__name__} must have a non-empty text field.")
 
 
+@deprecated("Use Document instead.")
 class TextDocument(Document):
     text: str
 
     def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(self, Document)
         super().__init__(*args, **kwargs)
         if self.text is None:
             raise ValueError(f"{type(self).__name__} must have a non-empty text field.")
 
 
+@deprecated("Use Document instead.")
 class ScoredDocument(Document):
     score: float
 
     def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(self, Document)
         super().__init__(*args, **kwargs)
         if self.score is None:
             raise ValueError(
@@ -66,95 +58,67 @@ class ScoredDocument(Document):
             )
 
 
+@deprecated("Use Document instead.")
 class RankedDocument(Document):
     rank: int
 
     def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(self, Document)
         super().__init__(*args, **kwargs)
         if self.rank is None:
             raise ValueError(f"{type(self).__name__} must have a non-empty rank field.")
 
 
-class ScoredTextDocument(ScoredDocument, TextDocument):
-    def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(self, Document)
-        super().__init__(*args, **kwargs)
+# Subclassing deprecated classes emits deprecation warnings at class definition,
+# i.e., when importing this module. Only warn when the classes are actually used.
+with catch_warnings():
+    simplefilter("ignore", category=DeprecationWarning)
 
+    @deprecated("Use Document instead.")
+    class ScoredTextDocument(ScoredDocument, TextDocument): ...
 
-class RankedTextDocument(RankedDocument, TextDocument):
-    def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(self, Document)
-        super().__init__(*args, **kwargs)
+    @deprecated("Use Document instead.")
+    class RankedTextDocument(RankedDocument, TextDocument): ...
 
+    @deprecated("Use Document instead.")
+    class RankedScoredDocument(ScoredDocument, RankedDocument): ...
 
-class RankedScoredDocument(ScoredDocument, RankedDocument):
-    def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(RankedScoredDocument, Document)
-        super().__init__(*args, **kwargs)
+    @deprecated("Use Document instead.")
+    class RankedScoredTextDocument(
+        RankedScoredDocument, ScoredTextDocument, RankedTextDocument
+    ): ...
 
+    @deprecated("Use Document instead.")
+    class JudgedDocument(Document):
+        relevance: float
 
-class RankedScoredTextDocument(
-    RankedScoredDocument, ScoredTextDocument, RankedTextDocument
-):
-    def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(self, Document)
-        super().__init__(*args, **kwargs)
+        def __init__(self, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            if self.relevance is None:
+                raise ValueError(
+                    f"{type(self).__name__} must have a non-empty relevance field."
+                )
 
+    @deprecated("Use Document instead.")
+    class JudgedTextDocument(TextDocument, JudgedDocument): ...
 
-class JudgedDocument(Document):
-    relevance: float
+    @deprecated("Use Document instead.")
+    class JudgedScoredDocument(ScoredDocument, JudgedDocument): ...
 
-    def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(self, Document)
-        super().__init__(*args, **kwargs)
-        if self.relevance is None:
-            raise ValueError(
-                f"{type(self).__name__} must have a non-empty relevance field."
-            )
+    @deprecated("Use Document instead.")
+    class JudgedScoredTextDocument(ScoredTextDocument, JudgedDocument): ...
 
+    @deprecated("Use Document instead.")
+    class JudgedRankedDocument(RankedDocument, JudgedDocument): ...
 
-class JudgedTextDocument(TextDocument, JudgedDocument):
-    def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(self, Document)
-        super().__init__(*args, **kwargs)
+    @deprecated("Use Document instead.")
+    class JudgedRankedTextDocument(RankedTextDocument, JudgedDocument): ...
 
+    @deprecated("Use Document instead.")
+    class JudgedRankedScoredDocument(
+        RankedScoredDocument, JudgedScoredDocument, JudgedRankedDocument
+    ): ...
 
-class JudgedScoredDocument(ScoredDocument, JudgedDocument):
-    def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(self, Document)
-        super().__init__(*args, **kwargs)
-
-
-class JudgedScoredTextDocument(ScoredTextDocument, JudgedDocument):
-    def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(self, Document)
-        super().__init__(*args, **kwargs)
-
-
-class JudgedRankedDocument(RankedDocument, JudgedDocument):
-    def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(self, Document)
-        super().__init__(*args, **kwargs)
-
-
-class JudgedRankedTextDocument(RankedTextDocument, JudgedDocument):
-    def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(self, Document)
-        super().__init__(*args, **kwargs)
-
-
-class JudgedRankedScoredDocument(
-    RankedScoredDocument, JudgedScoredDocument, JudgedRankedDocument
-):
-    def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(self, Document)
-        super().__init__(*args, **kwargs)
-
-
-class JudgedRankedScoredTextDocument(
-    JudgedRankedScoredDocument, JudgedScoredTextDocument, JudgedRankedTextDocument
-):
-    def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(self, Document)
-        super().__init__(*args, **kwargs)
+    @deprecated("Use Document instead.")
+    class JudgedRankedScoredTextDocument(
+        JudgedRankedScoredDocument, JudgedScoredTextDocument, JudgedRankedTextDocument
+    ): ...
