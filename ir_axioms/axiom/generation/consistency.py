@@ -27,7 +27,7 @@ from tqdm.auto import tqdm
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_greater, strictly_less
 from ir_axioms.model.base import Preference, PreferenceMatrix
-from ir_axioms.model.generation import GenerationInput, GenerationOutput
+from ir_axioms.model.generation import GenerationRequest, GenerationResponse
 from ir_axioms.tools import (
     TextContents,
     AspectExtraction,
@@ -41,13 +41,13 @@ from ir_axioms.utils.lazy import lazy_inject
 @inject
 @dataclass(frozen=True, kw_only=True)
 class AspectSimilaritySentenceCountConsistencyAxiom(
-    Axiom[GenerationInput, GenerationOutput]
+    Axiom[GenerationRequest, GenerationResponse]
 ):
     """
     Prefer text with extracted aspects from the input context mentioned in more sentences of the output, weighing by the sentence's similarity to the aspects.
     """
 
-    text_contents: TextContents[Union[GenerationInput, GenerationOutput]]
+    text_contents: TextContents[Union[GenerationRequest, GenerationResponse]]
     aspect_extraction: AspectExtraction
     sentence_tokenizer: SentenceTokenizer
     sentence_similarity: SentenceSimilarity
@@ -56,9 +56,9 @@ class AspectSimilaritySentenceCountConsistencyAxiom(
 
     def preference(
         self,
-        input: GenerationInput,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
+        input: GenerationRequest,
+        output1: GenerationResponse,
+        output2: GenerationResponse,
     ) -> Preference:
         if input.context is None:
             return 0
@@ -98,8 +98,8 @@ class AspectSimilaritySentenceCountConsistencyAxiom(
 
     def preferences(
         self,
-        input: GenerationInput,
-        outputs: Sequence[GenerationOutput],
+        input: GenerationRequest,
+        outputs: Sequence[GenerationResponse],
     ) -> PreferenceMatrix:
         if input.context is None:
             return zeros((len(outputs), len(outputs)))
@@ -155,12 +155,12 @@ CONS1: Final = lazy_inject(AspectSimilaritySentenceCountConsistencyAxiom)
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class RougeConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
+class RougeConsistencyAxiom(Axiom[GenerationRequest, GenerationResponse]):
     """
     Prefer text with higher ROUGE score compared to the input contexts.
     """
 
-    text_contents: TextContents[Union[GenerationInput, GenerationOutput]]
+    text_contents: TextContents[Union[GenerationRequest, GenerationResponse]]
     sentence_tokenizer: SentenceTokenizer
     term_tokenizer: TermTokenizer
 
@@ -176,9 +176,9 @@ class RougeConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
 
     def preference(
         self,
-        input: GenerationInput,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
+        input: GenerationRequest,
+        output1: GenerationResponse,
+        output2: GenerationResponse,
     ) -> Preference:
         if input.context is None:
             return 0
@@ -209,8 +209,8 @@ class RougeConsistencyAxiom(Axiom[GenerationInput, GenerationOutput]):
 
     def preferences(
         self,
-        input: GenerationInput,
-        outputs: Sequence[GenerationOutput],
+        input: GenerationRequest,
+        outputs: Sequence[GenerationResponse],
     ) -> PreferenceMatrix:
         if input.context is None:
             return zeros((len(outputs), len(outputs)))
@@ -259,12 +259,12 @@ CONS2: Final = lazy_inject(RougeConsistencyAxiom)
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class EntityContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
+class EntityContradictionConsistencyAxiom(Axiom[Any, GenerationResponse]):
     """
     Prefer text with entities less frequently mentioned in contradictory phrases.
     """
 
-    text_contents: TextContents[GenerationOutput]
+    text_contents: TextContents[GenerationResponse]
 
     language_name: NoInject[str] = "en_core_web_sm"
     margin_fraction: NoInject[float] = 0.2
@@ -318,8 +318,8 @@ class EntityContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
     def preference(
         self,
         input: Any,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
+        output1: GenerationResponse,
+        output2: GenerationResponse,
     ) -> Preference:
         contents1 = self.text_contents.contents(output1)
         contents2 = self.text_contents.contents(output2)
@@ -336,7 +336,7 @@ class EntityContradictionConsistencyAxiom(Axiom[Any, GenerationOutput]):
     def preferences(
         self,
         input: Any,
-        outputs: Sequence[GenerationOutput],
+        outputs: Sequence[GenerationResponse],
     ) -> PreferenceMatrix:
         contents = (
             self.text_contents.contents(output)

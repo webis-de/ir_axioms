@@ -27,7 +27,7 @@ from tqdm.auto import tqdm
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_less
 from ir_axioms.model.base import Preference, PreferenceMatrix
-from ir_axioms.model.generation import GenerationOutput
+from ir_axioms.model.generation import GenerationResponse
 from ir_axioms.tools import (
     TextContents,
     SentenceTokenizer,
@@ -44,12 +44,12 @@ _PATTERN_CITATION: Final = re_compile(r"\[[0-9]+\]")
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class CitationSentenceCorrectnessAxiom(Axiom[Any, GenerationOutput]):
+class CitationSentenceCorrectnessAxiom(Axiom[Any, GenerationResponse]):
     """
     Prefer text with more sentences containing citations.
     """
 
-    text_contents: TextContents[GenerationOutput]
+    text_contents: TextContents[GenerationResponse]
     sentence_tokenizer: SentenceTokenizer
 
     margin_fraction: NoInject[float] = 0.1
@@ -57,8 +57,8 @@ class CitationSentenceCorrectnessAxiom(Axiom[Any, GenerationOutput]):
     def preference(
         self,
         input: Any,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
+        output1: GenerationResponse,
+        output2: GenerationResponse,
     ) -> Preference:
         contains_citation1 = array(
             [
@@ -91,7 +91,7 @@ class CitationSentenceCorrectnessAxiom(Axiom[Any, GenerationOutput]):
     def preferences(
         self,
         input: Any,
-        outputs: Sequence[GenerationOutput],
+        outputs: Sequence[GenerationResponse],
     ) -> PreferenceMatrix:
         contains_citation = (
             array(

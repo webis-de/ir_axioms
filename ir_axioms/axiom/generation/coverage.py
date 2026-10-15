@@ -19,7 +19,7 @@ from tqdm.auto import tqdm
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_greater, strictly_less
 from ir_axioms.model.base import Preference, PreferenceMatrix
-from ir_axioms.model.generation import GenerationInput, GenerationOutput
+from ir_axioms.model.generation import GenerationRequest, GenerationResponse
 from ir_axioms.tools import (
     TextContents,
     AspectExtraction,
@@ -31,12 +31,12 @@ from ir_axioms.utils.lazy import lazy_inject
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class AspectCountCoverageAxiom(Axiom[Any, GenerationOutput]):
+class AspectCountCoverageAxiom(Axiom[Any, GenerationResponse]):
     """
     Prefer text with more distinct extracted aspects.
     """
 
-    text_contents: TextContents[GenerationOutput]
+    text_contents: TextContents[GenerationResponse]
     aspect_extraction: AspectExtraction
 
     margin_fraction: NoInject[float] = 0.0
@@ -44,8 +44,8 @@ class AspectCountCoverageAxiom(Axiom[Any, GenerationOutput]):
     def preference(
         self,
         input: Any,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
+        output1: GenerationResponse,
+        output2: GenerationResponse,
     ) -> Preference:
         aspects1 = self.aspect_extraction.aspects(
             self.text_contents.contents(output1),
@@ -67,7 +67,7 @@ class AspectCountCoverageAxiom(Axiom[Any, GenerationOutput]):
     def preferences(
         self,
         input: Any,
-        outputs: Sequence[GenerationOutput],
+        outputs: Sequence[GenerationResponse],
     ) -> PreferenceMatrix:
         contents = (self.text_contents.contents(output) for output in outputs)
         aspects = self.aspect_extraction.iter_aspects(contents)
@@ -105,12 +105,12 @@ COV1: Final = lazy_inject(AspectCountCoverageAxiom)
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class AspectRedundancyCoverageAxiom(Axiom[Any, GenerationOutput]):
+class AspectRedundancyCoverageAxiom(Axiom[Any, GenerationResponse]):
     """
     Prefer text that has less redundant extracted aspects according to sentence similarity between the aspects.
     """
 
-    text_contents: TextContents[GenerationOutput]
+    text_contents: TextContents[GenerationResponse]
     aspect_extraction: AspectExtraction
     sentence_similarity: SentenceSimilarity
 
@@ -119,8 +119,8 @@ class AspectRedundancyCoverageAxiom(Axiom[Any, GenerationOutput]):
     def preference(
         self,
         input: Any,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
+        output1: GenerationResponse,
+        output2: GenerationResponse,
     ) -> Preference:
         aspects1 = self.aspect_extraction.aspects(
             self.text_contents.contents(output1),
@@ -146,7 +146,7 @@ class AspectRedundancyCoverageAxiom(Axiom[Any, GenerationOutput]):
     def preferences(
         self,
         input: Any,
-        outputs: Sequence[GenerationOutput],
+        outputs: Sequence[GenerationResponse],
     ) -> PreferenceMatrix:
         contents = (self.text_contents.contents(output) for output in outputs)
         aspects = self.aspect_extraction.iter_aspects(contents)
@@ -184,13 +184,13 @@ COV2: Final = lazy_inject(AspectRedundancyCoverageAxiom)
 @inject
 @dataclass(frozen=True, kw_only=True)
 class AspectSimilaritySentenceCountCoverageAxiom(
-    Axiom[GenerationInput, GenerationOutput]
+    Axiom[GenerationRequest, GenerationResponse]
 ):
     """
     Prefer text with extracted aspects from the input text mentioned in more sentences of the output, weighing by the sentence's similarity to the aspects.
     """
 
-    text_contents: TextContents[Union[GenerationInput, GenerationOutput]]
+    text_contents: TextContents[Union[GenerationRequest, GenerationResponse]]
     aspect_extraction: AspectExtraction
     sentence_tokenizer: SentenceTokenizer
     sentence_similarity: SentenceSimilarity
@@ -199,9 +199,9 @@ class AspectSimilaritySentenceCountCoverageAxiom(
 
     def preference(
         self,
-        input: GenerationInput,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
+        input: GenerationRequest,
+        output1: GenerationResponse,
+        output2: GenerationResponse,
     ) -> Preference:
         input_aspects = self.aspect_extraction.aspects(
             self.text_contents.contents(input)
@@ -239,8 +239,8 @@ class AspectSimilaritySentenceCountCoverageAxiom(
 
     def preferences(
         self,
-        input: GenerationInput,
-        outputs: Sequence[GenerationOutput],
+        input: GenerationRequest,
+        outputs: Sequence[GenerationResponse],
     ) -> PreferenceMatrix:
         input_aspects = self.aspect_extraction.aspects(
             self.text_contents.contents(input)

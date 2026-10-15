@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, Sequence, Type
+from typing import Optional, Sequence, Type, TYPE_CHECKING
 from warnings import warn
 
 
@@ -11,7 +11,7 @@ class GenerationRequest:
     """Request text, e.g., a question or query."""
     context: Optional[Sequence[str]] = None
     """Optional retrieved context (e.g., when evaluating RAG)."""
-    reference_output: Optional["GenerationOutput"] = None
+    reference_output: Optional["GenerationResponse"] = None
     """Optional ground-truth refeerence response."""
 
 
@@ -34,13 +34,31 @@ def _deprecation_warning(cls: Type, replacement: Type) -> None:
     )
 
 
-class GenerationInput(GenerationRequest):
-    def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(GenerationInput, GenerationRequest)
-        super().__init__(*args, **kwargs)
+if TYPE_CHECKING:
+    from typing_extensions import deprecated
 
+    @deprecated("GenerationInput is deprecated; use GenerationRequest instead.")
+    class GenerationInput(GenerationRequest): ...
 
-class GenerationOutput(GenerationResponse):
-    def __init__(self, *args, **kwargs) -> None:
-        _deprecation_warning(GenerationOutput, GenerationResponse)
-        super().__init__(*args, **kwargs)
+    @deprecated("GenerationInput is deprecated; use GenerationRequest instead.")
+    class GenerationOutput(GenerationResponse): ...
+
+else:
+    from typing import Any
+
+    def __getattr__(name: str) -> Any:
+        if name == "OldName":
+            warn(
+                "GenerationInput is deprecated; use GenerationRequest instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return GenerationRequest
+        if name == "GenerationOutput":
+            warn(
+                "GenerationOutput is deprecated; use GenerationResponse instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return GenerationResponse
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

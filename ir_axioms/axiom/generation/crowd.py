@@ -7,7 +7,7 @@ from typing import TypeAlias, Literal, Mapping
 from pandas import read_json
 
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.model import GenerationInput, GenerationOutput
+from ir_axioms.model import GenerationRequest, GenerationResponse
 from ir_axioms.axiom.utils import strictly_greater
 
 
@@ -27,7 +27,7 @@ TrecRagCrowdUtilityType: TypeAlias = Literal[
 
 
 @dataclass(frozen=True, kw_only=True)
-class TrecRagCrowdAxiom(Axiom[GenerationInput, GenerationOutput]):
+class TrecRagCrowdAxiom(Axiom[GenerationRequest, GenerationResponse]):
     ratings_path: Path = Path("data/crowd/ratings.jsonl.gz")
     responses_path: Path = Path("data/crowd/responses.jsonl.gz")
 
@@ -117,9 +117,9 @@ class TrecRagCrowdAxiom(Axiom[GenerationInput, GenerationOutput]):
 
     def preference(
         self,
-        input: GenerationInput,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
+        input: GenerationRequest,
+        output1: GenerationResponse,
+        output2: GenerationResponse,
     ) -> float:
         input_hash = hash(input.text)
         output1_hash = hash(output1.text)

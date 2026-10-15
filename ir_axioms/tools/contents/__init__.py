@@ -2,7 +2,7 @@ from typing import Union
 
 from injector import Module, Binder, singleton
 
-from ir_axioms.model import Document, Query, GenerationInput, GenerationOutput
+from ir_axioms.model import Document, Query, GenerationRequest, GenerationResponse
 
 # Re-export from sub-modules.
 from ir_axioms.tools.contents.base import (
@@ -51,12 +51,12 @@ class ContentsModule(Module):
             scope=singleton,
         )
         binder.bind(
-            interface=TextContents[GenerationInput],
+            interface=TextContents[GenerationRequest],
             to=SimpleTextContents,  # type: ignore
             scope=singleton,
         )
         binder.bind(
-            interface=TextContents[GenerationOutput],
+            interface=TextContents[GenerationResponse],
             to=SimpleTextContents,  # type: ignore
             scope=singleton,
         )
@@ -66,7 +66,7 @@ class ContentsModule(Module):
             scope=singleton,
         )
         binder.bind(
-            interface=TextContents[Union[GenerationInput, GenerationOutput]],
+            interface=TextContents[Union[GenerationRequest, GenerationResponse]],
             to=GenerationInputOutputTextContents,
             scope=singleton,
         )

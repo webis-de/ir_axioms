@@ -8,7 +8,7 @@ from pandas import DataFrame, read_json, concat, Series
 from typing_extensions import TypeAlias  # type: ignore
 
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.model import GenerationInput, GenerationOutput
+from ir_axioms.model import GenerationRequest, GenerationResponse
 from ir_axioms.axiom.utils import strictly_greater
 
 TrecRagNuggetScoreType: TypeAlias = Literal[
@@ -19,7 +19,7 @@ TrecRagNuggetScoreType: TypeAlias = Literal[
 
 
 @dataclass(frozen=True, kw_only=True)
-class TrecRagNuggetAxiom(Axiom[GenerationInput, GenerationOutput]):
+class TrecRagNuggetAxiom(Axiom[GenerationRequest, GenerationResponse]):
     assignments_path: Path = Path("data/nugget_assignment.20241108.jsonl")
     score_type: TrecRagNuggetScoreType = "all"
     strict: bool = False
@@ -64,9 +64,9 @@ class TrecRagNuggetAxiom(Axiom[GenerationInput, GenerationOutput]):
 
     def preference(
         self,
-        input: GenerationInput,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
+        input: GenerationRequest,
+        output1: GenerationResponse,
+        output2: GenerationResponse,
     ) -> float:
         df = self._assignments
         df = df[df["query_hash"] == hash(input.text)]

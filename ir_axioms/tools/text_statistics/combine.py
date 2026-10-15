@@ -3,7 +3,7 @@ from typing import Mapping, Union
 
 from injector import inject
 
-from ir_axioms.model import Document, Query, GenerationInput, GenerationOutput
+from ir_axioms.model import Document, Query, GenerationRequest, GenerationResponse
 from ir_axioms.tools.text_statistics.base import TextStatistics
 
 
@@ -29,23 +29,23 @@ class DocumentQueryTextStatistics(TextStatistics[Union[Document, Query]]):
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerationInputOutputTextStatistics(
-    TextStatistics[Union[GenerationInput, GenerationOutput]]
+    TextStatistics[Union[GenerationRequest, GenerationResponse]]
 ):
-    generation_input_text_statistics: TextStatistics[GenerationInput]
-    generation_output_text_statistics: TextStatistics[GenerationOutput]
+    generation_input_text_statistics: TextStatistics[GenerationRequest]
+    generation_output_text_statistics: TextStatistics[GenerationResponse]
 
     def term_counts(
-        self, document: Union[GenerationInput, GenerationOutput]
+        self, document: Union[GenerationRequest, GenerationResponse]
     ) -> Mapping[str, int]:
-        if isinstance(document, GenerationInput):
+        if isinstance(document, GenerationRequest):
             return self.generation_input_text_statistics.term_counts(document)
-        elif isinstance(document, GenerationOutput):
+        elif isinstance(document, GenerationResponse):
             return self.generation_output_text_statistics.term_counts(document)
 
     def term_frequencies(
-        self, document: Union[GenerationInput, GenerationOutput]
+        self, document: Union[GenerationRequest, GenerationResponse]
     ) -> Mapping[str, float]:
-        if isinstance(document, GenerationInput):
+        if isinstance(document, GenerationRequest):
             return self.generation_input_text_statistics.term_frequencies(document)
-        elif isinstance(document, GenerationOutput):
+        elif isinstance(document, GenerationResponse):
             return self.generation_output_text_statistics.term_frequencies(document)

@@ -2,7 +2,7 @@ from typing import Union
 
 from injector import Module, Binder, singleton, inject
 
-from ir_axioms.model import Document, Query, GenerationInput, GenerationOutput
+from ir_axioms.model import Document, Query, GenerationRequest, GenerationResponse
 
 # Re-export from sub-modules.
 from ir_axioms.tools.text_statistics.base import (
@@ -53,9 +53,9 @@ class TextStatisticsModule(Module):
 
         @inject
         def _make_simple_text_statistics_generation_input(
-            text_contents: TextContents[GenerationInput],
+            text_contents: TextContents[GenerationRequest],
             term_tokenizer: TermTokenizer,
-        ) -> TextStatistics[GenerationInput]:
+        ) -> TextStatistics[GenerationRequest]:
             return SimpleTextStatistics(
                 text_contents=text_contents,
                 term_tokenizer=term_tokenizer,
@@ -63,9 +63,9 @@ class TextStatisticsModule(Module):
 
         @inject
         def _make_simple_text_statistics_generation_output(
-            text_contents: TextContents[GenerationOutput],
+            text_contents: TextContents[GenerationResponse],
             term_tokenizer: TermTokenizer,
-        ) -> TextStatistics[GenerationOutput]:
+        ) -> TextStatistics[GenerationResponse]:
             return SimpleTextStatistics(
                 text_contents=text_contents,
                 term_tokenizer=term_tokenizer,
@@ -82,12 +82,12 @@ class TextStatisticsModule(Module):
             scope=singleton,
         )
         binder.bind(
-            interface=TextStatistics[GenerationInput],
+            interface=TextStatistics[GenerationRequest],
             to=_make_simple_text_statistics_generation_input,
             scope=singleton,
         )
         binder.bind(
-            interface=TextStatistics[GenerationOutput],
+            interface=TextStatistics[GenerationResponse],
             to=_make_simple_text_statistics_generation_output,
             scope=singleton,
         )
@@ -97,7 +97,7 @@ class TextStatisticsModule(Module):
             scope=singleton,
         )
         binder.bind(
-            interface=TextStatistics[Union[GenerationInput, GenerationOutput]],
+            interface=TextStatistics[Union[GenerationRequest, GenerationResponse]],
             to=GenerationInputOutputTextStatistics,
             scope=singleton,
         )

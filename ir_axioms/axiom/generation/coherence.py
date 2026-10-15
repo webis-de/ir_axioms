@@ -22,7 +22,7 @@ from textacy.extract.triples import subject_verb_object_triples
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_less
 from ir_axioms.model.base import Preference, PreferenceMatrix
-from ir_axioms.model.generation import GenerationOutput
+from ir_axioms.model.generation import GenerationResponse
 from ir_axioms.tools import (
     TextContents,
     TermTokenizer,
@@ -33,12 +33,12 @@ from ir_axioms.utils.lazy import lazy_inject
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class WordLengthDeviationCoherenceAxiom(Axiom[Any, GenerationOutput]):
+class WordLengthDeviationCoherenceAxiom(Axiom[Any, GenerationResponse]):
     """
     Prefer text with lower standard deviation of average word lengths across sentences.
     """
 
-    text_contents: TextContents[GenerationOutput]
+    text_contents: TextContents[GenerationResponse]
     sentence_tokenizer: SentenceTokenizer
     term_tokenizer: TermTokenizer
 
@@ -47,8 +47,8 @@ class WordLengthDeviationCoherenceAxiom(Axiom[Any, GenerationOutput]):
     def preference(
         self,
         input: Any,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
+        output1: GenerationResponse,
+        output2: GenerationResponse,
     ) -> Preference:
         average_word_lengths1 = array(
             [
@@ -91,7 +91,7 @@ class WordLengthDeviationCoherenceAxiom(Axiom[Any, GenerationOutput]):
     def preferences(
         self,
         input: Any,
-        outputs: Sequence[GenerationOutput],
+        outputs: Sequence[GenerationResponse],
     ) -> PreferenceMatrix:
         average_word_lengths = (
             array(
@@ -144,12 +144,12 @@ COH1: Final = lazy_inject(WordLengthDeviationCoherenceAxiom)
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class SubjectVerbClosenessCoherenceAxiom(Axiom[Any, GenerationOutput]):
+class SubjectVerbClosenessCoherenceAxiom(Axiom[Any, GenerationResponse]):
     """
     Prefer text with subjects and verbs that are closer together.
     """
 
-    text_contents: TextContents[GenerationOutput]
+    text_contents: TextContents[GenerationResponse]
 
     language_name: NoInject[str] = "en_core_web_sm"
     margin_fraction: NoInject[float] = 0.1
@@ -163,8 +163,8 @@ class SubjectVerbClosenessCoherenceAxiom(Axiom[Any, GenerationOutput]):
     def preference(
         self,
         input: Any,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
+        output1: GenerationResponse,
+        output2: GenerationResponse,
     ) -> Preference:
         doc1 = self._language(self.text_contents.contents(output1))
         doc2 = self._language(self.text_contents.contents(output2))
@@ -207,7 +207,7 @@ class SubjectVerbClosenessCoherenceAxiom(Axiom[Any, GenerationOutput]):
     def preferences(
         self,
         input: Any,
-        outputs: Sequence[GenerationOutput],
+        outputs: Sequence[GenerationResponse],
     ) -> PreferenceMatrix:
         docs = self._language.pipe(
             self.text_contents.contents(output) for output in outputs

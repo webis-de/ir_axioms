@@ -8,12 +8,12 @@ from injector import NoInject
 from pandas import read_json
 
 from ir_axioms.axiom.base import Axiom
-from ir_axioms.model import GenerationInput, GenerationOutput
+from ir_axioms.model import GenerationRequest, GenerationResponse
 from ir_axioms.axiom.utils import strictly_greater
 
 
 @dataclass(frozen=True, kw_only=True)
-class TrecRagLlmOrigAxiom(Axiom[GenerationInput, GenerationOutput]):
+class TrecRagLlmOrigAxiom(Axiom[GenerationRequest, GenerationResponse]):
     ratings_path: Path = Path("data/ratings-HuggingFaceTB-SmolLM-360M-Instruct.jsonl")
 
     margin_fraction: NoInject[float] = 0.0
@@ -34,9 +34,9 @@ class TrecRagLlmOrigAxiom(Axiom[GenerationInput, GenerationOutput]):
 
     def preference(
         self,
-        input: GenerationInput,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
+        input: GenerationRequest,
+        output1: GenerationResponse,
+        output2: GenerationResponse,
     ) -> float:
         input_hash = hash(input.text)
         output1_hash = hash(output1.text)

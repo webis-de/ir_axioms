@@ -28,8 +28,8 @@ from ir_axioms.axiom.retrieval import (
     Stmc2Axiom,
 )
 from ir_axioms.model import (
-    GenerationInput,
-    GenerationOutput,
+    GenerationRequest,
+    GenerationResponse,
     Preference,
     PreferenceMatrix,
     Query,
@@ -39,14 +39,14 @@ from ir_axioms.model import (
 from ir_axioms.utils.lazy import lazy_inject
 
 
-class _RetrievalAxiomWrapper(Axiom[GenerationInput, GenerationOutput]):
+class _RetrievalAxiomWrapper(Axiom[GenerationRequest, GenerationResponse]):
     axiom: Axiom[Query, Document]
 
     def preference(
         self,
-        input: GenerationInput,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
+        input: GenerationRequest,
+        output1: GenerationResponse,
+        output2: GenerationResponse,
     ) -> Preference:
         return self.axiom.preference(
             input=Query(
@@ -65,8 +65,8 @@ class _RetrievalAxiomWrapper(Axiom[GenerationInput, GenerationOutput]):
 
     def preferences(
         self,
-        input: GenerationInput,
-        outputs: Sequence[GenerationOutput],
+        input: GenerationRequest,
+        outputs: Sequence[GenerationResponse],
     ) -> PreferenceMatrix:
         retrieval_input = Query(
             id=input.id if input.id is not None else "",

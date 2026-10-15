@@ -25,7 +25,7 @@ from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_less
 from ir_axioms.model import PreferenceMatrix
 from ir_axioms.model.base import Preference
-from ir_axioms.model.generation import GenerationOutput
+from ir_axioms.model.generation import GenerationResponse
 from ir_axioms.tools import TextContents
 from ir_axioms.utils.lazy import lazy_inject
 
@@ -55,12 +55,12 @@ _LanguageToolCategory: TypeAlias = Literal[
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class _LanguageToolErrorProportionClarityAxiom(Axiom[Any, GenerationOutput]):
+class _LanguageToolErrorProportionClarityAxiom(Axiom[Any, GenerationResponse]):
     """
     Prefer text with a lower proportion of characters covered by errors from LanguageTool.
     """
 
-    text_contents: TextContents[GenerationOutput]
+    text_contents: TextContents[GenerationResponse]
 
     language: NoInject[str] = "en-US"
     enabled_categories: NoInject[Iterable[_LanguageToolCategory]] = frozenset()
@@ -77,8 +77,8 @@ class _LanguageToolErrorProportionClarityAxiom(Axiom[Any, GenerationOutput]):
     def preference(
         self,
         input: Any,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
+        output1: GenerationResponse,
+        output2: GenerationResponse,
     ) -> Preference:
         contents1 = self.text_contents.contents(output1)
         contents2 = self.text_contents.contents(output2)
@@ -113,7 +113,7 @@ class _LanguageToolErrorProportionClarityAxiom(Axiom[Any, GenerationOutput]):
     def preferences(
         self,
         input: Any,
-        outputs: Sequence[GenerationOutput],
+        outputs: Sequence[GenerationResponse],
     ) -> PreferenceMatrix:
         contents = [self.text_contents.contents(output) for output in outputs]
         matches = (
@@ -177,12 +177,12 @@ CLAR1: Final = lazy_inject(LanguageToolGrammarErrorProportionClarityAxiom)
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class FleschReadingEaseClarityAxiom(Axiom[Any, GenerationOutput]):
+class FleschReadingEaseClarityAxiom(Axiom[Any, GenerationResponse]):
     """
     Prefer text with higher readability as measured by the Flesch reading ease score.
     """
 
-    text_contents: TextContents[GenerationOutput]
+    text_contents: TextContents[GenerationResponse]
 
     language_name: NoInject[str] = "en_core_web_sm"
     margin_fraction: NoInject[float] = 0.0
@@ -194,8 +194,8 @@ class FleschReadingEaseClarityAxiom(Axiom[Any, GenerationOutput]):
     def preference(
         self,
         input: Any,
-        output1: GenerationOutput,
-        output2: GenerationOutput,
+        output1: GenerationResponse,
+        output2: GenerationResponse,
     ) -> Preference:
         document1 = self._language(self.text_contents.contents(output1))
         document2 = self._language(self.text_contents.contents(output2))
@@ -214,7 +214,7 @@ class FleschReadingEaseClarityAxiom(Axiom[Any, GenerationOutput]):
     def preferences(
         self,
         input: Any,
-        outputs: Sequence[GenerationOutput],
+        outputs: Sequence[GenerationResponse],
     ) -> PreferenceMatrix:
         documents = (
             self._language(self.text_contents.contents(output)) for output in outputs
