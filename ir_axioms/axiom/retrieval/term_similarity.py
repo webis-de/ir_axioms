@@ -1,3 +1,4 @@
+from collections.abc import Set, Mapping
 from dataclasses import dataclass
 from math import isclose, nan
 from typing import Final, Union, Sequence
@@ -86,6 +87,45 @@ def _safe_ratio(a: float, b: float) -> float:
         return a / b
 
 
+def _stmc2_preference(
+    max_similarity_pairs: Set[tuple[str, str]],
+    document1_length: int,
+    document2_length: int,
+    term_frequencies1: Mapping[str, float],
+    term_frequencies2: Mapping[str, float],
+    margin_fraction: float,
+) -> Preference:
+    if len(max_similarity_pairs) == 0:
+        return 0
+
+    if all(
+        isclose(
+            _safe_ratio(document2_length, document1_length),
+            _safe_ratio(
+                term_frequencies2.get(non_query_term, 0),
+                term_frequencies1.get(query_term, 0),
+            ),
+            rel_tol=margin_fraction,
+        )
+        for query_term, non_query_term in max_similarity_pairs
+    ):
+        return 1
+    elif all(
+        isclose(
+            _safe_ratio(document1_length, document2_length),
+            _safe_ratio(
+                term_frequencies1.get(non_query_term, 0),
+                term_frequencies2.get(query_term, 0),
+            ),
+            rel_tol=margin_fraction,
+        )
+        for query_term, non_query_term in max_similarity_pairs
+    ):
+        return -1
+
+    return 0
+
+
 @inject
 @dataclass(frozen=True, kw_only=True)
 class Stmc2Axiom(Axiom[Query, Document]):
@@ -132,32 +172,17 @@ class Stmc2Axiom(Axiom[Query, Document]):
         if len(max_similarity_pairs) == 0:
             return 0
 
-        if all(
-            isclose(
-                _safe_ratio(document2_length, document1_length),
-                _safe_ratio(
-                    self.text_statistics.term_frequency(output2, non_query_term),
-                    self.text_statistics.term_frequency(output1, query_term),
-                ),
-                rel_tol=self.margin_fraction,
-            )
-            for query_term, non_query_term in max_similarity_pairs
-        ):
-            return 1
-        elif all(
-            isclose(
-                _safe_ratio(document1_length, document2_length),
-                _safe_ratio(
-                    self.text_statistics.term_frequency(output1, non_query_term),
-                    self.text_statistics.term_frequency(output2, query_term),
-                ),
-                rel_tol=self.margin_fraction,
-            )
-            for query_term, non_query_term in max_similarity_pairs
-        ):
-            return -1
+        term_frequencies1 = self.text_statistics.term_frequencies(output1)
+        term_frequencies2 = self.text_statistics.term_frequencies(output2)
 
-        return 0
+        return _stmc2_preference(
+            max_similarity_pairs=max_similarity_pairs,
+            document1_length=document1_length,
+            document2_length=document2_length,
+            term_frequencies1=term_frequencies1,
+            term_frequencies2=term_frequencies2,
+            margin_fraction=self.margin_fraction,
+        )
 
     # ADDITION: Come up with a better way to batch-compute preference-matrices.
     # The largest hurdle seems to be the max similarity pairs computation.
