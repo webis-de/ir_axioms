@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
+from collections.abc import Sequence
 from pathlib import Path
-from typing import (
-    Any, Dict, 
-    # List,
-    Optional, Sequence, Type
-)
+from typing import Any
 from warnings import warn
 
 from autojudge_base import (
@@ -18,15 +15,15 @@ from autojudge_base import (
     Leaderboard,
     Qrels,
     Request,
-    # LlmConfigProtocol,
     NuggetBanks,
     NuggetBanksProtocol,
 )
 from collections import defaultdict
 from time import perf_counter
 from tqdm import tqdm
-from ir_axioms.model import GenerationInput, GenerationOutput
+from ir_axioms.model import GenerationRequest, GenerationResponse
 from ir_axioms.tools import SpacyEntitiesAspectExtraction
+
 spacy_ent = SpacyEntitiesAspectExtraction()
 
 
@@ -62,7 +59,7 @@ from ir_axioms.axiom import (  # noqa: E402
 )
 
 
-axioms: dict[str, Axiom[GenerationInput, GenerationOutput]] = {
+axioms: dict[str, Axiom[GenerationRequest, GenerationResponse]] = {
     #
     # Generative Axioms
     "GEN-TFC1": GEN_TFC1(),
@@ -95,16 +92,17 @@ axioms: dict[str, Axiom[GenerationInput, GenerationOutput]] = {
     "CONS3-0.5": CONS3(margin_fraction=0.5),
     #
     # Correctness axioms
-    #"CORR1-0.75": CORR1(margin_fraction=0.75),
+    # "CORR1-0.75": CORR1(margin_fraction=0.75),
     #
     # Clarity axioms
-    #"CLAR1-0.5": CLAR1(margin_fraction=0.5),
-    #"CLAR2-0.5": CLAR2(margin_fraction=0.5),
+    # "CLAR1-0.5": CLAR1(margin_fraction=0.5),
+    # "CLAR2-0.5": CLAR2(margin_fraction=0.5),
 }
 
-def group_by_topic_id(rag_responses: Sequence[Report]) -> Dict[str, Dict[str, str]]:
+
+def group_by_topic_id(rag_responses: Sequence[Report]) -> dict[str, dict[str, str]]:
     """Group RAG responses by topic_id, then by run_id."""
-    ret: Dict[str, Dict[str, str]] = defaultdict(dict)
+    ret: dict[str, dict[str, str]] = defaultdict(dict)
     for rag_response in rag_responses:
         run_id: str = rag_response.metadata.run_id
         topic_id: str = rag_response.metadata.topic_id
@@ -115,7 +113,7 @@ def group_by_topic_id(rag_responses: Sequence[Report]) -> Dict[str, Dict[str, st
 LEADERBOARD_SPEC = LeaderboardSpec(measures=list(MeasureSpec(i) for i in axioms.keys()))
 
 # Accumulates total wall-clock time (seconds) spent per axiom, across all topics.
-axiom_timings: Dict[str, float] = defaultdict(float)
+axiom_timings: dict[str, float] = defaultdict(float)
 
 
 def _axiom_timings_lines() -> list[str]:
@@ -133,7 +131,7 @@ def print_axiom_timings() -> None:
     print("\n" + "\n".join(_axiom_timings_lines()))
 
 
-def write_axiom_timings(out_dir: Optional[Path]) -> None:
+def write_axiom_timings(out_dir: Path | None) -> None:
     if not axiom_timings:
         return
     out_dir = Path(out_dir) if out_dir else Path(".")
@@ -144,24 +142,25 @@ def write_axiom_timings(out_dir: Optional[Path]) -> None:
 
 
 class IrAxiomJudge(AutoJudge):
-    nugget_banks_type: Type[NuggetBanksProtocol] = NuggetBanks
+    nugget_banks_type: type[NuggetBanksProtocol] = NuggetBanks
 
-    def create_nuggets(self, **kwargs: Any) -> Optional[NuggetBanksProtocol]:
+    def create_nuggets(self, **kwargs: Any) -> NuggetBanksProtocol | None:
         return None
 
-    def create_qrels(self, **kwargs: Any) -> Optional[Qrels]:
+    def create_qrels(self, **kwargs: Any) -> Qrels | None:
         return None
 
-    def judge_for_topic(self, inp: GenerationInput, outp: Sequence[GenerationOutput]):
+    def judge_for_topic(
+        self, inp: GenerationRequest, outp: Sequence[GenerationResponse]
+    ):
         ret = {i.id: {} for i in outp}
         for axiom_name, axiom in axioms.items():
             start = perf_counter()
             preds = axiom.preferences(inp, outp)
             axiom_timings[axiom_name] += perf_counter() - start
             for v, run in zip(preds, outp):
-                ret[run.id][axiom_name] = sum(v)/len(outp)
+                ret[run.id][axiom_name] = sum(v) / len(outp)
         return ret
-
 
     def judge(
         self,
@@ -169,21 +168,20 @@ class IrAxiomJudge(AutoJudge):
         rag_topics: Sequence[Request],
         **kwargs: Any,
     ) -> Leaderboard:
-        topic_id_to_title: Dict[str, str] = {
-            i.request_id: i.title for i in rag_topics
-        }
-        topic_id_to_responses: Dict[str, Dict[str, str]] = group_by_topic_id(
+        topic_id_to_title: dict[str, str] = {i.request_id: i.title for i in rag_topics}
+        topic_id_to_responses: dict[str, dict[str, str]] = group_by_topic_id(
             rag_responses
         )
 
         builder: LeaderboardBuilder = LeaderboardBuilder(LEADERBOARD_SPEC)
-        
 
         for topic in tqdm(topic_id_to_responses.keys(), "Process Topics"):
-            inp = GenerationInput(id=topic, text=topic_id_to_title[topic])
-            outp = [GenerationOutput(id=k, text=v) for k, v in topic_id_to_responses[topic].items()]            
+            inp = GenerationRequest(id=topic, text=topic_id_to_title[topic])
+            outp = [
+                GenerationResponse(id=k, text=v)
+                for k, v in topic_id_to_responses[topic].items()
+            ]
             system_to_axiom_to_score = self.judge_for_topic(inp, outp)
-
 
             for system, values in system_to_axiom_to_score.items():
                 builder.add(
@@ -193,7 +191,9 @@ class IrAxiomJudge(AutoJudge):
                 )
 
         leaderboard: Leaderboard = builder.build()
-        LeaderboardVerification(leaderboard, on_missing="fix_aggregate", warn=True).all()
+        LeaderboardVerification(
+            leaderboard, on_missing="fix_aggregate", warn=True
+        ).all()
         print_axiom_timings()
         try:
             write_axiom_timings(Path(kwargs.get("filebase")).parent)
@@ -203,5 +203,5 @@ class IrAxiomJudge(AutoJudge):
         return leaderboard
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     auto_judge_to_click_command(IrAxiomJudge(), "axiom-judge")()
