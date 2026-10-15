@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Optional, Sequence, TypeVar, Protocol, Final
 
-from numpy import zeros, floating
+from numpy import array, float_, floating, subtract, zeros
 from numpy.random import Generator, default_rng
 
 from ir_axioms.axiom.base import Axiom
@@ -105,3 +105,29 @@ class LessThanAxiom(Axiom[Any, _SupportsComparisonT]):
 
 
 LT: Final = lazy_inject(LessThanAxiom)
+
+
+_NumberT = TypeVar("_NumberT", int, float)
+
+
+@dataclass(frozen=True, kw_only=True)
+class DistanceAxiom(Axiom[Any, _NumberT]):
+    def preference(
+        self,
+        input: Any,
+        output1: _NumberT,
+        output2: _NumberT,
+    ) -> Preference:
+        # Signed distance, so that flipping the outputs flips the preference.
+        return output1 - output2
+
+    def preferences(
+        self,
+        input: Any,
+        outputs: Sequence[_NumberT],
+    ) -> PreferenceMatrix:
+        values = array(outputs, dtype=float_)
+        return subtract.outer(values, values)
+
+
+DIST: Final = lazy_inject(DistanceAxiom)

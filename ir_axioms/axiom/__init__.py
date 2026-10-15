@@ -178,6 +178,8 @@ from ir_axioms.axiom.simple import (
     GT,
     LessThanAxiom,
     LT,
+    DistanceAxiom,
+    DIST,
 )
 
 __all__ = [
@@ -332,4 +334,6 @@ __all__ = [
     "GT",
     "LessThanAxiom",
     "LT",
+    "DistanceAxiom",
+    "DIST",
 ]

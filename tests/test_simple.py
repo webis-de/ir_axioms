@@ -1,4 +1,6 @@
-from ir_axioms.axiom import NOP, ORIG, ORACLE
+from numpy import array
+
+from ir_axioms.axiom import NOP, ORIG, ORACLE, DistanceAxiom, Axiom
 from ir_axioms.model import Query, Document
 
 
@@ -44,3 +46,29 @@ def test_oracle() -> None:
 
     assert axiom.preference(query, document1, document2) == 1
     assert axiom.preference(query, document2, document1) == -1
+
+
+def test_distance_int() -> None:
+    axiom: Axiom[None, int] = DistanceAxiom()
+
+    assert axiom.preference(None, 3, 1) == 2
+    assert axiom.preference(None, 1, 3) == -2
+    assert axiom.preference(None, 2, 2) == 0
+
+    assert (
+        axiom.preferences(None, [1, 3, 0])
+        == array([[0, -2, 1], [2, 0, 3], [-1, -3, 0]])
+    ).all()
+
+
+def test_distance_float() -> None:
+    axiom: Axiom[None, float] = DistanceAxiom()
+
+    assert axiom.preference(None, 3.5, 1.0) == 2.5
+    assert axiom.preference(None, 1.0, 3.5) == -2.5
+    assert axiom.preference(None, 1.5, 1.5) == 0
+
+    assert (
+        axiom.preferences(None, [1.0, 3.0, 0.5])
+        == array([[0, -2, 0.5], [2, 0, 2.5], [-0.5, -2.5, 0]])
+    ).all()
