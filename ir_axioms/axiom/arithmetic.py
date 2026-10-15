@@ -4,7 +4,7 @@ from math import isclose, ceil
 from operator import mul
 from typing import Iterable, Sequence, Any
 
-from numpy import full, stack, zeros
+from numpy import full, stack, zeros, fill_diagonal
 from tqdm.auto import tqdm
 
 from ir_axioms.axiom.base import Axiom
@@ -271,6 +271,22 @@ class CascadeAxiom(Axiom[Input, Output]):
             preference for preference in preferences if preference != 0
         )
         return next(decisive_preferences, 0)
+
+    def preferences(
+        self,
+        input: Input,
+        outputs: Sequence[Output],
+    ) -> PreferenceMatrix:
+        preferences = zeros((len(outputs), len(outputs)))
+        for axiom in self.axioms:
+            undecided = preferences == 0
+            fill_diagonal(undecided, False)
+            if not undecided.any():
+                # Early terminate if all non-recursive elements of the preference matrix have been filled.
+                break
+            # Fill undecided preferences with the next axiom's preferences.
+            preferences[undecided] = axiom.preferences(input, outputs)[undecided]
+        return preferences
 
     def __or__(self, other: Axiom[Input, Output]) -> Axiom[Input, Output]:
         # Avoid chaining operators.
