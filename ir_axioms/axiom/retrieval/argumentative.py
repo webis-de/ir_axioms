@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from functools import cached_property
-from math import nan  # pyright: ignore[reportShadowedImports]
+from math import nan
 from pathlib import Path
 from statistics import mean
 from typing import Any, Final, Iterable, Sequence
