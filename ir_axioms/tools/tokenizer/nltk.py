@@ -24,10 +24,11 @@ class NltkTermTokenizer(TermTokenizer):
 
     def terms(self, text: str) -> Sequence[str]:
         terms = word_tokenize(text)
-        if self.lemmatize:
-            terms = [self._lemmatizer.lemmatize(term) for term in terms]
+        # Lowercase before lemmatizing, as the WordNet lemmatizer is case-sensitive.
         if self.lowercase:
             terms = [term.lower() for term in terms]
+        if self.lemmatize:
+            terms = [self._lemmatizer.lemmatize(term) for term in terms]
         return terms
 
 
