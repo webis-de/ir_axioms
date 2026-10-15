@@ -48,7 +48,8 @@ def _average_between_query_terms(
     for term1, term2 in query_term_pairs:
         element1_position = document_terms.index(term1)
         element2_position = document_terms.index(term2)
-        number_words += abs(element1_position - element2_position - 1)
+        # Number of words between both query terms.
+        number_words += abs(element1_position - element2_position) - 1
     return number_words / len(query_term_pairs)
 
 
