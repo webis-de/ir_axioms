@@ -5,7 +5,8 @@ from ir_axioms.tools.contents.base import TextContents
 
 @runtime_checkable
 class HasText(Protocol):
-    text: str | None
+    @property
+    def text(self) -> str | None: ...
 
 
 class SimpleTextContents(TextContents[HasText]):
