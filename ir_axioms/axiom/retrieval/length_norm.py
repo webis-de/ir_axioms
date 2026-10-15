@@ -13,6 +13,22 @@ from ir_axioms.tools import TextContents, TermTokenizer, TextStatistics
 from ir_axioms.utils.lazy import lazy_inject
 
 
+def _similar_query_term_frequencies(
+    query_unique_terms: AbstractSet[str],
+    term_frequencies1: Mapping[str, float],
+    term_frequencies2: Mapping[str, float],
+    margin_fraction: float,
+) -> bool:
+    return all(
+        isclose(
+            term_frequencies1.get(term, 0),
+            term_frequencies2.get(term, 0),
+            rel_tol=margin_fraction,
+        )
+        for term in query_unique_terms
+    )
+
+
 @inject
 @dataclass(frozen=True, kw_only=True)
 class Lnc1Axiom(Axiom[Query, Document]):
@@ -30,13 +46,13 @@ class Lnc1Axiom(Axiom[Query, Document]):
         query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
-        if not all(
-            isclose(
-                self.text_statistics.term_frequency(output1, term),
-                self.text_statistics.term_frequency(output2, term),
-                rel_tol=self.margin_fraction,
-            )
-            for term in query_unique_terms
+        term_frequencies1 = self.text_statistics.term_frequencies(output1)
+        term_frequencies2 = self.text_statistics.term_frequencies(output2)
+        if not _similar_query_term_frequencies(
+            query_unique_terms=query_unique_terms,
+            term_frequencies1=term_frequencies1,
+            term_frequencies2=term_frequencies2,
+            margin_fraction=self.margin_fraction,
         ):
             return 0
 
@@ -49,6 +65,44 @@ class Lnc1Axiom(Axiom[Query, Document]):
 
         # Prefer the shorter document.
         return strictly_fewer(document1_terms, document2_terms)
+
+    def preferences(
+        self,
+        input: Query,
+        outputs: Sequence[Document],
+    ) -> PreferenceMatrix:
+        query_unique_terms = self.term_tokenizer.unique_terms(
+            self.text_contents.contents(input),
+        )
+        term_frequencies = [
+            self.text_statistics.term_frequencies(output) for output in outputs
+        ]
+        document_terms = list(
+            self.term_tokenizer.iter_terms_unordered(
+                self.text_contents.iter_contents(outputs),
+            )
+        )
+        return array(
+            [
+                (
+                    strictly_fewer(document1_terms, document2_terms)
+                    if _similar_query_term_frequencies(
+                        query_unique_terms=query_unique_terms,
+                        term_frequencies1=term_frequencies1,
+                        term_frequencies2=term_frequencies2,
+                        margin_fraction=self.margin_fraction,
+                    )
+                    else 0
+                )
+                for term_frequencies1, document1_terms in zip(
+                    term_frequencies, document_terms
+                )
+                for term_frequencies2, document2_terms in zip(
+                    term_frequencies, document_terms
+                )
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
 
 
 LNC1: Final = lazy_inject(Lnc1Axiom)
