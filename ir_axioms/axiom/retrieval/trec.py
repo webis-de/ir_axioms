@@ -1,12 +1,13 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from functools import cached_property
 
-from numpy import integer
+from numpy import array, float_, integer
 from trectools import TrecQrel
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.axiom.utils import strictly_greater
-from ir_axioms.model import Query, Document
+from ir_axioms.model import Query, Document, PreferenceMatrix
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -44,3 +45,18 @@ class TrecOracleAxiom(Axiom[Query, Document]):
         judgement1 = self._judgement(input.id, output1.id)
         judgement2 = self._judgement(input.id, output2.id)
         return strictly_greater(judgement1, judgement2)
+
+    def preferences(
+        self,
+        input: Query,
+        outputs: Sequence[Document],
+    ) -> PreferenceMatrix:
+        judgements = [self._judgement(input.id, output.id) for output in outputs]
+        return array(
+            [
+                strictly_greater(judgement1, judgement2)
+                for judgement1 in judgements
+                for judgement2 in judgements
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
