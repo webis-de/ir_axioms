@@ -21,6 +21,12 @@ def test_terms_lemmatize() -> None:
     assert tokenizer.terms("cats and geese") == ["cat", "and", "goose"]
 
 
+def test_terms_lemmatize_and_lowercase() -> None:
+    tokenizer = NltkTermTokenizer(lemmatize=True, lowercase=True)
+
+    assert tokenizer.terms("Cats and Geese") == ["cat", "and", "goose"]
+
+
 def test_terms_empty_string_returns_no_terms() -> None:
     assert NltkTermTokenizer().terms("") == []
 
