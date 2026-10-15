@@ -15,7 +15,8 @@ class SpacyNounChunksAspectExtraction(AspectExtraction):
 
     @cached_property
     def _language(self) -> Language:
-        return spacy_load(name=self.language_name, enable=["parser"])
+        # Noun chunks need part-of-speech tags and dependency parses.
+        return spacy_load(name=self.language_name, exclude=["ner", "lemmatizer"])
 
     def aspects(self, text: str) -> AbstractSet[str]:
         document = self._language(text)
