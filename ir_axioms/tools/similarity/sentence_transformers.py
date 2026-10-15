@@ -52,11 +52,11 @@ if is_sentence_transformers_installed() or TYPE_CHECKING:
             self, sentences1: Sequence[str], sentences2: Sequence[str]
         ) -> NDArray[float_]:
             vectors1 = self.model.encode(
-                sentences=list(sentences1),
+                inputs=list(sentences1),
                 convert_to_numpy=True,
             )
             vectors2 = self.model.encode(
-                sentences=list(sentences2),
+                inputs=list(sentences2),
                 convert_to_numpy=True,
             )
             return array(
