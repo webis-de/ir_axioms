@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from functools import lru_cache
+from functools import cached_property
 from math import nan  # pyright: ignore[reportShadowedImports]
 from pathlib import Path
 from statistics import mean
@@ -135,17 +135,22 @@ class _TargerMixin:
     api_url: NoInject[str] = DEFAULT_TARGER_API_URL
     cache_dir: NoInject[Optional[Path]] = None
 
-    @lru_cache(None)
+    @cached_property
+    def _analyzed_texts(self) -> dict[str, dict[str, ArgumentSentences]]:
+        return {}
+
     def _analyze_text(
         self,
         contents: str,
-    ) -> Dict[str, ArgumentSentences]:
-        return analyze_text(
-            contents,
-            set(self.models),
-            api_url=self.api_url,
-            cache_dir=self.cache_dir,
-        )
+    ) -> dict[str, ArgumentSentences]:
+        if contents not in self._analyzed_texts:
+            self._analyzed_texts[contents] = analyze_text(
+                contents,
+                set(self.models),
+                api_url=self.api_url,
+                cache_dir=self.cache_dir,
+            )
+        return self._analyzed_texts[contents]
 
     def analyze_text(
         self,

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from functools import lru_cache
+from functools import cached_property
 
 from numpy import integer
 from trectools import TrecQrel
@@ -13,8 +13,14 @@ from ir_axioms.model import Query, Document
 class TrecOracleAxiom(Axiom[Query, Document]):
     qrels: TrecQrel
 
-    @lru_cache(None)
+    @cached_property
+    def _judgements(self) -> dict[tuple[str, str], int]:
+        return {}
+
     def _judgement(self, query_id: str, document_id: str) -> int:
+        key = (query_id, document_id)
+        if key in self._judgements:
+            return self._judgements[key]
         judgement = self.qrels.get_judgement(
             document=document_id,
             topic=query_id,
@@ -26,6 +32,7 @@ class TrecOracleAxiom(Axiom[Query, Document]):
                 f"Invalid judgement for document {document_id} "
                 f"in topic {query_id}: {type(judgement)}"
             )
+        self._judgements[key] = judgement
         return judgement
 
     def preference(

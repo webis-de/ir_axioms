@@ -42,6 +42,5 @@ class WordNetSynonymSetTermSimilarity(TermSimilarity):
         download_nltk_dependencies("wordnet", "omw-1.4")
 
     @final
-    @lru_cache(None)
     def similarity(self, term1: str, term2: str) -> float:
         return _synonym_set_similarity(term1, term2, self.smoothing)

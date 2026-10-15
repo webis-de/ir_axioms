@@ -4,7 +4,7 @@ from ir_axioms.utils.libraries import is_fasttext_installed
 
 if is_fasttext_installed() or TYPE_CHECKING:
     from dataclasses import dataclass
-    from functools import cached_property, lru_cache
+    from functools import cached_property
     from math import nan
     from typing import final
 
@@ -34,12 +34,18 @@ if is_fasttext_installed() or TYPE_CHECKING:
             )
             return load_model(model_path)
 
+        @cached_property
+        def _similarities(self) -> dict[tuple[str, str], float]:
+            return {}
+
         @final
-        @lru_cache(None)
         def similarity(self, term1: str, term2: str) -> float:
-            vector1 = self.model.get_word_vector(term1)
-            vector2 = self.model.get_word_vector(term2)
-            return _cosine_similarity(vector1, vector2)
+            key = (term1, term2)
+            if key not in self._similarities:
+                vector1 = self.model.get_word_vector(term1)
+                vector2 = self.model.get_word_vector(term2)
+                self._similarities[key] = _cosine_similarity(vector1, vector2)
+            return self._similarities[key]
 
 else:
     FastTextTermSimilarity = NotImplemented  # type: ignore

@@ -4,7 +4,7 @@ from ir_axioms.utils.libraries import is_pyterrier_installed
 
 if is_pyterrier_installed() or TYPE_CHECKING:
     from dataclasses import dataclass
-    from functools import lru_cache, cached_property
+    from functools import cached_property
     from pathlib import Path
     from typing import Union, Any
 
@@ -49,14 +49,19 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         def document_count(self) -> int:  # type: ignore
             return int(self._collection_statistics.numberOfDocuments)
 
-        @lru_cache(None)
+        @cached_property
+        def _document_frequencies(self) -> dict[str, int]:
+            return {}
+
         def document_frequency(self, term: str) -> int:  # type: ignore
-            entry = self._lexicon.getLexiconEntry(term)
-            if entry is None or entry.getNumberOfEntries() == 0:
-                return 0
-            else:
-                document_frequency = int(entry.getDocumentFrequency())
-                return document_frequency
+            if term not in self._document_frequencies:
+                entry = self._lexicon.getLexiconEntry(term)
+                if entry is None or entry.getNumberOfEntries() == 0:
+                    document_frequency = 0
+                else:
+                    document_frequency = int(entry.getDocumentFrequency())
+                self._document_frequencies[term] = document_frequency
+            return self._document_frequencies[term]
 
 else:
     TerrierIndexStatistics = NotImplemented  # type: ignore
