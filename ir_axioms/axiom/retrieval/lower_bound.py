@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from math import isclose
 from collections.abc import Sequence
-from typing import Final, Union
+from typing import Final
 
 from injector import inject, NoInject
 from numpy import array, bool_, float_, isclose as numpy_isclose, newaxis, where

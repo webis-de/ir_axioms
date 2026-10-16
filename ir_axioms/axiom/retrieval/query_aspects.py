@@ -1,5 +1,6 @@
+from collections.abc import Sequence, Set
 from dataclasses import dataclass, field
-from typing import Final, Sequence, Set, AbstractSet, List, Union
+from typing import Final
 
 from injector import inject, NoInject
 from numpy import array, float_, zeros

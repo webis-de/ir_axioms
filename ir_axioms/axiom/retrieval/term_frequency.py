@@ -1,7 +1,8 @@
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from itertools import chain, combinations
 from math import isclose
-from typing import AbstractSet, Final, Sequence, Union
+from typing import AbstractSet, Final, Sequence
 
 from injector import inject, NoInject
 from numpy import array, float_

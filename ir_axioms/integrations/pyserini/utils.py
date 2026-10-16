@@ -4,7 +4,6 @@ from ir_axioms.utils.libraries import is_pyserini_installed
 
 if is_pyserini_installed() or TYPE_CHECKING:
     from pathlib import Path
-    from typing import Optional, Union
 
     from injector import singleton, Injector
     from ir_datasets import Dataset

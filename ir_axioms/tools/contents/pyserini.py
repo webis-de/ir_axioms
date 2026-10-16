@@ -6,7 +6,6 @@ if is_pyserini_installed() or TYPE_CHECKING:
     from dataclasses import dataclass
     from functools import cached_property
     from pathlib import Path
-    from typing import Union
 
     from ir_axioms.model.retrieval import Document
     from ir_axioms.tools.contents.base import TextContents
