@@ -33,7 +33,7 @@ All available extras are listed here for quick reference:
 | `fasttext` | Use [fastText](https://fasttext.cc/) word vectors for term similarity (enabled automatically if installed). |
 | `keybert` | Use [KeyBERT](https://maartengr.github.io/KeyBERT/) for aspect extraction (must be enabled manually if installed). |
 | `autojudge` | Use axioms as [TREC AutoJudge](https://trec-auto-judge.cs.unh.edu/) evaluators. |
-| `experiments` | Dependencies for the [experiment notebooks](../walkthroughs/). |
+| `experiments` | Dependencies for the [experiment notebooks](../walkthroughs/index.md). |
 
 !!! tip "Reproducing our ICTIR 2025 results"
 
