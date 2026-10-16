@@ -1,7 +1,7 @@
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Set
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Literal, AbstractSet
+from typing import Literal
 
 from spacy import load as spacy_load
 from spacy.language import Language
@@ -19,7 +19,7 @@ class SpacyNounChunksAspectExtraction(AspectExtraction):
         # Noun chunks need part-of-speech tags and dependency parses.
         return spacy_load(name=self.language_name, exclude=["ner", "lemmatizer"])
 
-    def aspects(self, text: str) -> AbstractSet[str]:
+    def aspects(self, text: str) -> Set[str]:
         document = self._language(text)
         chunks = []
         if self.chunks == "direct" or self.chunks == "both":
@@ -38,11 +38,11 @@ class SpacyEntitiesAspectExtraction(AspectExtraction):
     def _language(self) -> Language:
         return spacy_load(name=self.language_name)
 
-    def aspects(self, text: str) -> AbstractSet[str]:
+    def aspects(self, text: str) -> Set[str]:
         document = self._language(text)
         return {entity.text for entity in document.ents}
 
-    def iter_aspects(self, texts: Iterable[str]) -> Iterator[AbstractSet[str]]:
+    def iter_aspects(self, texts: Iterable[str]) -> Iterator[Set[str]]:
         documents = self._language.pipe(texts)
         for document in documents:
             yield {entity.text for entity in document.ents}

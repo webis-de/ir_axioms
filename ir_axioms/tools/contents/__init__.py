@@ -1,5 +1,3 @@
-from typing import Union
-
 from injector import Module, Binder, singleton
 
 from ir_axioms.model import Document, Query, GenerationRequest, GenerationResponse
@@ -61,12 +59,12 @@ class ContentsModule(Module):
             scope=singleton,
         )
         binder.bind(
-            interface=TextContents[Union[Document, Query]],
+            interface=TextContents[Document | Query],
             to=DocumentQueryTextContents,
             scope=singleton,
         )
         binder.bind(
-            interface=TextContents[Union[GenerationRequest, GenerationResponse]],
+            interface=TextContents[GenerationRequest | GenerationResponse],
             to=GenerationInputOutputTextContents,
             scope=singleton,
         )

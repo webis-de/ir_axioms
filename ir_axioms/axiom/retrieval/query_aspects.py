@@ -23,8 +23,8 @@ from ir_axioms.utils.lazy import lazy_inject
 
 
 def _vocabulary_overlap(
-    vocabulary1: AbstractSet[str],
-    vocabulary2: AbstractSet[str],
+    vocabulary1: Set[str],
+    vocabulary2: Set[str],
 ):
     """
     Vocabulary overlap as calculated by the Jaccard coefficient.
@@ -298,7 +298,7 @@ class AspectRegAxiom(Axiom[Query, Document]):
             query_unique_terms, query_unique_terms
         )
 
-        query_aspects: List[Set[str]] = [{term} for term in query_unique_terms]
+        query_aspects: list[set[str]] = [{term} for term in query_unique_terms]
 
         # Iterate aspect 1 from start.
         for i1 in range(0, len(query_aspects) - 1, +1):

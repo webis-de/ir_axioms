@@ -1,11 +1,11 @@
 from bisect import bisect_left
 from collections import Counter, defaultdict
-from collections.abc import Sequence
+from collections.abc import Sequence, Set
 from dataclasses import dataclass
 from itertools import combinations
 from math import inf
 from statistics import mean
-from typing import Final, AbstractSet
+from typing import Final
 
 from injector import inject
 from numpy import array, float_
@@ -19,9 +19,9 @@ from ir_axioms.utils.lazy import lazy_inject
 
 
 def _same_query_term_subset(
-    query_terms: AbstractSet[str],
-    document1_terms: AbstractSet[str],
-    document2_terms: AbstractSet[str],
+    query_terms: Set[str],
+    document1_terms: Set[str],
+    document2_terms: Set[str],
 ) -> bool:
     """
     Both documents contain the same set of query terms.
@@ -38,7 +38,7 @@ def _same_query_term_subset(
 
 
 def _average_between_query_terms(
-    query_terms: AbstractSet[str], document_terms: Sequence[str]
+    query_terms: Set[str], document_terms: Sequence[str]
 ) -> float:
     query_term_pairs = set(combinations(query_terms, 2))
     if len(query_term_pairs) == 0:
@@ -55,9 +55,9 @@ def _average_between_query_terms(
 
 
 def _all_query_terms_in_documents(
-    query_terms: AbstractSet[str],
-    document1_terms: AbstractSet[str],
-    document2_terms: AbstractSet[str],
+    query_terms: Set[str],
+    document1_terms: Set[str],
+    document2_terms: Set[str],
 ) -> bool:
     if len(query_terms) <= 1:
         return False
@@ -92,7 +92,7 @@ def _take_closest(
 
 
 def _query_term_index_groups(
-    query_terms: AbstractSet[str],
+    query_terms: Set[str],
     document_terms: Sequence[str],
 ) -> Sequence[Sequence[int]]:
     index_groups = []
@@ -113,7 +113,7 @@ def _query_term_index_groups(
 
 
 def _average_smallest_span(
-    query_terms: AbstractSet[str],
+    query_terms: Set[str],
     document_terms: Sequence[str],
 ) -> float:
     index_groups = _query_term_index_groups(query_terms, document_terms)
@@ -123,7 +123,7 @@ def _average_smallest_span(
 
 
 def _closest_grouping_size_and_count(
-    query_terms: AbstractSet[str],
+    query_terms: Set[str],
     document_terms: Sequence[str],
 ) -> tuple[int, int]:
     index_groups = _query_term_index_groups(query_terms, document_terms)
@@ -153,7 +153,7 @@ def _tokenize_documents(
     term_tokenizer: TermTokenizer,
     outputs: Sequence[Document],
     verbose: bool,
-) -> tuple[Sequence[Sequence[str]], Sequence[AbstractSet[str]]]:
+) -> tuple[Sequence[Sequence[str]], Sequence[Set[str]]]:
     document_terms = list(
         tqdm(
             term_tokenizer.iter_terms(text_contents.iter_contents(outputs)),

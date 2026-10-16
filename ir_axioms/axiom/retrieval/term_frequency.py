@@ -1,8 +1,8 @@
-from collections.abc import Mapping
+from collections.abc import Mapping, Set, Sequence
 from dataclasses import dataclass, field
 from itertools import chain, combinations
 from math import isclose
-from typing import AbstractSet, Final, Sequence
+from typing import Final
 
 from injector import inject, NoInject
 from numpy import array, float_
@@ -254,7 +254,7 @@ TFC3: Final = lazy_inject(Tfc3Axiom)
 
 
 def _single_different_term_frequency(
-    query_unique_terms: AbstractSet,
+    query_unique_terms: Set,
     term_frequencies1: Mapping[str, float],
     term_frequencies2: Mapping[str, float],
 ) -> bool:

@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 from inspect import isfunction
-from typing import Any, Union, get_origin
+from typing import Any, get_origin
 
 from injector import Binder, Injector
 from pytest import fixture, mark
@@ -31,8 +31,8 @@ _INTERFACES: Iterable[type] = (
     TextContents[Document],
     TextContents[GenerationRequest],
     TextContents[GenerationResponse],
-    TextContents[Union[Document, Query]],
-    TextContents[Union[GenerationRequest, GenerationResponse]],
+    TextContents[Document | Query],
+    TextContents[GenerationRequest | GenerationResponse],
     PivotSelection,
     TermSimilarity,
     SentenceSimilarity,
@@ -42,21 +42,21 @@ _INTERFACES: Iterable[type] = (
     TextStatistics[Document],
     TextStatistics[GenerationRequest],
     TextStatistics[GenerationResponse],
-    TextStatistics[Union[Document, Query]],
-    TextStatistics[Union[GenerationRequest, GenerationResponse]],
+    TextStatistics[Document | Query],
+    TextStatistics[GenerationRequest | GenerationResponse],
 )
 
 # Interfaces that combine multiple single-type bindings and must therefore
 # be bound to the respective combining implementation.
 _COMBINED_BINDINGS: Iterable[tuple[type, type]] = (
-    (TextContents[Union[Document, Query]], DocumentQueryTextContents),
+    (TextContents[Document | Query], DocumentQueryTextContents),
     (
-        TextContents[Union[GenerationRequest, GenerationResponse]],
+        TextContents[GenerationRequest | GenerationResponse],
         GenerationInputOutputTextContents,
     ),
-    (TextStatistics[Union[Document, Query]], DocumentQueryTextStatistics),
+    (TextStatistics[Document | Query], DocumentQueryTextStatistics),
     (
-        TextStatistics[Union[GenerationRequest, GenerationResponse]],
+        TextStatistics[GenerationRequest | GenerationResponse],
         GenerationInputOutputTextStatistics,
     ),
 )

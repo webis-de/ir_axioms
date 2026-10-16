@@ -1,5 +1,3 @@
-from typing import Union
-
 from injector import Module, Binder, singleton, inject
 
 from ir_axioms.model import Document, Query, GenerationRequest, GenerationResponse
@@ -92,12 +90,12 @@ class TextStatisticsModule(Module):
             scope=singleton,
         )
         binder.bind(
-            interface=TextStatistics[Union[Query, Document]],
+            interface=TextStatistics[Query | Document],
             to=DocumentQueryTextStatistics,
             scope=singleton,
         )
         binder.bind(
-            interface=TextStatistics[Union[GenerationRequest, GenerationResponse]],
+            interface=TextStatistics[GenerationRequest | GenerationResponse],
             to=GenerationInputOutputTextStatistics,
             scope=singleton,
         )

@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Union
 
 from injector import inject
 
@@ -9,7 +8,7 @@ from ir_axioms.tools.contents.base import TextContents
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class DocumentQueryTextContents(TextContents[Union[Document, Query]]):
+class DocumentQueryTextContents(TextContents[Document | Query]):
     document_text_contents: TextContents[Document]
     query_text_contents: TextContents[Query]
 
@@ -23,7 +22,7 @@ class DocumentQueryTextContents(TextContents[Union[Document, Query]]):
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerationInputOutputTextContents(
-    TextContents[Union[GenerationRequest, GenerationResponse]]
+    TextContents[GenerationRequest | GenerationResponse]
 ):
     generation_input_text_contents: TextContents[GenerationRequest]
     generation_output_text_contents: TextContents[GenerationResponse]

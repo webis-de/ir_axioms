@@ -1,10 +1,9 @@
 from ir_axioms.utils.libraries import is_keybert_installed
 
 if is_keybert_installed():
-    from collections.abc import Iterator, Iterable
+    from collections.abc import Iterator, Iterable, Set
     from dataclasses import dataclass
     from functools import cached_property
-    from typing import AbstractSet
 
     from keybert import KeyBERT
 
@@ -21,7 +20,7 @@ if is_keybert_installed():
         def _model(self) -> KeyBERT:
             return KeyBERT(model=self.model)
 
-        def aspects(self, text: str) -> AbstractSet[str]:
+        def aspects(self, text: str) -> Set[str]:
             keyphrases: list[tuple[str, float]] = self._model.extract_keywords(
                 docs=text,
                 keyphrase_ngram_range=self.ngram_range,
@@ -29,7 +28,7 @@ if is_keybert_installed():
             )  # type: ignore
             return {phrase for phrase, score in keyphrases if score >= self.threshold}
 
-        def iter_aspects(self, texts: Iterable[str]) -> Iterator[AbstractSet[str]]:
+        def iter_aspects(self, texts: Iterable[str]) -> Iterator[Set[str]]:
             keyphrases: list[list[tuple[str, float]]] = self._model.extract_keywords(
                 docs=list(texts),
                 keyphrase_ngram_range=self.ngram_range,

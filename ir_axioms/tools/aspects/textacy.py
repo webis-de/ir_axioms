@@ -1,9 +1,8 @@
-from collections.abc import Iterator, Iterable
+from collections.abc import Iterator, Iterable, Set
 from dataclasses import dataclass
 from functools import cached_property
 from math import inf
 from statistics import StatisticsError
-from typing import AbstractSet
 from warnings import warn
 
 from spacy import load as spacy_load
@@ -35,7 +34,7 @@ class YakeAspectExtraction(AspectExtraction):
         # YAKE needs part-of-speech tags, lemmas, and sentence boundaries.
         return spacy_load(name=self.language_name, exclude=["ner"])
 
-    def _extract(self, document: Doc) -> AbstractSet[str]:
+    def _extract(self, document: Doc) -> Set[str]:
         try:
             keyphrases = yake(
                 doc=document,
@@ -59,7 +58,7 @@ class YakeAspectExtraction(AspectExtraction):
             return self._extract_fallback(document)
         return {phrase for phrase, score in keyphrases if score <= self.threshold}
 
-    def _extract_fallback(self, document: Doc) -> AbstractSet[str]:
+    def _extract_fallback(self, document: Doc) -> Set[str]:
         if self.ngram_range[0] > 1 or self.top_n < 1:
             return set()
         # Same candidate selection and normalization as YAKE's unigrams.
@@ -70,9 +69,9 @@ class YakeAspectExtraction(AspectExtraction):
             and token.pos_ in self.include_pos
         }
 
-    def aspects(self, text: str) -> AbstractSet[str]:
+    def aspects(self, text: str) -> Set[str]:
         return self._extract(self._language(text))
 
-    def iter_aspects(self, texts: Iterable[str]) -> Iterator[AbstractSet[str]]:
+    def iter_aspects(self, texts: Iterable[str]) -> Iterator[Set[str]]:
         for document in self._language.pipe(texts):
             yield self._extract(document)

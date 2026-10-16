@@ -1,7 +1,7 @@
-from collections.abc import Mapping, Sequence, Collection
+from collections.abc import Mapping, Sequence, Collection, Set
 from dataclasses import dataclass
 from math import isclose
-from typing import AbstractSet, Final
+from typing import Final
 
 from injector import inject, NoInject
 from numpy import array, float_
@@ -15,7 +15,7 @@ from ir_axioms.utils.lazy import lazy_inject
 
 
 def _similar_query_term_frequencies(
-    query_unique_terms: AbstractSet[str],
+    query_unique_terms: Set[str],
     term_frequencies1: Mapping[str, float],
     term_frequencies2: Mapping[str, float],
     margin_fraction: float,
@@ -118,7 +118,7 @@ class TfLncAxiom(Axiom[Query, Document]):
 
     def _preference(
         self,
-        query_unique_terms: AbstractSet[str],
+        query_unique_terms: Set[str],
         document1_terms: Collection[str],
         document2_terms: Collection[str],
         document1_term_frequencies: Mapping[str, float],

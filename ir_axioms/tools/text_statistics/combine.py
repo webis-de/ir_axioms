@@ -1,6 +1,5 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Union
 
 from injector import inject
 
@@ -10,7 +9,7 @@ from ir_axioms.tools.text_statistics.base import TextStatistics
 
 @inject
 @dataclass(frozen=True, kw_only=True)
-class DocumentQueryTextStatistics(TextStatistics[Union[Document, Query]]):
+class DocumentQueryTextStatistics(TextStatistics[Document | Query]):
     document_text_contents: TextStatistics[Document]
     query_text_contents: TextStatistics[Query]
 
@@ -30,7 +29,7 @@ class DocumentQueryTextStatistics(TextStatistics[Union[Document, Query]]):
 @inject
 @dataclass(frozen=True, kw_only=True)
 class GenerationInputOutputTextStatistics(
-    TextStatistics[Union[GenerationRequest, GenerationResponse]]
+    TextStatistics[GenerationRequest | GenerationResponse]
 ):
     generation_input_text_statistics: TextStatistics[GenerationRequest]
     generation_output_text_statistics: TextStatistics[GenerationResponse]
