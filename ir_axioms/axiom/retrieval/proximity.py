@@ -393,7 +393,38 @@ class Prox3Axiom(Axiom[Query, Document]):
             ),
         )
 
-    # ADDITION: Come up with a better way to batch-compute preference-matrices.
+    def preferences(
+        self,
+        input: Query,
+        outputs: Sequence[Document],
+    ) -> PreferenceMatrix:
+        query_terms = self.term_tokenizer.terms(
+            self.text_contents.contents(input),
+        )
+        query_unique_terms = set(query_terms)
+        document_terms, document_unique_terms = _tokenize_documents(
+            self.text_contents, self.term_tokenizer, outputs, self.verbose
+        )
+        indices = [
+            _find_index(query_terms=query_terms, document_terms=terms)
+            for terms in document_terms
+        ]
+        return array(
+            [
+                (
+                    strictly_less(indices[i1], indices[i2])
+                    if _same_query_term_subset(
+                        query_terms=query_unique_terms,
+                        document1_terms=document_unique_terms[i1],
+                        document2_terms=document_unique_terms[i2],
+                    )
+                    else 0
+                )
+                for i1 in range(len(outputs))
+                for i2 in range(len(outputs))
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
 
 
 PROX3: Final = lazy_inject(Prox3Axiom)
