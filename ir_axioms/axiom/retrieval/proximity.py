@@ -475,6 +475,54 @@ class Prox4Axiom(Axiom[Query, Document]):
         else:
             return strictly_greater(count1, count2)
 
+    def preferences(
+        self,
+        input: Query,
+        outputs: Sequence[Document],
+    ) -> PreferenceMatrix:
+        query_unique_terms = self.term_tokenizer.unique_terms(
+            self.text_contents.contents(input),
+        )
+        document_terms, document_unique_terms = _tokenize_documents(
+            self.text_contents, self.term_tokenizer, outputs, self.verbose
+        )
+        # Only needed for documents containing all query terms.
+        groupings = [
+            (
+                _closest_grouping_size_and_count(
+                    query_terms=query_unique_terms,
+                    document_terms=terms,
+                )
+                if query_unique_terms <= unique_terms
+                else (0, 0)
+            )
+            for terms, unique_terms in zip(document_terms, document_unique_terms)
+        ]
+        return array(
+            [
+                (
+                    (
+                        strictly_less(occurrences1, occurrences2)
+                        if occurrences1 != occurrences2
+                        else strictly_greater(count1, count2)
+                    )
+                    if _all_query_terms_in_documents(
+                        query_terms=query_unique_terms,
+                        document1_terms=unique_terms1,
+                        document2_terms=unique_terms2,
+                    )
+                    else 0
+                )
+                for unique_terms1, (occurrences1, count1) in zip(
+                    document_unique_terms, groupings
+                )
+                for unique_terms2, (occurrences2, count2) in zip(
+                    document_unique_terms, groupings
+                )
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
+
 
 PROX4: Final = lazy_inject(Prox4Axiom)
 
