@@ -170,7 +170,7 @@ In `ir_axioms`
 In `ir_axioms`
 :   Not implemented.
 
-### Axiomatic Re-Ranking :material-new-box:
+### Axiomatic Re-Ranking :material-new-box: { #axiomatic-re-ranking }
 
 Besides PROX1–PROX5 and ORIG, Hagen et al. [@hagen2016axiomatic] proposed further axioms for re-ranking:
 

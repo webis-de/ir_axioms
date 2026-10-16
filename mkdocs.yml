@@ -45,7 +45,6 @@ theme:
 
 plugins:
   - search
-  # Webis style (colors, fonts, design) and BibTeX citations with [@key].
   - webis:
       bibliography: references.bib
   - redirects:

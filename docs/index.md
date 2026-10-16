@@ -5,7 +5,7 @@ hide:
 
 <div class="hero" markdown>
 
-# ↕️ ir_axioms
+# ir_axioms
 
 <p class="subtitle">Axiomatic constraints for information retrieval and retrieval-augmented generation</p>
 
@@ -13,12 +13,14 @@ hide:
 It includes reference implementations of many commonly used traditional retrieval axioms as well as axioms for retrieval-augmented generation (RAG).
 
 [Get started](getting-started/index.md){ .md-button .md-button--primary }
-[Browse the axioms](axioms/index.md){ .md-button }
+[Browse axioms](axioms/index.md){ .md-button }
+[View on GitHub](https://github.com/webis-de/ir_axioms){ .md-button }
+[View on PyPI](https://pypi.org/project/ir-axioms/){ .md-button }
 
 </div>
 
-The library is well integrated with the [PyTerrier](https://github.com/terrier-org/pyterrier) framework and supports [Pyserini](https://github.com/castorini/pyserini) retrieval indices too.
-Use-cases of `ir_axioms` include search-result re-ranking, analyses of (neural) retrieval systems, and analyses of generated RAG answers.
+The library is well [integrated](getting-started/integrations.md) with the [PyTerrier](https://github.com/terrier-org/pyterrier) framework and supports [Pyserini](https://github.com/castorini/pyserini) retrieval indices too.
+Use-cases of `ir_axioms` include [search-result re-ranking](walkthroughs/kwiksort.md), [analyses of (neural) retrieval systems](walkthroughs/post-hoc-analysis.md), and [analyses of generated RAG answers](walkthroughs/rag-evaluation.md).
 
 ```python
 from ir_axioms.axiom import TFC1, PROX1, ORIG
