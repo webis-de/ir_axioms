@@ -1,0 +1,145 @@
+site_name: ir_axioms
+site_description: Axiomatic constraints for information retrieval and retrieval-augmented generation.
+site_url: https://ir_axioms.webis.de/
+site_author: Webis Group
+repo_url: https://github.com/webis-de/ir_axioms
+repo_name: webis-de/ir_axioms
+edit_uri: edit/main/docs/
+copyright: >-
+  &copy; <a href="https://webis.de/">Webis Group</a> ·
+  Released under the <a href="https://github.com/webis-de/ir_axioms/blob/main/LICENSE">MIT license</a>
+
+docs_dir: docs
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+  anchors: warn
+exclude_docs: |
+  # Legacy locations of the documentation (kept as pointers for GitHub readers).
+  /axioms.md
+  /rag-axioms.md
+  /axiom-development.md
+  /migration-v1.md
+  *.diff
+
+theme:
+  name: material
+  language: en
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - content.action.edit
+    - content.code.annotate
+    - content.code.copy
+    - content.tabs.link
+    - navigation.footer
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.suggest
+    - toc.follow
+
+plugins:
+  - search
+  - webis:
+      bibliography: references.bib
+  - redirects:
+      redirect_maps:
+        rag-axioms.md: axioms/generation.md
+        axiom-development.md: development/axiom-development.md
+        migration-v1.md: getting-started/migration.md
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [.]
+          options:
+            docstring_style: sphinx
+            show_root_heading: true
+            show_source: true
+            show_signature_annotations: true
+            separate_signature: true
+            members_order: source
+            merge_init_into_class: true
+            show_if_no_docstring: true
+            filters: ["!^_"]
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/webis-de/ir_axioms
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/ir-axioms/
+    - icon: material/web
+      link: https://webis.de/
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - getting-started/index.md
+      - Installation: getting-started/installation.md
+      - Quickstart: getting-started/quickstart.md
+      - Core Concepts: getting-started/concepts.md
+      - Integrations: getting-started/integrations.md
+      - Migrating from <1.0: getting-started/migration.md
+  - Axioms:
+      - axioms/index.md
+      - Retrieval Axioms: axioms/retrieval.md
+      - RAG Axioms: axioms/generation.md
+      - Utility Axioms: axioms/utility.md
+      - Related Axioms: axioms/related.md
+  - Walkthroughs:
+      - walkthroughs/index.md
+      - Hands-on Tutorial: walkthroughs/hands-on.md
+      - KwikSort Re-Ranking: walkthroughs/kwiksort.md
+      - Learning the ORACLE: walkthroughs/kwiksort-learned.md
+      - Axiomatic LTR Features: walkthroughs/ltr-features.md
+      - Post-Hoc Analysis: walkthroughs/post-hoc-analysis.md
+      - Parallel Preferences: walkthroughs/parallel-preferences.md
+      - Evaluating RAG Responses: walkthroughs/rag-evaluation.md
+  - Development:
+      - development/index.md
+      - Developing Axioms: development/axiom-development.md
+      - Contributing: development/contributing.md
+      - Roadmap: development/roadmap.md
+  - API Reference:
+      - api/index.md
+      - Axioms: api/axiom.md
+      - Data Model: api/model.md
+      - Tools: api/tools.md
+      - PyTerrier Integration: api/pyterrier.md

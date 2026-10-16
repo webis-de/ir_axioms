@@ -37,6 +37,7 @@ from ir_axioms.tools import (
     SentenceTokenizer,
 )
 from ir_axioms.utils.lazy import lazy_inject
+from ir_axioms.utils.nltk import download_nltk_dependencies
 
 
 @inject
@@ -169,6 +170,8 @@ class RougeConsistencyAxiom(Axiom[GenerationRequest, GenerationResponse]):
 
     @cached_property
     def _rouge_scorer(self) -> RougeScorer:
+        # The ROUGE scorer uses NLTK's sentence tokenizer to split summaries.
+        download_nltk_dependencies("punkt", "punkt_tab")
         return RougeScorer(
             rouge_types=["rougeLsum"],
             use_stemmer=False,

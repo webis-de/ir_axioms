@@ -1,3 +1,3 @@
 # Axioms
 
-Find the new [RAG-specific axioms here](./rag-axioms.md).
+This page has moved to the [`ir_axioms` documentation](https://ir_axioms.webis.de/axioms/).](axioms/related.md))
