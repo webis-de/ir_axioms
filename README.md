@@ -15,28 +15,21 @@
 Axiomatic constraints for information retrieval and retrieval-augmented generation.
 
 `ir_axioms` is a Python framework for experimenting with axioms in information retrieval in a declarative way.
-It includes reference implementations of many commonly used traditional retrieval axioms as well as axioms for retrieval-augmented generation.
+It includes reference implementations of [many commonly used traditional retrieval axioms](https://ir_axioms.webis.de/axioms/) as well as [axioms for retrieval-augmented generation](https://ir_axioms.webis.de/axioms/generation/).
 The library is well integrated with the [PyTerrier](https://github.com/terrier-org/pyterrier) framework and supports [Pyserini](https://github.com/castorini/pyserini) retrieval indices too.
-Use-cases of `ir_axioms` include search-result re-ranking, analyses of (neural) retrieval systems, and analyses of generated RAG answers.
-Each axiom implementation is tested, featuring an extensive test suite of over 400 unit tests.
+Use-cases of `ir_axioms` include [search-result re-ranking](https://ir_axioms.webis.de/walkthroughs/kwiksort/), [analyses of (neural) retrieval systems](https://ir_axioms.webis.de/walkthroughs/post-hoc-analysis/), and [analyses of generated RAG answers](https://ir_axioms.webis.de/walkthroughs/rag-evaluation/).
 
-## Documentation
+Refer to the `ir_axioms` [documentation](https://ir_axioms.webis.de/) for:
 
-📖 Read the **[documentation](https://webis-de.github.io/ir_axioms/)** for:
+- [Installation](https://ir_axioms.webis.de/getting-started/installation/) and a [quickstart](https://ir_axioms.webis.de/getting-started/quickstart/)
+- [Axiom intuitions, formalizations, and implementations](https://ir_axioms.webis.de/axioms/)
+- [Related information retrieval literature](https://ir_axioms.webis.de/axioms/related/)
+- [Walkthroughs](https://ir_axioms.webis.de/walkthroughs/) on re-ranking, post-hoc analyses, and RAG evaluation
+- [Instructions for developing new axioms](https://ir_axioms.webis.de/development/axiom-development/)
 
-- [Installation](https://webis-de.github.io/ir_axioms/getting-started/installation/) and a [quickstart](https://webis-de.github.io/ir_axioms/getting-started/quickstart/)
-- The [catalog of all axioms](https://webis-de.github.io/ir_axioms/axioms/) with references, and [related axioms from the literature](https://webis-de.github.io/ir_axioms/axioms/related/)
-- [Walkthroughs](https://webis-de.github.io/ir_axioms/walkthroughs/) on re-ranking, post-hoc analyses, and RAG evaluation
-- [Developing new axioms](https://webis-de.github.io/ir_axioms/development/axiom-development/) and the [migration guide from <1.0](https://webis-de.github.io/ir_axioms/getting-started/migration/)
+## TL;DR
 
-## Publications
-
-Read more about the [`ir_axioms` framework](https://webis.de/publications.html?q=axiom#bondarenko_2022d) and the new [RAG axioms](https://webis.de/publications.html?q=axiom#merker_2025b) in these publications:
-
-- Alexander Bondarenko, Maik Fröbe, Jan Heinrich Reimer, Benno Stein, Michael Völske, and Matthias Hagen. [Axiomatic Retrieval Experimentation with `ir_axioms`](https://webis.de/publications.html?q=axiom#bondarenko_2022d).
-- Jan Heinrich Merker, Maik Fröbe, Benno Stein, Martin Potthast, and Matthias Hagen. [Axioms for Retrieval-Augmented Generation](https://webis.de/publications.html?q=axiom#merker_2025b).
-
-## Installation
+To get started without reading the [documentation](https://ir_axioms.webis.de/), follow these steps:
 
 1. Install the package from PyPI:
 
@@ -44,67 +37,46 @@ Read more about the [`ir_axioms` framework](https://webis.de/publications.html?q
    pip install ir_axioms>=1.0
    ```
 
-2. Install spaCy model:
+2. Install a spaCy model:
 
    ```shell
    python -m spacy download en_core_web_sm
    ```
 
-See the [installation guide](https://ir_axioms.webis.de/getting-started/installation/) for all optional dependencies (including installation instructions to reproduce our ICTIR 2025 paper).
+3. Load and combine axioms:
 
-## Usage
+   ```python
+   from ir_axioms.axiom import TFC1, PROX1, ORIG
 
-Run the CLI with:
-
-```shell
-ir_axioms --help
-```
-
-To use the axioms in Python, follow the [quickstart](https://webis-de.github.io/ir_axioms/getting-started/quickstart/) and the [walkthroughs](https://webis-de.github.io/ir_axioms/walkthroughs/).
-
-## Development
-
-1. Install [Python 3.11](https://python.org/downloads/) or later.
-2. Create and activate a virtual environment:
-
-   ```shell
-   python3 -m venv venv/
-   source venv/bin/activate
+   axiom = (TFC1() & PROX1()) | ORIG()
    ```
 
-3. Install project dependencies:
+4. Define some test data:
 
-   ```shell
-   pip install -e .[tests]
+   ```python
+   from ir_axioms.model import Query, Document
+
+   query = Query(id="q1", text="axiomatic information retrieval")
+   documents = [
+      Document(id="d1", text="Retrieval axioms formalize constraints for retrieval models.", rank=1),
+      Document(id="d2", text="Axiomatic information retrieval: axiomatic constraints guide retrieval.", rank=2),
+   ]
    ```
 
-4. Install spaCy model:
+5. Compute axiom preferences or re-rank documents:
 
-   ```shell
-   python -m spacy download en_core_web_sm
+   ```python
+   axiom.preferences(input=query, outputs=documents)
+   axiom.rerank_kwiksort(input=query, ranking=documents)
    ```
-
-5. After having implemented a new feature, please check the code format, inspect common LINT errors, and run all unit tests with the following commands:
-
-   ```shell
-   ruff check .                   # Code format and LINT
-   mypy .                         # Static typing
-   pytest .                       # Unit tests
-   ```
-
-More details, including how to build the documentation, are given in the [contribution guide](https://webis-de.github.io/ir_axioms/development/contributing/).
 
 ## Contribute
 
 If you have found an important feature missing from our tool, please suggest it by creating an [issue](https://github.com/webis-de/ir_axioms/issues). We also gratefully accept [pull requests](https://github.com/webis-de/ir_axioms/pulls)!
-
-If you are unsure about anything, post an [issue](https://github.com/webis-de/ir_axioms/issues/new) or contact us:
-
-- [heinrich.merker@uni-jena.de](mailto:heinrich.merker@uni-jena.de)
-
-We are happy to help!
+Get started by following our [development guides](https://ir_axioms.webis.de/development/).
 
 ## License
 
 This repository is released under the [MIT license](LICENSE).
 Files in the `data/` directory are exempt from this license.
+If you use `ir_axioms` in your research, consider [citing us](https://ir_axioms.webis.de/#references).
