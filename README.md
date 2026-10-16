@@ -18,6 +18,7 @@ Axiomatic constraints for information retrieval and retrieval-augmented generati
 It includes reference implementations of many commonly used traditional retrieval axioms as well as axioms for retrieval-augmented generation.
 The library is well integrated with the [PyTerrier](https://github.com/terrier-org/pyterrier) framework and supports [Pyserini](https://github.com/castorini/pyserini) retrieval indices too.
 Use-cases of `ir_axioms` include search-result re-ranking, analyses of (neural) retrieval systems, and analyses of generated RAG answers.
+Each axiom implementation is tested, featuring an extensive test suite of over 400 unit tests.
 
 _Note: If you're looking out for `ir_axioms`<1.0, please [go here](https://github.com/webis-de/ir_axioms/tree/legacy)._
 
