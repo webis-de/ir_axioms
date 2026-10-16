@@ -10,7 +10,7 @@ The integrations bind the [tools](concepts.md#tools-and-dependency-injection) of
 Install the `pyterrier` extra:
 
 ```shell
-pip install "ir_axioms[pyterrier]"
+pip install ir_axioms[pyterrier]
 ```
 
 ### Using a Terrier Index

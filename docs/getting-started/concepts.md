@@ -34,6 +34,8 @@ Each axiom implements up to three methods:
 | `preferences(input, outputs)` | Preference matrix for a sequence of outputs. The default implementation calls `preference()` for all pairs, but axioms can override it to compute costly features only once per output. |
 | `batch_preferences(batch)` | Stacked preference matrices for multiple inputs (e.g., to batch model inference across queries). |
 
+<!-- TODO: More on strict partial order characteristics. -->
+
 ## Instantiating Axioms
 
 Each axiom class is also available under a short alias, e.g., `TFC1` for [`Tfc1Axiom`][ir_axioms.axiom.retrieval.term_frequency.Tfc1Axiom].
