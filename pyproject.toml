@@ -52,7 +52,7 @@ tests = [
     "mypy>=1.13,<3.0",
     "pytest>=8.3,<10.0",
     "pytest-cov>=6,<8",
-    "ruff>=0.12.7,<0.15.0",
+    "ruff>=0.12.7,<0.18.0",
     "types-tqdm~=4.66",
 ]
 docs = [
@@ -61,7 +61,7 @@ docs = [
     "mkdocs-redirects~=1.2",
     "mkdocs-webis~=0.1.2",
     "mkdocstrings[python]~=1.0",
-    "ruff>=0.12.7,<0.15.0",
+    "ruff>=0.12.7,<0.18.0",
 ]
 experiments = [
     "cappr[hf]~=0.9.6",
