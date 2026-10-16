@@ -1,6 +1,6 @@
 site_name: ir_axioms
 site_description: Axiomatic constraints for information retrieval and retrieval-augmented generation.
-site_url: https://webis-de.github.io/ir_axioms/
+site_url: https://ir_axioms.webis.de/
 site_author: Webis Group
 repo_url: https://github.com/webis-de/ir_axioms
 repo_name: webis-de/ir_axioms
@@ -91,6 +91,9 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
+
+extra_css:
+  - stylesheets/extra.css
 
 extra_javascript:
   - javascripts/mathjax.js

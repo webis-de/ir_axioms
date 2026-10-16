@@ -1,0 +1,8 @@
+/*
+ * Workaround: The webis theme renders the site name in uppercase, but
+ * "ir_axioms" is a Python package name and should look like code.
+ */
+.md-header__title .webis-header__site-name {
+  font-family: var(--md-code-font-family);
+  text-transform: none;
+}
