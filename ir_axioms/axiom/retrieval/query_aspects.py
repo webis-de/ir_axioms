@@ -245,6 +245,13 @@ class AntiRegAxiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
 ANTI_REG: Final = lazy_inject(AntiRegAxiom)
 
 
+def _covers_any_aspect(
+    query_aspects: Sequence[Set[str]],
+    document_unique_terms: Set[str],
+) -> bool:
+    return any(not document_unique_terms.isdisjoint(aspect) for aspect in query_aspects)
+
+
 @inject
 @dataclass(frozen=True, kw_only=True)
 class AspectRegAxiom(Axiom[Query, Document]):
@@ -273,26 +280,69 @@ class AspectRegAxiom(Axiom[Query, Document]):
         query_unique_terms = self.term_tokenizer.unique_terms(
             self.text_contents.contents(input),
         )
-        document1_unique_terms = self.term_tokenizer.unique_terms(
-            self.text_contents.contents(output1),
-        )
-        document2_unique_terms = self.term_tokenizer.unique_terms(
-            self.text_contents.contents(output2),
-        )
-
-        if len(query_unique_terms) == 0:
+        query_aspects = self._query_aspects(query_unique_terms)
+        if query_aspects is None:
             return 0
 
-        term_discriminators = {
-            self.index_statistics.inverse_document_frequency(term)
-            for term in query_unique_terms
-        }
+        document1_unique_terms, document2_unique_terms = (
+            self.term_tokenizer.iter_unique_terms(
+                self.text_contents.iter_contents((output1, output2)),
+            )
+        )
+        return strictly_greater(
+            _covers_any_aspect(query_aspects, document1_unique_terms),
+            _covers_any_aspect(query_aspects, document2_unique_terms),
+        )
+
+    def preferences(
+        self,
+        input: Query,
+        outputs: Sequence[Document],
+    ) -> PreferenceMatrix:
+        query_unique_terms = self.term_tokenizer.unique_terms(
+            self.text_contents.contents(input),
+        )
+        query_aspects = self._query_aspects(query_unique_terms)
+        if query_aspects is None:
+            return zeros((len(outputs), len(outputs)), dtype=float_)
+
+        covers_any_aspect = [
+            _covers_any_aspect(query_aspects, document_unique_terms)
+            for document_unique_terms in self.term_tokenizer.iter_unique_terms(
+                self.text_contents.iter_contents(outputs),
+            )
+        ]
+        return array(
+            [
+                strictly_greater(covers_any_aspect1, covers_any_aspect2)
+                for covers_any_aspect1 in covers_any_aspect
+                for covers_any_aspect2 in covers_any_aspect
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
+
+    def _query_aspects(
+        self,
+        query_unique_terms: Set[str],
+    ) -> Sequence[Set[str]] | None:
+        """
+        Cluster the query terms into aspects,
+        or return `None` if the query terms are not equally discriminative.
+        """
+        if len(query_unique_terms) == 0:
+            return None
+
+        term_discriminators = set(
+            self.index_statistics.inverse_document_frequencies(
+                query_unique_terms
+            ).values()
+        )
         if not approximately_equal(
             *term_discriminators,
             margin_fraction=self.term_discriminator_margin_fraction,
         ):
             # Require same term discriminator for all query terms.
-            return 0
+            return None
 
         average_similarity = self.term_similarity.average_similarity(
             query_unique_terms, query_unique_terms
@@ -318,20 +368,7 @@ class AspectRegAxiom(Axiom[Query, Document]):
                     # Remove merged aspect 2.
                     query_aspects.pop(i2)
 
-        count_document1_aspects = {
-            1
-            for aspect in query_aspects
-            if not document1_unique_terms.isdisjoint(aspect)
-        }
-        count_document2_aspects = {
-            1
-            for aspect in query_aspects
-            if not document2_unique_terms.isdisjoint(aspect)
-        }
-        return strictly_greater(
-            len(count_document1_aspects) > 0,
-            len(count_document2_aspects) > 0,
-        )
+        return query_aspects
 
 
 ASPECT_REG: Final = lazy_inject(AspectRegAxiom)

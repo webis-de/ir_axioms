@@ -274,6 +274,46 @@ def _single_different_term_frequency(
     )
 
 
+def _modified_tdc_preference(
+    query_term_pairs: Sequence[tuple[str, str]],
+    query_term_frequencies: Mapping[str, float],
+    term_frequencies1: Mapping[str, float],
+    term_frequencies2: Mapping[str, float],
+) -> Preference:
+    score1 = 0
+    score2 = 0
+
+    for query_term1, query_term2 in query_term_pairs:
+        tf_d1_qt1 = term_frequencies1.get(query_term1, 0)
+        tf_d1_qt2 = term_frequencies1.get(query_term2, 0)
+        tf_d2_qt1 = term_frequencies2.get(query_term1, 0)
+        tf_d2_qt2 = term_frequencies2.get(query_term2, 0)
+        tf_q_qt1 = query_term_frequencies.get(query_term1, 0)
+        tf_q_qt2 = query_term_frequencies.get(query_term2, 0)
+
+        if not (
+            (isclose(tf_d1_qt1, tf_d2_qt2) and isclose(tf_d1_qt2, tf_d2_qt1))
+            or tf_q_qt1 >= tf_q_qt2
+        ):
+            # Term pair is valid.
+            continue
+
+        if tf_q_qt1 < tf_q_qt2 and (tf_d1_qt1 != tf_d2_qt2 or tf_d1_qt2 != tf_d2_qt1):
+            # Term pair is valid.
+            continue
+
+        # Document with more occurrences of query term 1 gets a point.
+        if tf_d1_qt1 > tf_d2_qt1:
+            score1 += 1
+        elif tf_d1_qt1 < tf_d2_qt1:
+            score2 += 1
+        else:
+            # Don't change score.
+            pass
+
+    return strictly_greater(score1, score2)
+
+
 @inject
 @dataclass(frozen=True, kw_only=True)
 class ModifiedTdcAxiom(Axiom[Query, Document]):
@@ -308,12 +348,28 @@ class ModifiedTdcAxiom(Axiom[Query, Document]):
         ):
             return 0
 
-        score1 = 0
-        score2 = 0
+        return _modified_tdc_preference(
+            query_term_pairs=self._query_term_pairs(query_unique_terms),
+            query_term_frequencies=self.text_statistics.term_frequencies(input),
+            term_frequencies1=term_frequencies1,
+            term_frequencies2=term_frequencies2,
+        )
 
+    def _query_term_pairs(
+        self,
+        query_unique_terms: Set[str],
+    ) -> Sequence[tuple[str, str]]:
+        """
+        Query term pairs with different term discrimination values,
+        ordered such that the first term has the higher IDF.
+        """
+        inverse_document_frequencies = (
+            self.index_statistics.inverse_document_frequencies(query_unique_terms)
+        )
+        query_term_pairs = []
         for query_term1, query_term2 in combinations(query_unique_terms, 2):
-            idf_qt1 = self.index_statistics.inverse_document_frequency(query_term1)
-            idf_qt2 = self.index_statistics.inverse_document_frequency(query_term2)
+            idf_qt1 = inverse_document_frequencies[query_term1]
+            idf_qt2 = inverse_document_frequencies[query_term2]
 
             if isclose(idf_qt1, idf_qt2):
                 # Skip query term pair, as they are equally rare.
@@ -324,36 +380,49 @@ class ModifiedTdcAxiom(Axiom[Query, Document]):
                 # Query term 1 is rarer. Swap query terms.
                 query_term1, query_term2 = query_term2, query_term1
 
-            tf_d1_qt1 = self.text_statistics.term_frequency(output1, query_term1)
-            tf_d1_qt2 = self.text_statistics.term_frequency(output1, query_term2)
-            tf_d2_qt1 = self.text_statistics.term_frequency(output2, query_term1)
-            tf_d2_qt2 = self.text_statistics.term_frequency(output2, query_term2)
-            tf_q_qt1 = self.text_statistics.term_frequency(input, query_term1)
-            tf_q_qt2 = self.text_statistics.term_frequency(input, query_term2)
+            query_term_pairs.append((query_term1, query_term2))
+        return query_term_pairs
 
-            if not (
-                (isclose(tf_d1_qt1, tf_d2_qt2) and isclose(tf_d1_qt2, tf_d2_qt1))
-                or tf_q_qt1 >= tf_q_qt2
-            ):
-                # Term pair is valid.
-                continue
-
-            if tf_q_qt1 < tf_q_qt2 and (
-                tf_d1_qt1 != tf_d2_qt2 or tf_d1_qt2 != tf_d2_qt1
-            ):
-                # Term pair is valid.
-                continue
-
-            # Document with more occurrences of query term 1 gets a point.
-            if tf_d1_qt1 > tf_d2_qt1:
-                score1 += 1
-            elif tf_d1_qt1 < tf_d2_qt1:
-                score2 += 1
-            else:
-                # Don't change score.
-                pass
-
-        return strictly_greater(score1, score2)
+    def preferences(
+        self,
+        input: Query,
+        outputs: Sequence[Document],
+    ) -> PreferenceMatrix:
+        query_unique_terms = self.term_tokenizer.unique_terms(
+            self.text_contents.contents(input),
+        )
+        query_term_pairs = self._query_term_pairs(query_unique_terms)
+        query_term_frequencies = self.text_statistics.term_frequencies(input)
+        term_frequencies = [
+            self.text_statistics.term_frequencies(output)
+            for output in tqdm(
+                outputs,
+                desc="Term frequencies",
+                unit="document",
+                disable=not self.verbose,
+            )
+        ]
+        return array(
+            [
+                (
+                    _modified_tdc_preference(
+                        query_term_pairs=query_term_pairs,
+                        query_term_frequencies=query_term_frequencies,
+                        term_frequencies1=term_frequencies1,
+                        term_frequencies2=term_frequencies2,
+                    )
+                    if _single_different_term_frequency(
+                        query_unique_terms=query_unique_terms,
+                        term_frequencies1=term_frequencies1,
+                        term_frequencies2=term_frequencies2,
+                    )
+                    else 0
+                )
+                for term_frequencies1 in term_frequencies
+                for term_frequencies2 in term_frequencies
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
 
 
 M_TDC: Final = lazy_inject(ModifiedTdcAxiom)
