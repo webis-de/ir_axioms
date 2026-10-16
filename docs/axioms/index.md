@@ -5,6 +5,8 @@
 `ir_axioms` implements [retrieval axioms](retrieval.md) that compare documents for a query, [RAG axioms](generation.md) that compare generated responses for a request, and [utility axioms](utility.md) that serve as reference points and building blocks.
 For a broader overview of axiomatic thinking in information retrieval, including constraints that are not (yet) implemented here, see [related axioms](related.md) from the literature.
 
+Each axiom implementation is tested, featuring an extensive test suite of over 400 unit tests.
+
 To learn how to compute preferences with these axioms and combine them, see the [quickstart](../getting-started/quickstart.md) and [core concepts](../getting-started/concepts.md); for the full API, see the [API reference](../api/axiom.md).
 
 All axioms can be imported from `ir_axioms.axiom`, either by their class name (e.g., [`Tfc1Axiom`][ir_axioms.axiom.retrieval.term_frequency.Tfc1Axiom]) or by their short alias (e.g., `TFC1`).

@@ -1,6 +1,6 @@
 [![CI status](https://img.shields.io/github/actions/workflow/status/webis-de/ir_axioms/ci.yml?branch=main&style=flat-square)](https://github.com/webis-de/ir_axioms/actions/workflows/ci.yml)
 [![Code coverage](https://img.shields.io/codecov/c/github/webis-de/ir_axioms?style=flat-square)](https://codecov.io/github/webis-de/ir_axioms/)
-[![Documentation](https://img.shields.io/github/actions/workflow/status/webis-de/ir_axioms/docs.yml?branch=main&style=flat-square&label=docs)](https://webis-de.github.io/ir_axioms/)
+[![Documentation](https://img.shields.io/github/actions/workflow/status/webis-de/ir_axioms/docs.yml?branch=main&style=flat-square&label=docs)](https://ir_axioms.webis.de/)
 [![Maintenance](https://img.shields.io/maintenance/yes/2026?style=flat-square)](https://github.com/webis-de/ir_axioms/graphs/contributors)  
 [![PyPI version](https://img.shields.io/pypi/v/ir-axioms?style=flat-square)](https://pypi.org/project/ir-axioms/)
 [![PyPI downloads](https://img.shields.io/pypi/dm/ir-axioms?style=flat-square)](https://pypi.org/project/ir-axioms/)
@@ -19,8 +19,6 @@ It includes reference implementations of many commonly used traditional retrieva
 The library is well integrated with the [PyTerrier](https://github.com/terrier-org/pyterrier) framework and supports [Pyserini](https://github.com/castorini/pyserini) retrieval indices too.
 Use-cases of `ir_axioms` include search-result re-ranking, analyses of (neural) retrieval systems, and analyses of generated RAG answers.
 Each axiom implementation is tested, featuring an extensive test suite of over 400 unit tests.
-
-_Note: If you're looking out for `ir_axioms`<1.0, please [go here](https://github.com/webis-de/ir_axioms/tree/legacy)._
 
 ## Documentation
 
@@ -52,20 +50,7 @@ Read more about the [`ir_axioms` framework](https://webis.de/publications.html?q
    python -m spacy download en_core_web_sm
    ```
 
-### Optional Dependencies
-
-| Tag | Description |
-|:--|:--|
-| `pyserini` | Use index statistics, document contents, and tokenization from Pyserini/Anserini indices. |
-| `pyterrier` | Use index statistics, document contents, and tokenization from PyTerrier/Terrier indices. Apply KwikSort re-ranking to PyTerrier pipelines. Run axiomatic analyses. |
-| `keybert` | Use KeyBERT for aspect extraction (must be enabled manually if installed). |
-| `sbert` | Use Sentence Transformers for sentence similarity (enabled automatically if installed). |
-| `blingfire` | Use BlingFire for fast tokenization (enabled automatically if installed). |
-| `fasttext` | Use fastText word vectors for term similarity (enabled automatically if installed). |
-
-Note: To reproduce our results from ICTIR'25, please use these extras: `pyterrier,keybert,sbert,fasttext`
-
-See the [installation guide](https://webis-de.github.io/ir_axioms/getting-started/installation/) for all extras.
+See the [installation guide](https://ir_axioms.webis.de/getting-started/installation/) for all optional dependencies (including installation instructions to reproduce our ICTIR 2025 paper).
 
 ## Usage
 
