@@ -59,6 +59,7 @@ docs = [
     "mkdocs~=1.6",  # MkDocs 2.0 will drop support for plugins and themes.
     "mkdocs-material~=9.6",
     "mkdocs-redirects~=1.2",
+    "mkdocs-webis~=0.1",  # Webis style and BibTeX citations.
     "mkdocstrings[python]~=1.0",
     "ruff>=0.12.7,<0.15.0",  # For formatting signatures in the API reference.
 ]

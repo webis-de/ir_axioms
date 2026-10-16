@@ -28,7 +28,7 @@ _Stylistic coherence:_ Does the response have a uniform style of speech?
 
 ### COH1 { #coh1 }
 
-<span class="axiom">COH1</span> [`WordLengthDeviationCoherenceAxiom`][ir_axioms.axiom.generation.coherence.WordLengthDeviationCoherenceAxiom] — _"Prefer responses with less variance in avg. word length across sentences."_ [@merker2025axioms]
+<span class="badge">COH1</span> [`WordLengthDeviationCoherenceAxiom`][ir_axioms.axiom.generation.coherence.WordLengthDeviationCoherenceAxiom] — _"Prefer responses with less variance in avg. word length across sentences."_ [@merker2025axioms]
 
 Formalization
 :   \(\sigma(\mathrm{SWAWL}_{r_1}) < \sigma(\mathrm{SWAWL}_{r_2}) \Rightarrow r_1 >_\text{COH1} r_2\), where \(\mathrm{SWAWL}_r\) is the set of the average word lengths of the sentences in \(r\).
@@ -44,7 +44,7 @@ Tools
 
 ### COH2 { #coh2 }
 
-<span class="axiom">COH2</span> [`SubjectVerbClosenessCoherenceAxiom`][ir_axioms.axiom.generation.coherence.SubjectVerbClosenessCoherenceAxiom] — _"Prefer responses with subject–verb pairs closer together."_ [@merker2025axioms]
+<span class="badge">COH2</span> [`SubjectVerbClosenessCoherenceAxiom`][ir_axioms.axiom.generation.coherence.SubjectVerbClosenessCoherenceAxiom] — _"Prefer responses with subject–verb pairs closer together."_ [@merker2025axioms]
 
 Formalization
 :   \(\text{avg-SV-dist}(r_1) <_{10\%} \text{avg-SV-dist}(r_2) \Rightarrow r_1 >_\text{COH2} r_2\), where \(\text{avg-SV-dist}(r) = \frac{1}{|\mathrm{SVO}_r|} \sum_{(\mathit{sub}, \mathit{ver}, \mathit{obj}) \in \mathrm{SVO}_r} |\mathrm{pos}(\mathit{sub}) - \mathrm{pos}(\mathit{ver})|\) for the subject–verb–object triples \(\mathrm{SVO}_r\) in \(r\).
@@ -62,7 +62,7 @@ _Deep coverage:_ Does the response provide in-depth and highly informative conte
 
 ### COV1 { #cov1 }
 
-<span class="axiom">COV1</span> [`AspectCountCoverageAxiom`][ir_axioms.axiom.generation.coverage.AspectCountCoverageAxiom] — _"Prefer responses with more extracted aspects."_ [@merker2025axioms]
+<span class="badge">COV1</span> [`AspectCountCoverageAxiom`][ir_axioms.axiom.generation.coverage.AspectCountCoverageAxiom] — _"Prefer responses with more extracted aspects."_ [@merker2025axioms]
 
 Formalization
 :   \(|\mathrm{ASP}_{r_1}| > |\mathrm{ASP}_{r_2}| \Rightarrow r_1 >_\text{COV1} r_2\), where \(\mathrm{ASP}_r\) is the set of aspects extracted from \(r\).
@@ -78,7 +78,7 @@ Tools
 
 ### COV2 { #cov2 }
 
-<span class="axiom">COV2</span> [`AspectRedundancyCoverageAxiom`][ir_axioms.axiom.generation.coverage.AspectRedundancyCoverageAxiom] — _"Prefer responses with less redundant extracted aspects."_ [@merker2025axioms]
+<span class="badge">COV2</span> [`AspectRedundancyCoverageAxiom`][ir_axioms.axiom.generation.coverage.AspectRedundancyCoverageAxiom] — _"Prefer responses with less redundant extracted aspects."_ [@merker2025axioms]
 
 Formalization
 :   \(\text{avg-ASP-sim}(r_1) <_{20\%} \text{avg-ASP-sim}(r_2) \Rightarrow r_1 >_\text{COV2} r_2\), where \(\text{avg-ASP-sim}(r) = \frac{1}{|\mathrm{ASP}_r|^2} \sum_{a, a' \in \mathrm{ASP}_r} \mathrm{sim}(a, a')\).
@@ -94,7 +94,7 @@ Tools
 
 ### COV3 { #cov3 }
 
-<span class="axiom">COV3</span> [`AspectSimilaritySentenceCountCoverageAxiom`][ir_axioms.axiom.generation.coverage.AspectSimilaritySentenceCountCoverageAxiom] — _"Prefer responses with more sentences covering aspects from the query."_ [@merker2025axioms]
+<span class="badge">COV3</span> [`AspectSimilaritySentenceCountCoverageAxiom`][ir_axioms.axiom.generation.coverage.AspectSimilaritySentenceCountCoverageAxiom] — _"Prefer responses with more sentences covering aspects from the query."_ [@merker2025axioms]
 
 Formalization
 :   \(\text{avg-ASP}_q\text{-cov}(r_1) >_{50\%} \text{avg-ASP}_q\text{-cov}(r_2) \Rightarrow r_1 >_\text{COV3} r_2\), where \(\text{avg-ASP}_q\text{-cov}(r) = \frac{1}{|\mathrm{ASP}_q|} \sum_{a \in \mathrm{ASP}_q} \sum_{s \in r} \mathrm{sim}(a, s)\) for the sentences \(s\) of \(r\).
@@ -116,7 +116,7 @@ _Internal consistency:_ Does the response not contradict itself?
 
 ### CONS1 { #cons1 }
 
-<span class="axiom">CONS1</span> [`AspectSimilaritySentenceCountConsistencyAxiom`][ir_axioms.axiom.generation.consistency.AspectSimilaritySentenceCountConsistencyAxiom] — _"Prefer responses with more sentences covering aspects from the context."_ [@merker2025axioms]
+<span class="badge">CONS1</span> [`AspectSimilaritySentenceCountConsistencyAxiom`][ir_axioms.axiom.generation.consistency.AspectSimilaritySentenceCountConsistencyAxiom] — _"Prefer responses with more sentences covering aspects from the context."_ [@merker2025axioms]
 
 Formalization
 :   \(\text{avg-ASP}_C\text{-cov}(r_1) >_{50\%} \text{avg-ASP}_C\text{-cov}(r_2) \Rightarrow r_1 >_\text{CONS1} r_2\), where \(\text{avg-ASP}_C\text{-cov}(r) = \frac{1}{|\mathrm{ASP}_C|} \sum_{a \in \mathrm{ASP}_C} \sum_{s \in r} \mathrm{sim}(a, s)\) for the aspects \(\mathrm{ASP}_C\) of the context documents \(C\).
@@ -133,7 +133,7 @@ Tools
 
 ### CONS2 { #cons2 }
 
-<span class="axiom">CONS2</span> [`RougeConsistencyAxiom`][ir_axioms.axiom.generation.consistency.RougeConsistencyAxiom] — _"Prefer responses with higher text overlap with contexts."_ [@merker2025axioms]
+<span class="badge">CONS2</span> [`RougeConsistencyAxiom`][ir_axioms.axiom.generation.consistency.RougeConsistencyAxiom] — _"Prefer responses with higher text overlap with contexts."_ [@merker2025axioms]
 
 Formalization
 :   \(\text{ROUGE-L}(r_1, c') >_{10\%} \text{ROUGE-L}(r_2, c') \Rightarrow r_1 >_\text{CONS2} r_2\), where \(c'\) is the concatenated text of the context documents \(C\).
@@ -147,7 +147,7 @@ Parameters
 
 ### CONS3 { #cons3 }
 
-<span class="axiom">CONS3</span> [`EntityContradictionConsistencyAxiom`][ir_axioms.axiom.generation.consistency.EntityContradictionConsistencyAxiom] — _"Penalize aspects mentioned in contradictory phrases."_ [@merker2025axioms]
+<span class="badge">CONS3</span> [`EntityContradictionConsistencyAxiom`][ir_axioms.axiom.generation.consistency.EntityContradictionConsistencyAxiom] — _"Penalize aspects mentioned in contradictory phrases."_ [@merker2025axioms]
 
 Formalization
 :   \(\frac{|\mathrm{ASP}^E_{r_1}|}{|\mathrm{ASP}_{r_1}|} <_{20\%} \frac{|\mathrm{ASP}^E_{r_2}|}{|\mathrm{ASP}_{r_2}|} \Rightarrow r_1 >_\text{CONS3} r_2\), where \(\mathrm{ASP}^E_r\) are the aspects of \(r\) that appear in both negated and non-negated passages of \(r\).
@@ -165,7 +165,7 @@ _Topical correctness:_ Does the response state things within the scope of the us
 
 ### CORR1 { #corr1 }
 
-<span class="axiom">CORR1</span> [`CitationSentenceCorrectnessAxiom`][ir_axioms.axiom.generation.correctness.CitationSentenceCorrectnessAxiom] — _"Prefer responses with more sentences referencing sources."_ [@merker2025axioms]
+<span class="badge">CORR1</span> [`CitationSentenceCorrectnessAxiom`][ir_axioms.axiom.generation.correctness.CitationSentenceCorrectnessAxiom] — _"Prefer responses with more sentences referencing sources."_ [@merker2025axioms]
 
 Formalization
 :   \(\frac{|S^\text{ref}_{r_1}|}{|S_{r_1}|} >_{10\%} \frac{|S^\text{ref}_{r_2}|}{|S_{r_2}|} \Rightarrow r_1 >_\text{CORR1} r_2\), where \(S_r\) are the sentences of \(r\) and \(S^\text{ref}_r \subseteq S_r\) those containing a reference.
@@ -186,7 +186,7 @@ _Content clarity:_ Does the response clearly communicate the most salient inform
 
 ### CLAR1 { #clar1 }
 
-<span class="axiom">CLAR1</span> [`LanguageToolGrammarErrorProportionClarityAxiom`][ir_axioms.axiom.generation.clarity.LanguageToolGrammarErrorProportionClarityAxiom] — _"Prefer responses with fewer grammar errors."_ [@merker2025axioms]
+<span class="badge">CLAR1</span> [`LanguageToolGrammarErrorProportionClarityAxiom`][ir_axioms.axiom.generation.clarity.LanguageToolGrammarErrorProportionClarityAxiom] — _"Prefer responses with fewer grammar errors."_ [@merker2025axioms]
 
 Formalization
 :   \(\frac{\mathrm{length}(\mathrm{ERR}_{r_1})}{\mathrm{length}(r_1)} <_{10\%} \frac{\mathrm{length}(\mathrm{ERR}_{r_2})}{\mathrm{length}(r_2)} \Rightarrow r_1 >_\text{CLAR1} r_2\), where \(\mathrm{ERR}_r\) are the spans of grammatical errors in \(r\).
@@ -199,7 +199,7 @@ Parameters
 
 ### CLAR2 { #clar2 }
 
-<span class="axiom">CLAR2</span> [`FleschReadingEaseClarityAxiom`][ir_axioms.axiom.generation.clarity.FleschReadingEaseClarityAxiom] — _"Prefer responses with better readability."_ [@merker2025axioms]
+<span class="badge">CLAR2</span> [`FleschReadingEaseClarityAxiom`][ir_axioms.axiom.generation.clarity.FleschReadingEaseClarityAxiom] — _"Prefer responses with better readability."_ [@merker2025axioms]
 
 Formalization
 :   \(\text{Flesch}(r_1) < \text{Flesch}(r_2) \Rightarrow r_1 >_\text{CLAR2} r_2\) (Eq. 11 in the paper).
@@ -222,27 +222,27 @@ The `GEN_*` axioms wrap the corresponding retrieval axiom accordingly:
 
 | Axiom | Class | Wrapped retrieval axiom |
 |:--|:--|:--|
-| <span class="axiom">GEN_TFC1</span> | [`GenerativeTfc1Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeTfc1Axiom] | [TFC1](retrieval.md#tfc1) |
-| <span class="axiom">GEN_LNC1</span> | [`GenerativeLnc1Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeLnc1Axiom] | [LNC1](retrieval.md#lnc1) |
-| <span class="axiom">GEN_TF_LNC</span> | [`GenerativeTfLncAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeTfLncAxiom] | [TF-LNC](retrieval.md#tf-lnc) |
-| <span class="axiom">GEN_REG</span> | [`GenerativeRegAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeRegAxiom] | [REG](retrieval.md#reg) |
-| <span class="axiom">GEN_ANTI_REG</span> | [`GenerativeAntiRegAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeAntiRegAxiom] | [ANTI-REG](retrieval.md#reg) |
-| <span class="axiom">GEN_AND</span> | [`GenerativeAndAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeAndAxiom] | [AND](retrieval.md#and) |
-| <span class="axiom">GEN_LEN_AND</span> | [`GenerativeLenAndAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeLenAndAxiom] | [LEN-AND](retrieval.md#and) |
-| <span class="axiom">GEN_M_AND</span> | [`GenerativeModifiedAndAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeModifiedAndAxiom] | [M-AND](retrieval.md#and) |
-| <span class="axiom">GEN_DIV</span> | [`GenerativeDivAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeDivAxiom] | [DIV](retrieval.md#div) |
-| <span class="axiom">GEN_LEN_DIV</span> | [`GenerativeLenDivAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeLenDivAxiom] | [LEN-DIV](retrieval.md#div) |
-| <span class="axiom">GEN_STMC1</span> | [`GenerativeStmc1Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeStmc1Axiom] | [STMC1](retrieval.md#stmc1) |
-| <span class="axiom">GEN_STMC2</span> | [`GenerativeStmc2Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeStmc2Axiom] | [STMC2](retrieval.md#stmc2) |
-| <span class="axiom">GEN_PROX1</span> | [`GenerativeProx1Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeProx1Axiom] | [PROX1](retrieval.md#prox1) |
-| <span class="axiom">GEN_PROX2</span> | [`GenerativeProx2Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeProx2Axiom] | [PROX2](retrieval.md#prox2) |
-| <span class="axiom">GEN_PROX3</span> | [`GenerativeProx3Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeProx3Axiom] | [PROX3](retrieval.md#prox3) |
-| <span class="axiom">GEN_PROX4</span> | [`GenerativeProx4Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeProx4Axiom] | [PROX4](retrieval.md#prox4) |
-| <span class="axiom">GEN_PROX5</span> | [`GenerativeProx5Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeProx5Axiom] | [PROX5](retrieval.md#prox5) |
-| <span class="axiom">GEN_ArgUC</span> | [`GenerativeArgumentativeUnitsCountAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeArgumentativeUnitsCountAxiom] | [ArgUC](retrieval.md#arguc) |
-| <span class="axiom">GEN_QTArg</span> | [`GenerativeQueryTermOccurrenceInArgumentativeUnitsAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeQueryTermOccurrenceInArgumentativeUnitsAxiom] | [QTArg](retrieval.md#qtarg) |
-| <span class="axiom">GEN_QTPArg</span> | [`GenerativeQueryTermPositionInArgumentativeUnitsAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeQueryTermPositionInArgumentativeUnitsAxiom] | [QTPArg](retrieval.md#qtparg) |
-| <span class="axiom">GEN_aSL</span> | [`GenerativeAverageSentenceLengthAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeAverageSentenceLengthAxiom] | [aSL](retrieval.md#asl) |
+| <span class="badge">GEN_TFC1</span> | [`GenerativeTfc1Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeTfc1Axiom] | [TFC1](retrieval.md#tfc1) |
+| <span class="badge">GEN_LNC1</span> | [`GenerativeLnc1Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeLnc1Axiom] | [LNC1](retrieval.md#lnc1) |
+| <span class="badge">GEN_TF_LNC</span> | [`GenerativeTfLncAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeTfLncAxiom] | [TF-LNC](retrieval.md#tf-lnc) |
+| <span class="badge">GEN_REG</span> | [`GenerativeRegAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeRegAxiom] | [REG](retrieval.md#reg) |
+| <span class="badge">GEN_ANTI_REG</span> | [`GenerativeAntiRegAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeAntiRegAxiom] | [ANTI-REG](retrieval.md#reg) |
+| <span class="badge">GEN_AND</span> | [`GenerativeAndAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeAndAxiom] | [AND](retrieval.md#and) |
+| <span class="badge">GEN_LEN_AND</span> | [`GenerativeLenAndAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeLenAndAxiom] | [LEN-AND](retrieval.md#and) |
+| <span class="badge">GEN_M_AND</span> | [`GenerativeModifiedAndAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeModifiedAndAxiom] | [M-AND](retrieval.md#and) |
+| <span class="badge">GEN_DIV</span> | [`GenerativeDivAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeDivAxiom] | [DIV](retrieval.md#div) |
+| <span class="badge">GEN_LEN_DIV</span> | [`GenerativeLenDivAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeLenDivAxiom] | [LEN-DIV](retrieval.md#div) |
+| <span class="badge">GEN_STMC1</span> | [`GenerativeStmc1Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeStmc1Axiom] | [STMC1](retrieval.md#stmc1) |
+| <span class="badge">GEN_STMC2</span> | [`GenerativeStmc2Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeStmc2Axiom] | [STMC2](retrieval.md#stmc2) |
+| <span class="badge">GEN_PROX1</span> | [`GenerativeProx1Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeProx1Axiom] | [PROX1](retrieval.md#prox1) |
+| <span class="badge">GEN_PROX2</span> | [`GenerativeProx2Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeProx2Axiom] | [PROX2](retrieval.md#prox2) |
+| <span class="badge">GEN_PROX3</span> | [`GenerativeProx3Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeProx3Axiom] | [PROX3](retrieval.md#prox3) |
+| <span class="badge">GEN_PROX4</span> | [`GenerativeProx4Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeProx4Axiom] | [PROX4](retrieval.md#prox4) |
+| <span class="badge">GEN_PROX5</span> | [`GenerativeProx5Axiom`][ir_axioms.axiom.generation.retrieval.GenerativeProx5Axiom] | [PROX5](retrieval.md#prox5) |
+| <span class="badge">GEN_ArgUC</span> | [`GenerativeArgumentativeUnitsCountAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeArgumentativeUnitsCountAxiom] | [ArgUC](retrieval.md#arguc) |
+| <span class="badge">GEN_QTArg</span> | [`GenerativeQueryTermOccurrenceInArgumentativeUnitsAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeQueryTermOccurrenceInArgumentativeUnitsAxiom] | [QTArg](retrieval.md#qtarg) |
+| <span class="badge">GEN_QTPArg</span> | [`GenerativeQueryTermPositionInArgumentativeUnitsAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeQueryTermPositionInArgumentativeUnitsAxiom] | [QTPArg](retrieval.md#qtparg) |
+| <span class="badge">GEN_aSL</span> | [`GenerativeAverageSentenceLengthAxiom`][ir_axioms.axiom.generation.retrieval.GenerativeAverageSentenceLengthAxiom] | [aSL](retrieval.md#asl) |
 
 Retrieval axioms that need retrieval scores or collection statistics (e.g., LB1, TFC3, M-TDC) have no generative counterpart.
 

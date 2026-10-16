@@ -37,7 +37,7 @@ We also gratefully accept [pull requests](https://github.com/webis-de/ir_axioms/
 
 ## Documentation
 
-This documentation is built with [MkDocs](https://www.mkdocs.org/) and the [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) theme.
+This documentation is built with [MkDocs](https://www.mkdocs.org/), the [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) theme, and the [`mkdocs-webis`](https://github.com/webis-de/mkdocs-webis) plugin for the Webis style and citations.
 The sources are located in the [`docs/`](https://github.com/webis-de/ir_axioms/tree/main/docs) directory and the configuration in [`mkdocs.yml`](https://github.com/webis-de/ir_axioms/blob/main/mkdocs.yml).
 
 1. Install the documentation dependencies:
@@ -62,7 +62,7 @@ The documentation is deployed to [GitHub Pages](https://webis-de.github.io/ir_ax
 
 ### Citations
 
-All references are stored in [`docs/references.bib`](https://github.com/webis-de/ir_axioms/blob/main/docs/references.bib).
+All references are stored in [`docs/references.bib`](https://github.com/webis-de/ir_axioms/blob/main/docs/references.bib) and rendered by the [`mkdocs-webis`](https://github.com/webis-de/mkdocs-webis) plugin.
 To cite a reference in any page, use `[@key]` or `[@key1; @key2]` (with the BibTeX keys).
 The citations are rendered as author–year links, and each page that cites a reference automatically gets a "References" section at the bottom (including the BibTeX entries).
 Unknown keys fail the build.
@@ -71,13 +71,15 @@ When adding a reference, please copy its BibTeX entry from [DBLP](https://dblp.o
 
 ### Style
 
-The theme follows the colors and rough design of the [Webis lecture notes](https://downloads.webis.de/lecturenotes/lecturenotes-generic/unit-en-lecturenotes-tutorial.pdf) (see [`docs/stylesheets/webis.css`](https://github.com/webis-de/ir_axioms/blob/main/docs/stylesheets/webis.css)).
-Start each page with a title and a short subtitle:
+The [`mkdocs-webis`](https://github.com/webis-de/mkdocs-webis) plugin provides the colors and rough design of the [Webis lecture notes](https://downloads.webis.de/lecturenotes/lecturenotes-generic/unit-en-lecturenotes-tutorial.pdf).
+Start each page with a title and a short subtitle, and use badges for axiom names:
 
 ```markdown
 # Page Title
 
 <p class="subtitle">Short description of the page</p>
+
+<span class="badge">TFC1</span> `Tfc1Axiom` — _"Intuition of the axiom."_ [@key]
 ```
 
 ## License

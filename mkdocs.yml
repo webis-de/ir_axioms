@@ -16,7 +16,6 @@ validation:
   unrecognized_links: warn
   anchors: warn
 exclude_docs: |
-  _hooks/
   # Legacy locations of the documentation (kept as pointers for GitHub readers).
   /axioms.md
   /rag-axioms.md
@@ -29,20 +28,6 @@ theme:
   language: en
   logo: assets/logo.svg
   favicon: assets/logo.svg
-  # Use the system's Helvetica-like sans-serif fonts as in the Webis lecture notes
-  # (and avoid loading fonts from third-party servers).
-  font: false
-  palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: webis
-      toggle:
-        icon: material/weather-night
-        name: Switch to dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: webis-dark
-      toggle:
-        icon: material/weather-sunny
-        name: Switch to light mode
   icon:
     repo: fontawesome/brands/github
   features:
@@ -60,14 +45,11 @@ theme:
     - search.suggest
     - toc.follow
 
-extra_css:
-  - stylesheets/webis.css
-
-hooks:
-  - docs/_hooks/bibliography.py
-
 plugins:
   - search
+  # Webis style (colors, fonts, design) and BibTeX citations with [@key].
+  - webis:
+      bibliography: references.bib
   - redirects:
       redirect_maps:
         rag-axioms.md: axioms/generation.md

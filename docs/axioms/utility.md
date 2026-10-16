@@ -10,7 +10,7 @@ The [API reference](../api/axiom.md#combinators) documents all classes and param
 
 ### ORIG { #orig }
 
-<span class="axiom">ORIG</span> [`OriginalAxiom`][ir_axioms.axiom.retrieval.simple.OriginalAxiom] — _"Follow the original ranking."_ [@hagen2016axiomatic]
+<span class="badge">ORIG</span> [`OriginalAxiom`][ir_axioms.axiom.retrieval.simple.OriginalAxiom] — _"Follow the original ranking."_ [@hagen2016axiomatic]
 
 Implementation
 :   Prefers the document with the better (lower) `rank`, or, if no ranks are given, the higher `score`.
@@ -20,7 +20,7 @@ Usage
 
 ### ORACLE { #oracle }
 
-<span class="axiom">ORACLE</span> [`OracleAxiom`][ir_axioms.axiom.retrieval.simple.OracleAxiom] — _"Follow the human relevance judgments."_ [@bondarenko2022axiomatic]
+<span class="badge">ORACLE</span> [`OracleAxiom`][ir_axioms.axiom.retrieval.simple.OracleAxiom] — _"Follow the human relevance judgments."_ [@bondarenko2022axiomatic]
 
 Implementation
 :   Prefers the document with the higher `relevance` label (e.g., from TREC qrels).
@@ -36,14 +36,14 @@ Variants
 
 ### NOP { #nop }
 
-<span class="axiom">NOP</span> [`NopAxiom`][ir_axioms.axiom.simple.NopAxiom] — _"Never prefer any output."_
+<span class="badge">NOP</span> [`NopAxiom`][ir_axioms.axiom.simple.NopAxiom] — _"Never prefer any output."_
 
 Implementation
 :   Always returns a zero preference.
 
 ### RANDOM { #random }
 
-<span class="axiom">RANDOM</span> [`RandomAxiom`][ir_axioms.axiom.simple.RandomAxiom] — _"Prefer outputs at random."_
+<span class="badge">RANDOM</span> [`RandomAxiom`][ir_axioms.axiom.simple.RandomAxiom] — _"Prefer outputs at random."_
 
 Implementation
 :   Returns random preferences (see the [known issue](../development/roadmap.md#known-bugs)).
@@ -53,16 +53,16 @@ Parameters
 
 ### GT and LT { #gt }
 
-<span class="axiom">GT</span> [`GreaterThanAxiom`][ir_axioms.axiom.simple.GreaterThanAxiom] — _"Prefer the greater output."_
+<span class="badge">GT</span> [`GreaterThanAxiom`][ir_axioms.axiom.simple.GreaterThanAxiom] — _"Prefer the greater output."_
 
-<span class="axiom" id="lt">LT</span> [`LessThanAxiom`][ir_axioms.axiom.simple.LessThanAxiom] — _"Prefer the smaller output."_
+<span class="badge" id="lt">LT</span> [`LessThanAxiom`][ir_axioms.axiom.simple.LessThanAxiom] — _"Prefer the smaller output."_
 
 Implementation
 :   Compares the outputs directly, for any comparable outputs (e.g., numbers).
 
 ### DIST { #dist }
 
-<span class="axiom">DIST</span> [`DistanceAxiom`][ir_axioms.axiom.simple.DistanceAxiom] — _"Prefer the greater output, proportionally to the difference."_
+<span class="badge">DIST</span> [`DistanceAxiom`][ir_axioms.axiom.simple.DistanceAxiom] — _"Prefer the greater output, proportionally to the difference."_
 
 Implementation
 :   Returns the signed difference of two numeric outputs.
