@@ -569,7 +569,49 @@ class Prox5Axiom(Axiom[Query, Document]):
 
         return strictly_less(smallest_span1, smallest_span2)
 
-    # ADDITION: Come up with a better way to batch-compute preference-matrices.
+    def preferences(
+        self,
+        input: Query,
+        outputs: Sequence[Document],
+    ) -> PreferenceMatrix:
+        query_unique_terms = self.term_tokenizer.unique_terms(
+            self.text_contents.contents(input),
+        )
+        document_terms, document_unique_terms = _tokenize_documents(
+            self.text_contents, self.term_tokenizer, outputs, self.verbose
+        )
+        # Only needed for documents containing all query terms.
+        smallest_spans = [
+            (
+                _average_smallest_span(
+                    query_terms=query_unique_terms,
+                    document_terms=terms,
+                )
+                if query_unique_terms <= unique_terms
+                else inf
+            )
+            for terms, unique_terms in zip(document_terms, document_unique_terms)
+        ]
+        return array(
+            [
+                (
+                    strictly_less(smallest_span1, smallest_span2)
+                    if _all_query_terms_in_documents(
+                        query_terms=query_unique_terms,
+                        document1_terms=unique_terms1,
+                        document2_terms=unique_terms2,
+                    )
+                    else 0
+                )
+                for unique_terms1, smallest_span1 in zip(
+                    document_unique_terms, smallest_spans
+                )
+                for unique_terms2, smallest_span2 in zip(
+                    document_unique_terms, smallest_spans
+                )
+            ],
+            dtype=float_,
+        ).reshape((len(outputs), len(outputs)))
 
 
 PROX5: Final = lazy_inject(Prox5Axiom)
