@@ -33,7 +33,7 @@ NOP: Final = lazy_inject(NopAxiom)
 
 @dataclass(frozen=True, kw_only=True)
 class RandomAxiom(Axiom[Any, Any]):
-    seed: Optional[Any] = None
+    seed: Any | None = None
 
     @cached_property
     def _generator(self) -> Generator:

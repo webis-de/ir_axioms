@@ -13,7 +13,7 @@ class DocumentQueryTextContents(TextContents[Union[Document, Query]]):
     document_text_contents: TextContents[Document]
     query_text_contents: TextContents[Query]
 
-    def contents(self, input: Union[Document, Query]) -> str:
+    def contents(self, input: Document | Query) -> str:
         if isinstance(input, Document):
             return self.document_text_contents.contents(input)
         elif isinstance(input, Query):
@@ -28,7 +28,7 @@ class GenerationInputOutputTextContents(
     generation_input_text_contents: TextContents[GenerationRequest]
     generation_output_text_contents: TextContents[GenerationResponse]
 
-    def contents(self, input: Union[GenerationRequest, GenerationResponse]) -> str:
+    def contents(self, input: GenerationRequest | GenerationResponse) -> str:
         if isinstance(input, GenerationRequest):
             return self.generation_input_text_contents.contents(input)
         elif isinstance(input, GenerationResponse):

@@ -16,7 +16,7 @@ from ir_axioms.model import (
 @dataclass(frozen=True, kw_only=True)
 class ParallelAxiom(Axiom[Input, Output], Generic[Input, Output]):
     axiom: Axiom[Input, Output]
-    n_jobs: Optional[int] = None
+    n_jobs: int | None = None
 
     def preference(
         self,

@@ -34,7 +34,7 @@ class DbmCachedAxiom(Axiom[_Input, _Output]):
 
     def _iter_preferences(
         self,
-        inputs_outputs: Iterable[Tuple[_Input, _Output, _Output]],
+        inputs_outputs: Iterable[tuple[_Input, _Output, _Output]],
         only_cached: bool = False,
     ) -> Iterator[Preference]:
         self.cache_path.parent.mkdir(exist_ok=True, parents=True)

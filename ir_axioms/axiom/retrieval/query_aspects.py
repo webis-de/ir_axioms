@@ -45,7 +45,7 @@ class RegAxiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
     in information retrieval. In: Gurrin, C., et al. (eds.) ECIR 2010.
     """
 
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
     text_statistics: TextStatistics[Document]
     term_similarity: TermSimilarity
@@ -150,7 +150,7 @@ class AntiRegAxiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
     Modified to use maximum similarity instead of minimum similarity.
     """
 
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
     text_statistics: TextStatistics[Document]
     term_similarity: TermSimilarity
@@ -257,7 +257,7 @@ class AspectRegAxiom(Axiom[Query, Document]):
     in information retrieval. In: Gurrin, C., et al. (eds.) ECIR 2010.
     """
 
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
     index_statistics: IndexStatistics
     term_similarity: TermSimilarity
@@ -339,7 +339,7 @@ ASPECT_REG: Final = lazy_inject(AspectRegAxiom)
 @inject
 @dataclass(frozen=True, kw_only=True)
 class AndAxiom(Axiom[Query, Document]):
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
 
     def preference(
@@ -416,7 +416,7 @@ class ModifiedAndAxiom(Axiom[Query, Document]):
     One document contains a larger subset of query terms.
     """
 
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
 
     def preference(
@@ -488,7 +488,7 @@ LEN_M_AND: Final = lazy_inject(LenModifiedAndAxiom)
 @inject
 @dataclass(frozen=True, kw_only=True)
 class DivAxiom(Axiom[Query, Document]):
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
 
     def preference(

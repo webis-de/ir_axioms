@@ -30,10 +30,10 @@ if is_pyserini_installed() or TYPE_CHECKING:
     from ir_axioms.utils.pyserini import Analyzer, default_analyzer
 
     def inject_pyserini(
-        index_dir: Optional[Union[Path, str]] = None,
-        analyzer: Optional[Analyzer] = None,
+        index_dir: Path | str | None = None,
+        analyzer: Analyzer | None = None,
         text_contents: bool = False,
-        dataset: Optional[Union[Dataset, str]] = None,
+        dataset: Dataset | str | None = None,
         injector: Injector = _default_injector,
     ) -> None:
         analyzer_ = analyzer if analyzer is not None else default_analyzer()

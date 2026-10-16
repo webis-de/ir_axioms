@@ -6,11 +6,11 @@ from typing_extensions import deprecated
 
 @dataclass(frozen=True, kw_only=True)
 class GenerationRequest:
-    id: Optional[str] = None
+    id: str | None = None
     """Unique identifier for the generation input."""
     text: str
     """Request text, e.g., a question or query."""
-    context: Optional[Sequence[str]] = None
+    context: Sequence[str] | None = None
     """Optional retrieved context (e.g., when evaluating RAG)."""
     reference_output: Optional["GenerationResponse"] = None
     """Optional ground-truth refeerence response."""
@@ -22,11 +22,11 @@ class GenerationInput(GenerationRequest): ...
 
 @dataclass(frozen=True, kw_only=True)
 class GenerationResponse:
-    id: Optional[str] = None
+    id: str | None = None
     """Unique identifier for the generation output."""
     text: str
     """Text response generated."""
-    context: Optional[Sequence[str]] = None
+    context: Sequence[str] | None = None
     """Override context from input if necessary."""
 
 

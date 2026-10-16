@@ -10,7 +10,7 @@ _T = TypeVar("_T")
 
 
 def lazy_inject(
-    cls: Type[_T],
+    cls: type[_T],
     injector: Injector = _default_injector,
 ) -> Callable[..., _T]:
     def wrapped(**kwargs) -> _T:

@@ -206,7 +206,7 @@ class Axiom(ABC, Generic[Input, Output]):
 
         return CachedAxiom(axiom=self, cache_path=cache_path)
 
-    def parallel(self, n_jobs: Optional[int] = None) -> "Axiom[Input, Output]":
+    def parallel(self, n_jobs: int | None = None) -> "Axiom[Input, Output]":
         """
         Parallelize preference matrix computation of this axiom.
         """

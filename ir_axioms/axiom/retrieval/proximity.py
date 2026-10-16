@@ -148,7 +148,7 @@ def _closest_grouping_size_and_count(
 
 
 def _tokenize_documents(
-    text_contents: TextContents[Union[Query, Document]],
+    text_contents: TextContents[Query | Document],
     term_tokenizer: TermTokenizer,
     outputs: Sequence[Document],
     verbose: bool,
@@ -168,7 +168,7 @@ def _tokenize_documents(
 @inject
 @dataclass(frozen=True, kw_only=True)
 class Prox1Axiom(Axiom[Query, Document]):
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
 
     def preference(
@@ -246,7 +246,7 @@ PROX1: Final = lazy_inject(Prox1Axiom)
 @inject
 @dataclass(frozen=True, kw_only=True)
 class Prox2Axiom(Axiom[Query, Document]):
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
 
     def preference(
@@ -353,7 +353,7 @@ def _find_index(
 @inject
 @dataclass(frozen=True, kw_only=True)
 class Prox3Axiom(Axiom[Query, Document]):
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
 
     def preference(
@@ -433,7 +433,7 @@ PROX3: Final = lazy_inject(Prox3Axiom)
 @inject
 @dataclass(frozen=True, kw_only=True)
 class Prox4Axiom(Axiom[Query, Document]):
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
 
     def preference(
@@ -530,7 +530,7 @@ PROX4: Final = lazy_inject(Prox4Axiom)
 @inject
 @dataclass(frozen=True, kw_only=True)
 class Prox5Axiom(Axiom[Query, Document]):
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
 
     def preference(

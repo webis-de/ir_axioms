@@ -20,7 +20,7 @@ from ir_axioms.utils.lazy import lazy_inject
 @inject
 @dataclass(frozen=True, kw_only=True)
 class Tfc1Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
     text_statistics: TextStatistics[Document]
     precondition: NoInject[Precondition[Query, Document]] = field(default_factory=LEN)
@@ -97,7 +97,7 @@ TFC1: Final = lazy_inject(Tfc1Axiom)
 @inject
 @dataclass(frozen=True, kw_only=True)
 class Tfc3Axiom(PreconditionMixin[Query, Document], Axiom[Query, Document]):
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
     index_statistics: IndexStatistics
     text_statistics: TextStatistics[Document]
@@ -283,10 +283,10 @@ class ModifiedTdcAxiom(Axiom[Query, Document]):
     for information retrieval. In: SIGIR ’05.
     """
 
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
     index_statistics: IndexStatistics
-    text_statistics: TextStatistics[Union[Query, Document]]
+    text_statistics: TextStatistics[Query | Document]
 
     def preference(
         self,

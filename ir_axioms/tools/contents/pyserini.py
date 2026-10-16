@@ -14,7 +14,7 @@ if is_pyserini_installed() or TYPE_CHECKING:
 
     @dataclass(frozen=True, kw_only=True)
     class AnseriniDocumentTextContents(TextContents[Document]):
-        index_dir: Union[Path, str]
+        index_dir: Path | str
 
         @cached_property
         def _searcher(self) -> LuceneSearcher:

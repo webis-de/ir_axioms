@@ -40,7 +40,7 @@ def _similar_scores(
 @inject
 @dataclass(frozen=True, kw_only=True)
 class Lb1Axiom(Axiom[Query, Document]):
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
     text_statistics: TextStatistics[Document]
     margin_fraction: NoInject[float] = 0.1

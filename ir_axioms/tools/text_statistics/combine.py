@@ -13,13 +13,13 @@ class DocumentQueryTextStatistics(TextStatistics[Union[Document, Query]]):
     document_text_contents: TextStatistics[Document]
     query_text_contents: TextStatistics[Query]
 
-    def term_counts(self, document: Union[Document, Query]) -> Mapping[str, int]:
+    def term_counts(self, document: Document | Query) -> Mapping[str, int]:
         if isinstance(document, Document):
             return self.document_text_contents.term_counts(document)
         elif isinstance(document, Query):
             return self.query_text_contents.term_counts(document)
 
-    def term_frequencies(self, document: Union[Document, Query]) -> Mapping[str, float]:
+    def term_frequencies(self, document: Document | Query) -> Mapping[str, float]:
         if isinstance(document, Document):
             return self.document_text_contents.term_frequencies(document)
         elif isinstance(document, Query):
@@ -35,7 +35,7 @@ class GenerationInputOutputTextStatistics(
     generation_output_text_statistics: TextStatistics[GenerationResponse]
 
     def term_counts(
-        self, document: Union[GenerationRequest, GenerationResponse]
+        self, document: GenerationRequest | GenerationResponse
     ) -> Mapping[str, int]:
         if isinstance(document, GenerationRequest):
             return self.generation_input_text_statistics.term_counts(document)
@@ -43,7 +43,7 @@ class GenerationInputOutputTextStatistics(
             return self.generation_output_text_statistics.term_counts(document)
 
     def term_frequencies(
-        self, document: Union[GenerationRequest, GenerationResponse]
+        self, document: GenerationRequest | GenerationResponse
     ) -> Mapping[str, float]:
         if isinstance(document, GenerationRequest):
             return self.generation_input_text_statistics.term_frequencies(document)

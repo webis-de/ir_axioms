@@ -21,7 +21,7 @@ if is_pyserini_installed() or TYPE_CHECKING:
 
     @dataclass(frozen=True, kw_only=True)
     class AnseriniTextStatistics(TextStatistics[DocumentType]):
-        index_dir: Union[Path, str]
+        index_dir: Path | str
         analyzer: Analyzer = field(default_factory=default_analyzer)
 
         @cached_property

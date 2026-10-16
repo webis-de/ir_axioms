@@ -17,7 +17,7 @@ from ir_axioms.utils.lazy import lazy_inject
 @inject
 @dataclass(frozen=True, kw_only=True)
 class Stmc1Axiom(Axiom[Query, Document]):
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
     term_similarity: TermSimilarity
 
@@ -129,7 +129,7 @@ def _stmc2_preference(
 @inject
 @dataclass(frozen=True, kw_only=True)
 class Stmc2Axiom(Axiom[Query, Document]):
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
     term_similarity: TermSimilarity
     text_statistics: TextStatistics[Document]

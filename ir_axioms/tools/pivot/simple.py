@@ -11,7 +11,7 @@ Output = TypeVar("Output")
 
 @dataclass(frozen=True, kw_only=True)
 class RandomPivotSelection(PivotSelection[Input, Output]):
-    seed: Optional[Union[int, float, str, bytes, bytearray]] = None
+    seed: int | float | str | bytes | bytearray | None = None
 
     @cached_property
     def _random(self) -> Random:

@@ -32,7 +32,7 @@ def _similar_query_term_frequencies(
 @inject
 @dataclass(frozen=True, kw_only=True)
 class Lnc1Axiom(Axiom[Query, Document]):
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
     text_statistics: TextStatistics[Document]
     margin_fraction: NoInject[float] = 0.1
@@ -111,7 +111,7 @@ LNC1: Final = lazy_inject(Lnc1Axiom)
 @inject
 @dataclass(frozen=True, kw_only=True)
 class TfLncAxiom(Axiom[Query, Document]):
-    text_contents: TextContents[Union[Query, Document]]
+    text_contents: TextContents[Query | Document]
     term_tokenizer: TermTokenizer
     text_statistics: TextStatistics[Document]
 

@@ -36,9 +36,7 @@ def strictly_fewer(x: Sized, y: Sized) -> float:
     return strictly_less(len(x), len(y))
 
 
-def approximately_equal(
-    *items: Union[int, float], margin_fraction: float = 0.1
-) -> bool:
+def approximately_equal(*items: int | float, margin_fraction: float = 0.1) -> bool:
     """
     True if all numeric args are
     within (100 * margin_fraction)% of the largest.

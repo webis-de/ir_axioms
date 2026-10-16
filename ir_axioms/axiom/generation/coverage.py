@@ -190,7 +190,7 @@ class AspectSimilaritySentenceCountCoverageAxiom(
     Prefer text with extracted aspects from the input text mentioned in more sentences of the output, weighing by the sentence's similarity to the aspects.
     """
 
-    text_contents: TextContents[Union[GenerationRequest, GenerationResponse]]
+    text_contents: TextContents[GenerationRequest | GenerationResponse]
     aspect_extraction: AspectExtraction
     sentence_tokenizer: SentenceTokenizer
     sentence_similarity: SentenceSimilarity

@@ -47,7 +47,7 @@ class AspectSimilaritySentenceCountConsistencyAxiom(
     Prefer text with extracted aspects from the input context mentioned in more sentences of the output, weighing by the sentence's similarity to the aspects.
     """
 
-    text_contents: TextContents[Union[GenerationRequest, GenerationResponse]]
+    text_contents: TextContents[GenerationRequest | GenerationResponse]
     aspect_extraction: AspectExtraction
     sentence_tokenizer: SentenceTokenizer
     sentence_similarity: SentenceSimilarity
@@ -160,7 +160,7 @@ class RougeConsistencyAxiom(Axiom[GenerationRequest, GenerationResponse]):
     Prefer text with higher ROUGE score compared to the input contexts.
     """
 
-    text_contents: TextContents[Union[GenerationRequest, GenerationResponse]]
+    text_contents: TextContents[GenerationRequest | GenerationResponse]
     sentence_tokenizer: SentenceTokenizer
     term_tokenizer: TermTokenizer
 
