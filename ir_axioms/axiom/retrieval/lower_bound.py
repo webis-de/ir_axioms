@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from math import isclose
-from collections.abc import Mapping, Sequence, Set
+from collections.abc import Sequence
 from typing import Final, Union
 
 from injector import inject, NoInject
@@ -11,28 +11,6 @@ from ir_axioms.axiom.base import Axiom
 from ir_axioms.model import Query, Document, Preference, PreferenceMatrix
 from ir_axioms.tools import TextContents, TermTokenizer, TextStatistics
 from ir_axioms.utils.lazy import lazy_inject
-
-
-def _lb1_preference(
-    query_unique_terms: Set[str],
-    document1_tf: Mapping[str, float],
-    document2_tf: Mapping[str, float],
-) -> Preference:
-    query_term_only_in_document1 = any(
-        document1_tf.get(term, 0) > 0 and document2_tf.get(term, 0) <= 0
-        for term in query_unique_terms
-    )
-    query_term_only_in_document2 = any(
-        document2_tf.get(term, 0) > 0 and document1_tf.get(term, 0) <= 0
-        for term in query_unique_terms
-    )
-
-    if query_term_only_in_document1 and not query_term_only_in_document2:
-        return 1
-    elif not query_term_only_in_document1 and query_term_only_in_document2:
-        return -1
-    else:
-        return 0
 
 
 def _require_score(document: Document) -> float:
@@ -87,11 +65,21 @@ class Lb1Axiom(Axiom[Query, Document]):
         document1_tf = self.text_statistics.term_frequencies(output1)
         document2_tf = self.text_statistics.term_frequencies(output2)
 
-        return _lb1_preference(
-            query_unique_terms=query_terms,
-            document1_tf=document1_tf,
-            document2_tf=document2_tf,
+        query_term_only_in_document1 = any(
+            document1_tf.get(term, 0) > 0 and document2_tf.get(term, 0) <= 0
+            for term in query_terms
         )
+        query_term_only_in_document2 = any(
+            document2_tf.get(term, 0) > 0 and document1_tf.get(term, 0) <= 0
+            for term in query_terms
+        )
+
+        if query_term_only_in_document1 and not query_term_only_in_document2:
+            return 1
+        elif not query_term_only_in_document1 and query_term_only_in_document2:
+            return -1
+        else:
+            return 0
 
     def preferences(
         self,
