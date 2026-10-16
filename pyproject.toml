@@ -55,6 +55,13 @@ tests = [
     "ruff>=0.12.7,<0.15.0",
     "types-tqdm~=4.66",
 ]
+docs = [
+    "mkdocs~=1.6",  # MkDocs 2.0 will drop support for plugins and themes.
+    "mkdocs-material~=9.6",
+    "mkdocs-redirects~=1.2",
+    "mkdocstrings[python]~=1.0",
+    "ruff>=0.12.7,<0.15.0",  # For formatting signatures in the API reference.
+]
 experiments = [
     "cappr[hf]~=0.9.6",
     "ir-measures>=0.3.6,<0.5.0",

@@ -1,5 +1,9 @@
 {
     "default": true,
     "first-line-heading": false,
-    "line-length": false
+    "line-length": false,
+    "no-inline-html": {
+        "allowed_elements": ["a", "div", "p", "span", "sub", "code"]
+    },
+    "code-block-style": false
 }

@@ -1,5 +1,6 @@
 [![CI status](https://img.shields.io/github/actions/workflow/status/webis-de/ir_axioms/ci.yml?branch=main&style=flat-square)](https://github.com/webis-de/ir_axioms/actions/workflows/ci.yml)
 [![Code coverage](https://img.shields.io/codecov/c/github/webis-de/ir_axioms?style=flat-square)](https://codecov.io/github/webis-de/ir_axioms/)
+[![Documentation](https://img.shields.io/github/actions/workflow/status/webis-de/ir_axioms/docs.yml?branch=main&style=flat-square&label=docs)](https://webis-de.github.io/ir_axioms/)
 [![Maintenance](https://img.shields.io/maintenance/yes/2026?style=flat-square)](https://github.com/webis-de/ir_axioms/graphs/contributors)  
 [![PyPI version](https://img.shields.io/pypi/v/ir-axioms?style=flat-square)](https://pypi.org/project/ir-axioms/)
 [![PyPI downloads](https://img.shields.io/pypi/dm/ir-axioms?style=flat-square)](https://pypi.org/project/ir-axioms/)
@@ -19,6 +20,15 @@ The library is well integrated with the [PyTerrier](https://github.com/terrier-o
 Use-cases of `ir_axioms` include search-result re-ranking, analyses of (neural) retrieval systems, and analyses of generated RAG answers.
 
 _Note: If you're looking out for `ir_axioms`<1.0, please [go here](https://github.com/webis-de/ir_axioms/tree/legacy)._
+
+## Documentation
+
+📖 Read the **[documentation](https://webis-de.github.io/ir_axioms/)** for:
+
+- [Installation](https://webis-de.github.io/ir_axioms/getting-started/installation/) and a [quickstart](https://webis-de.github.io/ir_axioms/getting-started/quickstart/)
+- The [catalog of all axioms](https://webis-de.github.io/ir_axioms/axioms/) with references, and a list of [axioms in the literature](https://webis-de.github.io/ir_axioms/axioms/literature/)
+- [Walkthroughs](https://webis-de.github.io/ir_axioms/walkthroughs/) on re-ranking, post-hoc analyses, and RAG evaluation
+- [Developing new axioms](https://webis-de.github.io/ir_axioms/development/axiom-development/) and the [migration guide from <1.0](https://webis-de.github.io/ir_axioms/getting-started/migration/)
 
 ## Publications
 
@@ -54,6 +64,8 @@ Read more about the [`ir_axioms` framework](https://webis.de/publications.html?q
 
 Note: To reproduce our results from ICTIR'25, please use these extras: `pyterrier,keybert,sbert,fasttext`
 
+See the [installation guide](https://webis-de.github.io/ir_axioms/getting-started/installation/) for all extras.
+
 ## Usage
 
 Run the CLI with:
@@ -61,6 +73,8 @@ Run the CLI with:
 ```shell
 ir_axioms --help
 ```
+
+To use the axioms in Python, follow the [quickstart](https://webis-de.github.io/ir_axioms/getting-started/quickstart/) and the [walkthroughs](https://webis-de.github.io/ir_axioms/walkthroughs/).
 
 ## Development
 
@@ -91,6 +105,8 @@ ir_axioms --help
    mypy .                         # Static typing
    pytest .                       # Unit tests
    ```
+
+More details, including how to build the documentation, are given in the [contribution guide](https://webis-de.github.io/ir_axioms/development/contributing/).
 
 ## Contribute
 
