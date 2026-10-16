@@ -10,7 +10,7 @@ hide:
 <p class="subtitle">Axiomatic constraints for information retrieval and retrieval-augmented generation</p>
 
 `ir_axioms` is a Python framework for experimenting with axioms in information retrieval in a declarative way.
-It includes reference implementations of many commonly used traditional retrieval axioms as well as axioms for retrieval-augmented generation (RAG).
+It includes reference implementations of many commonly used traditional retrieval axioms as well as axioms for retrieval-augmented generation (RAG) [@bondarenko2022axiomatic].
 
 [Get started](getting-started/index.md){ .md-button .md-button--primary }
 [Browse axioms](axioms/index.md){ .md-button }
@@ -53,7 +53,7 @@ axiom.rerank_kwiksort(input=query, ranking=documents)  # (3)!
 
     [:octicons-arrow-right-24: Retrieval axioms](axioms/retrieval.md)
 
-- :material-robot-outline: **RAG axioms**
+- :material-robot-outline: **RAG axioms**  [@merker2025axioms]
 
     ---
 
@@ -79,21 +79,4 @@ axiom.rerank_kwiksort(input=query, ranking=documents)  # (3)!
 
 </div>
 
-## Publications
-
-Read more about the `ir_axioms` framework and the new RAG axioms in these publications:
-
-- Alexander Bondarenko, Maik Fröbe, Jan Heinrich Reimer, Benno Stein, Michael Völske, and Matthias Hagen.
-  **[Axiomatic Retrieval Experimentation with `ir_axioms`](https://webis.de/publications.html?q=axiom#bondarenko_2022d).**
-  SIGIR 2022. [@bondarenko2022axiomatic]
-- Jan Heinrich Merker, Maik Fröbe, Benno Stein, Martin Potthast, and Matthias Hagen.
-  **[Axioms for Retrieval-Augmented Generation](https://webis.de/publications.html?q=axiom#merker_2025b).**
-  ICTIR 2025. [@merker2025axioms]
-
-If you use `ir_axioms` in your research, please cite the papers above.
-The BibTeX entries are listed in the [references](#references) below, and all references used in this documentation are available in [`references.bib`](references.bib).
-
-!!! note "Looking for `ir_axioms` < 1.0?"
-
-    The legacy version is still available on the [`legacy` branch](https://github.com/webis-de/ir_axioms/tree/legacy).
-    To upgrade your code, follow the [migration guide](getting-started/migration.md).
+When using `ir_axioms` in your research, consider citing our SIGIR 2022 paper about the framework [@bondarenko2022axiomatic] or our ICTIR 2025 paper about the RAG axioms [@merker2025axioms].
