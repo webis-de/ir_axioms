@@ -11,3 +11,8 @@ This section introduces the main building blocks of `ir_axioms`:
 5. [**Migrating from <1.0**](migration.md): Upgrade code written for the legacy version of `ir_axioms`.
 
 Afterwards, browse the [catalog of axioms](../axioms/index.md) or follow one of the [walkthroughs](../walkthroughs/index.md).
+
+!!! note "Looking for `ir_axioms` < 1.0?"
+
+    The legacy version is still available on the [`legacy` branch](https://github.com/webis-de/ir_axioms/tree/legacy).
+    To upgrade your code, follow the [migration guide](getting-started/migration.md).

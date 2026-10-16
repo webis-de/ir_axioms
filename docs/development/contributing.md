@@ -58,7 +58,7 @@ The sources are located in the [`docs/`](https://github.com/webis-de/ir_axioms/t
     mkdocs build --strict
     ```
 
-The documentation is deployed to [GitHub Pages](https://webis-de.github.io/ir_axioms/) automatically on every push to the `main` branch.
+The documentation is deployed to [GitHub Pages](https://ir_axioms.webis.de/) automatically on every release.
 
 ### Citations
 
