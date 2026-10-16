@@ -1,5 +1,7 @@
 # Core Concepts
 
+<!-- TODO: Marker that I have checked the documentation up to this point. -->
+
 <p class="subtitle">Axioms, preferences, combinations, and tools</p>
 
 ## Axioms and Preferences
