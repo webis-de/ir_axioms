@@ -29,10 +29,10 @@ All axioms can be imported from `ir_axioms.axiom`, either by their class name (e
 | [PROX3](retrieval.md#prox3) | Prefer documents where the query occurs earlier as a phrase. | Term proximity | [@hagen2016axiomatic] |
 | [PROX4](retrieval.md#prox4) | Prefer documents that contain all query terms in a shorter substring. | Term proximity | [@hagen2016axiomatic] |
 | [PROX5](retrieval.md#prox5) | Prefer documents where the query terms are closer together on average. | Term proximity | [@hagen2016axiomatic] |
-| [ArgUC](retrieval.md#arguc) | Prefer documents with more argumentative units. | Argumentativeness | [@bondarenko2018webis; @bondarenko2019webis] |
-| [QTArg](retrieval.md#qtarg) | Prefer documents with more query terms in argumentative units. | Argumentativeness | [@bondarenko2018webis; @bondarenko2019webis] |
-| [QTPArg](retrieval.md#qtparg) | Prefer documents with query terms earlier in argumentative units. | Argumentativeness | [@bondarenko2018webis; @bondarenko2019webis] |
-| [aSL](retrieval.md#asl) | Prefer documents with an average sentence length of 12–20 words. | Argumentativeness | [@bondarenko2018webis; @bondarenko2019webis] |
+| [ArgUC](retrieval.md#arguc) | Prefer more argumentative units. | Argumentativeness | [@bondarenko2018webis; @bondarenko2019webis] |
+| [QTArg](retrieval.md#qtarg) | Prefer more query terms in argumentative units. | Argumentativeness | [@bondarenko2018webis; @bondarenko2019webis] |
+| [QTPArg](retrieval.md#qtparg) | Prefer earlier query terms in argumentative units. | Argumentativeness | [@bondarenko2018webis; @bondarenko2019webis] |
+| [aSL](retrieval.md#asl) | Prefer passages with 12–20 words per sentence. | Argumentativeness | [@bondarenko2018webis; @bondarenko2019webis] |
 
 Not implemented, as they do not induce practically usable pairwise preferences: [TFC2](retrieval.md#tfc2), [TDC](retrieval.md#m-tdc), [LNC2](retrieval.md#lnc2), and [LB2](retrieval.md#lb2).
 
@@ -40,17 +40,17 @@ Not implemented, as they do not induce practically usable pairwise preferences: 
 
 | Axiom | Intuition | Dimension | Source |
 |:--|:--|:--|:--|
-| [COH1](generation.md#coh1) | Prefer less variance in average word length across sentences. | Coherence | [@merker2025axioms] |
-| [COH2](generation.md#coh2) | Prefer the response with subject–verb pairs closer together. | Coherence | [@merker2025axioms] |
-| [COV1](generation.md#cov1) | Prefer the response containing more extracted aspects. | Coverage | [@merker2025axioms] |
-| [COV2](generation.md#cov2) | Prefer the response with less redundant extracted aspects. | Coverage | [@merker2025axioms] |
-| [COV3](generation.md#cov3) | Prefer if more sentences cover aspects from the query. | Coverage | [@merker2025axioms] |
-| [CONS1](generation.md#cons1) | Prefer if more sentences cover aspects from the context. | Consistency | [@merker2025axioms] |
-| [CONS2](generation.md#cons2) | Prefer the response with higher textual overlap with the contexts. | Consistency | [@merker2025axioms] |
-| [CONS3](generation.md#cons3) | Penalize entities mentioned in contradictory phrases. | Consistency | [@merker2025axioms] |
-| [CORR1](generation.md#corr1) | Prefer the response with more sentences containing citations. | Correctness | [@merker2025axioms] |
-| [CLAR1](generation.md#clar1) | Prefer a lower text proportion covered by grammar errors. | Clarity | [@merker2025axioms] |
-| [CLAR2](generation.md#clar2) | Prefer the more readable response. | Clarity | [@merker2025axioms] |
+| [COH1](generation.md#coh1) | Prefer responses with less variance in avg. word length across sentences. | Coherence | [@merker2025axioms] |
+| [COH2](generation.md#coh2) | Prefer responses with subject–verb pairs closer together. | Coherence | [@merker2025axioms] |
+| [COV1](generation.md#cov1) | Prefer responses with more extracted aspects. | Coverage | [@merker2025axioms] |
+| [COV2](generation.md#cov2) | Prefer responses with less redundant extracted aspects. | Coverage | [@merker2025axioms] |
+| [COV3](generation.md#cov3) | Prefer responses with more sentences covering aspects from the query. | Coverage | [@merker2025axioms] |
+| [CONS1](generation.md#cons1) | Prefer responses with more sentences covering aspects from the context. | Consistency | [@merker2025axioms] |
+| [CONS2](generation.md#cons2) | Prefer responses with higher text overlap with contexts. | Consistency | [@merker2025axioms] |
+| [CONS3](generation.md#cons3) | Penalize aspects mentioned in contradictory phrases. | Consistency | [@merker2025axioms] |
+| [CORR1](generation.md#corr1) | Prefer responses with more sentences referencing sources. | Correctness | [@merker2025axioms] |
+| [CLAR1](generation.md#clar1) | Prefer responses with fewer grammar errors. | Clarity | [@merker2025axioms] |
+| [CLAR2](generation.md#clar2) | Prefer responses with better readability. | Clarity | [@merker2025axioms] |
 | [GEN_*](generation.md#adapted-retrieval-axioms) | Retrieval axioms applied to generated responses. | — | [@merker2025axioms] |
 
 ## Utility Axioms

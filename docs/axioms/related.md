@@ -170,12 +170,64 @@ In `ir_axioms`
 In `ir_axioms`
 :   Not implemented.
 
-### Further Retrieval Constraints :material-new-box:
+### Axiomatic Re-Ranking :material-new-box:
 
-<span class="axiom">Argumentativeness</span> — _"Prefer documents with more argumentative units, query terms in arguments, and readable sentences."_ [@bondarenko2018webis; @bondarenko2019webis]
+Besides PROX1–PROX5 and ORIG, Hagen et al. [@hagen2016axiomatic] proposed further axioms for re-ranking:
+
+<span class="axiom">QPHRA</span> — _"A document containing all the query phrases is favored over a document not containing all phrases."_ [@hagen2016axiomatic]
+
+In `ir_axioms`
+:   Not implemented (see also [PROX3](retrieval.md#prox3)).
+
+<span class="axiom">RSIM</span> — _"From any cluster of similar (near-duplicate) documents, favor only one document over all the others."_ [@hagen2016axiomatic]
+
+In `ir_axioms`
+:   Not implemented.
+
+<span class="axiom">P-RANK</span> — _"Prefer a document with higher PageRank."_ [@hagen2016axiomatic]
+
+In `ir_axioms`
+:   Not implemented.
+
+<span class="axiom">ORIG</span> — _"Give some voting power to the reasonable ideas underlying the basis retrieval model."_ [@hagen2016axiomatic]
+
+In `ir_axioms`
+:   [ORIG](utility.md#orig)
+
+### Argument Retrieval :material-new-box: { #argument-retrieval }
+
+<span class="axiom">ArgUC</span> — _"Prefer more argumentative units."_ [@bondarenko2018webis; @bondarenko2019webis]
+
+<span class="axiom">QTArg</span> — _"Prefer more query terms in argumentative units."_ [@bondarenko2018webis; @bondarenko2019webis]
+
+<span class="axiom">QTPArg</span> — _"Prefer earlier query terms in argumentative units."_ [@bondarenko2018webis; @bondarenko2019webis]
+
+<span class="axiom">aSLDoc</span> — _"Prefer passages with 12–20 words per sentence."_ [@bondarenko2018webis; @bondarenko2019webis]
 
 In `ir_axioms`
 :   [ArgUC, QTArg, QTPArg, aSL](retrieval.md#argumentativeness)
+
+<span class="axiom">CompArg</span> — _"Prefer more comparative objects in argumentative units."_ [@reimer2022grimjack]
+
+<span class="axiom">CompPArg</span> — _"Prefer earlier comparative objects in argumentative units."_ [@reimer2022grimjack]
+
+<span class="axiom">ArgQ</span> — _"Prefer higher argument quality."_ [@reimer2022grimjack]
+
+In `ir_axioms`
+:   Not implemented (proposed for comparative questions).
+
+<span class="axiom">QArgSim<sub>avg</sub></span> — _"Prefer the document whose argumentative units on average are more similar to the query."_ [@heinrich2025axiomatic]
+
+<span class="axiom">QArgSim<sub>max</sub></span> — _"Prefer the document whose most similar argumentative unit is more similar to the query."_ [@heinrich2025axiomatic]
+
+<span class="axiom">QSenSim<sub>avg</sub></span> — _"Prefer the document whose sentences on average are more similar to the query."_ [@heinrich2025axiomatic]
+
+<span class="axiom">QSenSim<sub>max</sub></span> — _"Prefer the document whose most similar sentence is more similar to the query."_ [@heinrich2025axiomatic]
+
+In `ir_axioms`
+:   Not implemented. These refine [STMC1](retrieval.md#stmc1) from terms to argumentative units and sentences, each in an exact and a relaxed (10 % margin) variant.
+
+### Generated Responses :material-new-box:
 
 <span class="axiom">Long-form QA</span> — _Axioms for preference modeling of long-form answers, e.g., usefulness, groundedness, and thoroughness._ [@rosset2023axiomatic]
 
@@ -192,7 +244,7 @@ In `ir_axioms`
 Retrieval axioms have also been used to analyze, regularize, and explain neural ranking models:
 
 Diagnosis
-:   Diagnostic datasets derived from axioms reveal which constraints neural models satisfy [@rennings2019axiomatic; @camara2020diagnosing; @macavaney2022abnirml].
+:   Diagnostic datasets derived from axioms reveal which constraints neural models satisfy [@rennings2019axiomatic; @camara2020diagnosing; @macavaney2022abnirml], also with relaxed term matching [@parry2026relaxed].
 
 Regularization
 :   Axioms serve as an additional loss when training neural models [@rosset2019axiomatic].
@@ -278,6 +330,18 @@ These constraints characterize similarity functions and are also not applicable 
 <span class="axiom">Dependency</span> — _"Adding new features to both objects increases their similarity whenever their respective conditional probabilities grow."_ [@amigo2017account; @amigo2020foundations]
 
 <span class="axiom">Asymmetry</span> — _"An object is more similar to any of its parts than vice versa."_ [@amigo2017account; @amigo2020foundations]
+
+## Axioms Beyond Retrieval :material-new-box:
+
+### Framing
+
+A first axiomatization of frames in communication [@allein2022towards]:
+
+<span class="axiom">Axiom 1</span> — _"Frames exist."_
+
+<span class="axiom">Axiom 2</span> — _"Exposure to frames has measurable effects."_
+
+<span class="axiom">Axiom 3</span> — _"A frame can be defined by what belongs to the frame, or by what does not belong to the frame (frame dualism)."_
 
 ## Further Reading
 

@@ -18,7 +18,7 @@ Contributions are very welcome: pick an item, open an [issue](https://github.com
     Then add a unit test that checks that each `PreconditionMixin` subclass respects its precondition.
     Note that fixing this changes the preferences of these axioms (and thus results computed with them).
 
-!!! bug "[`RandomAxiom`][ir_axioms.axiom.simple.RandomAxiom] never prefers the first output"
+!!! bug "`RandomAxiom` never prefers the first output"
 
     `RandomAxiom` draws preferences with `integers(-1, 1)`, whose upper bound is exclusive, so it only ever returns −1 or 0.
     **Fix:** Use `integers(-1, 2)`, and make the preference matrix antisymmetric (mirror the upper triangle).
@@ -29,7 +29,13 @@ Contributions are very welcome: pick an item, open an [issue](https://github.com
     Hence, all wrongly ranked pairs are returned.
     **Fix:** Only consider the user-given axioms (and maybe ORIG) in the filter.
 
-!!! bug "Outdated docstring of [`Axiom`][ir_axioms.axiom.base.Axiom]"
+!!! bug "CLAR2 prefers less readable responses"
+
+    [CLAR2](../axioms/generation.md#clar2) should prefer the more readable response, but both its formalization in the ICTIR 2025 paper (Eq. 11) and the implementation prefer the response with the _lower_ Flesch reading ease score, and lower scores indicate _harder_ text.
+    **Fix:** Use `strictly_greater` in `FleschReadingEaseClarityAxiom`.
+    Note that this changes the axiom's preferences compared to the published experiments.
+
+!!! bug "Outdated docstring of `Axiom`"
 
     The docstring of `Axiom` mentions a `~` operator (formerly used for caching), which no longer exists, and a `rerank()` method, which is now called `rerank_kwiksort()`.
 
@@ -78,6 +84,7 @@ For the SIGIR 2022 reproducibility notebooks, it might be better to pin them to 
 - **Missing retrieval axioms:** Find practical pairwise reformulations of [TFC2, LNC2, LB2](../axioms/retrieval.md#tfc2), the original TDC, and [STMC3](../axioms/related.md#semantic-term-matching).
 - **Further constraints from the literature:** E.g., term semantic similarity constraints (TSSC1/2), proximity constraints of Tao and Zhai, or constraints for pseudo-relevance feedback (see [related axioms](../axioms/related.md)).
 - **More RAG axioms:** See the [list of missing axioms and ideas](../axioms/generation.md#missing-axioms-and-axiom-ideas), e.g., factual grounding, discourse-based clarity, or multi-modal outputs.
+- **More axioms from our own papers:** QPHRA, RSIM, and P-RANK [from axiomatic re-ranking](../axioms/related.md#axiomatic-re-ranking), CompArg, CompPArg, and ArgQ for comparative questions, and the embedding-based QArgSim and QSenSim axioms for [argument retrieval](../axioms/related.md#argument-retrieval).
 - **Generative variants for index-based axioms:** TFC3, M-TDC, and LB1 have no `GEN_*` counterpart, as they need collection statistics or retrieval scores. These could be derived, e.g., from the retrieved context.
 - **LLM-based axioms:** Axioms that ask an LLM for a pairwise preference on a specific, narrow criterion, with caching by default.
 

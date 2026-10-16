@@ -6,7 +6,8 @@ RAG axioms compare two generated responses \(r_1\), \(r_2\) for the same request
 They were introduced in our ICTIR 2025 paper [@merker2025axioms] and address the five utility dimensions of generated responses proposed by Gienapp et al. [@gienapp2024evaluating]: [coherence](#coherence), [coverage](#coverage), [consistency](#consistency), [correctness](#correctness), and [clarity](#clarity).
 Below, each axiom is listed with its intuition, followed by how it is implemented in `ir_axioms`.
 
-All RAG axioms accept a `margin_fraction` parameter: if the compared values of both responses are within this relative margin, the axiom expresses no preference.
+The formalizations follow the paper, where, e.g., \(>_{10\%}\) means that only a difference of more than 10 % counts as "larger".
+In the implementation, this margin is the `margin_fraction` parameter of each axiom: if the compared values of both responses are within this relative margin, the axiom expresses no preference.
 The aspect-based axioms use the configured [`AspectExtraction` tool](../getting-started/concepts.md#tools-and-dependency-injection), which extracts spaCy noun chunks by default.
 In our ICTIR 2025 experiments, we used spaCy entities instead:
 
@@ -27,7 +28,10 @@ _Stylistic coherence:_ Does the response have a uniform style of speech?
 
 ### COH1 { #coh1 }
 
-<span class="axiom">COH1</span> [`WordLengthDeviationCoherenceAxiom`][ir_axioms.axiom.generation.coherence.WordLengthDeviationCoherenceAxiom] — _"Prefer less variance in average word length across sentences."_ [@merker2025axioms]
+<span class="axiom">COH1</span> [`WordLengthDeviationCoherenceAxiom`][ir_axioms.axiom.generation.coherence.WordLengthDeviationCoherenceAxiom] — _"Prefer responses with less variance in avg. word length across sentences."_ [@merker2025axioms]
+
+Formalization
+:   \(\sigma(\mathrm{SWAWL}_{r_1}) < \sigma(\mathrm{SWAWL}_{r_2}) \Rightarrow r_1 >_\text{COH1} r_2\), where \(\mathrm{SWAWL}_r\) is the set of the average word lengths of the sentences in \(r\).
 
 Implementation
 :   Computes the average word length of each sentence and prefers the response with the lower standard deviation of these averages, as a proxy for a uniform style.
@@ -40,7 +44,10 @@ Tools
 
 ### COH2 { #coh2 }
 
-<span class="axiom">COH2</span> [`SubjectVerbClosenessCoherenceAxiom`][ir_axioms.axiom.generation.coherence.SubjectVerbClosenessCoherenceAxiom] — _"Prefer the response with subject–verb pairs closer together."_ [@merker2025axioms]
+<span class="axiom">COH2</span> [`SubjectVerbClosenessCoherenceAxiom`][ir_axioms.axiom.generation.coherence.SubjectVerbClosenessCoherenceAxiom] — _"Prefer responses with subject–verb pairs closer together."_ [@merker2025axioms]
+
+Formalization
+:   \(\text{avg-SV-dist}(r_1) <_{10\%} \text{avg-SV-dist}(r_2) \Rightarrow r_1 >_\text{COH2} r_2\), where \(\text{avg-SV-dist}(r) = \frac{1}{|\mathrm{SVO}_r|} \sum_{(\mathit{sub}, \mathit{ver}, \mathit{obj}) \in \mathrm{SVO}_r} |\mathrm{pos}(\mathit{sub}) - \mathrm{pos}(\mathit{ver})|\) for the subject–verb–object triples \(\mathrm{SVO}_r\) in \(r\).
 
 Implementation
 :   Extracts subject–verb–object triples with spaCy and prefers the response with the lower average (maximum) distance between subjects and their verbs, as a proxy for easy-to-follow sentence structures.
@@ -55,7 +62,10 @@ _Deep coverage:_ Does the response provide in-depth and highly informative conte
 
 ### COV1 { #cov1 }
 
-<span class="axiom">COV1</span> [`AspectCountCoverageAxiom`][ir_axioms.axiom.generation.coverage.AspectCountCoverageAxiom] — _"Prefer the response containing more extracted aspects."_ [@merker2025axioms]
+<span class="axiom">COV1</span> [`AspectCountCoverageAxiom`][ir_axioms.axiom.generation.coverage.AspectCountCoverageAxiom] — _"Prefer responses with more extracted aspects."_ [@merker2025axioms]
+
+Formalization
+:   \(|\mathrm{ASP}_{r_1}| > |\mathrm{ASP}_{r_2}| \Rightarrow r_1 >_\text{COV1} r_2\), where \(\mathrm{ASP}_r\) is the set of aspects extracted from \(r\).
 
 Implementation
 :   Extracts the aspects of each response and prefers the response with more distinct aspects.
@@ -68,7 +78,10 @@ Tools
 
 ### COV2 { #cov2 }
 
-<span class="axiom">COV2</span> [`AspectRedundancyCoverageAxiom`][ir_axioms.axiom.generation.coverage.AspectRedundancyCoverageAxiom] — _"Prefer the response with less redundant extracted aspects."_ [@merker2025axioms]
+<span class="axiom">COV2</span> [`AspectRedundancyCoverageAxiom`][ir_axioms.axiom.generation.coverage.AspectRedundancyCoverageAxiom] — _"Prefer responses with less redundant extracted aspects."_ [@merker2025axioms]
+
+Formalization
+:   \(\text{avg-ASP-sim}(r_1) <_{20\%} \text{avg-ASP-sim}(r_2) \Rightarrow r_1 >_\text{COV2} r_2\), where \(\text{avg-ASP-sim}(r) = \frac{1}{|\mathrm{ASP}_r|^2} \sum_{a, a' \in \mathrm{ASP}_r} \mathrm{sim}(a, a')\).
 
 Implementation
 :   Extracts the aspects of each response and prefers the response with the lower mean pairwise similarity between its aspects.
@@ -81,7 +94,10 @@ Tools
 
 ### COV3 { #cov3 }
 
-<span class="axiom">COV3</span> [`AspectSimilaritySentenceCountCoverageAxiom`][ir_axioms.axiom.generation.coverage.AspectSimilaritySentenceCountCoverageAxiom] — _"Prefer if more sentences cover aspects from the query."_ [@merker2025axioms]
+<span class="axiom">COV3</span> [`AspectSimilaritySentenceCountCoverageAxiom`][ir_axioms.axiom.generation.coverage.AspectSimilaritySentenceCountCoverageAxiom] — _"Prefer responses with more sentences covering aspects from the query."_ [@merker2025axioms]
+
+Formalization
+:   \(\text{avg-ASP}_q\text{-cov}(r_1) >_{50\%} \text{avg-ASP}_q\text{-cov}(r_2) \Rightarrow r_1 >_\text{COV3} r_2\), where \(\text{avg-ASP}_q\text{-cov}(r) = \frac{1}{|\mathrm{ASP}_q|} \sum_{a \in \mathrm{ASP}_q} \sum_{s \in r} \mathrm{sim}(a, s)\) for the sentences \(s\) of \(r\).
 
 Implementation
 :   Extracts the aspects of the request text and counts the response's sentences covering them, weighting each sentence by its mean similarity to the aspects.
@@ -100,7 +116,10 @@ _Internal consistency:_ Does the response not contradict itself?
 
 ### CONS1 { #cons1 }
 
-<span class="axiom">CONS1</span> [`AspectSimilaritySentenceCountConsistencyAxiom`][ir_axioms.axiom.generation.consistency.AspectSimilaritySentenceCountConsistencyAxiom] — _"Prefer if more sentences cover aspects from the context."_ [@merker2025axioms]
+<span class="axiom">CONS1</span> [`AspectSimilaritySentenceCountConsistencyAxiom`][ir_axioms.axiom.generation.consistency.AspectSimilaritySentenceCountConsistencyAxiom] — _"Prefer responses with more sentences covering aspects from the context."_ [@merker2025axioms]
+
+Formalization
+:   \(\text{avg-ASP}_C\text{-cov}(r_1) >_{50\%} \text{avg-ASP}_C\text{-cov}(r_2) \Rightarrow r_1 >_\text{CONS1} r_2\), where \(\text{avg-ASP}_C\text{-cov}(r) = \frac{1}{|\mathrm{ASP}_C|} \sum_{a \in \mathrm{ASP}_C} \sum_{s \in r} \mathrm{sim}(a, s)\) for the aspects \(\mathrm{ASP}_C\) of the context documents \(C\).
 
 Implementation
 :   Like [COV3](#cov3), but extracts the aspects from the retrieved context \(C\) instead of the request text.
@@ -114,7 +133,10 @@ Tools
 
 ### CONS2 { #cons2 }
 
-<span class="axiom">CONS2</span> [`RougeConsistencyAxiom`][ir_axioms.axiom.generation.consistency.RougeConsistencyAxiom] — _"Prefer the response with higher textual overlap with the contexts."_ [@merker2025axioms]
+<span class="axiom">CONS2</span> [`RougeConsistencyAxiom`][ir_axioms.axiom.generation.consistency.RougeConsistencyAxiom] — _"Prefer responses with higher text overlap with contexts."_ [@merker2025axioms]
+
+Formalization
+:   \(\text{ROUGE-L}(r_1, c') >_{10\%} \text{ROUGE-L}(r_2, c') \Rightarrow r_1 >_\text{CONS2} r_2\), where \(c'\) is the concatenated text of the context documents \(C\).
 
 Implementation
 :   Prefers the response with the higher ROUGE-Lsum F-measure [@lin2004rouge] against the concatenated retrieved context.
@@ -125,7 +147,10 @@ Parameters
 
 ### CONS3 { #cons3 }
 
-<span class="axiom">CONS3</span> [`EntityContradictionConsistencyAxiom`][ir_axioms.axiom.generation.consistency.EntityContradictionConsistencyAxiom] — _"Penalize entities mentioned in contradictory phrases."_ [@merker2025axioms]
+<span class="axiom">CONS3</span> [`EntityContradictionConsistencyAxiom`][ir_axioms.axiom.generation.consistency.EntityContradictionConsistencyAxiom] — _"Penalize aspects mentioned in contradictory phrases."_ [@merker2025axioms]
+
+Formalization
+:   \(\frac{|\mathrm{ASP}^E_{r_1}|}{|\mathrm{ASP}_{r_1}|} <_{20\%} \frac{|\mathrm{ASP}^E_{r_2}|}{|\mathrm{ASP}_{r_2}|} \Rightarrow r_1 >_\text{CONS3} r_2\), where \(\mathrm{ASP}^E_r\) are the aspects of \(r\) that appear in both negated and non-negated passages of \(r\).
 
 Implementation
 :   Detects named entities and their negation (with [negspaCy](https://github.com/jenojp/negspacy)), counts entities that occur both negated and non-negated, and prefers the response with the lower proportion of such contradictory entities.
@@ -140,7 +165,10 @@ _Topical correctness:_ Does the response state things within the scope of the us
 
 ### CORR1 { #corr1 }
 
-<span class="axiom">CORR1</span> [`CitationSentenceCorrectnessAxiom`][ir_axioms.axiom.generation.correctness.CitationSentenceCorrectnessAxiom] — _"Prefer the response with more sentences containing citations."_ [@merker2025axioms]
+<span class="axiom">CORR1</span> [`CitationSentenceCorrectnessAxiom`][ir_axioms.axiom.generation.correctness.CitationSentenceCorrectnessAxiom] — _"Prefer responses with more sentences referencing sources."_ [@merker2025axioms]
+
+Formalization
+:   \(\frac{|S^\text{ref}_{r_1}|}{|S_{r_1}|} >_{10\%} \frac{|S^\text{ref}_{r_2}|}{|S_{r_2}|} \Rightarrow r_1 >_\text{CORR1} r_2\), where \(S_r\) are the sentences of \(r\) and \(S^\text{ref}_r \subseteq S_r\) those containing a reference.
 
 Implementation
 :   Prefers the response with the higher proportion of sentences that contain a citation of the form `[1]`.
@@ -158,7 +186,10 @@ _Content clarity:_ Does the response clearly communicate the most salient inform
 
 ### CLAR1 { #clar1 }
 
-<span class="axiom">CLAR1</span> [`LanguageToolGrammarErrorProportionClarityAxiom`][ir_axioms.axiom.generation.clarity.LanguageToolGrammarErrorProportionClarityAxiom] — _"Prefer a lower text proportion covered by grammar errors."_ [@merker2025axioms]
+<span class="axiom">CLAR1</span> [`LanguageToolGrammarErrorProportionClarityAxiom`][ir_axioms.axiom.generation.clarity.LanguageToolGrammarErrorProportionClarityAxiom] — _"Prefer responses with fewer grammar errors."_ [@merker2025axioms]
+
+Formalization
+:   \(\frac{\mathrm{length}(\mathrm{ERR}_{r_1})}{\mathrm{length}(r_1)} <_{10\%} \frac{\mathrm{length}(\mathrm{ERR}_{r_2})}{\mathrm{length}(r_2)} \Rightarrow r_1 >_\text{CLAR1} r_2\), where \(\mathrm{ERR}_r\) are the spans of grammatical errors in \(r\).
 
 Implementation
 :   Checks the response with [LanguageTool](https://languagetool.org/) (grammar rules only) and prefers the response with the lower proportion of characters covered by errors.
@@ -168,7 +199,10 @@ Parameters
 
 ### CLAR2 { #clar2 }
 
-<span class="axiom">CLAR2</span> [`FleschReadingEaseClarityAxiom`][ir_axioms.axiom.generation.clarity.FleschReadingEaseClarityAxiom] — _"Prefer the more readable response."_ [@merker2025axioms]
+<span class="axiom">CLAR2</span> [`FleschReadingEaseClarityAxiom`][ir_axioms.axiom.generation.clarity.FleschReadingEaseClarityAxiom] — _"Prefer responses with better readability."_ [@merker2025axioms]
+
+Formalization
+:   \(\text{Flesch}(r_1) < \text{Flesch}(r_2) \Rightarrow r_1 >_\text{CLAR2} r_2\) (Eq. 11 in the paper).
 
 Implementation
 :   Compares the Flesch reading ease scores [@flesch1948new] of the responses.
@@ -178,7 +212,8 @@ Parameters
 
 !!! bug "Known issue"
 
-    The current implementation prefers the response with the _lower_ Flesch reading ease, i.e., the less readable response (see the [roadmap](../development/roadmap.md#known-bugs)).
+    Both the formalization in the paper (Eq. 11) and the implementation prefer the response with the _lower_ Flesch reading ease score.
+    As higher Flesch scores indicate _easier_ text, this prefers the less readable response, contradicting the intuition (see the [roadmap](../development/roadmap.md#known-bugs)).
 
 ## Adapted Retrieval Axioms
 
