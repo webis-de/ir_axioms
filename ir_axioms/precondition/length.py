@@ -1,7 +1,8 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from itertools import product
 from math import isclose
-from typing import Final, Sequence, TypeVar
+from typing import Final, TypeVar
 
 from injector import inject, NoInject
 from numpy import array, bool_

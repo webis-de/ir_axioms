@@ -1,13 +1,13 @@
+from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from dbm import open as dbm_open
 from hashlib import blake2b
 from pathlib import Path
 from struct import pack, unpack
-from typing import Iterable, Iterator, Protocol, Sequence, Tuple, TypeVar
+from typing import Protocol, TypeVar, TypeAlias
 from warnings import warn
 
 from numpy import array, float_, ndarray, isnan, nan
-from typing_extensions import TypeAlias  # type: ignore
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.model import Preference, PreferenceMatrix

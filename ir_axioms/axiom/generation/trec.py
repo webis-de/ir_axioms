@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Literal
 
 from pandas import DataFrame, read_json, concat, Series
-from typing_extensions import TypeAlias  # type: ignore
+from typing import TypeAlias
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.model import GenerationRequest, GenerationResponse

@@ -1,6 +1,6 @@
 from abc import ABC
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 from numpy import where, zeros_like
 

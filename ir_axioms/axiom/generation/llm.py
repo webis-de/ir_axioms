@@ -1,8 +1,8 @@
+from collections.abc import Mapping
 from dataclasses import dataclass
 from functools import cached_property
 from math import isclose, nan, isnan
 from pathlib import Path
-from typing import Mapping
 
 from injector import NoInject
 from pandas import read_json

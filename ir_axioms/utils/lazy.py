@@ -1,5 +1,6 @@
 from dataclasses import replace
-from typing import Callable, Type, TypeVar, cast
+from typing import TypeVar, cast
+from collections.abc import Callable
 
 from injector import Injector
 

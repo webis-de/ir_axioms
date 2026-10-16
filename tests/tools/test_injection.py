@@ -1,5 +1,6 @@
+from collections.abc import Iterable
 from inspect import isfunction
-from typing import Any, Union, get_origin, Iterable
+from typing import Any, Union, get_origin
 
 from injector import Binder, Injector
 from pytest import fixture, mark

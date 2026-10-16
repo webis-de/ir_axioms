@@ -1,9 +1,8 @@
+from collections.abc import Iterator, Iterable
 from typing import (
     Protocol,
     runtime_checkable,
     AbstractSet,
-    Iterator,
-    Iterable,
 )
 
 

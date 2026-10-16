@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Generic, Optional, Sequence
+from typing import Generic
 
 from joblib import Parallel, delayed
 from numpy import array

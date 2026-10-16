@@ -36,7 +36,7 @@ if is_pyterrier_installed() or TYPE_CHECKING:
         def _document_frequencies(self) -> dict[str, int]:
             return {}
 
-        def document_frequency(self, term: str) -> int:  # type: ignore
+        def document_frequency(self, term: str) -> int:
             if term not in self._document_frequencies:
                 entry = self._lexicon.getLexiconEntry(term)
                 if entry is None or entry.getNumberOfEntries() == 0:

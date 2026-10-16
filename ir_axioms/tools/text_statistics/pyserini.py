@@ -3,10 +3,11 @@ from typing import TYPE_CHECKING
 from ir_axioms.utils.libraries import is_pyserini_installed
 
 if is_pyserini_installed() or TYPE_CHECKING:
+    from collections.abc import Mapping
     from dataclasses import dataclass, field
     from functools import cached_property
     from pathlib import Path
-    from typing import Union, Mapping, TypeVar
+    from typing import TypeVar
 
     from ir_axioms.model import Document
     from ir_axioms.tools.text_statistics.base import TextStatistics

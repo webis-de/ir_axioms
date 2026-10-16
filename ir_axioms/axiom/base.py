@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Generic, Literal, Sequence, Optional, final
+from typing import Generic, Literal, final
 
 from numpy import float_, array, stack, empty
 from tqdm.auto import tqdm

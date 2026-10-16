@@ -32,7 +32,7 @@ if is_pyserini_installed() or TYPE_CHECKING:
         def _document_frequencies(self) -> dict[str, int]:
             return {}
 
-        def document_frequency(self, term: str) -> int:  # type: ignore
+        def document_frequency(self, term: str) -> int:
             if term not in self._document_frequencies:
                 document_frequency, _ = self._index_reader.get_term_counts(
                     term=term,

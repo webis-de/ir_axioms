@@ -1,8 +1,9 @@
+from collections.abc import Iterator, Iterable
 from dataclasses import dataclass
 from functools import cached_property
 from math import inf
 from statistics import StatisticsError
-from typing import AbstractSet, Iterator, Iterable
+from typing import AbstractSet
 from warnings import warn
 
 from spacy import load as spacy_load

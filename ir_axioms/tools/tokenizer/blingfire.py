@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING
 from ir_axioms.utils.libraries import is_blingfire_installed
 
 if is_blingfire_installed() or TYPE_CHECKING:
+    from collections.abc import Sequence
     from dataclasses import dataclass
-    from typing import Sequence
 
     from blingfire import text_to_words, text_to_sentences
 

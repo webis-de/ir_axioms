@@ -1,4 +1,5 @@
-from typing import Protocol, Mapping, TypeVar, Generic, runtime_checkable
+from collections.abc import Mapping
+from typing import Protocol, TypeVar, Generic, runtime_checkable
 
 
 T = TypeVar("T", contravariant=True)

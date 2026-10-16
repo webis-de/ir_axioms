@@ -1,8 +1,9 @@
+from collections.abc import Mapping
 from dataclasses import dataclass
 from functools import cached_property
 from math import isclose, nan
 from pathlib import Path
-from typing import TypeAlias, Literal, Mapping
+from typing import TypeAlias, Literal
 
 from pandas import read_json
 

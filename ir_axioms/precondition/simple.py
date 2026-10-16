@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Final, Sequence, TypeVar
+from typing import Final, TypeVar
 
 from injector import inject
 from numpy import bool_, full

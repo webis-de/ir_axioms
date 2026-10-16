@@ -1,5 +1,6 @@
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Mapping, Union
+from typing import Union
 
 from injector import inject
 

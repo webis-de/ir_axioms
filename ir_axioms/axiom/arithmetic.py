@@ -1,8 +1,9 @@
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from functools import reduce
 from math import isclose, ceil
 from operator import mul
-from typing import Iterable, Sequence, Any
+from typing import Any
 
 from numpy import full, stack, zeros, fill_diagonal
 from tqdm.auto import tqdm

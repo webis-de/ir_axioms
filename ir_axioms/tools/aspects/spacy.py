@@ -1,6 +1,7 @@
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Literal, AbstractSet, Iterable, Iterator
+from typing import Literal, AbstractSet
 
 from spacy import load as spacy_load
 from spacy.language import Language

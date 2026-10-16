@@ -1,4 +1,4 @@
-from typing import Callable
+from collections.abc import Callable
 from pytest import fixture, FixtureRequest
 
 from ir_axioms.axiom import (

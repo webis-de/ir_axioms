@@ -1,7 +1,7 @@
-from collections.abc import Collection, Set, Mapping
+from collections.abc import Collection, Set, Mapping, Sequence
 from dataclasses import dataclass
 from math import isclose, nan
-from typing import Final, Union, Sequence
+from typing import Final
 
 from injector import inject, NoInject
 from numpy import array, float_

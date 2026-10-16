@@ -1,10 +1,11 @@
 from bisect import bisect_left
-from collections import Counter as counter, defaultdict
+from collections import Counter, defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass
 from itertools import combinations
 from math import inf
 from statistics import mean
-from typing import Counter, Final, AbstractSet, Sequence, Union
+from typing import Final, AbstractSet
 
 from injector import inject
 from numpy import array, float_
@@ -139,7 +140,7 @@ def _closest_grouping_size_and_count(
         for index_group in index_groups
     ]
 
-    occurrences_counter: Counter = counter(non_query_term_occurrences)
+    occurrences_counter: Counter = Counter(non_query_term_occurrences)
     if len(occurrences_counter.keys()) == 0:
         return 0, 0
     min_occurrences = min(occurrences_counter.keys())

@@ -7,11 +7,11 @@ For a definition of this utility dimension, see: https://doi.org/10.1145/3626772
 - Content clarity: Does the response clearly communicate the most salient information and where it stems from?
 """
 
+from collections.abc import Sequence, Iterable
 from dataclasses import dataclass
 from functools import cached_property
 from math import isclose, nan
-from typing import Final, Sequence, Any, Literal, Iterable
-from typing_extensions import TypeAlias  # type: ignore
+from typing import Final, Any, Literal, TypeAlias
 
 from injector import inject, NoInject
 from language_tool_python import LanguageTool

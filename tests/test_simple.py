@@ -1,5 +1,5 @@
+from collections.abc import Sequence
 from itertools import permutations, product
-from typing import Sequence
 
 from numpy import array
 from numpy.testing import assert_array_equal

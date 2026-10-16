@@ -15,10 +15,11 @@ within the scope of the user's information need?
 # Topical correctness:
 # - [ ] Topical relevance/alignment (-> use retrieval axioms?)
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from math import isclose
 from re import compile as re_compile
-from typing import Final, Sequence, Any
+from typing import Final, Any
 
 from injector import inject, NoInject
 from numpy import array, float_

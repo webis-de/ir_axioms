@@ -1,7 +1,8 @@
+from collections.abc import Sequence
 from functools import cached_property
 from dataclasses import dataclass
 from random import Random
-from typing import Optional, Sequence, Union, TypeVar
+from typing import TypeVar
 
 from ir_axioms.tools.pivot.base import PivotSelection
 

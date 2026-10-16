@@ -1,4 +1,5 @@
-from typing import Generic, Sequence, Protocol, runtime_checkable, TypeVar
+from collections.abc import Sequence
+from typing import Generic, Protocol, runtime_checkable, TypeVar
 
 Input = TypeVar("Input", contravariant=True)
 Output = TypeVar("Output")

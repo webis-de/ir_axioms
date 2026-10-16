@@ -7,11 +7,12 @@ For a definition of this utility dimension, see: https://doi.org/10.1145/3626772
 - Internal consistency: Does the statement not contradict itself?
 """
 
+from collections.abc import Sequence, Iterable
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
 from math import isclose, nan
-from typing import Final, Union, Sequence, Any, Iterable
+from typing import Final, Any
 
 from injector import inject, NoInject
 from negspacy.negation import Negex  # noqa: F401  # Ignore the unused import warning, since the import is needed to add it as a spaCy pipeline.
@@ -233,7 +234,6 @@ class RougeConsistencyAxiom(Axiom[GenerationRequest, GenerationResponse]):
             )
         )
         rouge_l_sums = [rouge["rougeLsum"].fmeasure for rouge in rouges]
-
 
         return array(
             [

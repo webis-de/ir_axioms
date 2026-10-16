@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING
 from ir_axioms.utils.libraries import is_sentence_transformers_installed
 
 if is_sentence_transformers_installed() or TYPE_CHECKING:
+    from collections.abc import Sequence
     from dataclasses import dataclass
     from functools import cached_property
     from math import nan
-    from typing import Sequence
 
     from numpy import array, float_, ndarray, dot
     from numpy.linalg import norm

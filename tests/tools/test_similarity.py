@@ -1,5 +1,5 @@
+from collections.abc import Sequence
 from math import inf
-from typing import Sequence
 
 from numpy import array
 from pytest import approx

@@ -7,11 +7,12 @@ For a definition of this utility dimension, see: https://doi.org/10.1145/3626772
 - Stylistic coherence: Does the response have a uniform style of speech?
 """
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from functools import cached_property
 from math import isclose, nan
 from statistics import mean
-from typing import Final, Sequence, Any
+from typing import Final, Any
 
 from injector import inject, NoInject
 from numpy import array, float_

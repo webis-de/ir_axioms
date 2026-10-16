@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence, Literal, Mapping, TYPE_CHECKING
-from typing_extensions import TypeAlias  # type: ignore
+from typing import Sequence, Literal, Mapping, TYPE_CHECKING, TypeAlias
 from uuid import UUID, uuid5, NAMESPACE_URL
 
 from cached_property import cached_property

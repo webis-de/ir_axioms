@@ -1,6 +1,6 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Sequence
 
 from nltk import word_tokenize, WordNetLemmatizer, sent_tokenize
 

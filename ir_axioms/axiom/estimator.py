@@ -1,11 +1,11 @@
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
-from typing import Sequence, Iterable
+from collections.abc import Sequence, Iterable
 
 from numpy import ndarray, stack, concatenate, array, expand_dims
 from sklearn.utils._response import is_classifier
 from tqdm.auto import tqdm
-from typing_extensions import Protocol, Self  # type: ignore
+from typing import Protocol, Self
 
 from ir_axioms.axiom.base import Axiom
 from ir_axioms.model import Input, Output, Preference, PreferenceMatrix

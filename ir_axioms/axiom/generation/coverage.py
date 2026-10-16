@@ -7,9 +7,10 @@ For a definition of this utility dimension, see: https://doi.org/10.1145/3626772
 - Deep coverage: Does the response provide in-depth and highly informative content?
 """
 
+from collections.abc import Sequence, Iterable
 from dataclasses import dataclass
 from math import isclose
-from typing import Final, Union, Sequence, Any, Iterable
+from typing import Final, Any
 
 from injector import inject, NoInject
 from numpy import array, float_, zeros

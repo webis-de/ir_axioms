@@ -1,7 +1,8 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Sequence, Any
+from typing import Any
 
 from numpy import full
 from numpy.testing import assert_array_equal

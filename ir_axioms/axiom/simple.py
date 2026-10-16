@@ -1,6 +1,7 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Optional, Sequence, TypeVar, Protocol, Final
+from typing import Any, TypeVar, Protocol, Final
 
 from numpy import array, float_, floating, subtract, zeros
 from numpy.random import Generator, default_rng

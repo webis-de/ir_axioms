@@ -1,4 +1,5 @@
-from typing import Union, TypeVar, Protocol, Sized
+from collections.abc import Sized
+from typing import TypeVar, Protocol
 
 
 _T_contra = TypeVar("_T_contra", contravariant=True)

@@ -1,9 +1,10 @@
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from functools import cached_property
 from math import nan
 from pathlib import Path
 from statistics import mean
-from typing import Any, Final, Iterable, Sequence
+from typing import Any, Final
 
 from injector import inject, NoInject
 from numpy import array, float_

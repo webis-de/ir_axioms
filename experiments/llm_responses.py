@@ -2,8 +2,7 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence, Literal, Mapping, TYPE_CHECKING
-from typing_extensions import TypeAlias  # type: ignore
+from typing import Sequence, Literal, Mapping, TYPE_CHECKING, TypeAlias
 from uuid import UUID, uuid5, NAMESPACE_URL
 
 from cached_property import cached_property
@@ -13,7 +12,8 @@ from dotenv import load_dotenv, find_dotenv
 from pandas import DataFrame, Series, concat
 from ray import init
 from ray.data import read_json
-from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers.models import GenerationConfig
 from transformers.modeling_utils import PreTrainedModel
 from transformers.tokenization_utils import PreTrainedTokenizer
 from torch import manual_seed
@@ -189,7 +189,9 @@ def generate_llm_responses(
     num_return_sequences: int = 5,
     max_new_tokens: int = 1000,
     references_top_k: int = 5,
-    input_path: ResolvedExistingFile = Path("/mnt/ceph/storage/data-in-progress/data-research/web-search/ir_axioms/crowd/study1_retrieval.jsonl.gz"),
+    input_path: ResolvedExistingFile = Path(
+        "/mnt/ceph/storage/data-in-progress/data-research/web-search/ir_axioms/crowd/study1_retrieval.jsonl.gz"
+    ),
     output_path: ResolvedDirectory = Path(
         "/mnt/ceph/storage/data-in-progress/data-research/web-search/ir_axioms/llm-responses"
     ),

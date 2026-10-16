@@ -1,9 +1,10 @@
 from ir_axioms.utils.libraries import is_keybert_installed
 
 if is_keybert_installed():
+    from collections.abc import Iterator, Iterable
     from dataclasses import dataclass
     from functools import cached_property
-    from typing import AbstractSet, Iterator, Iterable
+    from typing import AbstractSet
 
     from keybert import KeyBERT
 

@@ -1,4 +1,4 @@
-from typing import Sequence
+from collections.abc import Sequence
 
 from ir_axioms.axiom import Axiom
 from ir_axioms.logging import logger

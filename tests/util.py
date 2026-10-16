@@ -1,5 +1,5 @@
+from collections.abc import Collection
 from dataclasses import dataclass
-from typing import Collection
 from injector import inject, Injector
 
 from ir_axioms.dependency_injection import injector as _default_injector

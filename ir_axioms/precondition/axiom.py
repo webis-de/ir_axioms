@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Generic, Literal, Sequence, TYPE_CHECKING
+from typing import Generic, Literal, TYPE_CHECKING
 
 from numpy import sign
 

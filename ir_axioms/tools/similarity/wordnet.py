@@ -1,7 +1,8 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from functools import lru_cache
 from itertools import product
-from typing import Sequence, final
+from typing import final
 
 from nltk.corpus import wordnet
 
