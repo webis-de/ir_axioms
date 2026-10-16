@@ -89,7 +89,7 @@ Read more about the `ir_axioms` framework and the new RAG axioms in these public
   ICTIR 2025. [@merker2025axioms]
 
 If you use `ir_axioms` in your research, please cite the papers above.
-The BibTeX entries are listed on the [references page](references.md#bondarenko2022axiomatic).
+The BibTeX entries are listed in the [references](#references) below, and all references used in this documentation are available in [`references.bib`](references.bib).
 
 !!! note "Looking for `ir_axioms` < 1.0?"
 

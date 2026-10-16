@@ -31,7 +31,7 @@ crowd_ratings_path = data_dir / "crowd" / "ratings.jsonl.gz"
 
 We use a corpus of RAG responses written by humans and LLMs in different styles, together with crowdsourced pairwise utility judgments.
 Each request (query) has one response per kind and style.
-We convert the data to `GenerationRequest` and `GenerationResponse` objects, so that all requests have the same responses in the same order:
+We convert the data to [`GenerationRequest`][ir_axioms.model.generation.GenerationRequest] and [`GenerationResponse`][ir_axioms.model.generation.GenerationResponse] objects, so that all requests have the same responses in the same order:
 
 ```python
 from collections.abc import Sequence
@@ -72,7 +72,7 @@ data = load_requests_responses(responses)
 
 ## Oracle Preferences
 
-The `TrecRagCrowdAxiom` derives preferences from the crowdsourced judgments for a given utility dimension (e.g., `"overall"`, `"coherence"`, `"broad coverage"`).
+The [`TrecRagCrowdAxiom`][ir_axioms.axiom.generation.crowd.TrecRagCrowdAxiom] derives preferences from the crowdsourced judgments for a given utility dimension (e.g., `"overall"`, `"coherence"`, `"broad coverage"`).
 It serves as the ground truth ("ORACLE") for evaluating the axioms:
 
 ```python
@@ -93,7 +93,7 @@ oracle = TrecRagCrowdAxiom(
 
 We compare three groups of axioms:
 [adapted retrieval axioms](../axioms/generation.md#adapted-retrieval-axioms),
-[generation-specific axioms](../axioms/generation.md#axioms-for-utility-dimensions), and
+[generation-specific axioms](../axioms/generation.md#coherence), and
 majority votes of all axioms.
 The margins below are the ones used in the paper; the aspect-based axioms use spaCy entities as aspects.
 Because some axioms are costly (e.g., grammar checking with LanguageTool), we cache all axioms on disk:
@@ -203,5 +203,5 @@ For a _strict_ consistency, count only exact matches, i.e., `preferences == orac
 
 ## Learn More
 
-- The [ICTIR 2025 notebook](https://github.com/webis-de/ir_axioms/blob/main/experiments/ictir2025.ipynb) also evaluates on the TREC 2024 RAG nugget assignments, compares to LLM-based ORIG axioms (`TrecRagLlmOrigAxiom`), and contains the code for all figures and tables of the paper.
+- The [ICTIR 2025 notebook](https://github.com/webis-de/ir_axioms/blob/main/experiments/ictir2025.ipynb) also evaluates on the TREC 2024 RAG nugget assignments, compares to LLM-based ORIG axioms ([`TrecRagLlmOrigAxiom`][ir_axioms.axiom.generation.llm.TrecRagLlmOrigAxiom]), and contains the code for all figures and tables of the paper.
 - The [RAG axioms](../axioms/generation.md) page maps the axioms to the utility dimensions of related evaluation frameworks.

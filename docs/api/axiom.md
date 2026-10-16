@@ -1,10 +1,17 @@
 # Axioms
 
+<p class="subtitle">API of <code>ir_axioms.axiom</code></p>
+
+For descriptions, original formulations, and references of the axioms, see the [axiom catalog](../axioms/index.md).
+For how to use and combine axioms, see the [core concepts](../getting-started/concepts.md).
+
 ## Base Class
 
 ::: ir_axioms.axiom.base.Axiom
 
 ## Combinators
+
+See [combining axioms](../getting-started/concepts.md#combining-axioms) and the [arithmetic axioms](../axioms/utility.md#arithmetic-axioms).
 
 ::: ir_axioms.axiom.arithmetic
 
@@ -26,9 +33,13 @@
 
 ## Simple Axioms
 
+See the [utility axioms](../axioms/utility.md).
+
 ::: ir_axioms.axiom.simple
 
 ## Retrieval Axioms
+
+See the [retrieval axioms](../axioms/retrieval.md) in the catalog.
 
 ::: ir_axioms.axiom.retrieval.term_frequency
 
@@ -49,6 +60,8 @@
 ::: ir_axioms.axiom.retrieval.trec
 
 ## RAG Axioms
+
+See the [RAG axioms](../axioms/generation.md) in the catalog.
 
 ::: ir_axioms.axiom.generation.coherence
 

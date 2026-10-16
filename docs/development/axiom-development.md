@@ -9,7 +9,7 @@ Follow these steps to add new axioms to this project:
 2. Formalize your understanding into a _pairwise_ preference between two documents or responses.
 3. Determine dependencies (and optionally, look for [existing tool implementations](https://github.com/webis-de/ir_axioms/tree/main/ir_axioms/tools)) for computing the preference.
    The available tools and their default implementations are listed in the [core concepts](../getting-started/concepts.md#tools-and-dependency-injection).
-4. Extend the generic `Axiom` class, e.g., for generated responses:
+4. Extend the generic [`Axiom`][ir_axioms.axiom.base.Axiom] class, e.g., for generated responses:
 
     ```python
     from dataclasses import dataclass
@@ -54,7 +54,7 @@ Follow these steps to add new axioms to this project:
     ```
 
 5. (optional) Override the batched preference computation to speed up experiments
-   (using `Sequence` from `collections.abc`, `array` and `float_` from `numpy`, and `PreferenceMatrix` from `ir_axioms.model`):
+   (using `Sequence` from `collections.abc`, `array` and `float_` from `numpy`, and [`PreferenceMatrix`][ir_axioms.model.base.PreferenceMatrix] from `ir_axioms.model`):
 
     ```python
     def preferences(
@@ -96,8 +96,8 @@ Follow these steps to add new axioms to this project:
 
 !!! warning "Preconditions and overridden methods"
 
-    The `PreconditionMixin` applies its precondition by wrapping `preference()` and `preferences()`.
-    If your axiom extends `PreconditionMixin`, implement the axiom's logic in a base class (as done for `LenAndAxiom` extending `AndAxiom`), so that the mixin's methods are not shadowed by your own `preference()` and `preferences()` methods.
+    The [`PreconditionMixin`][ir_axioms.axiom.precondition.PreconditionMixin] applies its precondition by wrapping `preference()` and `preferences()`.
+    If your axiom extends `PreconditionMixin`, implement the axiom's logic in a base class (as done for [`LenAndAxiom`][ir_axioms.axiom.retrieval.query_aspects.LenAndAxiom] extending [`AndAxiom`][ir_axioms.axiom.retrieval.query_aspects.AndAxiom]), so that the mixin's methods are not shadowed by your own `preference()` and `preferences()` methods.
 
 ## Tool Bindings
 

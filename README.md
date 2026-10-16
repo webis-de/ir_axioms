@@ -26,7 +26,7 @@ _Note: If you're looking out for `ir_axioms`<1.0, please [go here](https://githu
 📖 Read the **[documentation](https://webis-de.github.io/ir_axioms/)** for:
 
 - [Installation](https://webis-de.github.io/ir_axioms/getting-started/installation/) and a [quickstart](https://webis-de.github.io/ir_axioms/getting-started/quickstart/)
-- The [catalog of all axioms](https://webis-de.github.io/ir_axioms/axioms/) with references, and a list of [axioms in the literature](https://webis-de.github.io/ir_axioms/axioms/literature/)
+- The [catalog of all axioms](https://webis-de.github.io/ir_axioms/axioms/) with references, and [related axioms from the literature](https://webis-de.github.io/ir_axioms/axioms/related/)
 - [Walkthroughs](https://webis-de.github.io/ir_axioms/walkthroughs/) on re-ranking, post-hoc analyses, and RAG evaluation
 - [Developing new axioms](https://webis-de.github.io/ir_axioms/development/axiom-development/) and the [migration guide from <1.0](https://webis-de.github.io/ir_axioms/getting-started/migration/)
 

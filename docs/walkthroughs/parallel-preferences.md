@@ -59,7 +59,7 @@ axioms = {
 
 ## Compute Preferences in Parallel
 
-We create a PyTerrier pipeline that takes the top-10 results of each run and computes all pairwise preferences with the `AxiomaticPreferences` transformer:
+We create a PyTerrier pipeline that takes the top-10 results of each run and computes all pairwise preferences with the [`AxiomaticPreferences`][ir_axioms.integrations.pyterrier.transformers.AxiomaticPreferences] transformer:
 
 ```python
 from pyterrier import Transformer

@@ -140,7 +140,7 @@ nav:
       - Retrieval Axioms: axioms/retrieval.md
       - RAG Axioms: axioms/generation.md
       - Utility Axioms: axioms/utility.md
-      - Axioms in the Literature: axioms/literature.md
+      - Related Axioms: axioms/related.md
   - Walkthroughs:
       - walkthroughs/index.md
       - Hands-on Tutorial: walkthroughs/hands-on.md
@@ -161,4 +161,3 @@ nav:
       - Data Model: api/model.md
       - Tools: api/tools.md
       - PyTerrier Integration: api/pyterrier.md
-  - References: references.md

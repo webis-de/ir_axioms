@@ -3,9 +3,11 @@
 <p class="subtitle">Catalog of all axioms implemented in <code>ir_axioms</code></p>
 
 `ir_axioms` implements [retrieval axioms](retrieval.md) that compare documents for a query, [RAG axioms](generation.md) that compare generated responses for a request, and [utility axioms](utility.md) that serve as reference points and building blocks.
-For a broader overview of axiomatic thinking in information retrieval, including constraints that are not (yet) implemented here, see [axioms in the literature](literature.md).
+For a broader overview of axiomatic thinking in information retrieval, including constraints that are not (yet) implemented here, see [related axioms](related.md) from the literature.
 
-All axioms can be imported from `ir_axioms.axiom`, either by their class name (e.g., `Tfc1Axiom`) or by their short alias (e.g., `TFC1`).
+To learn how to compute preferences with these axioms and combine them, see the [quickstart](../getting-started/quickstart.md) and [core concepts](../getting-started/concepts.md); for the full API, see the [API reference](../api/axiom.md).
+
+All axioms can be imported from `ir_axioms.axiom`, either by their class name (e.g., [`Tfc1Axiom`][ir_axioms.axiom.retrieval.term_frequency.Tfc1Axiom]) or by their short alias (e.g., `TFC1`).
 
 ## Retrieval Axioms
 
@@ -58,4 +60,4 @@ Not implemented, as they do not induce practically usable pairwise preferences: 
 | [ORIG](utility.md#orig) | Follow the original ranking (ranks or scores). | [@hagen2016axiomatic] |
 | [ORACLE](utility.md#oracle) | Follow human relevance judgments. | [@bondarenko2022axiomatic] |
 | [NOP](utility.md#nop), [RANDOM](utility.md#random), [GT](utility.md#gt), [LT](utility.md#lt), [DIST](utility.md#dist) | Baselines and helpers. | — |
-| [Arithmetic axioms](utility.md#uniform-and-arithmetic-axioms) | Sum, product, vote, conjunction, cascade, negation, normalization. | — |
+| [Arithmetic axioms](utility.md#arithmetic-axioms) | Sum, product, vote, conjunction, cascade, negation, normalization. | — |

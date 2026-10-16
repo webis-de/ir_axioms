@@ -41,11 +41,11 @@ For further steps on developing new axioms, refer to our [dedicated guidelines](
 
 ## Usage with PyTerrier
 
-To use the axioms with [PyTerrier](https://pyterrier.readthedocs.io/en/latest/), continue to use the PyTerrier `Transformer` subclasses and the `AxiomaticExperiment` as before:
+To use the axioms with [PyTerrier](https://pyterrier.readthedocs.io/en/latest/), continue to use the PyTerrier `Transformer` subclasses and the [`AxiomaticExperiment`][ir_axioms.integrations.pyterrier.experiment.AxiomaticExperiment] as before:
 
-- `KwikSortReranker` to re-rank results based on a given axiom.
-- `AxiomaticPreferences` to return a data frame with all pairwise preferences of the given axiom(s).
-- `AggregatedAxiomaticPreferences` to return the same preferences aggregated by document (e.g., as features for LTR).
+- [`KwikSortReranker`][ir_axioms.integrations.pyterrier.transformers.KwikSortReranker] to re-rank results based on a given axiom.
+- [`AxiomaticPreferences`][ir_axioms.integrations.pyterrier.transformers.AxiomaticPreferences] to return a data frame with all pairwise preferences of the given axiom(s).
+- [`AggregatedAxiomaticPreferences`][ir_axioms.integrations.pyterrier.transformers.AggregatedAxiomaticPreferences] to return the same preferences aggregated by document (e.g., as features for LTR).
 - `AxiomaticExperiment` to run an axiomatic experiment (traditional IR).
 
 Instead of passing the index and dataset to each transformer, call [`inject_pyterrier()`](integrations.md#using-a-terrier-index) once.
@@ -54,7 +54,7 @@ The new RAG-specific axioms can be used as shown in the [RAG evaluation walkthro
 
 ## Other Breaking Changes
 
-- There is no longer implicit disk-caching of axioms (formerly the `~` operator). Instead, you now have to define the cache location explicitly, using the `CachedAxiom` or the `Axiom.cached()` instance method.
+- There is no longer implicit disk-caching of axioms (formerly the `~` operator). Instead, you now have to define the cache location explicitly, using the [`CachedAxiom`][ir_axioms.axiom.cache.CachedAxiom] or the `Axiom.cached()` instance method.
 - Axioms can no longer be loaded by name. The class registry was removed for simplicity.
 - Some version constraints on sub-dependencies (e.g., PyTerrier) have been strictened.
 - Magnitude versions of word-embeddings have been replaced by Hugging Face download and manual fastText model loading.

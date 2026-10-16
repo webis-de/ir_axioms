@@ -36,10 +36,10 @@ The PyTerrier integration provides the following transformers (see the [API refe
 
 | Transformer | Type | Description |
 |:--|:--|:--|
-| `KwikSortReranker` | 𝑅 → 𝑅′ | Re-rank using an axiom's preferences aggregated by KwikSort [@ailon2008aggregating]. |
-| `EstimatorKwikSortReranker` | 𝑅 → 𝑅′ | Train an estimator to predict ORACLE preferences from multiple axioms, then use it to re-rank with KwikSort. |
-| `AxiomaticPreferences` | 𝑅 → (𝑅×𝑅)<sub>𝑓</sub> | Compute all pairwise preferences of the given axioms. |
-| `AggregatedAxiomaticPreferences` | 𝑅 → 𝑅<sub>𝑓</sub> | Aggregate the axioms' preferences for each document (e.g., as features for learning to rank). |
+| [`KwikSortReranker`][ir_axioms.integrations.pyterrier.transformers.KwikSortReranker] | 𝑅 → 𝑅′ | Re-rank using an axiom's preferences aggregated by KwikSort [@ailon2008aggregating]. |
+| [`EstimatorKwikSortReranker`][ir_axioms.integrations.pyterrier.estimator.EstimatorKwikSortReranker] | 𝑅 → 𝑅′ | Train an estimator to predict ORACLE preferences from multiple axioms, then use it to re-rank with KwikSort. |
+| [`AxiomaticPreferences`][ir_axioms.integrations.pyterrier.transformers.AxiomaticPreferences] | 𝑅 → (𝑅×𝑅)<sub>𝑓</sub> | Compute all pairwise preferences of the given axioms. |
+| [`AggregatedAxiomaticPreferences`][ir_axioms.integrations.pyterrier.transformers.AggregatedAxiomaticPreferences] | 𝑅 → 𝑅<sub>𝑓</sub> | Aggregate the axioms' preferences for each document (e.g., as features for learning to rank). |
 
 For example, to re-rank the top-10 BM25 results with a majority vote of retrieval axioms:
 
@@ -55,7 +55,7 @@ pipeline = (bm25 % 10 >> KwikSortReranker(axiom=axiom)) ^ bm25
 
 ### Axiomatic Experiments
 
-Similar to PyTerrier's `Experiment`, the `AxiomaticExperiment` class runs post-hoc axiomatic analyses of retrieval systems:
+Similar to PyTerrier's `Experiment`, the [`AxiomaticExperiment`][ir_axioms.integrations.pyterrier.experiment.AxiomaticExperiment] class runs post-hoc axiomatic analyses of retrieval systems:
 
 ```python
 from ir_axioms.integrations import AxiomaticExperiment

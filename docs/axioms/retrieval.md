@@ -7,6 +7,8 @@ The original formulations of most axioms are restricted to artificial settings, 
 Following Hagen et al. [@hagen2016axiomatic] and Völske et al. [@volske2021towards], the implementations in `ir_axioms` incorporate an axiom's formalized idea while also making it applicable in practical settings [@bondarenko2022axiomatic]:
 they are reformulated to work for arbitrary queries, to express pairwise preferences, and they include parameters to relax or strengthen pre- and filter conditions (e.g., a relative `margin_fraction` within which values are considered equal).
 
+The [API reference](../api/axiom.md#retrieval-axioms) documents all classes and parameters; the [integrations guide](../getting-started/integrations.md) shows how to apply the axioms to a retrieval index.
+
 Below, each axiom is listed with its original intuition and formulation, followed by the changes made in `ir_axioms`.
 In the formulations, \(\mathrm{tf}(t, d)\) denotes the frequency of term \(t\) in document \(d\), \(|d|\) the document length, \(\mathrm{idf}(t)\) the inverse document frequency of \(t\), and \(\mathrm{sim}(t, t')\) a term similarity.
 
@@ -19,7 +21,7 @@ In the formulations, \(\mathrm{tf}(t, d)\) denotes the frequency of term \(t\) i
 
 ### TFC1 { #tfc1 }
 
-<span class="axiom">TFC1</span> `Tfc1Axiom` — _"Prefer documents with more query term occurrences."_ [@fang2004formal]
+<span class="axiom">TFC1</span> [`Tfc1Axiom`][ir_axioms.axiom.retrieval.term_frequency.Tfc1Axiom] — _"Prefer documents with more query term occurrences."_ [@fang2004formal]
 
 Original formulation
 :   Given \(q = \{t\}\) and \(d_1, d_2\) with \(|d_1| = |d_2|\): if \(\mathrm{tf}(t, d_1) > \mathrm{tf}(t, d_2)\), then \(d_1 >_\text{TFC1} d_2\).
@@ -39,7 +41,7 @@ Parameters
 
 ### TFC3 { #tfc3 }
 
-<span class="axiom">TFC3</span> `Tfc3Axiom` — _"Prefer documents with occurrences of more query terms."_ [@fang2011diagnostic]
+<span class="axiom">TFC3</span> [`Tfc3Axiom`][ir_axioms.axiom.retrieval.term_frequency.Tfc3Axiom] — _"Prefer documents with occurrences of more query terms."_ [@fang2011diagnostic]
 
 Original formulation
 :   Given \(q = \{t_1, t_2\}\) and \(d_1, d_2\) with \(|d_1| = |d_2|\) and \(\mathrm{idf}(t_1) = \mathrm{idf}(t_2)\):
@@ -54,7 +56,7 @@ Parameters
 
 ### TDC and M-TDC { #m-tdc }
 
-<span class="axiom">M_TDC</span> `ModifiedTdcAxiom` — _"Prefer documents with more discriminative query terms."_
+<span class="axiom">M_TDC</span> [`ModifiedTdcAxiom`][ir_axioms.axiom.retrieval.term_frequency.ModifiedTdcAxiom] — _"Prefer documents with more discriminative query terms."_
 
 Original formulation (TDC)
 :   Given \(q = \{t_1, t_2\}\) and \(d_1, d_2\) with \(|d_1| = |d_2|\), let \(d\) be some document.
@@ -66,13 +68,13 @@ Changes in `ir_axioms`
     The document with more points is preferred.
 
 Variants
-:   <span class="axiom">LEN_M_TDC</span> `LenModifiedTdcAxiom`: M-TDC with an additional document length precondition (`precondition=LEN()`).
+:   <span class="axiom">LEN_M_TDC</span> [`LenModifiedTdcAxiom`][ir_axioms.axiom.retrieval.term_frequency.LenModifiedTdcAxiom]: M-TDC with an additional document length precondition (`precondition=LEN()`).
 
 ## Document Length
 
 ### LNC1 { #lnc1 }
 
-<span class="axiom">LNC1</span> `Lnc1Axiom` — _"Penalize longer documents for non-relevant terms."_ [@fang2004formal]
+<span class="axiom">LNC1</span> [`Lnc1Axiom`][ir_axioms.axiom.retrieval.length_norm.Lnc1Axiom] — _"Penalize longer documents for non-relevant terms."_ [@fang2004formal]
 
 Original formulation
 :   Given \(q\) and \(d_1, d_2\), let \(t \notin q\) and \(t'\) denote some arbitrary terms.
@@ -93,7 +95,7 @@ Parameters
 
 ### TF-LNC { #tf-lnc }
 
-<span class="axiom">TF_LNC</span> `TfLncAxiom` — _"Reward additional query terms more than document length is penalized."_ [@fang2004formal]
+<span class="axiom">TF_LNC</span> [`TfLncAxiom`][ir_axioms.axiom.retrieval.length_norm.TfLncAxiom] — _"Reward additional query terms more than document length is penalized."_ [@fang2004formal]
 
 Original formulation
 :   Given \(q = \{t\}\) and \(d_1, d_2\): if \(\mathrm{tf}(t, d_1) > \mathrm{tf}(t, d_2)\) and \(|d_1| = |d_2| + \mathrm{tf}(t, d_1) - \mathrm{tf}(t, d_2)\), then \(d_1 >_\text{TF-LNC} d_2\).
@@ -106,7 +108,7 @@ Changes in `ir_axioms`
 
 ### LB1 { #lb1 }
 
-<span class="axiom">LB1</span> `Lb1Axiom` — _"Do not override the term presence–absence gap with length normalization."_ [@lv2011lower]
+<span class="axiom">LB1</span> [`Lb1Axiom`][ir_axioms.axiom.retrieval.lower_bound.Lb1Axiom] — _"Do not override the term presence–absence gap with length normalization."_ [@lv2011lower]
 
 Original formulation
 :   Given \(t \in q\) and \(d_1, d_2\) with \(\mathrm{score}(q \setminus \{t\}, d_1) = \mathrm{score}(q \setminus \{t\}, d_2)\):
@@ -129,7 +131,7 @@ Parameters
 
 ### REG { #reg }
 
-<span class="axiom">REG</span> `RegAxiom` — _"Prefer documents covering more different query aspects."_ [@zheng2010query]
+<span class="axiom">REG</span> [`RegAxiom`][ir_axioms.axiom.retrieval.query_aspects.RegAxiom] — _"Prefer documents covering more different query aspects."_ [@zheng2010query]
 
 Original formulation
 :   Given \(q = \{t_1, t_2, t_3\}\) and \(d_1, d_2\) with \(|d_1| = |d_2|\), \(\mathrm{idf}(t_2) = \mathrm{idf}(t_3)\), \(\mathrm{sim}(t_1, t_2) > \mathrm{sim}(t_1, t_3)\), and \(\mathrm{sim}(t_1, t_2) > \mathrm{sim}(t_2, t_3)\):
@@ -143,12 +145,12 @@ Parameters
 :   `precondition=LEN()`.
 
 Variants
-:   <span class="axiom">ANTI_REG</span> `AntiRegAxiom`: uses the query term(s) with the _maximum_ average similarity instead.
-:   <span class="axiom">ASPECT_REG</span> `AspectRegAxiom`: follows the query aspect clustering of Zheng and Fang [@zheng2010query] (requires equally discriminative query terms) and prefers documents covering at least one of the query aspects.
+:   <span class="axiom">ANTI_REG</span> [`AntiRegAxiom`][ir_axioms.axiom.retrieval.query_aspects.AntiRegAxiom]: uses the query term(s) with the _maximum_ average similarity instead.
+:   <span class="axiom">ASPECT_REG</span> [`AspectRegAxiom`][ir_axioms.axiom.retrieval.query_aspects.AspectRegAxiom]: follows the query aspect clustering of Zheng and Fang [@zheng2010query] (requires equally discriminative query terms) and prefers documents covering at least one of the query aspects.
 
 ### AND { #and }
 
-<span class="axiom">AND</span> `AndAxiom` — _"Prefer documents containing all query terms."_ [@wu2012relation]
+<span class="axiom">AND</span> [`AndAxiom`][ir_axioms.axiom.retrieval.query_aspects.AndAxiom] — _"Prefer documents containing all query terms."_ [@wu2012relation]
 
 Original formulation
 :   Given \(q = \{t_1, t_2\}\) with \(\mathrm{idf}(t_1) \geq \mathrm{idf}(t_2)\):
@@ -158,26 +160,26 @@ Changes in `ir_axioms`
 :   Prefers the document that contains all query terms if the other document does not, for queries of arbitrary length.
 
 Variants
-:   <span class="axiom">LEN_AND</span> `LenAndAxiom`: AND with a document length precondition (`precondition=LEN()`).
-:   <span class="axiom">M_AND</span> `ModifiedAndAxiom`: prefers the document that contains a larger subset of the query terms.
-:   <span class="axiom">LEN_M_AND</span> `LenModifiedAndAxiom`: M-AND with a document length precondition.
+:   <span class="axiom">LEN_AND</span> [`LenAndAxiom`][ir_axioms.axiom.retrieval.query_aspects.LenAndAxiom]: AND with a document length precondition (`precondition=LEN()`).
+:   <span class="axiom">M_AND</span> [`ModifiedAndAxiom`][ir_axioms.axiom.retrieval.query_aspects.ModifiedAndAxiom]: prefers the document that contains a larger subset of the query terms.
+:   <span class="axiom">LEN_M_AND</span> [`LenModifiedAndAxiom`][ir_axioms.axiom.retrieval.query_aspects.LenModifiedAndAxiom]: M-AND with a document length precondition.
 
 ### DIV { #div }
 
-<span class="axiom">DIV</span> `DivAxiom` — _"Prefer documents that are less redundant with the query."_ [@gollapudi2009axiomatic]
+<span class="axiom">DIV</span> [`DivAxiom`][ir_axioms.axiom.retrieval.query_aspects.DivAxiom] — _"Prefer documents that are less redundant with the query."_ [@gollapudi2009axiomatic]
 
 Changes in `ir_axioms`
 :   The diversity axioms of Gollapudi and Sharma characterize result-set diversification functions and do not express pairwise document preferences.
     `ir_axioms` reformulates the idea as a pairwise preference: prefer the document with the lower vocabulary overlap (Jaccard coefficient) with the query.
 
 Variants
-:   <span class="axiom">LEN_DIV</span> `LenDivAxiom`: DIV with a document length precondition (`precondition=LEN()`).
+:   <span class="axiom">LEN_DIV</span> [`LenDivAxiom`][ir_axioms.axiom.retrieval.query_aspects.LenDivAxiom]: DIV with a document length precondition (`precondition=LEN()`).
 
 ## Semantic Similarity
 
 ### STMC1 { #stmc1 }
 
-<span class="axiom">STMC1</span> `Stmc1Axiom` — _"Prefer documents with terms more similar to query terms."_ [@fang2006semantic]
+<span class="axiom">STMC1</span> [`Stmc1Axiom`][ir_axioms.axiom.retrieval.term_similarity.Stmc1Axiom] — _"Prefer documents with terms more similar to query terms."_ [@fang2006semantic]
 
 Original formulation
 :   Given \(q = \{t\}\), \(d_1 = \{t_1\}\), and \(d_2 = \{t_2\}\) with \(t \neq t_1\), \(t \neq t_2\): if \(\mathrm{sim}(t, t_1) > \mathrm{sim}(t, t_2)\), then \(d_1 >_\text{STMC1} d_2\).
@@ -188,7 +190,7 @@ Changes in `ir_axioms`
 
 ### STMC2 { #stmc2 }
 
-<span class="axiom">STMC2</span> `Stmc2Axiom` — _"Do not reward similar terms more than exact matches."_ [@fang2006semantic]
+<span class="axiom">STMC2</span> [`Stmc2Axiom`][ir_axioms.axiom.retrieval.term_similarity.Stmc2Axiom] — _"Do not reward similar terms more than exact matches."_ [@fang2006semantic]
 
 Original formulation
 :   Given \(q = \{t\}\) and \(d_1, d_2\) with \(|d_1| = 1\), \(|d_2| = c > 0\), and a term \(t'\) with \(\mathrm{sim}(t, t') > 0\): if \(\mathrm{tf}(t, d_1) = 1\) and \(\mathrm{tf}(t', d_2) = c\), then \(d_1 \geq_\text{STMC2} d_2\).
@@ -206,28 +208,28 @@ All of them require that both documents contain the same subset of query terms (
 
 ### PROX1 { #prox1 }
 
-<span class="axiom">PROX1</span> `Prox1Axiom` — _"Prefer documents with shorter distance between query term pairs."_
+<span class="axiom">PROX1</span> [`Prox1Axiom`][ir_axioms.axiom.retrieval.proximity.Prox1Axiom] — _"Prefer documents with shorter distance between query term pairs."_
 
 Given \(q\) and \(d_1, d_2\) with \(d_1 \cap q = d_2 \cap q\), let \(P = \{(t, t') : t, t' \in q, t \neq t'\}\) and \(\delta(d, t, t')\) the average number of words between \(t\) and \(t'\) in \(d\).
 If \(\sum_{(t, t') \in P} \delta(d_1, t, t') < \sum_{(t, t') \in P} \delta(d_2, t, t')\), then \(d_1 >_\text{PROX1} d_2\).
 
 ### PROX2 { #prox2 }
 
-<span class="axiom">PROX2</span> `Prox2Axiom` — _"Prefer documents with earlier query term occurrences."_
+<span class="axiom">PROX2</span> [`Prox2Axiom`][ir_axioms.axiom.retrieval.proximity.Prox2Axiom] — _"Prefer documents with earlier query term occurrences."_
 
 Given \(q\) and \(d_1, d_2\) with \(d_1 \cap q = d_2 \cap q\), let \(\mathrm{first}(t, d)\) denote the position of the first occurrence of \(t\) in \(d\).
 If \(\sum_{t \in q} \mathrm{first}(t, d_1) < \sum_{t \in q} \mathrm{first}(t, d_2)\), then \(d_1 >_\text{PROX2} d_2\).
 
 ### PROX3 { #prox3 }
 
-<span class="axiom">PROX3</span> `Prox3Axiom` — _"Prefer documents where the query occurs earlier as a phrase."_
+<span class="axiom">PROX3</span> [`Prox3Axiom`][ir_axioms.axiom.retrieval.proximity.Prox3Axiom] — _"Prefer documents where the query occurs earlier as a phrase."_
 
 Given \(q\) and \(d_1, d_2\) with \(d_1 \cap q = d_2 \cap q\), let \(\tau(d, q)\) denote the first position of the whole query \(q\) as one phrase in \(d\) (\(\infty\) if \(q\) does not occur as a phrase).
 If \(\tau(d_1, q) < \tau(d_2, q)\), then \(d_1 >_\text{PROX3} d_2\).
 
 ### PROX4 { #prox4 }
 
-<span class="axiom">PROX4</span> `Prox4Axiom` — _"Prefer documents that contain all query terms in a shorter substring."_
+<span class="axiom">PROX4</span> [`Prox4Axiom`][ir_axioms.axiom.retrieval.proximity.Prox4Axiom] — _"Prefer documents that contain all query terms in a shorter substring."_
 
 Given \(q\) and \(d_1, d_2\) with \(d_1 \cap q = d_2 \cap q = q\), let \(\omega(d, q)\) denote the length of the shortest substring of \(d\) that contains all query terms.
 If \(\omega(d_1, q) < \omega(d_2, q)\), then \(d_1 >_\text{PROX4} d_2\).
@@ -235,7 +237,7 @@ In `ir_axioms`, ties are broken by the number of such shortest substrings.
 
 ### PROX5 { #prox5 }
 
-<span class="axiom">PROX5</span> `Prox5Axiom` — _"Prefer documents where the query terms are closer together on average."_
+<span class="axiom">PROX5</span> [`Prox5Axiom`][ir_axioms.axiom.retrieval.proximity.Prox5Axiom] — _"Prefer documents where the query terms are closer together on average."_
 
 Given \(q\) and \(d_1, d_2\) with \(d_1 \cap q = d_2 \cap q = q\), let \(\bar{s}(d, q)\) denote the average length of the shortest substrings of \(d\) that contain all query terms (averaged over all occurrences of query terms in \(d\)).
 If \(\bar{s}(d_1, q) < \bar{s}(d_2, q)\), then \(d_1 >_\text{PROX5} d_2\).
@@ -247,15 +249,15 @@ They identify argumentative units (premises and claims) with the [TARGER](https:
 
 ### ArgUC { #arguc }
 
-<span class="axiom">ArgUC</span> `ArgumentativeUnitsCountAxiom` — _"Prefer documents with more argumentative units."_
+<span class="axiom">ArgUC</span> [`ArgumentativeUnitsCountAxiom`][ir_axioms.axiom.retrieval.argumentative.ArgumentativeUnitsCountAxiom] — _"Prefer documents with more argumentative units."_
 
 ### QTArg { #qtarg }
 
-<span class="axiom">QTArg</span> `QueryTermOccurrenceInArgumentativeUnitsAxiom` — _"Prefer documents with more query terms in argumentative units."_
+<span class="axiom">QTArg</span> [`QueryTermOccurrenceInArgumentativeUnitsAxiom`][ir_axioms.axiom.retrieval.argumentative.QueryTermOccurrenceInArgumentativeUnitsAxiom] — _"Prefer documents with more query terms in argumentative units."_
 
 ### QTPArg { #qtparg }
 
-<span class="axiom">QTPArg</span> `QueryTermPositionInArgumentativeUnitsAxiom` — _"Prefer documents where the first occurrence of a query term in an argumentative unit is closer to the beginning of the document."_
+<span class="axiom">QTPArg</span> [`QueryTermPositionInArgumentativeUnitsAxiom`][ir_axioms.axiom.retrieval.argumentative.QueryTermPositionInArgumentativeUnitsAxiom] — _"Prefer documents where the first occurrence of a query term in an argumentative unit is closer to the beginning of the document."_
 
 Based on the general observation that query terms occur "earlier" in relevant documents [@troy2007enhancing; @mitra2017learning].
 
@@ -264,7 +266,7 @@ Parameters
 
 ### aSL { #asl }
 
-<span class="axiom">aSL</span> `AverageSentenceLengthAxiom` (alias: `aSLDoc`) — _"Prefer documents with an average sentence length between 12 and 20 words."_
+<span class="axiom">aSL</span> [`AverageSentenceLengthAxiom`][ir_axioms.axiom.retrieval.argumentative.AverageSentenceLengthAxiom] (alias: `aSLDoc`) — _"Prefer documents with an average sentence length between 12 and 20 words."_
 
 Based on the general observation for text readability and good writing style [@markel2010technical; @newell2014editing].
 

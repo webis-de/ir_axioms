@@ -3,6 +3,7 @@
 <p class="subtitle">Step-by-step tutorials based on our example notebooks</p>
 
 These walkthroughs demonstrate the main use cases of `ir_axioms` on standard benchmark data.
+They build on the [integrations](../getting-started/integrations.md) and use axioms from the [axiom catalog](../axioms/index.md).
 Each walkthrough is based on one of the [Jupyter notebooks](https://github.com/webis-de/ir_axioms/tree/main/experiments) in the repository.
 
 | Walkthrough | You will learn to… | Notebook |

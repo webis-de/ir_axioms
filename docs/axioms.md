@@ -6,4 +6,4 @@
 - [Catalog of all axioms](https://webis-de.github.io/ir_axioms/axioms/) ([source](axioms/index.md))
 - [Retrieval axioms](https://webis-de.github.io/ir_axioms/axioms/retrieval/) ([source](axioms/retrieval.md))
 - [RAG axioms](https://webis-de.github.io/ir_axioms/axioms/generation/) ([source](axioms/generation.md))
-- [Axioms in the literature](https://webis-de.github.io/ir_axioms/axioms/literature/) ([source](axioms/literature.md))
+- [Related axioms from the literature](https://webis-de.github.io/ir_axioms/axioms/related/) ([source](axioms/related.md))

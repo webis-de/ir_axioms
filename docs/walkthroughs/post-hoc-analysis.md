@@ -43,7 +43,7 @@ axioms = [axiom.cached(cache_dir / "axioms" / name) for name, axiom in axioms.it
 
 ## Axiomatic Experiments
 
-The `AxiomaticExperiment` class is the entry point for post-hoc analyses of rankings and relevance judgments.
+The [`AxiomaticExperiment`][ir_axioms.integrations.pyterrier.experiment.AxiomaticExperiment] class is the entry point for post-hoc analyses of rankings and relevance judgments.
 We pass it the retrieval pipelines to evaluate, the topics and qrels, and the axioms to compute preferences for.
 The `depth` parameter controls up to which rank the preferences are computed.
 

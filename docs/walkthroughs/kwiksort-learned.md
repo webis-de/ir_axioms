@@ -49,7 +49,7 @@ Including [ORIG](../axioms/utility.md#orig) as a feature lets the classifier lea
 ## Train the Estimator
 
 We combine the preferences of all axioms in a random forest classifier.
-The `EstimatorKwikSortReranker` is a PyTerrier `Estimator`: it is trained to predict the preferences of a target axiom (by default, ORACLE) and then re-ranks with KwikSort based on the predicted preferences:
+The [`EstimatorKwikSortReranker`][ir_axioms.integrations.pyterrier.estimator.EstimatorKwikSortReranker] is a PyTerrier `Estimator`: it is trained to predict the preferences of a target axiom (by default, ORACLE) and then re-ranks with KwikSort based on the predicted preferences:
 
 ```python
 from sklearn.ensemble import RandomForestClassifier

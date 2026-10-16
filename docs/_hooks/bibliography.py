@@ -2,24 +2,20 @@
 MkDocs hook that turns ``docs/references.bib`` into the single source of truth
 for all citations in the documentation.
 
-- ``[@key]`` or ``[@key1; @key2]`` in any page is replaced by author-year links
-  to the corresponding entry on the references page.
-- ``<!-- bibliography -->`` on the references page is replaced by the formatted
-  bibliography, including the BibTeX of each entry.
+- ``[@key]`` or ``[@key1; @key2]`` in any page is replaced by author-year links.
+- Each page that cites at least one reference gets a "References" section at
+  the bottom, listing the cited references, including the BibTeX of each entry.
 
 Unknown citation keys fail the build, so that broken references are caught in CI.
 """
 
 from pathlib import Path
-from posixpath import dirname, relpath
 from re import DOTALL, MULTILINE, compile as re_compile
 from typing import Any
 
 from mkdocs.exceptions import PluginError
 
 _BIB_PATH = Path(__file__).parent.parent / "references.bib"
-_REFERENCES_PAGE = "references.md"
-_PLACEHOLDER = "<!-- bibliography -->"
 
 _PATTERN_ENTRY = re_compile(r"^@(\w+)\{([^,\s]+),", MULTILINE)
 _PATTERN_AUTHOR_SEPARATOR = re_compile(r"\s+and\s+")
@@ -32,6 +28,13 @@ _LATEX_REPLACEMENTS = {
     r"{\"{o}}": "ö",
     r"{\"{a}}": "ä",
     r"{\"{u}}": "ü",
+    r"{\'{e}}": "é",
+    r"{\'{E}}": "É",
+    r"{\'{o}}": "ó",
+    r"{\'{a}}": "á",
+    r"{\u{a}}": "ă",
+    r"{\^{a}}": "â",
+    r"\&": "&",
     r"{-}": "-",
     r"\_": "_",
 }
@@ -128,8 +131,9 @@ def _sort_key(item: tuple[str, dict[str, str]]) -> tuple[str, str]:
     return (_authors(entry)[0].split()[-1].lower(), entry.get("year", ""))
 
 
-def _render_bibliography(entries: dict[str, dict[str, str]]) -> str:
-    blocks = []
+def _render_references(keys: set[str]) -> str:
+    entries = {key: _bibliography[key] for key in keys}
+    blocks = ["## References\n"]
     for key, entry in sorted(entries.items(), key=_sort_key):
         bibtex = "\n".join("    " + line for line in entry["bibtex"].splitlines())
         blocks.append(
@@ -151,9 +155,7 @@ def on_pre_build(config: Any, **kwargs: Any) -> None:
 
 def on_page_markdown(markdown: str, page: Any, **kwargs: Any) -> str:
     src_uri: str = page.file.src_uri
-    references_link = relpath(_REFERENCES_PAGE, dirname(src_uri) or ".")
-    if src_uri == _REFERENCES_PAGE:
-        references_link = ""
+    cited_keys: set[str] = set()
 
     def replace_citation(match: Any) -> str:
         keys = [key.strip().lstrip("@") for key in match.group(1).split(";")]
@@ -161,9 +163,8 @@ def on_page_markdown(markdown: str, page: Any, **kwargs: Any) -> str:
         for key in keys:
             if key not in _bibliography:
                 raise PluginError(f"Unknown citation key '{key}' in {src_uri}.")
-            links.append(
-                f"[{_short_citation(_bibliography[key])}]({references_link}#{key})"
-            )
+            cited_keys.add(key)
+            links.append(f"[{_short_citation(_bibliography[key])}](#{key})")
         return "(" + "; ".join(links) + ")"
 
     # Odd indices of the split are code, which is kept as is.
@@ -171,7 +172,6 @@ def on_page_markdown(markdown: str, page: Any, **kwargs: Any) -> str:
         part if index % 2 == 1 else _PATTERN_CITATION.sub(replace_citation, part)
         for index, part in enumerate(_PATTERN_CODE.split(markdown))
     )
-    if _PLACEHOLDER in markdown:
-        markdown = markdown.replace(_PLACEHOLDER, _render_bibliography(_bibliography))
+    if cited_keys:
+        markdown = markdown.rstrip() + "\n\n" + _render_references(cited_keys)
     return markdown
-

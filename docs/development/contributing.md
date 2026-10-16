@@ -64,7 +64,8 @@ The documentation is deployed to [GitHub Pages](https://webis-de.github.io/ir_ax
 
 All references are stored in [`docs/references.bib`](https://github.com/webis-de/ir_axioms/blob/main/docs/references.bib).
 To cite a reference in any page, use `[@key]` or `[@key1; @key2]` (with the BibTeX keys).
-The citations are rendered as links to the [references page](../references.md), and unknown keys fail the build.
+The citations are rendered as author–year links, and each page that cites a reference automatically gets a "References" section at the bottom (including the BibTeX entries).
+Unknown keys fail the build.
 
 When adding a reference, please copy its BibTeX entry from [DBLP](https://dblp.org/) if the publication is indexed there.
 

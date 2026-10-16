@@ -55,7 +55,7 @@ aggregations = [
 ]
 ```
 
-(By default, `AggregatedAxiomaticPreferences` uses `max`, `min`, and `mean`.)
+(By default, [`AggregatedAxiomaticPreferences`][ir_axioms.integrations.pyterrier.transformers.AggregatedAxiomaticPreferences] uses `max`, `min`, and `mean`.)
 With the axioms and aggregation functions, we create axiomatic features for the top-20 results of the baseline ranking:
 
 ```python

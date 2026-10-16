@@ -65,7 +65,7 @@ inject_pyterrier(
 
 ## Post-hoc Axiomatic Analyses
 
-Similar to PyTerrier's `Experiment`, `ir_axioms` runs axiomatic analyses with the `AxiomaticExperiment` class.
+Similar to PyTerrier's `Experiment`, `ir_axioms` runs axiomatic analyses with the [`AxiomaticExperiment`][ir_axioms.integrations.pyterrier.experiment.AxiomaticExperiment] class.
 In the constructor, specify:
 
 - the retrieval systems to test (and their names),
@@ -147,7 +147,7 @@ Now that we have spotted an error, let's fix it by axiomatic re-ranking: we firs
 ### Majority Vote
 
 The idea is to change the ranking order only where multiple axioms agree, and to fall back to the original ranking order otherwise.
-The combined axiom is itself an `Axiom`:
+The combined axiom is itself an [`Axiom`][ir_axioms.axiom.base.Axiom]:
 
 ```python
 from ir_axioms.axiom import ORIG, MajorityVoteAxiom

@@ -11,6 +11,8 @@ In `ir_axioms`, every axiom extends the generic abstract base class [`Axiom[Inpu
 - RAG axioms compare two generated responses for a request: `Axiom[GenerationRequest, GenerationResponse]`.
 - Utility axioms (e.g., [`ORIG`](../axioms/utility.md#orig) or [`RANDOM`](../axioms/utility.md#random)) work with any input/output types.
 
+All implemented axioms are described in the [axiom catalog](../axioms/index.md).
+
 The preference \(\mathrm{pref}_A(q, d_i, d_j)\) of an axiom \(A\) for an input \(q\) and outputs \(d_i\), \(d_j\) is a float with the following semantics [@bondarenko2022axiomatic]:
 
 \[
@@ -34,7 +36,7 @@ Each axiom implements up to three methods:
 
 ## Instantiating Axioms
 
-Each axiom class is also available under a short alias, e.g., `TFC1` for `Tfc1Axiom`.
+Each axiom class is also available under a short alias, e.g., `TFC1` for [`Tfc1Axiom`][ir_axioms.axiom.retrieval.term_frequency.Tfc1Axiom].
 The aliases are created with `lazy_inject()` and resolve all dependencies of the axiom (e.g., tokenizers or index statistics) via [dependency injection](#tools-and-dependency-injection) when called:
 
 ```python
@@ -50,21 +52,21 @@ The [axiom catalog](../axioms/index.md) lists the parameters of each axiom.
 ## Combining Axioms
 
 Axioms can be combined with Python operators.
-The result of a combination is again an `Axiom`, so combinations can be nested arbitrarily.
+The result of a combination is again an [`Axiom`][ir_axioms.axiom.base.Axiom], so combinations can be nested arbitrarily.
 
 | Operator | Result | Description |
 |:--|:--|:--|
-| `a + b` | `SumAxiom` | Sum of the preferences. |
+| `a + b` | [`SumAxiom`][ir_axioms.axiom.arithmetic.SumAxiom] | Sum of the preferences. |
 | `a - b` | `SumAxiom` | Difference of the preferences (`a + -b`). |
-| `a * b` | `ProductAxiom` | Product of the preferences. |
+| `a * b` | [`ProductAxiom`][ir_axioms.axiom.arithmetic.ProductAxiom] | Product of the preferences. |
 | `a / b` | `ProductAxiom` | Product with the multiplicative inverse of `b`'s preferences. |
-| `a % b` | `VoteAxiom` | Majority vote (absolute majority, i.e., at least 50 % of the votes). |
-| `a & b` | `ConjunctionAxiom` | Preference only if all axioms agree, otherwise zero. |
-| `a \| b` | `CascadeAxiom` | First non-zero preference (i.e., `b` is the fallback when `a` has no preference). |
-| `-a` | `NegatedAxiom` | Flip the sign of the preferences. |
-| `+a` | `NormalizedAxiom` | Normalize the preferences to −1, 0, or 1 (same as `a.normalized()`). |
+| `a % b` | [`VoteAxiom`][ir_axioms.axiom.arithmetic.VoteAxiom] | Majority vote (absolute majority, i.e., at least 50 % of the votes). |
+| `a & b` | [`ConjunctionAxiom`][ir_axioms.axiom.arithmetic.ConjunctionAxiom] | Preference only if all axioms agree, otherwise zero. |
+| `a \| b` | [`CascadeAxiom`][ir_axioms.axiom.arithmetic.CascadeAxiom] | First non-zero preference (i.e., `b` is the fallback when `a` has no preference). |
+| `-a` | [`NegatedAxiom`][ir_axioms.axiom.arithmetic.NegatedAxiom] | Flip the sign of the preferences. |
+| `+a` | [`NormalizedAxiom`][ir_axioms.axiom.arithmetic.NormalizedAxiom] | Normalize the preferences to −1, 0, or 1 (same as `a.normalized()`). |
 
-To weight an axiom by a constant, multiply with a [`UniformAxiom`](../axioms/utility.md#uniform-and-arithmetic-axioms):
+To weight an axiom by a constant, multiply with a [`UniformAxiom`](../axioms/utility.md#uniform):
 
 ```python
 from ir_axioms.axiom import TFC1, TFC3, UniformAxiom
@@ -73,7 +75,7 @@ from ir_axioms.axiom import TFC1, TFC3, UniformAxiom
 axiom = TFC1() + UniformAxiom(scalar=2.0) * TFC3()
 ```
 
-To control the required majority of a vote, instantiate the `VoteAxiom` (or `MajorityVoteAxiom`) directly:
+To control the required majority of a vote, instantiate the `VoteAxiom` (or [`MajorityVoteAxiom`][ir_axioms.axiom.arithmetic.MajorityVoteAxiom]) directly:
 
 ```python
 from ir_axioms.axiom import MajorityVoteAxiom, ORIG, TFC1, LB1, PROX1, PROX2
@@ -138,22 +140,22 @@ All bindings use the `singleton` scope, i.e., each interface resolves to the sam
 
 | Interface | Default implementation |
 |:--|:--|
-| `AspectExtraction` | `SpacyNounChunksAspectExtraction` |
-| `PivotSelection` | `RandomPivotSelection` |
-| `TermTokenizer` | `BlingfireTermTokenizer` (if Blingfire installed) or `SpacyTermTokenizer` |
-| `SentenceTokenizer` | `BlingfireSentenceTokenizer` (if Blingfire installed) or `SpacySentenceTokenizer` |
-| `TermSimilarity` | `FastTextTermSimilarity` if fastText is installed, else `WordNetSynonymSetTermSimilarity` |
-| `SentenceSimilarity` | `SentenceTransformersSentenceSimilarity` (if SBERT installed) or `Model2VecSentenceSimilarity` (if model2vec installed) or `AverageTermSimilaritySentenceSimilarity` |
-| `TextContents[T]` for `HasText`, `Query`, `Document`, `GenerationRequest`, `GenerationResponse` | `SimpleTextContents` |
-| `TextContents[Union[Document, Query]]` | `DocumentQueryTextContents` |
-| `TextContents[Union[GenerationRequest, GenerationResponse]]` | `GenerationInputOutputTextContents` |
-| `TextStatistics[T]` for `Query`, `Document`, `GenerationRequest`, `GenerationResponse` | `SimpleTextStatistics` |
-| `TextStatistics[Union[Document, Query]]` | `DocumentQueryTextStatistics` |
-| `TextStatistics[Union[GenerationRequest, GenerationResponse]]` | `GenerationInputOutputTextStatistics` |
+| [`AspectExtraction`][ir_axioms.tools.aspects.AspectExtraction] | [`SpacyNounChunksAspectExtraction`][ir_axioms.tools.aspects.SpacyNounChunksAspectExtraction] |
+| [`PivotSelection`][ir_axioms.tools.pivot.PivotSelection] | [`RandomPivotSelection`][ir_axioms.tools.pivot.RandomPivotSelection] |
+| [`TermTokenizer`][ir_axioms.tools.tokenizer.TermTokenizer] | [`BlingfireTermTokenizer`][ir_axioms.tools.tokenizer.BlingfireTermTokenizer] (if Blingfire installed) or [`SpacyTermTokenizer`][ir_axioms.tools.tokenizer.SpacyTermTokenizer] |
+| [`SentenceTokenizer`][ir_axioms.tools.tokenizer.SentenceTokenizer] | [`BlingfireSentenceTokenizer`][ir_axioms.tools.tokenizer.BlingfireSentenceTokenizer] (if Blingfire installed) or [`SpacySentenceTokenizer`][ir_axioms.tools.tokenizer.SpacySentenceTokenizer] |
+| [`TermSimilarity`][ir_axioms.tools.similarity.TermSimilarity] | [`FastTextTermSimilarity`][ir_axioms.tools.similarity.FastTextTermSimilarity] if fastText is installed, else [`WordNetSynonymSetTermSimilarity`][ir_axioms.tools.similarity.WordNetSynonymSetTermSimilarity] |
+| [`SentenceSimilarity`][ir_axioms.tools.similarity.SentenceSimilarity] | [`SentenceTransformersSentenceSimilarity`][ir_axioms.tools.similarity.SentenceTransformersSentenceSimilarity] (if SBERT installed) or [`Model2VecSentenceSimilarity`][ir_axioms.tools.similarity.Model2VecSentenceSimilarity] (if model2vec installed) or [`AverageTermSimilaritySentenceSimilarity`][ir_axioms.tools.similarity.AverageTermSimilaritySentenceSimilarity] |
+| `TextContents[T]` for [`HasText`][ir_axioms.tools.contents.HasText], [`Query`][ir_axioms.model.retrieval.Query], [`Document`][ir_axioms.model.retrieval.Document], [`GenerationRequest`][ir_axioms.model.generation.GenerationRequest], [`GenerationResponse`][ir_axioms.model.generation.GenerationResponse] | [`SimpleTextContents`][ir_axioms.tools.contents.SimpleTextContents] |
+| `TextContents[Union[Document, Query]]` | [`DocumentQueryTextContents`][ir_axioms.tools.contents.DocumentQueryTextContents] |
+| `TextContents[Union[GenerationRequest, GenerationResponse]]` | [`GenerationInputOutputTextContents`][ir_axioms.tools.contents.GenerationInputOutputTextContents] |
+| `TextStatistics[T]` for `Query`, `Document`, `GenerationRequest`, `GenerationResponse` | [`SimpleTextStatistics`][ir_axioms.tools.text_statistics.SimpleTextStatistics] |
+| `TextStatistics[Union[Document, Query]]` | [`DocumentQueryTextStatistics`][ir_axioms.tools.text_statistics.DocumentQueryTextStatistics] |
+| `TextStatistics[Union[GenerationRequest, GenerationResponse]]` | [`GenerationInputOutputTextStatistics`][ir_axioms.tools.text_statistics.GenerationInputOutputTextStatistics] |
 
 !!! info "Index statistics"
 
-    Axioms that depend on collection statistics (e.g., inverse document frequencies for [TFC3](../axioms/retrieval.md#tfc3) or [M-TDC](../axioms/retrieval.md#m-tdc)) require an `IndexStatistics` binding, which is provided by the [PyTerrier or Pyserini integrations](integrations.md).
+    Axioms that depend on collection statistics (e.g., inverse document frequencies for [TFC3](../axioms/retrieval.md#tfc3) or [M-TDC](../axioms/retrieval.md#m-tdc)) require an [`IndexStatistics`][ir_axioms.tools.index_statistics.IndexStatistics] binding, which is provided by the [PyTerrier or Pyserini integrations](integrations.md).
 
 To replace a tool for a single axiom, pass it as a keyword argument:
 
