@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="ir_axioms">
-  <!-- Two documents and a pairwise preference arrow, in Webis colors. -->
-  <rect x="3" y="4" width="20" height="17" fill="#d3f8f7" stroke="#034257" stroke-width="2"/>
-  <rect x="3" y="27" width="20" height="17" fill="#ffffff" stroke="#034257" stroke-width="2"/>
-  <path d="M7 10h12M7 15h8M7 33h12M7 38h8" stroke="#034257" stroke-width="2"/>
-  <path d="M35 8v32" stroke="#e64727" stroke-width="3"/>
-  <path d="M28 15l7-8 7 8M28 33l7 8 7-8" fill="none" stroke="#e64727" stroke-width="3" stroke-linejoin="miter"/>
-</svg>
