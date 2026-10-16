@@ -154,6 +154,7 @@ nav:
       - development/index.md
       - Developing Axioms: development/axiom-development.md
       - Contributing: development/contributing.md
+      - Roadmap: development/roadmap.md
   - API Reference:
       - api/index.md
       - Axioms: api/axiom.md
