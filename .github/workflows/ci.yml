@@ -90,11 +90,11 @@ jobs:
       - name: "🧰 Install Python"
         uses: actions/setup-python@v7
         with:
-          python-version: "3.14"
+          python-version: "3.12"
           cache: pip
           cache-dependency-path: pyproject.toml
       - name: "🧰 Install dependencies"
-        run: pip install .
+        run: pip install .[docs]
       - name: "📖 Build documentation"
         run: mkdocs build --strict
         env:
