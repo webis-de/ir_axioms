@@ -6,7 +6,11 @@ If you have used `ir_axioms` < 1.0 and now want to migrate your code, please fol
 
 !!! note "Still need to support `ir_axioms` < 1.0?"
 
-    The legacy version is still available on the [`legacy` branch](https://github.com/webis-de/ir_axioms/tree/legacy).
+    The legacy version is still available on the [`legacy` branch](https://github.com/webis-de/ir_axioms/tree/legacy) and you can still install old versions:
+
+    ```shell
+    pip install ir_axioms<1.0
+    ```
 
 ## The `Axiom` Interface
 
