@@ -4,15 +4,10 @@
 
 This section introduces the main building blocks of `ir_axioms`:
 
-1. [**Installation**](installation.md): Install the package and its optional dependencies.
-2. [**Quickstart**](quickstart.md): Compute your first axiomatic preferences and re-rank a small ranking.
-3. [**Core concepts**](concepts.md): Learn about the [`Axiom`][ir_axioms.axiom.base.Axiom] interface, preference matrices, combining axioms, and dependency injection of tools.
-4. [**Integrations**](integrations.md): Use `ir_axioms` with PyTerrier, Pyserini, and `ir_datasets`.
-5. [**Migrating from <1.0**](migration.md): Upgrade code written for the legacy version of `ir_axioms`.
+1. [Install](installation.md) the package and its optional dependencies.
+2. [Quick start](quickstart.md) to compute your first axiomatic preferences and re-rank a small ranking.
+3. Learn about [core concepts](concepts.md) like the [`Axiom`][ir_axioms.axiom.base.Axiom] interface, preferences, operators, and tools.
+4. [Integrate](integrations.md) `ir_axioms` with PyTerrier, Pyserini, and `ir_datasets`.
+5. [Migrate](migration.md) code written for legacy `ir_axioms`.
 
-Afterwards, browse the [catalog of axioms](../axioms/index.md) or follow one of the [walkthroughs](../walkthroughs/index.md).
-
-!!! note "Looking for `ir_axioms` < 1.0?"
-
-    The legacy version is still available on the [`legacy` branch](https://github.com/webis-de/ir_axioms/tree/legacy).
-    To upgrade your code, follow the [migration guide](getting-started/migration.md).
+Once you know the basics, continue by browsing our extensive [catalog of axioms](../axioms/index.md) or follow one of the more detailed [walkthroughs](../walkthroughs/index.md).

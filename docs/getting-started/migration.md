@@ -2,8 +2,11 @@
 
 <p class="subtitle">Upgrade code written for <code>ir_axioms</code> &lt; 1.0</p>
 
-If you have used `ir_axioms` < 1.0 and now want to migrate your code to the new implementation, please follow this guide.
-The legacy version is still available on the [`legacy` branch](https://github.com/webis-de/ir_axioms/tree/legacy).
+If you have used `ir_axioms` < 1.0 and now want to migrate your code, please follow this guide.
+
+!!! note "Still need to support `ir_axioms` < 1.0?"
+
+    The legacy version is still available on the [`legacy` branch](https://github.com/webis-de/ir_axioms/tree/legacy).
 
 ## The `Axiom` Interface
 
