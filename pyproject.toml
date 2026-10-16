@@ -22,7 +22,7 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 dependencies = [
-    "annotated-types~=0.7.0",
+    "annotated-types>=0.7,<0.9",
     "cached-property~=2.0",
     "cyclopts>=3,<5",
     "frozendict~=2.4",
