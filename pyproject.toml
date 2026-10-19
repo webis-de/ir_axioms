@@ -85,7 +85,7 @@ keybert = [
     "keybert>=0.8.5,<0.10.0",
 ]
 sbert = [
-    "sentence-transformers~=5.7",
+    "sentence-transformers>=5.7,<7.0",
 ]
 model2vec = [
     "model2vec~=0.9.0",
