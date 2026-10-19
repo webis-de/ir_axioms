@@ -95,7 +95,7 @@ blingfire = [
 ]
 fasttext = [
     "fasttext~=0.9.3",
-    "huggingface-hub[hf_xet]>=0.30.1,<1.5.0",
+    "huggingface-hub[hf_xet]>=0.30.1,<2.3.0",
 ]
 autojudge = [
     "autojudge-base~=1.0",
